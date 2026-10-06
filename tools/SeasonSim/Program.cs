@@ -55,11 +55,12 @@ static class P{
   int di=Array.IndexOf(a,"--dump");if(di>=0)File.WriteAllLines(a[di+1],c.world.aiTransfers.Select(t=>t.year+" "+t.player+" "+t.seller+">"+t.buyer+" "+t.fee+" "+t.wage).Concat(db.players.OrderBy(p=>p.id,StringComparer.Ordinal).Select(p=>p.id+" "+p.team+" "+p.rating.ToString("R",CultureInfo.InvariantCulture)+" "+p.wage)));
   return 0;
  }
- class Snapshot{public int year,day;public long cash;public int squad;public float top14,ageAvg;public Dictionary<string,long> aiCash=new();public Dictionary<string,int> aiSquad=new();public Dictionary<string,float> aiStrength=new();public float wageMedian;public int free;public int transfers;}
+ class Snapshot{public int year,day;public long cash;public int squad;public float top14,ageAvg;public Dictionary<string,long> aiCash=new();public Dictionary<string,long> aiDebt=new();public Dictionary<string,double> wageRatio=new();public Dictionary<string,long> revenue=new();public Dictionary<string,int> aiSquad=new();public Dictionary<string,float> aiStrength=new();public float wageMedian;public int free;public int transfers;}
  static Snapshot Snap(Database db,Career c){
   var s=new Snapshot{year=c.world.year,day=c.life.day,cash=c.life.cash};
   var sq=db.Squad(c.club).ToArray();s.squad=sq.Length;s.top14=sq.Length==0?0:(float)sq.OrderByDescending(p=>p.rating+p.development).Take(14).Average(p=>p.rating+p.development);s.ageAvg=sq.Length==0?0:(float)sq.Average(p=>p.age);
-  foreach(var acc in c.world.aiAccounts){s.aiCash[acc.club]=GetLong(acc,"cash");}
+  foreach(var acc in c.world.aiAccounts){s.aiCash[acc.club]=GetLong(acc,"cash");s.aiDebt[acc.club]=GetLong(acc,"operatingDebt");}
+  foreach(var cl in db.clubs.Where(x=>x.annualRevenue>0&&x.playable)){long w=db.Squad(cl.id).Sum(p=>(long)p.wage);s.wageRatio[cl.id]=w*52.0/cl.annualRevenue;s.revenue[cl.id]=cl.annualRevenue;}
   foreach(var cl in db.clubs.Where(x=>x.playable)){var q=db.Squad(cl.id).ToArray();s.aiSquad[cl.id]=q.Length;s.aiStrength[cl.id]=q.Length==0?0:(float)q.OrderByDescending(p=>p.rating+p.development).Take(14).Average(p=>p.rating+p.development);}
   var wages=db.players.Where(p=>p.team!=null&&p.wage>0).Select(p=>p.wage).OrderBy(x=>x).ToArray();s.wageMedian=wages.Length>0?wages[wages.Length/2]:0;
   s.free=db.players.Count(p=>string.IsNullOrEmpty(p.team));s.transfers=c.world.aiTransfers?.Count??0;return s;
@@ -95,6 +96,11 @@ static class P{
   var drift=clubs.Select(k=>last.aiStrength.GetValueOrDefault(k)-first.aiStrength[k]).OrderBy(x=>x).ToArray();
   Console.WriteLine($"Évolution de la force (top 14) des clubs : médiane {drift[drift.Length/2].ToString("+0.0;-0.0",FR)}, 10 % les plus bas {drift[drift.Length/10].ToString("+0.0;-0.0",FR)}, 10 % les plus hauts {drift[drift.Length*9/10].ToString("+0.0;-0.0",FR)}.");
   if(first.aiCash.Count>0){var cash=last.aiCash.Values.OrderBy(x=>x).ToArray();Console.WriteLine($"Trésorerie des clubs IA : médiane {M(cash[cash.Length/2])}, négative pour {cash.Count(x=>x<0)} / {cash.Length} (début : négative pour {first.aiCash.Values.Count(x=>x<0)}).");}
+
+  if(last.aiDebt.Count>0){var debt=last.aiDebt.Where(kv=>last.wageRatio.ContainsKey(kv.Key)).Select(kv=>kv.Value).ToArray();var withDebt=debt.Where(x=>x>0).OrderBy(x=>x).ToArray();Console.WriteLine($"Clubs IA endettés : {withDebt.Length} / {debt.Length} (clubs jouables ; début {first.aiDebt.Values.Count(x=>x>0)}), dette médiane des endettés {(withDebt.Length>0?M(withDebt[withDebt.Length/2]):"—")}.");}
+  {double Med(IEnumerable<double> v){var a=v.OrderBy(x=>x).ToArray();return a.Length==0?0:a[a.Length/2];}Console.WriteLine($"Salaires joueurs / recettes : médiane {Med(first.wageRatio.Values):P0} → {Med(last.wageRatio.Values):P0}, clubs au-dessus de 70 % : {first.wageRatio.Values.Count(x=>x>.7)} → {last.wageRatio.Values.Count(x=>x>.7)}.");
+   var margins=last.aiCash.Keys.Where(k=>first.aiCash.ContainsKey(k)&&last.wageRatio.ContainsKey(k)&&first.revenue.TryGetValue(k,out var r)&&r>0).Select(k=>((last.aiCash[k]-last.aiDebt[k])-(first.aiCash[k]-first.aiDebt[k]))/((double)first.revenue[k]*Math.Max(1,(last.day-first.day)/365.0))).OrderBy(x=>x).ToArray();
+   if(margins.Length>0)Console.WriteLine($"Résultat annuel moyen / recettes (clubs IA) : 10 % {margins[margins.Length/10]:P0}, médiane {margins[margins.Length/2]:P0}, 90 % {margins[margins.Length*9/10]:P0} ; en perte : {margins.Count(x=>x<0)} / {margins.Length}.");}
   Console.WriteLine($"Joueurs sans club : {first.free} → {last.free}.");
   var top=clubs.OrderByDescending(k=>last.aiStrength.GetValueOrDefault(k)-first.aiStrength[k]).Take(3).Select(k=>N(k)+" "+(last.aiStrength[k]-first.aiStrength[k]).ToString("+0.0;-0.0",FR));var bottom=clubs.OrderBy(k=>last.aiStrength.GetValueOrDefault(k)-first.aiStrength[k]).Take(3).Select(k=>N(k)+" "+(last.aiStrength[k]-first.aiStrength[k]).ToString("+0.0;-0.0",FR));
   Console.WriteLine("Plus forte progression : "+string.Join(", ",top)+"\nPlus forte baisse : "+string.Join(", ",bottom));

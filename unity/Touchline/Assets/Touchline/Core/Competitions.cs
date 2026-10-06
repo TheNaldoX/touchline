@@ -216,6 +216,7 @@ namespace Touchline.Core
         void NewSeason(Database db)
         {
             foreach(var d in world.divisions){var table=Table(d.id);if(table.Count>0){world.honours.Add(new Honour{year=world.year,club=table[0].club,competition=d.id});d.clubs=table.Select(t=>t.club).ToList();}}
+            ApplyMeritRevenue(db);
             // Direct exchanges between loaded adjacent tiers. Association-specific play-offs are documented separately.
             var exchanges=new List<Tuple<Division,Division,List<string>,List<string>>>();
             if(db.pyramidRules?.Length>0){foreach(var pair in world.promotionPairs){if(!pair.complete||pair.promoted.Count!=pair.relegated.Count)throw new InvalidOperationException("Barrages incomplets.");exchanges.Add(Tuple.Create(world.divisions.First(d=>d.id==pair.upper),world.divisions.First(d=>d.id==pair.lower),pair.relegated,pair.promoted));}}

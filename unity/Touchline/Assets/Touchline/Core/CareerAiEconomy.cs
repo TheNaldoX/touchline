@@ -123,6 +123,17 @@ namespace Touchline.Core
             long expected=a.projectedRevenue-EmploymentProjection(a.projectedLeague,a.projectedGrossPayroll).Total-AnnualOperatingCosts(team,a.projectedFacilityLevels)-(long)(a.operatingDebt*.052);
             return a.cash+(long)(expected*fraction);
         }
+        // Ambition of a computer-run club (0 = prudent, 1 = owner who spends
+        // beyond revenue), stable for a club so its policy is consistent.
+        // Prudent clubs bank cash; ambitious ones push wages and fees and can
+        // end up in debt, as real clubs do.
+        const float AiTransferShareMin=.06f,AiTransferShareRange=.26f;  // transfer budget, share of annual revenue
+        const float AiCashReserveMax=.35f,AiCashReserveRange=.30f;      // cash kept back, share of annual revenue
+        const float AiWageShareMin=.55f,AiWageShareRange=.30f;          // loaded payroll ceiling, share of revenue
+        const float AiWagePremiumMin=1.0f,AiWagePremiumRange=.6f;     // renewal wage vs league reference (×)
+        const float AiOwnerStanceShare=.30f,AiOwnerStanceNeutral=.35f;   // owner stance: -10,5 % to +19,5 % of revenue (most clubs accept a small loss)
+        const float AiAmbitiousThreshold=.75f;                           // above: up to 3 signings per summer
+        public static float AiAmbition(string clubId)=>StableIdentity("ambition:"+clubId)%1001/1000f;
         long AiGrossWageCeiling(ClubData team)
         {
             var a=world.aiAccounts.FirstOrDefault(x=>x.club==team.id);
@@ -136,8 +147,11 @@ namespace Touchline.Core
                 +world.offers.Where(o=>o.destination==team.id&&(o.status=="accepted"||o.status=="scheduled")&&o.joinDay<=life.day+365).Sum(o=>o.fee);
             long cashBuffer=Math.Max(0,projectedCash-team.annualRevenue/4-AiCommitted(team.id));
             long unfundedDue=Math.Max(0,due-cashBuffer);
-            long available=Math.Max(0,team.annualRevenue-AnnualOperatingCosts(team,a.training+a.academy)-interest-repayment-team.annualRevenue*3/100-unfundedDue);
-            double loaded=Math.Min(team.annualRevenue*.55,available);
+            // An ambitious owner accepts a planned operating loss (prudent owners
+            // keep a margin): the share of revenue added or held back.
+            long ownerStance=(long)(team.annualRevenue*AiOwnerStanceShare*(AiAmbition(team.id)-AiOwnerStanceNeutral));
+            long available=Math.Max(0,team.annualRevenue-AnnualOperatingCosts(team,a.training+a.academy)-interest-repayment-team.annualRevenue*3/100-unfundedDue+ownerStance);
+            double loaded=Math.Min(team.annualRevenue*(AiWageShareMin+AiWageShareRange*AiAmbition(team.id)),available);
             return Math.Max(0,(long)(loaded*ProfessionalPersonnelShare(team.league)/(1+EmployerRatio(team.league))/52));
         }
         void CoverAiDeficit(AiClubAccount a)
@@ -178,9 +192,9 @@ namespace Touchline.Core
             protectedPlayers.UnionWith(world.offers.Where(o=>o.status=="accepted"||o.status=="scheduled"||o.status=="pending"||o.status=="sale").Select(o=>o.player));
             foreach(var team in db.clubs.OrderByDescending(t=>t.annualRevenue).ThenBy(t=>t.id,StringComparer.Ordinal)){
                 if(!eligible.Contains(team.id)||team.id==club&&world.managerStatus=="employed"||!squads.TryGetValue(team.id,out var squad))continue;
-                var account=accounts[team.id];long budget=Math.Max(0,Math.Min(team.annualRevenue*12/100,account.cash-team.annualRevenue/4-committed[team.id]));
+                var account=accounts[team.id];float ambition=AiAmbition(team.id);long budget=Math.Max(0,Math.Min((long)(team.annualRevenue*(AiTransferShareMin+AiTransferShareRange*ambition)),account.cash-(long)(team.annualRevenue*(AiCashReserveMax-AiCashReserveRange*ambition))-committed[team.id]));
                 int target=world.developmentReferences?.FirstOrDefault(r=>r.club==team.id)?.squadSize??32;
-                for(int signing=0;signing<2&&budget>0&&squad.Count<target+2;signing++){
+                for(int signing=0;signing<(ambition>AiAmbitiousThreshold?3:2)&&budget>0&&squad.Count<target+2;signing++){
                     PlayerData candidate=null;long wageCeiling=AiGrossWageCeiling(team);long squadWages=squad.Sum(x=>x.wage);
                     foreach(var weak in squad.Where(p=>p.age>22).OrderBy(p=>p.rating).GroupBy(p=>p.positions?.FirstOrDefault()??p.position).Select(g=>g.First())){
                     bool weakKeeper=weak.Goalkeeper;string role=weak.positions?.FirstOrDefault()??(weakKeeper?"GK":"CM");float minimum=weak.rating+3;

@@ -85,7 +85,7 @@ namespace Touchline.Core
                     bool newEmployment=contract==null||contract.club!=team.id;
                     if(newEmployment||contract.until<=life.day+21){
                         float level=(float)Math.Pow(1.075,p.rating-reference.rating),resources=Mathx.Clamp(team.annualRevenue/(float)reference.revenue,.45f,2);
-                        double expected=reference.wage*level*resources;if(!newEmployment)expected=Math.Max(expected,p.wage*(p.age<30?1.02:.95));
+                        double expected=reference.wage*level*resources*(AiWagePremiumMin+AiWagePremiumRange*AiAmbition(team.id));if(!newEmployment)expected=Math.Max(expected,p.wage*(p.age<30?1.02:.95));
                         double share=Math.Max(p.wage,reference.wage*level)/Math.Max(1,weights);long offer=Math.Max(250,(long)Math.Min(expected,wageCeiling*share));
                         if(!newEmployment&&p.wage>0&&offer<p.wage*.75){contract.aiRelease=true;departing.Add(p);continue;}
                         p.value=Math.Max(25000,(long)(reference.value*level*(p.age>30?.55f:1)));
