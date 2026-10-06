@@ -3,10 +3,11 @@ using System;using System.Collections.Generic;using System.IO;using System.Linq;
 // Usage : dotnet run -c Release -- [matchs=200] [graine=1] [chemin database.json]
 // Compile directement les sources de Assets/Touchline/Core : toute modification du moteur est mesurée.
 static class P{
- static string FindDatabase(){var d=new DirectoryInfo(AppContext.BaseDirectory);while(d!=null){var f=Path.Combine(d.FullName,"unity","Touchline","Assets","Touchline","Resources","Data","database.json");if(File.Exists(f))return f;d=d.Parent;}throw new FileNotFoundException("database.json introuvable : passez son chemin en 3e argument.");}
+ static string FindDatabase(){foreach(var start in new[]{Environment.CurrentDirectory,AppContext.BaseDirectory}){var d=new DirectoryInfo(start);while(d!=null){var f=Path.Combine(d.FullName,"unity","Touchline","Assets","Touchline","Resources","Data","database.json");if(File.Exists(f))return f;d=d.Parent;}}throw new FileNotFoundException("database.json introuvable : passez son chemin en 3e argument.");}
  static void Main(string[] a){
   int n=a.Length>0?int.Parse(a[0]):200;uint seed0=a.Length>1?uint.Parse(a[1]):1;string dbPath=a.Length>2?a[2]:FindDatabase();
   var db=JsonSerializer.Deserialize<Database>(File.ReadAllText(dbPath),new JsonSerializerOptions{IncludeFields=true});
+  db.Find(db.players[0].id); // construit l'index joueur une fois : Database.Find n'est pas thread-safe
   var leagues=db.leagues.Where(l=>!l.scoutingOnly&&l.tier==1).Select(l=>l.id).ToHashSet();
   var clubs=db.clubs.Where(c=>c.playable&&!c.reserve&&leagues.Contains(c.league)).ToArray();
   float Str(string club)=>db.players.Where(p=>p.team==club).OrderByDescending(p=>p.rating).Take(14).Average(p=>p.rating);
@@ -17,7 +18,7 @@ static class P{
   Parallel.For(0,n,new ParallelOptions{MaxDegreeOfParallelism=Environment.ProcessorCount},i=>{var (h,w,s)=pairs[i];res[i]=Play(db,h,w,s);res[i].diff=str[h]-str[w];});
   Report(res);
  }
- class MatchStats{public int goals,shots,onTarget,corners,fouls,yellows,reds,pens,offsides,throws,passes,completed,goalKicks,freeKicks,homeGoals,awayGoals;public float possHome,diff,xg;public bool error;public Dictionary<string,int> ph=new Dictionary<string,int>();public string err;}
+ class MatchStats{public int goals,shots,onTarget,corners,fouls,yellows,reds,pens,offsides,throws,passes,completed,goalKicks,freeKicks,homeGoals,awayGoals;public float possHome,diff,xg;public bool error;public Dictionary<string,int> ph=new Dictionary<string,int>(),ev=new Dictionary<string,int>();public string err;}
  static MatchStats Play(Database db,string home,string away,uint seed){
   var st=new MatchStats();
   try{
@@ -28,9 +29,10 @@ static class P{
    Run();sim.ResumeHalf();Run();
    st.homeGoals=m.score[0];st.awayGoals=m.score[1];st.goals=m.score[0]+m.score[1];st.shots=m.shots[0]+m.shots[1];st.passes=m.passes[0]+m.passes[1];st.completed=m.completedPasses[0]+m.completedPasses[1];
    foreach(var t in m.metrics){st.onTarget+=t.shotsOnTarget;st.corners+=t.corners;st.fouls+=t.fouls;st.offsides+=t.offsides;st.throws+=t.throwIns;st.xg+=t.xg;}
+   foreach(var e in m.events)st.ev[e.kind]=st.ev.GetValueOrDefault(e.kind)+1;
    st.yellows=m.events.Count(e=>e.kind=="yellow");st.reds=m.events.Count(e=>e.kind=="red");
    float ph=m.metrics[0].possessionSeconds,pa=m.metrics[1].possessionSeconds;st.possHome=ph+pa>0?ph/(ph+pa):.5f;
-  }catch(Exception e){st.error=true;st.err=e.GetType().Name+": "+e.Message;}
+  }catch(Exception e){st.error=true;st.err=e.GetType().Name+": "+e.Message+(Environment.GetEnvironmentVariable("CALIB_TRACE")=="1"?"\n"+e.StackTrace:"");}
   return st;
  }
  static void Report(MatchStats[] r){
@@ -44,6 +46,7 @@ static class P{
   if(fav.Length>0){double win=fav.Count(x=>x.diff>0?x.homeGoals>x.awayGoals:x.awayGoals>x.homeGoals)*100.0/fav.Length,draw=fav.Count(x=>x.homeGoals==x.awayGoals)*100.0/fav.Length;double poss=fav.Average(x=>x.diff>0?x.possHome:1-x.possHome)*100;Console.WriteLine($"\nFavori net (écart ≥ 3 pts, {fav.Length} matchs) : victoires {F(win)} %, nuls {F(draw)} %, possession {F(poss)} %");}
   Console.WriteLine($"Domicile : victoires {F(ok.Count(x=>x.homeGoals>x.awayGoals)*100.0/ok.Length)} %, nuls {F(ok.Count(x=>x.homeGoals==x.awayGoals)*100.0/ok.Length)} %");
   Console.WriteLine("\nPhases (entrées par match) : "+string.Join(", ",ok.SelectMany(x=>x.ph.Keys).Distinct().OrderBy(k=>k).Select(k=>k+" "+F(ok.Average(x=>x.ph.GetValueOrDefault(k))))));
+  if(Environment.GetEnvironmentVariable("CALIB_EVENTS")=="1")Console.WriteLine("Événements par match : "+string.Join(", ",ok.SelectMany(x=>x.ev.Keys).Distinct().OrderBy(k=>k).Select(k=>k+" "+F(ok.Average(x=>x.ev.GetValueOrDefault(k))))));
   foreach(var g in r.Where(x=>x.error).GroupBy(x=>x.err).Take(5))Console.WriteLine($"Erreur x{g.Count()} : {g.Key}");
  }
 }
