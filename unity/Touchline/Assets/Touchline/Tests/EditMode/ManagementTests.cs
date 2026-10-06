@@ -1,0 +1,42 @@
+using System;
+using System.Linq;
+using NUnit.Framework;
+using UnityEngine;
+using Touchline.Core;
+
+namespace Touchline.Tests
+{
+    public class ManagementTests
+    {
+        Database db;Career c;
+        [SetUp] public void Setup(){db=new Database{clubs=new[]{new ClubData{id="a",name="A",annualRevenue=40000000},new ClubData{id="b",name="B",annualRevenue=30000000}},players=Enumerable.Range(0,44).Select(i=>new PlayerData{id="p"+i,name="Joueur "+i,team=i<22?"a":"b",position=i%22==0?"GB":i%22<8?"DEF":i%22<14?"MIL":"ATT",positions=new[]{i%22==0?"GK":i%22<8?"CB":i%22<14?"CM":"ST"},rating=70,potential=82,age=21,wage=1000,fitness=100,morale=75}).ToArray()};c=new Career{club="a"};c.lineup=Career.Select(db,"a",c.tactic);c.EnsureLife(db);}
+        void Days(int days){c.life.nextFixture=c.life.day+days+2;c.life.training="rest";for(int i=0;i<days;i++)c.AdvanceDay(db);}
+        [TestCase(false)] [TestCase(true)] public void PartialSaveRestoresMissingFacilitiesWithoutChangingMoneyOrExistingUpgrades(bool missingList)
+        {
+            c.life.facilities=missingList?null:new System.Collections.Generic.List<Facility>{new Facility{kind="training",level=5}};
+            long cash=c.life.cash;int day=c.life.day;var lineup=c.lineup.ToArray();
+            c.EnsureLife(db);Assert.AreEqual(4,c.life.facilities.Count);Assert.Greater(c.Level("academy"),0);
+            if(!missingList)Assert.AreEqual(5,c.Level("training"));
+            c.EnsureLife(db);Assert.AreEqual(4,c.life.facilities.Count);Assert.AreEqual(cash,c.life.cash);Assert.AreEqual(day,c.life.day);CollectionAssert.AreEqual(lineup,c.lineup);
+        }
+        [Test] public void ContinueAdvancesExactlyOneCalendarDay(){var date=c.Date;c.AdvanceDay(db);Assert.AreEqual(date.AddDays(1),c.Date);Assert.AreEqual(1,c.life.day);}
+        [Test] public void OldSaveGetsManagementWithoutChangingLineup(){var lineup=c.lineup.ToArray();c.life=null;c.EnsureLife(db);CollectionAssert.AreEqual(lineup,c.lineup);Assert.Greater(c.life.cash,0);Assert.AreEqual(22,c.life.players.Count);int messages=c.life.messages.Count;c.EnsureLife(db);Assert.AreEqual(messages,c.life.messages.Count);}
+        [Test] public void CannotSkipDueOrUnfinishedMatch(){c.life.nextFixture=0;Assert.Throws<InvalidOperationException>(()=>c.AdvanceDay(db));c.life.nextFixture=6;c.match=MatchSimulation.Create(db,c,"b").State;Assert.Throws<InvalidOperationException>(()=>c.AdvanceDay(db));Assert.AreEqual(0,c.life.day);}
+        [Test] public void InjuryImmediatelyCreatesMedicalMessageAndBlocksSelection(){string id=c.lineup[9];var injury=c.OpenInjury(db,id,"muscle");Assert.AreEqual("medical",c.life.messages.Last().action);Assert.IsFalse(c.Available(id));c.PrepareLineup(db);Assert.IsFalse(c.lineup.Contains(id));Assert.Greater(injury.remaining,0);}
+        [Test] public void WrongMedicalIndicationDoesNotSpendMoney(){var injury=c.OpenInjury(db,c.lineup[9],"muscle");long cash=c.life.cash;Assert.Throws<InvalidOperationException>(()=>c.Treat(db,injury.id,"surgery"));Assert.Throws<InvalidOperationException>(()=>c.Treat(db,injury.id,"injection"));Assert.AreEqual(cash,c.life.cash);}
+        [Test] public void SurgeryRequiresConsentAndCannotBeRepeated(){var injury=c.OpenInjury(db,c.lineup[9],"ligament");injury.consent=false;Assert.Throws<InvalidOperationException>(()=>c.Treat(db,injury.id,"surgery"));injury.consent=true;c.Treat(db,injury.id,"surgery");Assert.That(injury.remaining,Is.InRange(55,80));Assert.Throws<InvalidOperationException>(()=>c.Treat(db,injury.id,"surgery"));}
+        [Test] public void InjectionDoesNotHealAndExpires(){string id=c.lineup[9];var injury=c.OpenInjury(db,id,"bruise");int days=injury.remaining;c.Treat(db,injury.id,"injection");Assert.AreEqual(days,injury.remaining);Assert.IsTrue(c.Available(id));Assert.Throws<InvalidOperationException>(()=>c.Treat(db,injury.id,"injection"));Days(2);Assert.IsFalse(c.Available(id));Assert.AreEqual(days-2,injury.remaining);}
+        [Test] public void UnansweredInjuryStartsConservativeCareThenRecovers(){var injury=c.OpenInjury(db,c.lineup[9],"bruise");int original=injury.remaining;Days(original+2);Assert.GreaterOrEqual(injury.closed,0);Assert.IsTrue(c.Available(injury.player));Assert.IsTrue(c.life.messages.Any(m=>m.subject=="Reprise progressive"));}
+        [Test] public void TalkCannotBeFarmedForMorale(){string id=c.lineup[9];c.Talk(db,id,"support",false);float morale=c.Person(id).morale;Assert.Throws<InvalidOperationException>(()=>c.Talk(db,id,"support",true));Assert.AreEqual(morale,c.Person(id).morale);}
+        [Test] public void DemandingAnInjuredPlayerDamagesTrust(){string id=c.lineup[9];c.OpenInjury(db,id,"muscle");float trust=c.Person(id).trust;c.Talk(db,id,"demand",true);Assert.Less(c.Person(id).trust,trust);}
+        [Test] public void BrokenPromiseHasConsequencesAndInjuryExtendsDeadline(){string id=c.lineup[9];c.Talk(db,id,"promise",false);int until=c.Person(id).promiseUntil;c.OpenInjury(db,id,"muscle");Days(1);Assert.AreEqual(until+1,c.Person(id).promiseUntil);c.Injury(id).remaining=1;c.Injury(id).treatment="conservative";Days(1);float trust=c.Person(id).trust;Days(24);Assert.Less(c.Person(id).trust,trust);Assert.AreEqual(-1,c.Person(id).promiseUntil);}
+        [Test] public void BoardApprovesThenConstructionMustBeFundedAndCompleted(){int old=c.Level("medical");long cash=c.life.cash;c.RequestProject("medical",true);Assert.AreEqual(cash,c.life.cash);Assert.Throws<InvalidOperationException>(()=>c.RequestProject("medical",true));Days(3);var p=c.life.projects.Single();Assert.AreEqual("approved",p.status);c.StartApprovedProject("medical");Assert.AreEqual(old,c.Level("medical"));Assert.AreEqual(cash-(p.cost-p.contribution),c.life.cash);int duration=p.due-c.life.day;Days(duration);Assert.AreEqual(old+1,c.Level("medical"));Assert.AreEqual("complete",p.status);}
+        [Test] public void NoMoneyCannotCreateUnfundedProject(){c.life.cash=0;Assert.Throws<InvalidOperationException>(()=>c.RequestProject("training",false));Assert.AreEqual(0,c.life.projects.Count);}
+        [Test] public void BetterFacilitiesImproveDevelopment(){var copy=JsonUtility.FromJson<Career>(JsonUtility.ToJson(c));copy.life.facilities.First(f=>f.kind=="training").level=5;copy.life.facilities.First(f=>f.kind=="academy").level=5;c.AdvanceDay(db);copy.AdvanceDay(db);Assert.Greater(copy.Person("p1").growth,c.Person("p1").growth);copy.Person("p1").growth=2;copy.ApplyLife(db);Assert.AreEqual(72,db.Find("p1").Attribute("shortPassing"));}
+        [Test] public void IllegalScenariosAreOptInLimitedAndDoNotGuaranteeResults(){Assert.Throws<InvalidOperationException>(()=>c.StartScheme("doping",c.lineup[9]));c.life.corruptionEnabled=true;c.StartScheme("doping",c.lineup[9]);Assert.Throws<InvalidOperationException>(()=>c.StartScheme("fixing"));Assert.AreEqual(1,c.life.investigations.Count);Assert.Greater(c.life.suspicion,0);c.life.corruptionEnabled=false;Days(30);Assert.AreNotEqual("pending",c.life.investigations[0].status);}
+        [Test] public void ManagerSuspensionDoesNotBlockCalendar(){c.life.managerBanUntil=14;Assert.Throws<InvalidOperationException>(()=>c.Talk(db,c.lineup[9],"support",false));c.AdvanceDay(db);Assert.AreEqual(1,c.life.day);}
+        [Test] public void MatchRevenueAndAppearancesAreRecordedExactlyOnce(){c.match=MatchSimulation.Create(db,c,"b").State;c.match.finished=true;c.match.clock=720;long cash=c.life.cash;c.RecordMatch(db);Assert.Greater(c.life.cash,cash);long after=c.life.cash;c.RecordMatch(db);Assert.AreEqual(after,c.life.cash);Assert.AreEqual(1,c.life.matches);Assert.AreEqual(1,c.Person(c.lineup[9]).appearances);}
+        [Test] public void ManagementStateResumesDeterministically(){c.OpenInjury(db,c.lineup[9],"muscle");c.RequestProject("medical",true);var copy=JsonUtility.FromJson<Career>(JsonUtility.ToJson(c));c.life.nextFixture=30;copy.life.nextFixture=30;for(int i=0;i<12;i++){c.AdvanceDay(db);copy.AdvanceDay(db);}Assert.AreEqual(JsonUtility.ToJson(c.life),JsonUtility.ToJson(copy.life));}
+        [Test] public void AppearancePromiseUsesActualSubstitutionMinutes(){var sim=MatchSimulation.Create(db,c,"b");c.match=sim.State;string outgoing=c.lineup[9],incoming=db.Squad("a").First(p=>!sim.State.used.Contains(p.id)).id;sim.State.clock=160;sim.Substitute(0,9,incoming);sim.State.finished=true;sim.State.clock=720;c.RecordMatch(db);Assert.AreEqual(0,c.Person(outgoing).appearances);Assert.AreEqual(1,c.Person(incoming).appearances);}
+    }
+}

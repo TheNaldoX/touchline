@@ -1,0 +1,58 @@
+# --- Unity (n'importe ou dans le depot) ---
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+.utmp/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.user
+*.pidb
+*.booproj
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+sysinfo.txt
+crashlytics-build.properties
+.vs/
+.idea/
+.vscode/
+
+# --- Sorties de build et livrables (publies dans GitHub Releases) ---
+*.apk
+*.aab
+*.apks
+*.symbols.zip
+/artifacts/
+/output/
+/build/
+
+# --- Secrets de signature : ne JAMAIS les committer ---
+*.keystore
+*.jks
+local.properties
+
+# --- Ancien prototype web / Gradle ---
+.gradle/
+node_modules/
+
+# --- Restes d'agents IA : Git garde l'historique, pas besoin de copies ---
+.codex-remote-attachments/
+**/staging/
+**/candidate-*/
+*.bak
+*.bak.cs
+*.original.cs
+*.orig
+
+# --- Systeme ---
+Thumbs.db
+desktop.ini
+.DS_Store

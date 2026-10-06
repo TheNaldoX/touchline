@@ -1,0 +1,5 @@
+The 100STYLE Dataset - Ian Mason
+Ian Mason, Sebastian Starke, Taku Komura (2022).
+https://www.ianxmason.com/100style/
+CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Changes: selected cycles, normalized skeleton scale, closed cycle seams, mirrored/blended/retargeted at runtime. The authors do not endorse Touchline.

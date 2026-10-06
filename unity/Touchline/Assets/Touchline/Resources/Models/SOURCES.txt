@@ -1,0 +1,5 @@
+Anatomical base mesh, adult targets, skin weights, male_casualsuit06 shirt and adapted shorts, low-poly eyes, short04 hair and three skin textures: MakeHuman Community, CC0.
+https://github.com/makehumancommunity/makehuman
+https://static.makehumancommunity.org/assets/assetpacks/makehuman_system_assets.html
+https://static.makehumancommunity.org/makehuman/faq/are_makehuman_files_free.html
+Converted and clothed for Touchline by scripts/build-footballer.mjs and football-garments.mjs. Textures and garment source extraction: scripts/import-human-textures.ps1; SHA-256: artifacts/human-source/texture-provenance.json. Generic bodies, not scans or verified likenesses of football players.

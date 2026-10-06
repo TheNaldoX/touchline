@@ -1,0 +1,1 @@
+{"name":"Touchline.Tests","references":["Touchline.Core","Touchline.Runtime","Touchline.Editor"],"optionalUnityReferences":["TestAssemblies"],"includePlatforms":["Editor"]}

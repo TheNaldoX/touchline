@@ -1,0 +1,1 @@
+{"name":"Touchline.Editor","rootNamespace":"Touchline.Editor","references":["Touchline.Core","Touchline.Runtime","Unity.RenderPipelines.Universal.Runtime","Unity.RenderPipelines.Universal.Editor","Unity.RenderPipelines.Core.Runtime"],"includePlatforms":["Editor"]}

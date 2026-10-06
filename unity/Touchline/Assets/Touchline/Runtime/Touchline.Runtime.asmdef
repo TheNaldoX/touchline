@@ -1,0 +1,1 @@
+{"name":"Touchline.Runtime","rootNamespace":"Touchline","references":["Touchline.Core","Unity.RenderPipelines.Universal.Runtime","Unity.RenderPipelines.Core.Runtime"]}

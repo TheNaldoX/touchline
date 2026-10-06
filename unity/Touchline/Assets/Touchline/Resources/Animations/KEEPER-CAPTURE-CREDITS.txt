@@ -1,0 +1,6 @@
+DataDivingGoalkeepers — Rafael Monteiro and collaborators (2022).
+https://doi.org/10.6084/m9.figshare.19059086
+https://github.com/rafaellmmonteiro/DataDivingGoalkeepers
+GPL-3.0. Modified positional data: landmark reconstruction, scale normalization, smoothing, extraction and retiming.
+The hand-extension landmark is not a measured ball-contact timestamp.
+Source trials and conversion script are supplied with the Touchline workspace. No endorsement by the researchers.
