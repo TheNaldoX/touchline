@@ -56,3 +56,6 @@ node_modules/
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# Outils .NET hors Unity : leurs projets sont versionnés
+!tools/**/*.csproj
