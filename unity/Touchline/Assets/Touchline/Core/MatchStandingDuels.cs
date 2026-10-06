@@ -58,6 +58,53 @@ namespace Touchline.Core
             defender.controlTime=Math.Max(defender.controlTime,TacklePreparation+.15f);
             return true;
         }
+        // A defender in reach does not lunge at every opportunity: he jockeys
+        // and commits when the ball is exposed, his instructions ask for it or
+        // his temperament pushes him. Expressed as a per-second rate so the
+        // decision does not depend on the simulation step.
+        public const float ChallengeRatePerSecond=1.2f;
+        // A lost poke from a defender in the carrier's running corridor, or
+        // arriving from behind him, often catches his stride (lateral offset
+        // under .75 m). A boot that meets the exposed ball beside the runner
+        // does not. Kept outside the penalty area: a
+        // spot kick still needs the measured trip contact above.
+        bool MistimedChallenge(Actor defender,Actor owner)
+        {
+            var m=State;float speed=owner.velocity.Length;
+            if(!m.professionalRules||speed<1.5f)return false;
+            var run=owner.velocity*(1/speed);var toDefender=defender.position-owner.position;
+            float along=Point.Dot(toDefender,run),lateral=Math.Abs(toDefender.x*run.z-toDefender.z*run.x);
+            if(along< -1f||along>1.2f||lateral>.75f)return false;
+            bool area=owner.position.x*Direction(owner.side)>36&&Math.Abs(owner.position.z)<20.16f;
+            if(area)return false;
+            float chance=Mathx.Clamp(.35f+(along<0?.15f:0)+(Skill(owner,"dribbling")-Skill(defender,"standingTackle"))*.004f
+                +(Skill(defender,"aggression")-60)*.003f+owner.velocity.Length*.025f,.10f,.65f);
+            if(Random()>=chance)return false;
+            m.metrics[defender.side].fouls++;Emit("foul",defender.side,defender.id,Data(defender).name+" accroche son adversaire.");
+            // Most such fouls are careless, not reckless.
+            if(Random()<.16f+Math.Max(0,Skill(defender,"aggression")-70)*.006f)Caution(defender.id);
+            BeginContactFall(owner,defender,true);
+            Restart("free-kick",owner.side,owner.position,3);return true;
+        }
+        // Called by the match loop before BeginStandingDuel, which stays a pure
+        // reachability check. Only rolls when a poke is physically possible.
+        bool CommitsToChallenge(Actor defender,Actor owner)
+        {
+            var b=State.ball;
+            if(Point.Distance(b.position,defender.position)>1.3f||b.height>.45f||GroundedAction(defender)||defender.action=="tackle"||defender.action=="hurt")return false;
+            bool urgent=owner.position.x*Direction(owner.side)>44&&Math.Abs(owner.position.z)<10;
+            if(urgent)return true;
+            float exposed=Point.Distance(owner.position,b.position);
+            var t=Tactic(defender.side);
+            float rate=ChallengeRatePerSecond
+                *(.55f+t.pressing*.9f)                                   // consignes : 0,55× (attentiste) à 1,45× (pressing max)
+                *(.75f+Skill(defender,"aggression")*.005f)               // tempérament : 0,75× à 1,25×
+                *(1+Math.Max(0,exposed-.45f)*2.5f);                      // ballon mal protégé : opportunité
+            bool ownBox=owner.position.x*Direction(owner.side)>36&&Math.Abs(owner.position.z)<20.16f;
+            if(ownBox)rate*=.55f; // prudence dans sa propre surface
+            if(defender.yellows>0)rate*=.6f;
+            return Random()<1-(float)Math.Exp(-rate*Step);
+        }
         bool ResolveStandingDuels(Actor owner)
         {
             var m=State;var b=m.ball;
@@ -81,7 +128,12 @@ namespace Touchline.Core
                 defender.actionTarget=b.position;defender.actionHeight=BallRadius;
                 float tackle=Mathx.Clamp(.44f+(Skill(defender,"standingTackle")-Skill(owner,"dribbling"))*.006f,.12f,.8f);
                 float foulRoll=Random();
-                if(lateContact&&foulRoll<.035f+(100-Skill(defender,"standingTackle"))*.0004f){
+                // A boot that meets the carrier's stride is usually whistled.
+                // Inside the area the original, rarer rate is kept so spot
+                // kicks stay exceptional.
+                bool inArea=owner.position.x*Direction(owner.side)>36&&Math.Abs(owner.position.z)<20.16f;
+                float tripFoul=inArea?.035f+(100-Skill(defender,"standingTackle"))*.0004f:.30f+(100-Skill(defender,"standingTackle"))*.003f;
+                if(lateContact&&foulRoll<tripFoul){
                     defender.actionTarget=committedTarget;
                     m.metrics[defender.side].fouls++;Emit("foul",defender.side,defender.id,Data(defender).name+" intervient en retard.");
                     if(m.professionalRules&&Random()<.32f)Caution(defender.id);
@@ -89,7 +141,10 @@ namespace Touchline.Core
                     BeginContactFall(owner,defender,true);
                     Restart(penalty?"penalty":"free-kick",owner.side,penalty?new Point(Direction(owner.side)*41.5f,0):owner.position,3);return true;
                 }
-                if(!ballReachable||protectedBall||Random()>=tackle)continue;
+                if(!ballReachable||protectedBall||Random()>=tackle){
+                    if(MistimedChallenge(defender,owner))return true;
+                    continue;
+                }
                 m.metrics[owner.side].pressuredLosses++;var direction=(b.position-defender.position).Normalized;
                 LooseBall(b.position,direction*(2+Random()*2),BallRadius,.4f,defender.side,defender.id);
                 BeginContactFall(owner,defender,false);owner.controlTime=Math.Max(owner.controlTime,.35f);Emit("tackle",defender.side,defender.id,Data(defender).name+" déloge le ballon.");return true;

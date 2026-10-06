@@ -37,7 +37,7 @@ namespace Touchline.Core
             if(ResolveSlidingDuels(owner)||ResolveStandingDuels(owner))return;
             foreach(var defender in m.actors){if(defender.sentOff||GroundedAction(defender)||defender.side==owner.side||defender.duelCooldown>0||owner.controlTime>0)continue;
                 if(defender.slot==0){if(InOwnArea(defender,b.position)&&Point.Distance(defender.position,b.position)<1.15f&&b.height<.8f){var claimImpact=b.position;float claimHeight=b.height;Control(defender);b.held=true;BeginRecordedKeeperClaim(defender,claimImpact,claimHeight,1);defender.duelCooldown=1.2f;m.metrics[defender.side].keeperClaims++;Emit("claim",defender.side,defender.id,Data(defender).name+" se couche dans les pieds de l’attaquant.");return;}continue;}
-                if(!BeginSlidingDuel(defender,owner))BeginStandingDuel(defender,owner);
+                if(!BeginSlidingDuel(defender,owner)&&CommitsToChallenge(defender,owner))BeginStandingDuel(defender,owner);
             }
             if(!GoalFrame())BallLeavesPitch();
         }
