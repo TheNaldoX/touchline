@@ -1,0 +1,80 @@
+# Construit l'APK Android dans le cloud (GitHub Actions + game-ci).
+# Déclenchement : pousser un tag "apk-…" (ex. apk-0.42-preview.1) ou bouton "Run workflow".
+# Secrets requis (Settings > Secrets and variables > Actions) : UNITY_LICENSE, UNITY_EMAIL, UNITY_PASSWORD.
+# Secrets conseillés (signature stable d'une version à l'autre) : ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASS.
+name: Build Android APK
+
+on:
+  push:
+    tags: ['apk-*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Vérifier les secrets Unity
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        run: |
+          missing=""
+          [ -z "$UNITY_LICENSE" ] && missing="$missing UNITY_LICENSE"
+          [ -z "$UNITY_EMAIL" ] && missing="$missing UNITY_EMAIL"
+          [ -z "$UNITY_PASSWORD" ] && missing="$missing UNITY_PASSWORD"
+          if [ -n "$missing" ]; then echo "::error::Secrets manquants :$missing (voir docs/BUILD-APK.md)"; exit 1; fi
+
+      - name: Libérer de l'espace disque
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          android: false
+          large-packages: false
+
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - name: Cache Library Unity
+        uses: actions/cache@v4
+        with:
+          path: unity/Touchline/Library
+          key: Library-Android-${{ hashFiles('unity/Touchline/Packages/packages-lock.json', 'unity/Touchline/ProjectSettings/ProjectVersion.txt') }}
+          restore-keys: Library-Android-
+
+      - name: Build Unity Android
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: unity/Touchline
+          unityVersion: 6000.3.24f1
+          targetPlatform: Android
+          buildMethod: Touchline.Editor.ProjectBuilder.AndroidCI
+          allowDirtyBuild: true
+          androidKeystoreName: touchline.keystore
+          androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          androidKeyaliasName: touchline
+          androidKeyaliasPass: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+
+      - name: Publier l'APK (artefact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Touchline-APK
+          path: unity/Touchline/build/Android/*.apk
+          if-no-files-found: error
+
+      - name: Publier l'APK (release)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Touchline ${{ github.ref_name }}
+          prerelease: true
+          files: unity/Touchline/build/Android/*.apk

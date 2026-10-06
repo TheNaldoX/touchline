@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Build de l'APK Android dans GitHub Actions (game-ci), signature stable par secrets ; version 0.42.0-preview.1 (code 35).
 - Touches : défenseurs coincés qui dégagent en touche, ballons déviés dans un angle (touches 22 → 29 par match).
 - Sauvegarde compacte : 40 Mo → 2,6 Mo au départ, 87 Mo → 5,8 Mo après une saison, rechargement identique à l'ancien format ; les anciennes sauvegardes restent lisibles.
 - Performance : simulation des journées et changement de saison ~33 % plus rapides (résultats identiques, vérifiés sur 2 saisons).

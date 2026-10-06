@@ -33,6 +33,7 @@ crashlytics-build.properties
 /artifacts/
 /output/
 /build/
+unity/Touchline/build/
 
 # --- Secrets de signature : ne JAMAIS les committer ---
 *.keystore
