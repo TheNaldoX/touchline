@@ -7,7 +7,7 @@ Une tâche = une branche = une PR. Les critères d'acceptation font foi.
 
 ## 0. Socle (à faire en premier)
 
-### T0.1 — Outil de calibration en une commande
+### T0.1 — Outil de calibration en une commande ✅ (`tools/Calibration`, hors Unity)
 Créer dans `Editor/` un menu `Touchline > Calibration` (et une méthode appelable
 en ligne de commande `-batchmode -executeMethod`) qui simule N matchs avec une
 graine fixe et écrit un tableau des statistiques par match (voir AGENTS.md).

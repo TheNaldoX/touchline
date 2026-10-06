@@ -66,7 +66,8 @@ Une PR n'est prête que si :
 
 ## Calibration du moteur
 
-Simuler au moins **200 matchs** entre équipes de niveau proche et comparer les
+Outil : `tools/Calibration` (`dotnet run -c Release -- 200 1`, voir son README).
+Simuler au moins **200 matchs** entre équipes d'un même championnat et comparer les
 moyennes **par match (deux équipes cumulées)** à ces fourchettes indicatives
 de grands championnats européens. Elles servent de garde-fous ; un écart doit
 être expliqué dans la PR.
