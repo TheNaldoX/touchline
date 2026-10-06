@@ -32,12 +32,14 @@ namespace Touchline.Core
         {
             float f=2;if(Math.Abs(to.x)>GoalExit&&to.x!=from.x)f=Math.Min(f,(Math.Sign(to.x)*GoalExit-from.x)/(to.x-from.x));if(Math.Abs(to.z)>TouchExit&&to.z!=from.z)f=Math.Min(f,(Math.Sign(to.z)*TouchExit-from.z)/(to.z-from.z));return Math.Max(0,f);
         }
+        // Deceleration (m/s²) of a ball rolling on cut grass (rolling resistance ~0,1 g).
+        public const float GroundRollDeceleration=.95f;
         void RollBall()
         {
             var b=State.ball;b.position+=b.velocity*Step;
             if(b.height>BallRadius+.002f||b.verticalVelocity>0){b.verticalVelocity-=9.81f*Step;b.height+=b.verticalVelocity*Step;if(b.height<BallRadius){b.height=BallRadius;b.verticalVelocity=-b.verticalVelocity*.38f;if(b.verticalVelocity<.45f)b.verticalVelocity=0;b.velocity=b.velocity*.83f;}}
             else{b.height=BallRadius;b.verticalVelocity=0;}
-            float drag=b.height>BallRadius+.01f?.04f:1.65f;float speed=b.velocity.Length;b.velocity=speed>drag*Step?b.velocity.Normalized*(speed-drag*Step):new Point();
+            float drag=b.height>BallRadius+.01f?.04f:GroundRollDeceleration;float speed=b.velocity.Length;b.velocity=speed>drag*Step?b.velocity.Normalized*(speed-drag*Step):new Point();
         }
         // A contested touch rarely sends the ball exactly where it was going:
         // turn a direction by up to +/- maxRadians, uniformly.
@@ -60,6 +62,11 @@ namespace Touchline.Core
                 bool direct=b.directThrow,keeper=b.keeperDistribution;var v=firstFlight?b.velocity:(b.position-b.previous)/Step;float vertical=firstFlight?ReleasedVerticalVelocity(release,global):b.verticalVelocity;LooseBall(new Point(sign*52.3f,z),new Point(-v.x*.48f,v.z*.7f+(z<0?-1:1)*1.5f),y,Math.Max(.3f,Math.Abs(vertical)*.35f),b.lastTouch,b.lastTouchId);b.directThrow=direct;b.keeperDistribution=keeper;Emit("woodwork",b.side,b.from,"Le ballon revient dans le jeu après avoir heurté le montant !");return true;}
             return false;
         }
+        // Interception deflections: ball speed (m/s) above which a stretched
+        // touch can deflect, reach (m) still controlled cleanly, extra reach (m)
+        // at which a deflection is certain for a poor reader, deflection cone
+        // and the share of speed the ball keeps.
+        const float InterceptDeflectSpeed=8f,InterceptCleanReach=.6f,InterceptStretchRange=.9f,InterceptDeflectSpread=.8f,InterceptDeflectKeep=.55f;
         bool BallLeavesPitch()
         {
             var b=State.ball;bool firstFlight=CurrentFirstReleasedFlight(out var release);var from=firstFlight?release.release:b.previous;float fx=2,fz=2;if(Math.Abs(b.position.x)>GoalExit)fx=b.position.x==from.x?0:Mathx.Clamp((Math.Sign(b.position.x)*GoalExit-from.x)/(b.position.x-from.x),0,1);if(Math.Abs(b.position.z)>TouchExit)fz=b.position.z==from.z?0:Mathx.Clamp((Math.Sign(b.position.z)*TouchExit-from.z)/(b.position.z-from.z),0,1);

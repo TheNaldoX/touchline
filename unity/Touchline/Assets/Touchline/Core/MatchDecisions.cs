@@ -173,7 +173,11 @@ Actor best=null;float bestScore=-100;string kind="pass";
  // A long aerial ball is much harder to land on a team-mate than a pass
  // along the ground: its error is scaled by LongBallError.
  float error=(1-skill/105)*(Random()-.5f)*(Math.Min(14,d*.30f)+pressure*2+Tactic(from.side).tempo*2)*(kind=="switch"||d>30&&kind!="cross"?LongBallError:1);  
- var end=PassTarget(from,to,kind)+new Point(error,error*(Random()<.5f?-1:1));end.x=Mathx.Clamp(end.x,-54,54);end.z=Mathx.Clamp(end.z,-35,35);  
+ var end=PassTarget(from,to,kind)+new Point(error,error*(Random()<.5f?-1:1));
+ // A lofted long ball is judged on its length: weight it wrongly and it
+ // sails long (more often than short) and can carry over the touchline.
+ if(kind=="switch"||d>30&&kind!="cross"){var along=(end-from.position).Normalized;end+=along*((1-skill/105)*(Random()-LongBallOverhitBias)*d*LongBallLengthError);}
+ end.x=Mathx.Clamp(end.x,-54,54);end.z=Mathx.Clamp(end.z,-35,35);  
  Flight(from,to,kind,end,kind=="cross"&&!low?1.6f:.11f,duration,kind=="cross"?(low?.12f:tactic.crossing=="floated"?5:3.5f):kind=="throw"?1.5f:d>30?4:.08f);State.passes[from.side]++;  
  var metrics=State.metrics[from.side];metrics.passDistance+=d;metrics.forwardPassDistance+=(end.x-from.position.x)*Direction(from.side);if(d>27)metrics.longPasses++;if(kind=="cross"||kind=="cutback")metrics.crosses++;if(kind=="through")metrics.throughBalls++;  
  if(kind=="cross"){if(low)metrics.lowCrosses++;else metrics.aerialCrosses++;}  
@@ -220,6 +224,9 @@ Actor best=null;float bestScore=-100;string kind="pass";
  // A clearance stays in play only through a clearly open long channel.
  public const float OpenClearanceSafety=.75f;
  public const float LongBallError=2.2f;
+ // Length error of a long aerial ball, as a fraction of its distance for a
+ // 0-rated passer; the bias (0–1) below 0.5 makes overhitting more common.
+ public const float LongBallLengthError=.8f,LongBallOverhitBias=.35f;
  void Shoot(Actor p,bool header=false,bool penalty=false,bool freeKick=false)  
  {  
  float approachFacing=p.angle;  

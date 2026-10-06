@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Ballon libre qui roule plus loin (1,65 → 0,95 m/s²), longs ballons trop appuyés, interceptions déviées : touches 29 → 35 par match.
 - Appels en profondeur et passeur qui lit la ligne avec retard : hors-jeu 1,6 → 3,2 par match, passes en profondeur 1,1 → 9,5.
 - Build de l'APK Android dans GitHub Actions (game-ci), signature stable par secrets ; version 0.42.0-preview.1 (code 35).
 - Touches : défenseurs coincés qui dégagent en touche, ballons déviés dans un angle (touches 22 → 29 par match).

@@ -139,6 +139,10 @@ namespace Touchline.Core
                 hit.controlTime=.45f;hit.action="block";hit.actionTime=.45f;hit.actionKind="clearance";hit.actionTarget=impact;hit.actionHeight=impactHeight;hit.actionSequence++;
                 Emit("clearance",hit.side,hit.id,Data(hit).name+" écarte le centre sous la pression.");return true;
             }
+            // A defender stretching across a fast pass often only gets a toe or
+            // a shin to it: the ball deflects on, contestable, and may run out.
+            if(intercept&&hit.slot>0&&speed>InterceptDeflectSpeed){float reach=Point.Distance(hit.position,impact);float stretch=Mathx.Clamp((reach-InterceptCleanReach)/InterceptStretchRange,0,1);
+                if(stretch>0&&Random()<stretch*(1.15f-Skill(hit,"interceptions")*.01f)){var direction=Deflect(b.velocity.Normalized,InterceptDeflectSpread);LooseBall(impact,direction*speed*InterceptDeflectKeep,impactHeight,.3f,hit.side,hit.id);hit.controlTime=.35f;hit.action="block";hit.actionTime=.35f;hit.actionKind="clearance";hit.actionTarget=impact;hit.actionHeight=impactHeight;hit.actionSequence++;Emit("interception",hit.side,hit.id,Data(hit).name+" dévie la passe.");return true;}}
             float difficulty=FirstTouchError(hit,speed,Space(hit.position,1-hit.side));
             // Calibrated so a match has ~40-50 heavy touches, not one in six receptions.
             if(speed>7&&Random()<difficulty*MiscontrolRate){var direction=Deflect(b.velocity.Normalized,HeavyTouchSpread);LooseBall(impact,direction*(2.3f+difficulty*2.5f),impactHeight,.45f,hit.side,hit.id);hit.controlTime=.4f;hit.actionTarget=impact;hit.actionHeight=impactHeight;hit.actionSequence++;hit.action="miscontrol";hit.actionTime=.4f;State.metrics[hit.side].miscontrols++;Emit("miscontrol",hit.side,hit.id,Data(hit).name+" laisse échapper son contrôle.");return true;}
