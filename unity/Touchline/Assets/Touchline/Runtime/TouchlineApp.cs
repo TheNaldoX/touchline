@@ -52,7 +52,12 @@ namespace Touchline
             if(!careerSelected||launchMenuVisible)return;
             SaveRequestCount++;queuedPreferenceSave=false;lastCareerSaveSucceeded=false;
             if(VisualValidation&&!LaunchMenuValidation){lastCareerSaveSucceeded=true;return;}
-            try{LaunchCareerStorage.Write(SavePath,JsonUtility.ToJson(Career),validatedPrimary);validatedPrimary=true;primaryValidatedAt=File.GetLastWriteTimeUtc(SavePath);lastCareerSaveSucceeded=true;}
+            try{
+                // Compact format: only what the career changed is written (a few
+                // MB instead of 40-90 MB). The live lists are put back right after.
+                string json;bool compact=Career.PrepareCompactSave();
+                try{json=JsonUtility.ToJson(Career);}finally{if(compact)Career.RestoreAfterSave();}
+                LaunchCareerStorage.Write(SavePath,json,validatedPrimary);validatedPrimary=true;primaryValidatedAt=File.GetLastWriteTimeUtc(SavePath);lastCareerSaveSucceeded=true;}
             catch(Exception error){Debug.LogWarning("Échec de sauvegarde : "+error.Message);}
         }
         void Navigate(string destination){if(launchMenuVisible||!careerSelected||delegatingMatch)return;bool hadMatch=Career.match!=null;RecordNavigation(destination);if(arena!=null)arena.Paused=true;if(destination!="Match")CloseFinishedMatch();page=destination;Build();if(hadMatch||queuedPreferenceSave)Save();}

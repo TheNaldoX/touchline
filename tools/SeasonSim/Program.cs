@@ -12,8 +12,12 @@ static class P{
  static int Main(string[] a){
   int seasons=a.Length>0&&int.TryParse(a[0],out var s)?s:3;string club=a.Length>1&&!a[1].StartsWith("--")?a[1]:"176";bool engine=a.Contains("--engine"),worldOnly=a.Contains("--world");
   int si=Array.IndexOf(a,"--seed");uint seed=si>=0?uint.Parse(a[si+1]):1;
-  var db=JsonSerializer.Deserialize<Database>(File.ReadAllText(FindDatabase()),new JsonSerializerOptions{IncludeFields=true});
-  var c=new Career{club=club};c.lineup=Career.Select(db,club,c.tactic);c.EnsureLife(db);c.EnsureWorld(db);
+  bool saveCheck=a.Contains("--savecheck");string dbText=File.ReadAllText(FindDatabase());
+  // --savecheck : base lue comme dans Unity (JsonUtility simulé), pour comparer les formats de sauvegarde à l'identique.
+  var db=saveCheck?UnityEngine.JsonUtility.FromJson<Database>(dbText):JsonSerializer.Deserialize<Database>(dbText,new JsonSerializerOptions{IncludeFields=true});
+  // Comme le jeu : empreinte prise sur la base elle-même, avant que la carrière la modifie.
+  SaveBaseline baseline=saveCheck?SaveBaseline.From(db):null;
+  var c=new Career{club=club,saveBaseline=baseline};c.lineup=Career.Select(db,club,c.tactic);c.EnsureLife(db);c.EnsureWorld(db);
   // --world : personne ne dirige le club, l'IA gère tous les effectifs (observation du monde seul).
   if(worldOnly){c.world.managerStatus="unemployed";c.life.nextFixture=int.MaxValue;}
   var simFixture=typeof(Career).GetMethod("SimulateFixture",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic);
@@ -46,6 +50,7 @@ static class P{
   if(snapshots.Last().day!=c.life.day)snapshots.Add(Snap(db,c));
   Console.WriteLine($"{matches} matchs joués par le club, {sw.Elapsed.TotalSeconds:0} s\n");
   Report(db,c,snapshots);
+  if(saveCheck)return SaveCheck(c,dbText);
   if(a.Contains("--savesize")){var t=System.Diagnostics.Stopwatch.StartNew();var json=UnityEngine.JsonUtility.ToJson(c);{var f1=Environment.GetEnvironmentVariable("CALIB_SAVEFILE");if(f1!=null)File.WriteAllText(f1+".end.json",json);}Console.WriteLine($"\nTaille de sauvegarde (format Unity) : {json.Length/1e6:0.0} Mo, sérialisée en {t.ElapsedMilliseconds} ms ; rosterChanges : {c.world.rosterChanges.Count} joueurs, contrats : {c.world.contracts.Count}, messages : {c.life.messages.Count}");}
   int di=Array.IndexOf(a,"--dump");if(di>=0)File.WriteAllLines(a[di+1],c.world.aiTransfers.Select(t=>t.year+" "+t.player+" "+t.seller+">"+t.buyer+" "+t.fee+" "+t.wage).Concat(db.players.OrderBy(p=>p.id,StringComparer.Ordinal).Select(p=>p.id+" "+p.team+" "+p.rating.ToString("R",CultureInfo.InvariantCulture)+" "+p.wage)));
   return 0;
@@ -58,6 +63,23 @@ static class P{
   foreach(var cl in db.clubs.Where(x=>x.playable)){var q=db.Squad(cl.id).ToArray();s.aiSquad[cl.id]=q.Length;s.aiStrength[cl.id]=q.Length==0?0:(float)q.OrderByDescending(p=>p.rating+p.development).Take(14).Average(p=>p.rating+p.development);}
   var wages=db.players.Where(p=>p.team!=null&&p.wage>0).Select(p=>p.wage).OrderBy(x=>x).ToArray();s.wageMedian=wages.Length>0?wages[wages.Length/2]:0;
   s.free=db.players.Count(p=>string.IsNullOrEmpty(p.team));s.transfers=c.world.aiTransfers?.Count??0;return s;
+ }
+ static int SaveCheck(Career c,string dbText){
+  var J=(Func<object,string>)(o=>UnityEngine.JsonUtility.ToJson(o));var sw=System.Diagnostics.Stopwatch.StartNew();
+  string full=J(c);long tFull=sw.ElapsedMilliseconds;sw.Restart();
+  for(int warm=0;warm<2;warm++){if(c.PrepareCompactSave())c.RestoreAfterSave();}var swp=System.Diagnostics.Stopwatch.StartNew();bool packed=c.PrepareCompactSave();Console.WriteLine($"Compactage seul : {swp.ElapsedMilliseconds} ms");string compact;try{compact=J(c);var dump=Environment.GetEnvironmentVariable("CALIB_SAVEFILE");if(dump!=null)File.WriteAllText(dump,compact);}finally{if(packed)c.RestoreAfterSave();}long tCompact=sw.ElapsedMilliseconds;
+  Console.WriteLine($"\nFormat complet : {full.Length/1e6:0.00} Mo ({tFull} ms) — format compact : {compact.Length/1e6:0.00} Mo ({tCompact} ms, compactage inclus)");
+  if(!packed){Console.WriteLine("ÉCHEC : compactage non appliqué");return 1;}
+  if(J(c)!=full){Console.WriteLine("ÉCHEC : l'état en mémoire a changé après la sauvegarde");return 1;}
+  Database Load(string text,out Career state){state=UnityEngine.JsonUtility.FromJson<Career>(text);var pristine=UnityEngine.JsonUtility.FromJson<Database>(dbText);if(!CareerSaveRestore.TryRestore(pristine,state,out var restored)){var probe=UnityEngine.JsonUtility.FromJson<Career>(text);var p2=UnityEngine.JsonUtility.FromJson<Database>(dbText);try{probe.ExpandCompactSave(p2);probe.RestoreWorld(p2);Console.WriteLine("lineup: "+string.Join(",",probe.lineup.Select(id=>id+"="+p2.Find(id)?.team))+" club "+probe.club);}catch(Exception e){Console.WriteLine(e);}throw new Exception("Restauration refusée");}return restored;}
+  sw.Restart();var dbOld=Load(full,out var oldState);long lOld=sw.ElapsedMilliseconds;sw.Restart();var dbNew=Load(compact,out var newState);long lNew=sw.ElapsedMilliseconds;
+  Console.WriteLine($"Chargement (désérialisation + restauration) : complet {lOld} ms, compact {lNew} ms");
+  int diffs=0;string a1=J(oldState),a2=J(newState);if(a1!=a2){diffs++;int i=0;while(i<a1.Length&&i<a2.Length&&a1[i]==a2[i])i++;Console.WriteLine($"ÉCHEC carrière différente à {i} : …{a1.Substring(Math.Max(0,i-120),Math.Min(240,a1.Length-Math.Max(0,i-120)))}\n  vs …{a2.Substring(Math.Max(0,i-120),Math.Min(240,a2.Length-Math.Max(0,i-120)))}");}
+  if(dbOld.players.Length!=dbNew.players.Length){diffs++;Console.WriteLine("ÉCHEC nombre de joueurs");}
+  else for(int i=0;i<dbOld.players.Length&&diffs<5;i++){string p1=J(dbOld.players[i]),p2=J(dbNew.players[i]);if(p1!=p2){diffs++;Console.WriteLine("ÉCHEC joueur "+dbOld.players[i].id+"\n  "+p1.Substring(0,Math.Min(300,p1.Length))+"\n  "+p2.Substring(0,Math.Min(300,p2.Length)));}}
+  if(J(dbOld.clubs)!=J(dbNew.clubs)){}
+  Console.WriteLine(diffs==0?"Rechargement identique : carrière et "+dbNew.players.Length+" joueurs, ancien format = format compact.":"Différences : "+diffs);
+  return diffs==0?0:1;
  }
  static long GetLong(object o,string name){var f=o.GetType().GetField(name);return f==null?0:Convert.ToInt64(f.GetValue(o));}
  static void Report(Database db,Career c,List<Snapshot> snaps){

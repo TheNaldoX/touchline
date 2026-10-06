@@ -18,3 +18,5 @@ Options de diagnostic :
 - `--dump fichier` écrit transferts IA et état de chaque joueur : deux versions du Core doivent
   produire des fichiers identiques après une optimisation « sans effet » (`cmp`).
 - `--savesize` mesure la sauvegarde au format `JsonUtility` (via `tools/CoreTests/UnityShim.cs`).
+- `--savecheck` écrit la carrière dans l'ancien format et dans le format compact, recharge les deux
+  et vérifie qu'ils donnent exactement la même carrière et les mêmes joueurs ; affiche tailles et temps.

@@ -30,6 +30,12 @@ namespace Touchline.Core
         public List<TransferOffer> offers=new List<TransferOffer>();public List<YouthPath> youth=new List<YouthPath>();
         public List<CommercialDeal> sponsors=new List<CommercialDeal>();public List<PressAppearance> press=new List<PressAppearance>();
         public int ticket=30,capacity=25000,lastTicketDay=-7;public long debt,transferSpent;public float supporterTrust=70;
+        // Compact save (CompactSave.cs). Filled only while a save is written
+        // and emptied again when it is loaded: rosterChanges, contracts and
+        // fixtures are the live lists. compactFormat 0 = former, complete format.
+        public int compactFormat;public List<string> compactPlayerSchema=new List<string>(),compactContractSchema=new List<string>(),compactFixtureSchema=new List<string>();
+        public List<string> compactRoster=new List<string>(),compactContracts=new List<string>(),compactFixtures=new List<string>(),compactStrings=new List<string>(),compactAttributeKeys=new List<string>();
+        public List<PlayerData> compactFullPlayers=new List<PlayerData>();public List<Employment> compactFullContracts=new List<Employment>();public List<Fixture> compactFullFixtures=new List<Fixture>();
     }
     public partial class Career
     {
