@@ -31,7 +31,7 @@ namespace Touchline.Core
                     if(bx>22&&slot.duty=="attack"){q.x=Math.Min(48,Math.Max(q.x,bx+7));p.intent="run-behind";}
                     if(owner!=null&&p!=owner&&slot.duty=="support"&&Point.Distance(p.position,owner.position)<18&&Safety(owner,p.position)<.45f){float lateral=p.position.z>=owner.position.z?1:-1;q.z+=lateral*3.5f*dir;q.x=Math.Min(q.x,bx+5);p.intent="show-for-pass";}
                     DeliverySupport(p,owner,ref q);
-                    if(owner!=null&&p!=owner)q.x=Math.Min(q.x,OffsideLine(p.side)-.9f);
+                    if(owner!=null&&p!=owner&&!RunBehind(p,owner,slot.duty,ref q))q.x=Math.Min(q.x,OffsideLine(p.side)-.9f);
                 }
                 q=q*dir;
                 if(p.slot==0){p.intent="keeper";q=KeeperTarget(p);}

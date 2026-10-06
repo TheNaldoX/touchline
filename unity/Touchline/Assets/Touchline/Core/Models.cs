@@ -142,6 +142,7 @@ namespace Touchline.Core
         public string id; public int side, slot; public Point position, velocity, previous;
         public float angle, stride, actionTime, fitness=100;
         public float duelCooldown, controlTime, diveSide=1;
+        public float runBehind; // secondes restantes d'un appel en profondeur
         public Point carryTarget,actionTarget;public float actionHeight=.11f,actionContactTime;public int actionSequence;
         public string actionKind;
         public string tackleOpponent;

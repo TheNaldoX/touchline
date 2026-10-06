@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Appels en profondeur et passeur qui lit la ligne avec retard : hors-jeu 1,6 → 3,2 par match, passes en profondeur 1,1 → 9,5.
 - Build de l'APK Android dans GitHub Actions (game-ci), signature stable par secrets ; version 0.42.0-preview.1 (code 35).
 - Touches : défenseurs coincés qui dégagent en touche, ballons déviés dans un angle (touches 22 → 29 par match).
 - Sauvegarde compacte : 40 Mo → 2,6 Mo au départ, 87 Mo → 5,8 Mo après une saison, rechargement identique à l'ancien format ; les anciennes sauvegardes restent lisibles.
