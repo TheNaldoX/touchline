@@ -109,19 +109,25 @@ Actor best=null;float bestScore=-100;string kind="pass";
  // In the crossing zone a wide player delivers rather than dribbling to
  // the byline every time; good crossers more readily.
  if(p.slot>0&&Math.Abs(p.position.z)>17&&p.position.x*dir>25&&kind=="cross")carryScore-=3+(Skill(p,"crossing")-60)*.06f;
+ // Safety first: a pressed defender in his own third, or a full-back
+ // pinned on his own touchline, does not gamble on a risky pass.
+ bool pinned=p.slot>0&&pressure<ClearancePressure&&(p.position.x*dir< -26||p.position.x*dir<0&&Math.Abs(p.position.z)>20);
+ if(pinned&&best!=null&&Safety(p,PassTarget(p,best,kind))<PinnedPassSafety)return Clear(p,dir);
  if(best!=null&&(p.slot==0||bestScore>carryScore)){if(BeginFootDeliveryPreparation(p,PassTarget(p,best,kind),kind))return "prepare";Pass(p,best,kind);return kind;}  
- // A pressed defender in his own third with no safe pass clears: long
- // upfield when that channel is open, otherwise over the touchline.
- if(p.slot>0&&p.position.x*dir<-26&&pressure<ClearancePressure&&(best==null||Safety(p,PassTarget(p,best,kind))<.6f)){
+ if(p.slot>0&&p.position.x*dir<-26&&pressure<ClearancePressure&&(best==null||Safety(p,PassTarget(p,best,kind))<.6f))return Clear(p,dir);
+ if(p.slot==0&&(m.carryTime>2||pressure<3)){Flight(p,null,"clearance",new Point(dir*8,Math.Sign(p.position.z+.01f)*27),.11f,2.6f,8);Emit("clearance",p.side,p.id,Data(p).name+" allonge pour sortir du pressing.");return "clearance";}  
+ return "carry";  
+ }  
+ // A pressed defender clears: long upfield when that channel is open,
+ // otherwise over the nearest touchline.
+ string Clear(Actor p,int dir)
+ {
  float flank=p.position.z>=0?1:-1;var upfield=new Point(Mathx.Clamp(p.position.x+dir*28,-48,48),flank*26);
- bool open=Safety(p,upfield,true)>.5f;var target=open?upfield:new Point(Mathx.Clamp(p.position.x+dir*16,-48,48),flank*36);
+ bool open=Safety(p,upfield,true)>OpenClearanceSafety;var target=open?upfield:new Point(Mathx.Clamp(p.position.x+dir*16,-48,48),flank*36);
  Flight(p,null,"clearance",target,.11f,2.0f,3.5f);
  Emit("clearance",p.side,p.id,Data(p).name+(open?" allonge pour écarter le danger.":" dégage en touche."));
  return "clearance";
  }
- if(p.slot==0&&(m.carryTime>2||pressure<3)){Flight(p,null,"clearance",new Point(dir*8,Math.Sign(p.position.z+.01f)*27),.11f,2.6f,8);Emit("clearance",p.side,p.id,Data(p).name+" allonge pour sortir du pressing.");return "clearance";}  
- return "carry";  
- }  
  Point ChooseCarry(Actor p)  
  {  
  var dir=Direction(p.side);var tactic=Tactic(p.side);var slot=tactic.withBall[p.slot];Point best=p.position;float bestScore=-100;  
@@ -162,7 +168,9 @@ Actor best=null;float bestScore=-100;string kind="pass";
  bool low=kind=="cross"&&LowCross(from,to);var tactic=Tactic(from.side);  
  float d=Point.Distance(from.position,to.position);float duration=Math.Max(.3f,d/DeliverySpeed(from,to,kind));  
  float skill=Skill(from,kind=="cross"?"crossing":d>27?"longPassing":"shortPassing");float pressure=Math.Max(0,3-Space(from.position,1-from.side));  
- float error=(1-skill/105)*(Random()-.5f)*(Math.Min(14,d*.30f)+pressure*2+Tactic(from.side).tempo*2);  
+ // A long aerial ball is much harder to land on a team-mate than a pass
+ // along the ground: its error is scaled by LongBallError.
+ float error=(1-skill/105)*(Random()-.5f)*(Math.Min(14,d*.30f)+pressure*2+Tactic(from.side).tempo*2)*(kind=="switch"||d>30&&kind!="cross"?LongBallError:1);  
  var end=PassTarget(from,to,kind)+new Point(error,error*(Random()<.5f?-1:1));end.x=Mathx.Clamp(end.x,-54,54);end.z=Mathx.Clamp(end.z,-35,35);  
  Flight(from,to,kind,end,kind=="cross"&&!low?1.6f:.11f,duration,kind=="cross"?(low?.12f:tactic.crossing=="floated"?5:3.5f):kind=="throw"?1.5f:d>30?4:.08f);State.passes[from.side]++;  
  var metrics=State.metrics[from.side];metrics.passDistance+=d;metrics.forwardPassDistance+=(end.x-from.position.x)*Direction(from.side);if(d>27)metrics.longPasses++;if(kind=="cross"||kind=="cutback")metrics.crosses++;if(kind=="through")metrics.throughBalls++;  
@@ -204,7 +212,12 @@ Actor best=null;float bestScore=-100;string kind="pass";
  public const float ShotSpreadExponent=1.6f;
  // Distance (m) of the nearest opponent under which a defender without a
  // safe pass clears instead of carrying out of his own third.
- public const float ClearancePressure=2.2f;
+ public const float ClearancePressure=3f;
+ // Below this lane safety a pinned defender clears rather than passes.
+ public const float PinnedPassSafety=.7f;
+ // A clearance stays in play only through a clearly open long channel.
+ public const float OpenClearanceSafety=.75f;
+ public const float LongBallError=2.2f;
  void Shoot(Actor p,bool header=false,bool penalty=false,bool freeKick=false)  
  {  
  float approachFacing=p.angle;  

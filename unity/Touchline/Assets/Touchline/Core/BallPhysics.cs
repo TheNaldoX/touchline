@@ -39,6 +39,14 @@ namespace Touchline.Core
             else{b.height=BallRadius;b.verticalVelocity=0;}
             float drag=b.height>BallRadius+.01f?.04f:1.65f;float speed=b.velocity.Length;b.velocity=speed>drag*Step?b.velocity.Normalized*(speed-drag*Step):new Point();
         }
+        // A contested touch rarely sends the ball exactly where it was going:
+        // turn a direction by up to +/- maxRadians, uniformly.
+        Point Deflect(Point direction,float maxRadians)
+        {
+            float a=(Random()*2-1)*maxRadians,c=(float)Math.Cos(a),s=(float)Math.Sin(a);
+            return new Point(direction.x*c-direction.z*s,direction.x*s+direction.z*c);
+        }
+        public const float PokeSpread=.7f,HeavyTouchSpread=.6f; // radians (~40 deg, ~35 deg)
         void LooseBall(Point position,Point velocity,float height,float vertical,int side,string player=null)
         {
             State.ball.held=false;State.ball.keeperDistribution=false;

@@ -141,7 +141,7 @@ namespace Touchline.Core
             }
             float difficulty=FirstTouchError(hit,speed,Space(hit.position,1-hit.side));
             // Calibrated so a match has ~40-50 heavy touches, not one in six receptions.
-            if(speed>7&&Random()<difficulty*MiscontrolRate){var direction=b.velocity.Normalized;LooseBall(impact,direction*(2.3f+difficulty*2.5f),impactHeight,.45f,hit.side,hit.id);hit.controlTime=.4f;hit.actionTarget=impact;hit.actionHeight=impactHeight;hit.actionSequence++;hit.action="miscontrol";hit.actionTime=.4f;State.metrics[hit.side].miscontrols++;Emit("miscontrol",hit.side,hit.id,Data(hit).name+" laisse échapper son contrôle.");return true;}
+            if(speed>7&&Random()<difficulty*MiscontrolRate){var direction=Deflect(b.velocity.Normalized,HeavyTouchSpread);LooseBall(impact,direction*(2.3f+difficulty*2.5f),impactHeight,.45f,hit.side,hit.id);hit.controlTime=.4f;hit.actionTarget=impact;hit.actionHeight=impactHeight;hit.actionSequence++;hit.action="miscontrol";hit.actionTime=.4f;State.metrics[hit.side].miscontrols++;Emit("miscontrol",hit.side,hit.id,Data(hit).name+" laisse échapper son contrôle.");return true;}
             if(!intercept&&pass)State.completedPasses[hit.side]++;b.position=impact;b.height=impactHeight;Control(hit);if(intercept)Emit("interception",hit.side,hit.id,Data(hit).name+" coupe la trajectoire.");return true;
         }
         public const float MiscontrolRate=.15f;

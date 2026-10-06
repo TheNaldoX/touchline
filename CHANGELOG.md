@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Touches : défenseurs coincés qui dégagent en touche, ballons déviés dans un angle (touches 22 → 29 par match).
 - Sauvegarde compacte : 40 Mo → 2,6 Mo au départ, 87 Mo → 5,8 Mo après une saison, rechargement identique à l'ancien format ; les anciennes sauvegardes restent lisibles.
 - Performance : simulation des journées et changement de saison ~33 % plus rapides (résultats identiques, vérifiés sur 2 saisons).
 - Gestion : un club dont les contrats ont expiré n'est plus bloqué le jour du match ; le centre de formation complète l'effectif (16 joueurs, gardien d'abord) et une alerte prévient quand l'effectif devient court.
