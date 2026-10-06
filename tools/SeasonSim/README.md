@@ -13,3 +13,8 @@ dotnet run -c Release -- 6 176 --world    # personne ne dirige : l'IA gère tous
 Le club est géré « passivement » : aucune prolongation, aucun recrutement. C'est ce qui a révélé
 le blocage corrigé par `SquadSafetyNet` (contrats tous expirés → plus de onze → impossible de
 jouer ou d'avancer). Compter ~1 minute par saison.
+
+Options de diagnostic :
+- `--dump fichier` écrit transferts IA et état de chaque joueur : deux versions du Core doivent
+  produire des fichiers identiques après une optimisation « sans effet » (`cmp`).
+- `--savesize` mesure la sauvegarde au format `JsonUtility` (via `tools/CoreTests/UnityShim.cs`).

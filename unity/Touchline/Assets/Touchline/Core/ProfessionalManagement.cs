@@ -12,7 +12,21 @@ namespace Touchline.Core
     [Serializable] public class PressAppearance { public string fixture,phase,answer;public int day; }
     public partial class Career
     {
-        void SavePlayer(PlayerData p){CloseMedicalResponsibilitiesForPlayer(p);int index=world.rosterChanges.FindIndex(x=>x.id==p.id);if(index<0)world.rosterChanges.Add(p);else world.rosterChanges[index]=p;}
+        void SavePlayer(PlayerData p){CloseMedicalResponsibilitiesForPlayer(p);int index=RosterChangeIndex(p.id);if(index<0){world.rosterChanges.Add(p);rosterIndex[p.id]=world.rosterChanges.Count-1;rosterIndexCount=world.rosterChanges.Count;}else world.rosterChanges[index]=p;}
+        // After the first season every player is in rosterChanges (~20 000):
+        // keep the first index of each id instead of scanning the list on each
+        // save. Rebuilt whenever the list is replaced or changes length elsewhere.
+        [NonSerialized] Dictionary<string,int> rosterIndex;[NonSerialized] List<PlayerData> rosterIndexSource;[NonSerialized] int rosterIndexCount;
+        int RosterChangeIndex(string id)
+        {
+            var list=world.rosterChanges;
+            if(rosterIndex==null||!ReferenceEquals(rosterIndexSource,list)||rosterIndexCount!=list.Count){
+                rosterIndexSource=list;rosterIndexCount=list.Count;rosterIndex=new Dictionary<string,int>(list.Count);
+                for(int i=0;i<list.Count;i++)if(list[i]?.id!=null&&!rosterIndex.ContainsKey(list[i].id))rosterIndex[list[i].id]=i;
+            }
+            if(rosterIndex.TryGetValue(id,out int index)&&index<list.Count&&list[index]?.id==id)return index;
+            index=list.FindIndex(x=>x.id==id);if(index>=0)rosterIndex[id]=index;return index;
+        }
         public Employment Contract(Database db,string id)
         {
             var found=LookupEmployment(id);if(found!=null)return found;

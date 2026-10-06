@@ -167,7 +167,10 @@ namespace Touchline.Core
                 if(old!=f.day){f.published=false;f.source="Date réaménagée par le jeu";SyncFriendlyDate(f,old);}booked[f.home].Add(f.day);booked[f.away].Add(f.day);
             }
         }
-        float Strength(Database db,string id){var players=db.Squad(id).Where(p=>p.unavailableDays<=0).OrderByDescending(p=>p.rating+p.development).Take(11).ToArray();return players.Length==0?30:(float)players.Average(p=>(p.rating+p.development)*(.85f+p.fitness*.0015f));}
+        // Set only while a day's fixtures are simulated: one grouping of the
+        // ~20 000 players instead of one full scan per club and fixture.
+        [NonSerialized] Dictionary<string,List<PlayerData>> fixtureDaySquads;
+        float Strength(Database db,string id){var players=(fixtureDaySquads!=null?(fixtureDaySquads.TryGetValue(id,out var squad)?squad:new List<PlayerData>()):db.Squad(id)).Where(p=>p.unavailableDays<=0).OrderByDescending(p=>p.rating+p.development).Take(11).ToArray();return players.Length==0?30:(float)players.Average(p=>(p.rating+p.development)*(.85f+p.fitness*.0015f));}
         int Poisson(float mean){float limit=(float)Math.Exp(-mean),p=1;int n=0;do{n++;p*=Roll();}while(p>limit&&n<12);return n-1;}
         public void SimulateFixture(Database db,Fixture f)
         {
@@ -185,7 +188,10 @@ namespace Touchline.Core
         void WorldDay(Database db)
         {
             if(world==null)return;
-            foreach(var f in world.fixtures.Where(f=>!f.played&&f.day<=life.day&&(world.managerStatus!="employed"||f.home!=club&&f.away!=club)).OrderBy(f=>f.day).ToArray()){SimulateFixture(db,f);if(f.home==club)Account(GateIncome(),"Billetterie • match dirigé par le successeur");}
+            var due=world.fixtures.Where(f=>!f.played&&f.day<=life.day&&(world.managerStatus!="employed"||f.home!=club&&f.away!=club)).OrderBy(f=>f.day).ToArray();
+            if(due.Length>0)fixtureDaySquads=db.players.GroupBy(p=>p.team??"").ToDictionary(g=>g.Key,g=>g.ToList());
+            try{foreach(var f in due){SimulateFixture(db,f);if(f.home==club)Account(GateIncome(),"Billetterie • match dirigé par le successeur");}}
+            finally{fixtureDaySquads=null;}
             ProgressCups();ProgressPyramid(db);PreseasonDay(db);ResolveCalendar();ManagementDay(db);
             if(life.day>=world.seasonEnd&&world.fixtures.Where(f=>f.league!="friendly"||f.day<=life.day).All(f=>f.played)&&world.cups.All(c=>c.finished))NewSeason(db);
             var next=NextFixture();life.nextFixture=world.managerStatus=="employed"&&next!=null?next.day:int.MaxValue;

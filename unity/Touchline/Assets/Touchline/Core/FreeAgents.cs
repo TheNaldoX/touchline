@@ -9,6 +9,9 @@ namespace Touchline.Core
     public partial class Career
     {
         public bool freeAgentsImported;
+        // Session cache: the legacy keeper-attribute repair below is a no-op once
+        // applied, and only the import can add such keepers again.
+        [NonSerialized] bool freeAgentKeepersRepaired;
         public int freeAgentsImportVersion,freeAgentsLastCheckedDay=-1;
         public List<string> announcedFreeAgentReferences=new List<string>(),processedFreeAgentReferences=new List<string>();
         [NonSerialized] List<Employment> employmentIndexSource;
@@ -41,12 +44,13 @@ namespace Touchline.Core
         void ImportFreeAgents(Database db)
         {
             ImportReferencedFreeAgents(db);
-            foreach(var keeper in db.players.Where(p=>p.id.StartsWith("unfp-free-",StringComparison.Ordinal)&&p.Goalkeeper))
+            if(!freeAgentKeepersRepaired)foreach(var keeper in db.players.Where(p=>p.id.StartsWith("unfp-free-",StringComparison.Ordinal)&&p.Goalkeeper))
             {
                 var missing=FreeAgentAttributes(keeper,"GK").Where(a=>a.key.StartsWith("gk",StringComparison.Ordinal)&&!(keeper.attributes?.Any(v=>v.key==a.key)??false)).ToArray();
                 if(missing.Length>0){var oldReflex=keeper.attributes?.FirstOrDefault(a=>a.key=="goalkeeperReflexes");foreach(var a in missing)if(a.key=="gkReflexes"&&oldReflex!=null)a.value=oldReflex.value;keeper.attributes=(keeper.attributes??Array.Empty<AttributeValue>()).Concat(missing).ToArray();SavePlayer(keeper);}
             }
-            if(freeAgentsImported||Date<new DateTime(2026,9,14))return;freeAgentsImported=true;
+            freeAgentKeepersRepaired=true;
+            if(freeAgentsImported||Date<new DateTime(2026,9,14))return;freeAgentsImported=true;freeAgentKeepersRepaired=false;
             string[] names={"Mathieu Acapandie","Moise Adilehou","Dava David Agossa","Johanne Akassou","Rassambek Akhmatov","Sofiane Alakouch","Rachid Alioui","Stéfan Bajic"};
             string[] births={"2004-12-14","1995-11-01","2003-05-13","1996-03-27","1996-05-31","1998-07-29","1992-06-18","2001-12-23"};string[] roles={"CB","CB","GK","ST","CM","RB","ST","GK"};
             int[] estimates={54,61,48,55,56,64,62,63};

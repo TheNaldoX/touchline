@@ -18,6 +18,7 @@ static class P{
   if(worldOnly){c.world.managerStatus="unemployed";c.life.nextFixture=int.MaxValue;}
   var simFixture=typeof(Career).GetMethod("SimulateFixture",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic);
   Console.WriteLine($"Club : {db.clubs.First(x=>x.id==club).name} — {seasons} saison(s), matchs du club {(engine?"au moteur":"tirés au sort")}\n");
+  if(a.Contains("--savesize")){{var f0=Environment.GetEnvironmentVariable("CALIB_SAVEFILE");if(f0!=null)File.WriteAllText(f0+".start.json",UnityEngine.JsonUtility.ToJson(c));}Console.WriteLine($"Sauvegarde initiale (format Unity) : {UnityEngine.JsonUtility.ToJson(c).Length/1e6:0.0} Mo, rosterChanges : {c.world.rosterChanges.Count}");}
   var snapshots=new List<Snapshot>{Snap(db,c)};int startYear=c.world.year,matches=0;var sw=System.Diagnostics.Stopwatch.StartNew();
   for(int guard=0;guard<400*seasons+50&&c.world.year<startYear+seasons;guard++){
    try{c.AdvanceDay(db);}
@@ -45,6 +46,8 @@ static class P{
   if(snapshots.Last().day!=c.life.day)snapshots.Add(Snap(db,c));
   Console.WriteLine($"{matches} matchs joués par le club, {sw.Elapsed.TotalSeconds:0} s\n");
   Report(db,c,snapshots);
+  if(a.Contains("--savesize")){var t=System.Diagnostics.Stopwatch.StartNew();var json=UnityEngine.JsonUtility.ToJson(c);{var f1=Environment.GetEnvironmentVariable("CALIB_SAVEFILE");if(f1!=null)File.WriteAllText(f1+".end.json",json);}Console.WriteLine($"\nTaille de sauvegarde (format Unity) : {json.Length/1e6:0.0} Mo, sérialisée en {t.ElapsedMilliseconds} ms ; rosterChanges : {c.world.rosterChanges.Count} joueurs, contrats : {c.world.contracts.Count}, messages : {c.life.messages.Count}");}
+  int di=Array.IndexOf(a,"--dump");if(di>=0)File.WriteAllLines(a[di+1],c.world.aiTransfers.Select(t=>t.year+" "+t.player+" "+t.seller+">"+t.buyer+" "+t.fee+" "+t.wage).Concat(db.players.OrderBy(p=>p.id,StringComparer.Ordinal).Select(p=>p.id+" "+p.team+" "+p.rating.ToString("R",CultureInfo.InvariantCulture)+" "+p.wage)));
   return 0;
  }
  class Snapshot{public int year,day;public long cash;public int squad;public float top14,ageAvg;public Dictionary<string,long> aiCash=new();public Dictionary<string,int> aiSquad=new();public Dictionary<string,float> aiStrength=new();public float wageMedian;public int free;public int transfers;}
