@@ -178,6 +178,7 @@ namespace Touchline.Core
                 if(c.retirement>=0&&c.retirement<=life.day&&p.team!="retired"){RetireEmployment(db,p,c);life.players.RemoveAll(x=>x.id==p.id);SavePlayer(p);Mail("Secrétariat","Retraite effective",p.name+" met un terme à sa carrière.",p.id);}
             }
             AcademyDevelopmentDay(db);
+            WarnThinSquad(db);
             if(life.day%7==0){foreach(var d in world.sponsors.Where(s=>s.status=="signed"&&s.until>life.day))Account(d.annual/52,"Partenariat • "+d.name);if(world.debt>0)Account(-world.debt/1000,"Intérêts de dette estimés");}
             foreach(var d in world.sponsors.Where(d=>d.status=="signed"&&d.until<=life.day)){d.status="expired";Mail("Direction commerciale","Partenariat terminé",d.name+" arrive à échéance. Un emplacement est à nouveau disponible.");}
             if(life.day>=world.reviewDay){world.reviewDay=life.day+30;var division=world.divisions.FirstOrDefault(d=>d.clubs.Contains(club));var table=division==null?new List<Standing>():Table(division.id);var own=table.FirstOrDefault(t=>t.club==club);

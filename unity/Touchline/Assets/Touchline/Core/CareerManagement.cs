@@ -161,7 +161,7 @@ namespace Touchline.Core
         public void CancelProject(string kind){OffPitch();var p=life.projects.FirstOrDefault(p=>p.kind==kind&&(p.status=="requested"||p.status=="approved"));if(p==null)throw new InvalidOperationException("Seul un projet non démarré peut être annulé.");p.status="cancelled";}
         public void PrepareLineup(Database db)
         {
-            EnsureLife(db);if(lineup==null||lineup.Any(id=>db.Find(id)?.team!=club||!life.players.Any(p=>p.id==id)))lineup=Select(db,club,tactic);var selected=new HashSet<string>(lineup.Where(Available));
+            EnsureLife(db);EnsureMatchSquad(db);if(lineup==null||lineup.Any(id=>db.Find(id)?.team!=club||!life.players.Any(p=>p.id==id)))lineup=Select(db,club,tactic);var selected=new HashSet<string>(lineup.Where(Available));
             for(int i=0;i<11;i++)if(!Available(lineup[i])){var replacement=db.Squad(club).Where(p=>Available(p.id)&&!selected.Contains(p.id)).OrderByDescending(p=>p.rating*p.Fit(tactic.withoutBall[i].role)*p.fitness).FirstOrDefault();if(replacement==null)throw new InvalidOperationException("Effectif disponible insuffisant.");lineup[i]=replacement.id;selected.Add(replacement.id);}
             ApplyLife(db);
         }
