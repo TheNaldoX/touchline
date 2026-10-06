@@ -140,9 +140,11 @@ namespace Touchline.Core
                 Emit("clearance",hit.side,hit.id,Data(hit).name+" écarte le centre sous la pression.");return true;
             }
             float difficulty=FirstTouchError(hit,speed,Space(hit.position,1-hit.side));
-            if(speed>7&&Random()<difficulty*.36f){var direction=b.velocity.Normalized;LooseBall(impact,direction*(2.3f+difficulty*2.5f),impactHeight,.45f,hit.side,hit.id);hit.controlTime=.4f;hit.actionTarget=impact;hit.actionHeight=impactHeight;hit.actionSequence++;hit.action="miscontrol";hit.actionTime=.4f;State.metrics[hit.side].miscontrols++;Emit("miscontrol",hit.side,hit.id,Data(hit).name+" laisse échapper son contrôle.");return true;}
+            // Calibrated so a match has ~40-50 heavy touches, not one in six receptions.
+            if(speed>7&&Random()<difficulty*MiscontrolRate){var direction=b.velocity.Normalized;LooseBall(impact,direction*(2.3f+difficulty*2.5f),impactHeight,.45f,hit.side,hit.id);hit.controlTime=.4f;hit.actionTarget=impact;hit.actionHeight=impactHeight;hit.actionSequence++;hit.action="miscontrol";hit.actionTime=.4f;State.metrics[hit.side].miscontrols++;Emit("miscontrol",hit.side,hit.id,Data(hit).name+" laisse échapper son contrôle.");return true;}
             if(!intercept&&pass)State.completedPasses[hit.side]++;b.position=impact;b.height=impactHeight;Control(hit);if(intercept)Emit("interception",hit.side,hit.id,Data(hit).name+" coupe la trajectoire.");return true;
         }
+        public const float MiscontrolRate=.15f;
         bool ResolveAerial(float progress)
         {
             var b=State.ball;if(b.kind!="cross"||progress<.74f)return false;

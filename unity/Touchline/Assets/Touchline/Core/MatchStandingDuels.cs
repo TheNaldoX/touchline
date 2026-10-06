@@ -146,7 +146,8 @@ namespace Touchline.Core
                     continue;
                 }
                 m.metrics[owner.side].pressuredLosses++;var direction=(b.position-defender.position).Normalized;
-                LooseBall(b.position,direction*(2+Random()*2),BallRadius,.4f,defender.side,defender.id);
+                // A poke dislodges the ball a few metres: 3-7 m/s before rolling friction.
+                LooseBall(b.position,direction*(3+Random()*4),BallRadius,.4f,defender.side,defender.id);
                 BeginContactFall(owner,defender,false);owner.controlTime=Math.Max(owner.controlTime,.35f);Emit("tackle",defender.side,defender.id,Data(defender).name+" déloge le ballon.");return true;
             }
             return false;

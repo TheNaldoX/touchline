@@ -61,7 +61,7 @@ namespace Touchline.Core
                 }
                 float chance=Mathx.Clamp(.43f+(Skill(defender,"slidingTackle")-Skill(owner,"dribbling"))*.006f,.12f,.78f);
                 if(Random()>=chance)continue;
-                State.metrics[owner.side].pressuredLosses++;LooseBall(b.position,toward*(3+Random()*2),BallRadius,.35f,defender.side,defender.id);
+                State.metrics[owner.side].pressuredLosses++;LooseBall(b.position,toward*(4+Random()*4),BallRadius,.35f,defender.side,defender.id);
                 BeginContactFall(owner,defender,false);owner.controlTime=Math.Max(owner.controlTime,.35f);
                 Emit("tackle",defender.side,defender.id,Data(defender).name+" coupe la course du ballon d’un tacle glissé.");return true;
             }
