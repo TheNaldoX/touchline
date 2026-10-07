@@ -39,7 +39,8 @@ namespace Touchline
             var restRotations=new Dictionary<Transform,Quaternion>();
             foreach(var t in body.GetComponentsInChildren<Transform>(true))restRotations[t]=t.localRotation;
             try{
-                foreach(var t in body.GetComponentsInChildren<Transform>(true))if(t!=body&&bones.ContainsKey(t.name))t.localRotation=Quaternion.identity;
+                foreach(var t in body.GetComponentsInChildren<Transform>(true))if(t==body||bones.ContainsKey(t.name))t.localRotation=Quaternion.identity;
+                body.localPosition=Vector3.zero; // recalculé par Render à chaque image
                 TPoseArm("L");TPoseArm("R");
                 var skeleton=new List<SkeletonBone>();
                 foreach(var t in body.GetComponentsInChildren<Transform>(true))skeleton.Add(new SkeletonBone{name=t.name,position=t.localPosition,rotation=t.localRotation,scale=t.localScale});
@@ -57,6 +58,7 @@ namespace Touchline
                 sharedAvatar=AvatarBuilder.BuildHumanAvatar(body.gameObject,description);sharedAvatar.name="Touchline footballer";
                 return sharedAvatar;
             }finally{foreach(var pair in restRotations)pair.Key.localRotation=pair.Value;}
+
         }
 
         // Ramène le bras à l'horizontale, vers l'extérieur du corps (du côté où se

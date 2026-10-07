@@ -111,6 +111,8 @@ namespace Touchline
             }
             float run=Mathf.Clamp01(poseSpeed/7);
             var travelDirection=poseSpeed>.2f?new Vector3(poseVelocity.x,0,poseVelocity.z).normalized:transform.forward;
+            // Animation par mouvements capturés (Mecanim) : remplace la pose procédurale.
+            if(UseMecanim&&MecanimRender(actor,dt,reset,poseSpeed,context.carrying)){poseAction=actor.action;poseSequence=actor.actionSequence;lastPosition=transform.position;lastRotation=transform.rotation;initialized=true;return;}
             var localTravel=transform.InverseTransformDirection(travelDirection);
             var previousBodyPosition=body.localPosition;var previousBodyRotation=body.localRotation;
             if(actor.action=="control"&&(reset||poseAction!="control"||poseSequence!=actor.actionSequence)){var contact=MatchSimulation.IsBodyControl(actor)?new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z):ballPosition;float lateral=transform.InverseTransformPoint(contact).x;receivingLeft=Mathf.Abs(lateral)<.06f?leftFooted:lateral>0;}
@@ -248,7 +250,7 @@ namespace Touchline
         void Rotate(string name,float x,float y,float z){if(bones.TryGetValue(name,out var b))b.localRotation=Quaternion.Euler(x,y,z);}
         public static Material Material(Color color){var m=new Material(Shader.Find("Universal Render Pipeline/Lit"));m.color=color;m.SetFloat("_Smoothness",.16f);return m;}
         static void Dispose(UnityEngine.Object item){if(Application.isPlaying)Destroy(item);else DestroyImmediate(item);}
-        void OnDestroy(){if(ownedMaterials!=null)foreach(var material in ownedMaterials)Dispose(material);if(glovePalm!=null)Dispose(glovePalm);if(gloveBack!=null)Dispose(gloveBack);}
+        void OnDestroy(){DisposeMecanim();if(ownedMaterials!=null)foreach(var material in ownedMaterials)Dispose(material);if(glovePalm!=null)Dispose(glovePalm);if(gloveBack!=null)Dispose(gloveBack);}
     }
 }
 

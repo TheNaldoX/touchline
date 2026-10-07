@@ -53,6 +53,7 @@ namespace Touchline
             BallDisplay=(MatchBallDisplay)Mathf.Clamp(PlayerPrefs.GetInt("match-ball-locator",1),0,2);
             tactical=PlayerPrefs.GetInt("match-camera-mode",0)==1;zoom=Mathf.Clamp(PlayerPrefs.GetFloat("match-camera-zoom",1),.8f,1.35f);cameraReset=true;cameraHasFocus=false;velocity=Vector3.zero;
             poseCache.Reset();renderedAlpha=1;renderedClock=float.NaN;
+            PlayerView.UseMecanim=PlayerPrefs.GetInt("match-mecanim",1)==1; // animations capturées (Mixamo) ou procédurales
             renderBudget=TouchlineApp.Instance==null?null:TouchlineApp.Instance.GetComponent<RenderBudget>();renderBudget?.ResetMatchSample();
             var root=new GameObject("Stadium · metres");root.transform.SetParent(transform);world=root.transform;
             turf=PlayerView.Material(new Color(.09f,.25f,.10f));white=PlayerView.Material(new Color(.88f,.89f,.81f));
