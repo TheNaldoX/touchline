@@ -8,7 +8,7 @@ namespace Touchline.Core
     // mauvais timing = hors-jeu, comme dans un vrai match.
     public sealed partial class MatchSimulation
     {
-        const float RunBehindRatePerSecond=.30f;   // départs par seconde, attaquant moyen, porteur libre
+        const float RunBehindRatePerSecond=.38f;   // départs par seconde, attaquant moyen, porteur libre
         const float RunBehindSeconds=1.8f;         // durée d'une course (s)
         const float RunBehindDepth=9f;             // cible au-delà de la ligne (m)
         const float RunBehindTrigger=4f;           // distance max à la ligne pour partir (m)
