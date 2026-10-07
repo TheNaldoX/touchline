@@ -1,5 +1,6 @@
 # Construit l'APK Android dans le cloud (GitHub Actions + game-ci).
-# Déclenchement : pousser un tag "apk-…" (ex. apk-0.42-preview.1) ou bouton "Run workflow".
+# Déclenchement : tag "apk-…" (APK publié dans Releases), branche "release/…" (APK en artefact)
+# ou bouton "Run workflow".
 # Secrets requis (Settings > Secrets and variables > Actions) : UNITY_LICENSE, UNITY_EMAIL, UNITY_PASSWORD.
 # Secrets conseillés (signature stable d'une version à l'autre) : ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASS.
 name: Build Android APK
@@ -7,6 +8,8 @@ name: Build Android APK
 on:
   push:
     tags: ['apk-*']
+    # Une branche release/… poussée construit aussi l'APK (artefact dans Actions, sans release).
+    branches: ['release/**']
   workflow_dispatch:
 
 permissions:
