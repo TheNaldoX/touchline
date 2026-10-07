@@ -71,11 +71,16 @@ namespace Touchline.Editor
                         for(int k=0;k<15;k++)Shoot();info.AppendLine("pose "+label+" frames "+(frame-15)+"-"+(frame-1));
                     }
                 }else{
+                    // Pose neutre d'abord (contrôle de l'avatar), puis une sélection jouée à la suite.
+                    {var handler=new HumanPoseHandler(avatar,view.RigRoot);var pose=new HumanPose();handler.GetHumanPose(ref pose);pose.muscles=new float[HumanTrait.MuscleCount];pose.bodyPosition=new Vector3(0,1,0);pose.bodyRotation=Quaternion.identity;handler.SetHumanPose(ref pose);for(int k=0;k<10;k++)Shoot();info.AppendLine("pose neutre frames 0-9");}
+                    string[] wanted=Arg("-touchlineClips","Jog Forward;Dribble;Kick Soccerball;Soccer Pass;Receive Soccerball;Soccer Tackle;Header Soccerball;Goalkeeper Diving Save").Split(';');
+                    var selection=wanted.Select(w=>clips.FirstOrDefault(c=>string.Equals(c.name,w,StringComparison.OrdinalIgnoreCase))).Where(c=>c!=null).ToList();
+                    if(selection.Count==0)selection=clips.OrderBy(c=>c.name).Take(8).ToList();
                     var graph=PlayableGraph.Create("Prototype");graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
                     var outputPlayable=AnimationPlayableOutput.Create(graph,"Animation",animator);
-                    foreach(var clip in clips.OrderBy(c=>c.name)){
+                    foreach(var clip in selection){
                         var playable=AnimationClipPlayable.Create(graph,clip);playable.SetApplyFootIK(true);outputPlayable.SetSourcePlayable(playable);
-                        int n=Mathf.Clamp(Mathf.RoundToInt(Mathf.Max(clip.length,1.5f)*Fps),15,120);info.AppendLine($"clip {clip.name} frames {frame}-{frame+n-1}");
+                        int n=Mathf.Clamp(Mathf.RoundToInt(Mathf.Min(clip.length*(clip.isLooping?2:1),3f)*Fps),15,90);info.AppendLine($"clip {clip.name} {clip.length:0.00}s loop={clip.isLooping} frames {frame}-{frame+n-1}");
                         for(int k=0;k<n;k++){graph.Evaluate(k==0?0:1f/Fps);go.transform.position=Vector3.zero;Shoot();}
                         playable.Destroy();
                     }
