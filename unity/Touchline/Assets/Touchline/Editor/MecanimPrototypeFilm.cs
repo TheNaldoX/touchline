@@ -73,27 +73,34 @@ namespace Touchline.Editor
                 }else{
                     // Pose neutre d'abord (contrôle de l'avatar), puis une sélection jouée à la suite.
                     {var handler=new HumanPoseHandler(avatar,view.RigRoot);var pose=new HumanPose();handler.GetHumanPose(ref pose);pose.muscles=new float[HumanTrait.MuscleCount];pose.bodyPosition=new Vector3(0,1,0);pose.bodyRotation=Quaternion.identity;handler.SetHumanPose(ref pose);for(int k=0;k<10;k++)Shoot();info.AppendLine("pose neutre frames 0-9");}
-                    string[] wanted=Arg("-touchlineClips","Jog Strafe Left;Jog Strafe Right;Jog Backward Diagonal;Jog Forward Diagonal (1);Offensive Idle;Receive Soccerball").Split(';');
+                    string[] wanted=Arg("-touchlineClips","Stall Soccerball;Stall Soccerball (1);Stall Soccerball (2);Stall Soccerball (3);Kneeing Soccerball;Kneeing Soccerball (1);Kick Up Soccerball;Header Soccerball (1);Receive Soccerball;Soccer Tackle (1);Soccer Tackle (2);Goalkeeper Body Block;Sprint Turn;Soccer Spin;Transition").Split(';');
                     var selection=wanted.Select(w=>clips.FirstOrDefault(c=>string.Equals(c.name,w,StringComparison.OrdinalIgnoreCase))).Where(c=>c!=null).ToList();
                     if(selection.Count==0)selection=clips.OrderBy(c=>c.name).Take(8).ToList();
                     // Analyse de chaque clip (60 Hz) : instant de vitesse maximale de chaque
                     // pied et de chaque main, hauteur maxi de la tête — sert à caler le contact
                     // avec le ballon sur l'instant décidé par le moteur de match.
-                    {var timing=new System.Text.StringBuilder();timing.AppendLine("clip;durée;boucle;pied G pic (s);vitesse G;pied D pic (s);vitesse D;main G pic;main D pic;tête min (m);tête max (m)");
+                    {var timing=new System.Text.StringBuilder();timing.AppendLine("clip;durée;boucle;pied G pic (s);vitesse G;pied D pic (s);vitesse D;main G pic;main D pic;tête min (m);tête max (m);lacet début/fin/extrême (°);genou G haut (s@m);genou D haut (s@m);torse recul (s)");
                      var g=PlayableGraph.Create("Analyse");g.SetTimeUpdateMode(DirectorUpdateMode.Manual);var o=AnimationPlayableOutput.Create(g,"A",animator);
                      var bones=new[]{HumanBodyBones.LeftFoot,HumanBodyBones.RightFoot,HumanBodyBones.LeftHand,HumanBodyBones.RightHand};
                      foreach(var clip in clips.OrderBy(c=>c.name)){
                         var pl=AnimationClipPlayable.Create(g,clip);o.SetSourcePlayable(pl);float step=1f/60;int samples=Mathf.Max(2,Mathf.CeilToInt(clip.length/step));
                         var last=new Vector3[4];var peak=new float[4];var peakTime=new float[4];float headMin=9,headMax=0,lean=0; // lean : décalage latéral (m, +X) de la tête au point le plus bas
+                        // Lacet du bassin (°, + = vers la droite) mesuré par l'axe des hanches, hauteur maxi des genoux
+                        // (contrôle de la cuisse) et recul maxi du torse par rapport au bassin (amorti de la poitrine).
+                        float yawStart=0,yawEnd=0,yawExtreme=0,chestBackTime=0,chestBack=9;var kneeTop=new float[2];var kneeTime=new float[2];
                         for(int k=0;k<=samples;k++){pl.SetTime(k*step);g.Evaluate(0);var hips=animator.GetBoneTransform(HumanBodyBones.Hips).position;
                             for(int b=0;b<4;b++){var pos=animator.GetBoneTransform(bones[b]).position-new Vector3(hips.x,0,hips.z);if(k>0){float v=(pos-last[b]).magnitude/step;if(v>peak[b]){peak[b]=v;peakTime[b]=k*step;}}last[b]=pos;}
-                            var headPos=animator.GetBoneTransform(HumanBodyBones.Head).position;float head=headPos.y;if(head<headMin)lean=headPos.x-hips.x;headMin=Mathf.Min(headMin,head);headMax=Mathf.Max(headMax,head);}
+                            var headPos=animator.GetBoneTransform(HumanBodyBones.Head).position;float head=headPos.y;if(head<headMin)lean=headPos.x-hips.x;headMin=Mathf.Min(headMin,head);headMax=Mathf.Max(headMax,head);
+                            var across=animator.GetBoneTransform(HumanBodyBones.RightUpperLeg).position-animator.GetBoneTransform(HumanBodyBones.LeftUpperLeg).position;var facing=Vector3.Cross(across,Vector3.up);
+                            float yaw=Mathf.Atan2(facing.x,facing.z)*Mathf.Rad2Deg;if(k==0)yawStart=yaw;yawEnd=yaw;if(Mathf.Abs(Mathf.DeltaAngle(yawStart,yaw))>Mathf.Abs(yawExtreme))yawExtreme=Mathf.DeltaAngle(yawStart,yaw);
+                            for(int s2=0;s2<2;s2++){float knee=animator.GetBoneTransform(s2==0?HumanBodyBones.LeftLowerLeg:HumanBodyBones.RightLowerLeg).position.y;if(knee>kneeTop[s2]){kneeTop[s2]=knee;kneeTime[s2]=k*step;}}
+                            var chest=animator.GetBoneTransform(HumanBodyBones.Chest);if(chest!=null){float back=Vector3.Dot(chest.position-hips,facing.normalized);if(back<chestBack){chestBack=back;chestBackTime=k*step;}}}
                         // Vitesse naturelle (boucles) : recul moyen du pied d'appui par rapport aux hanches.
                         float natural=0,naturalX=0;if(clip.isLooping){var g2=PlayableGraph.Create("N");g2.SetTimeUpdateMode(DirectorUpdateMode.Manual);var o2=AnimationPlayableOutput.Create(g2,"N",animator);var p2=AnimationClipPlayable.Create(g2,clip);o2.SetSourcePlayable(p2);
                             var footBone=animator.GetBoneTransform(HumanBodyBones.LeftFoot);float minY=9;var ys=new List<float>();var zs=new List<float>();var xs=new List<float>();
                             for(int k=0;k<=samples;k++){p2.SetTime(k*step);g2.Evaluate(0);var h=animator.GetBoneTransform(HumanBodyBones.Hips).position;ys.Add(footBone.position.y);zs.Add(footBone.position.z-h.z);xs.Add(footBone.position.x-h.x);minY=Mathf.Min(minY,footBone.position.y);}
                             float sum=0,sumX=0;int count=0;for(int k=1;k<ys.Count;k++)if(ys[k]<minY+.02f&&ys[k-1]<minY+.02f){sum+=-(zs[k]-zs[k-1])/step;sumX+=-(xs[k]-xs[k-1])/step;count++;}natural=count>0?sum/count:0;naturalX=count>0?sumX/count:0;g2.Destroy();}
-                        timing.AppendLine($"{clip.name};natural={natural:0.00};naturalX={naturalX:0.00};lean={lean:0.00};{clip.length:0.000};{clip.isLooping};{peakTime[0]:0.000};{peak[0]:0.0};{peakTime[1]:0.000};{peak[1]:0.0};{peakTime[2]:0.000};{peakTime[3]:0.000};{headMin:0.00};{headMax:0.00}");
+                        timing.AppendLine($"{clip.name};natural={natural:0.00};naturalX={naturalX:0.00};lean={lean:0.00};{clip.length:0.000};{clip.isLooping};{peakTime[0]:0.000};{peak[0]:0.0};{peakTime[1]:0.000};{peak[1]:0.0};{peakTime[2]:0.000};{peakTime[3]:0.000};{headMin:0.00};{headMax:0.00};{yawStart:0}/{yawEnd:0}/{yawExtreme:0};{kneeTime[0]:0.000}@{kneeTop[0]:0.00};{kneeTime[1]:0.000}@{kneeTop[1]:0.00};{chestBackTime:0.000}");
                         pl.Destroy();}
                      g.Destroy();File.WriteAllText(Path.Combine(output,"clip-timing.csv"),timing.ToString());}
                     var graph=PlayableGraph.Create("Prototype");graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
