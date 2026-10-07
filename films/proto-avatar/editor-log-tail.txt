@@ -22,7 +22,8 @@ Touchline.Editor.MecanimPrototypeFilm:Run () (at Assets/Touchline/Editor/Mecanim
     "licensingServiceBaseUrl": "",
     "enableProxyAutoconfig": "false"
 
-Killing ADB server in 0.085829 seconds.
+Killing ADB server in 0.087094 seconds.
+Start importing ProjectSettings/GraphicsSettings.asset using Guid(00000000000000006100000000000000) (LibraryAssetImporter) -> (artifact id: 'ca34b261beffdc4f550440e53edd2f64') in 0.001747106 seconds
 The command could not be loaded, possibly because:
   * You intended to execute a .NET application:
       The application 'build-server' does not exist.
@@ -34,10 +35,9 @@ https://aka.ms/dotnet-download
 
 Learn about SDK resolution:
 https://aka.ms/dotnet/sdk-not-found
-Start importing ProjectSettings/GraphicsSettings.asset using Guid(00000000000000006100000000000000) (LibraryAssetImporter) -> (artifact id: 'ca34b261beffdc4f550440e53edd2f64') in 0.001626315 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=212a9f15b2ce0adfcad88866efceaffe): Total: 0.094 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=95d5f236d8bb10134a8355ed584e5f66): Total: 0.087 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 [Physics::Module] Cleanup current backend.
 [Physics::Module] Id: 0xf2b8ea05
 Input System module state changed to: ShutdownInProgress.
@@ -55,7 +55,7 @@ debugger-agent: Unable to listen on 44
 [Package Manager] Server process was shutdown
 Checking for leaked weakptr:
   Found no leaked weakptrs.
-##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1791380844391,"processId":1739,"allocatedMemory":11960332,"memoryLabels":[{"Default":24121},{"Permanent":15960},{"Thread":1084936},{"Manager":804394},{"VertexData":8},{"Geometry":408},{"Texture":160},{"Shader":79820},{"Material":24},{"GfxDevice":36256},{"Animation":28312},{"Audio":3032},{"FreeType":8},{"FontEngine":736},{"Physics":1970},{"Physics2D":16},{"Serialization":360},{"Input":26888},{"JobScheduler":33024},{"TextLib":280},{"Mono":32},{"MonoCode":96},{"ScriptingNativeRuntime":155096},{"BaseObject":1622952},{"Resource":1064},{"Renderer":3000},{"Transform":4717},{"File":832},{"WebCam":80},{"Culling":32},{"Terrain":11298},{"Wind":24},{"String":16786},{"DynamicArray":96434},{"HashMap":90338},{"Utility":2658752},{"Curl":2511},{"PoolAlloc":2048},{"AI":80},{"TypeTree":14981},{"ScriptManager":512},{"RuntimeInitializeOnLoadManager":64},{"SpriteAtlas":112},{"GI":7384},{"Director":8208},{"CloudService":7320},{"WebRequest":12196},{"VR":47754},{"SceneManager":536},{"Video":64},{"LazyScriptCache":32},{"Camera":17},{"Secure":12449},{"SerializationCache":1576},{"APIUpdating":10320},{"Subsystems":336},{"VirtualTexturing":57552},{"StaticSafetyDebugInfo":278528},{"Analytics":464},{"Hierarchy":1416},{"CoreStats":13112},{"Identifiers":6480},{"Gui":128},{"EditorUtility":76533},{"VersionControl":4},{"Undo":979},{"AssetDatabase":4549416},{"EditorGi":328},{"UnityConnect":29408},{"Upm":1744},{"AssetCompliance":64},{"DrivenProperties":72},{"LocalIPC":147},{"ProfilerEditor":9746},{"CoreBusinessMetrics":2377},{"Licensing":1128},{"AssetReference":32},{"IPCStream":32}]}
+##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1791381347912,"processId":1734,"allocatedMemory":11960288,"memoryLabels":[{"Default":24121},{"Permanent":15960},{"Thread":1084936},{"Manager":804394},{"VertexData":8},{"Geometry":408},{"Texture":160},{"Shader":79820},{"Material":24},{"GfxDevice":36256},{"Animation":28312},{"Audio":3032},{"FreeType":8},{"FontEngine":736},{"Physics":1970},{"Physics2D":16},{"Serialization":360},{"Input":26888},{"JobScheduler":33024},{"TextLib":280},{"Mono":32},{"MonoCode":96},{"ScriptingNativeRuntime":155096},{"BaseObject":1622952},{"Resource":1064},{"Renderer":3000},{"Transform":4717},{"File":832},{"WebCam":80},{"Culling":32},{"Terrain":11298},{"Wind":24},{"String":16786},{"DynamicArray":96434},{"HashMap":90338},{"Utility":2658752},{"Curl":2511},{"PoolAlloc":2048},{"AI":80},{"TypeTree":14981},{"ScriptManager":512},{"RuntimeInitializeOnLoadManager":64},{"SpriteAtlas":112},{"GI":7384},{"Director":8208},{"CloudService":7320},{"WebRequest":12152},{"VR":47754},{"SceneManager":536},{"Video":64},{"LazyScriptCache":32},{"Camera":17},{"Secure":12449},{"SerializationCache":1576},{"APIUpdating":10320},{"Subsystems":336},{"VirtualTexturing":57552},{"StaticSafetyDebugInfo":278528},{"Analytics":464},{"Hierarchy":1416},{"CoreStats":13112},{"Identifiers":6480},{"Gui":128},{"EditorUtility":76533},{"VersionControl":4},{"Undo":979},{"AssetDatabase":4549416},{"EditorGi":328},{"UnityConnect":29408},{"Upm":1744},{"AssetCompliance":64},{"DrivenProperties":72},{"LocalIPC":147},{"ProfilerEditor":9746},{"CoreBusinessMetrics":2377},{"Licensing":1128},{"AssetReference":32},{"IPCStream":32}]}
 [UnityConnectServicesConfig] Local config successfully read: "/usr/share/unity3d/config/services-config.json"
 [UnityConnectServicesConfig] "clientConnectTimeoutSec" was overridden with "5"
 [UnityConnectServicesConfig] "clientHandshakeTimeoutSec" was overridden with "10"
@@ -95,25 +95,25 @@ Distro version:          #22-Ubuntu SMP Mon Jul 27 17:24:03 UTC 2026
 Kernel version:          6.17.0-1022-azure
 Architecture:            x86_64
 Available memory:        15989 MB
-Date:                    2026-10-07T13:47:24Z
+Date:                    2026-10-07T13:55:48Z
 User audibert.victor13500@gmail.com logged in successfully
 [UnityConnect::TryLogin] Request Succeeded.
 [Licensing::Module] Trying to connect to existing licensing client channel...
 [Licensing::IpcConnector] Channel LicenseClient-root doesn't exist
-[Licensing::Module] Successfully launched the LicensingClient (PId: 2162)
-[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root" at "2026-10-07T13:47:25.96223Z"
+[Licensing::Module] Successfully launched the LicensingClient (PId: 2154)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root" at "2026-10-07T13:55:49.443529Z"
 [SignatureVerifier] Application signature verification not supported on this platform.
 [Licensing::Client] Handshaking with LicensingClient:
   Version:                 1.18.3+d7ffd15
-  Session Id:              87f095da4ca84377917c47af3bb7974e
-  Correlation Id:          a02cf374269b6b3a4ec13f0186d60b65
-  External correlation Id: 8730245978277592047
-  Machine Id:              Zt5ki+Qo/m+BLALR5LoIbv30QbU=
-[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-root" (connect: 0.25s, validation: 0.04s, handshake: 0.00s)
-[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root-notifications" at "2026-10-07T13:47:25.999203Z"
-[Licensing::Module] Connected to LicensingClient (PId: 2162, launch time: 0.00, total connection time: 0.28s)
+  Session Id:              79cb8a852930438ea0b7073c5e5afe8b
+  Correlation Id:          a9a91d51f150dd7fa387052daaf3a476
+  External correlation Id: 1123241474660665664
+  Machine Id:              gaHTs4cRJHEMRm7/jvIS6S+baMQ=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-root" (connect: 0.25s, validation: 0.05s, handshake: 0.00s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root-notifications" at "2026-10-07T13:55:49.49292Z"
+[Licensing::Module] Connected to LicensingClient (PId: 2154, launch time: 0.00, total connection time: 0.30s)
 [Licensing::Client] Successfully updated the access token
-[Licensing::Module] Successfully updated the access token PXWX4Of_be...
+[Licensing::Module] Successfully updated the access token 9F1PO40EgM...
 [Licensing::Client] Successfully processed license management request
 [Licensing::Module] Successfully returned the entitlement license
 [Licensing::Client] Successfully queried for the EntitlementGroupsDetails
