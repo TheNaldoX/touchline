@@ -41,6 +41,21 @@ namespace Touchline
             }
             return builder.Build();
         }
+        // Second anneau de la tribune d'en face : silhouettes simples (cartes), maillage à part.
+        public static Mesh UpperCrowd(string home,string away,float occupancy=.84f)
+        {
+            occupancy=float.IsNaN(occupancy)||float.IsInfinity(occupancy)?0:Mathf.Clamp01(occupancy);
+            uint state=2166136261;foreach(char c in "upper|"+(home??"")+"|"+(away??"")){state^=c;state*=16777619;}
+            uint Next(){state=state*1664525+1013904223;return state;}
+            var builder=new CrowdBuilder();
+            for(int row=0;row<StadiumGeometry.UpperTierRows;row++)for(int seat=0;seat<UpperSeatsPerRow;seat++){
+                uint sample=Next();if((sample&65535)/65536f>=occupancy)continue;
+                var position=new Vector3(-57+seat*1.2f,StadiumGeometry.UpperTierBase+row*StadiumGeometry.UpperRowRise,-(StadiumGeometry.UpperTierFront+row*StadiumGeometry.UpperRowDepth));
+                builder.Person(position,Vector3.forward,.44f+((sample>>16)&15)*.012f,(int)((sample>>21)%4),5+(int)((sample>>25)&1),sample,false);
+            }
+            var mesh=builder.Build();mesh.name="Upper tier supporters";return mesh;
+        }
+        const int UpperSeatsPerRow=96; // sièges de 1,2 m sur 115 m
         sealed class CrowdBuilder
         {
             static readonly int[] TorsoIndices={0,4,5,0,5,1,1,5,6,1,6,2,2,6,7,2,7,3,3,7,4,3,4,0,4,7,6,4,6,5};

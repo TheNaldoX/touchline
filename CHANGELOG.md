@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Visuel : gazon texturé (grain, tonte plus marquée), ciel, second anneau et toit de la tribune d'en face, caméra télé moins plongeante.
 - Animation : mouvements capturés Mixamo joués en match par Mecanim (trot, course, sprint, course arrière, conduite, frappes arrêtées et en course, têtes, tacles, gardien), calés sur les instants de contact du moteur, pieds verrouillés au sol.
 - Outil : film de match rendu par Unity dans GitHub Actions (branche film/…), avec mesures de fluidité, publié dans la branche films.
 - Animation : rotation du corps plafonnée à 600°/s pendant un geste, petits pas d'ajustement à l'arrêt au lieu de pieds qui glissent.

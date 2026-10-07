@@ -31,6 +31,33 @@ namespace Touchline
             }
             return mesh.Build(seats?"Combined seats":"Combined terraces");
         }
+        // Tribune d'en face (côté -Z, face à la caméra télé) : second anneau, toit et
+        // mur du fond masquent le vide au-dessus des gradins. Côté caméra (+Z), rien
+        // de haut : la caméra regarde par-dessus.
+        public const float UpperTierFront=50f,UpperTierBase=8.6f;   // m : premier rang du second anneau (distance à l'axe, hauteur)
+        public const float UpperRowDepth=1.1f,UpperRowRise=.7f;      // m par rang
+        public const int UpperTierRows=8;
+        public const float RoofHeight=17.5f,RoofFront=43.5f,StadiumBack=60f; // m
+        public static Mesh UpperStand()
+        {
+            var mesh=new Builder();
+            // Bandeau frontal (sous le premier rang du second anneau), puis rangées de sièges.
+            mesh.Box(new Vector3(0,(UpperTierBase-2.2f+UpperTierBase)*.5f,-(UpperTierFront-.9f)),new Vector3(119,2.2f,.3f));
+            for(int row=0;row<UpperTierRows;row++)
+                mesh.Box(new Vector3(0,UpperTierBase+row*UpperRowRise-.3f,-(UpperTierFront+row*UpperRowDepth)),new Vector3(119,.6f,1.2f));
+            return mesh.Build("Upper tier terraces");
+        }
+        public static Mesh StadiumShell()
+        {
+            var mesh=new Builder();
+            // Toit en porte-à-faux au-dessus du second anneau, mur du fond, poteaux.
+            mesh.Box(new Vector3(0,RoofHeight,-(RoofFront+StadiumBack)*.5f),new Vector3(124,.35f,StadiumBack-RoofFront));
+            mesh.Box(new Vector3(0,RoofHeight*.5f,-StadiumBack),new Vector3(124,RoofHeight,.5f));
+            for(int i=-3;i<=3;i++)mesh.Beam(new Vector3(i*19f,UpperTierBase+UpperTierRows*UpperRowRise,-(StadiumBack-.5f)),new Vector3(i*19f,RoofHeight,-(StadiumBack-.5f)),.35f);
+            // Murs derrière les virages (au-dessus du dernier rang, hauteur 9 m).
+            for(int side=-1;side<=1;side+=2)mesh.Box(new Vector3(side*72f,4.5f,0),new Vector3(.5f,9f,90));
+            return mesh.Build("Stadium roof and back walls");
+        }
         public static Mesh Surround(){var mesh=new Builder();mesh.Box(new Vector3(0,-.13f,0),new Vector3(170,.2f,125));return mesh.Build("Grass stadium surround");}
         public static Mesh EndStand(int side){var mesh=new Builder();for(int row=0;row<10;row++)mesh.Box(new Vector3(side*(60+row*1.15f),row*.7f,0),new Vector3(1.2f,.65f,88));return mesh.Build("Goal end terrace");}
         public static Mesh PerimeterBoards(){var mesh=new Builder();for(int side=-1;side<=1;side+=2){mesh.Box(new Vector3(0,.42f,side*36.5f),new Vector3(108,.8f,.16f));mesh.Box(new Vector3(side*56,.42f,0),new Vector3(.16f,.8f,71));}return mesh.Build("Perimeter boards");}
