@@ -73,7 +73,7 @@ namespace Touchline.Editor
                 }else{
                     // Pose neutre d'abord (contrôle de l'avatar), puis une sélection jouée à la suite.
                     {var handler=new HumanPoseHandler(avatar,view.RigRoot);var pose=new HumanPose();handler.GetHumanPose(ref pose);pose.muscles=new float[HumanTrait.MuscleCount];pose.bodyPosition=new Vector3(0,1,0);pose.bodyRotation=Quaternion.identity;handler.SetHumanPose(ref pose);for(int k=0;k<10;k++)Shoot();info.AppendLine("pose neutre frames 0-9");}
-                    string[] wanted=Arg("-touchlineClips","Goalkeeper Diving Save;Goalkeeper Diving Save (miroir);Receive Soccerball;Soccer Trip;Fallen Idle;Standing Up;Strike Forward Jog;Goalkeeper Overhand Throw").Split(';');
+                    string[] wanted=Arg("-touchlineClips","Jog Strafe Left;Jog Strafe Right;Jog Backward Diagonal;Jog Forward Diagonal (1);Offensive Idle;Receive Soccerball").Split(';');
                     var selection=wanted.Select(w=>clips.FirstOrDefault(c=>string.Equals(c.name,w,StringComparison.OrdinalIgnoreCase))).Where(c=>c!=null).ToList();
                     if(selection.Count==0)selection=clips.OrderBy(c=>c.name).Take(8).ToList();
                     // Analyse de chaque clip (60 Hz) : instant de vitesse maximale de chaque
@@ -89,11 +89,11 @@ namespace Touchline.Editor
                             for(int b=0;b<4;b++){var pos=animator.GetBoneTransform(bones[b]).position-new Vector3(hips.x,0,hips.z);if(k>0){float v=(pos-last[b]).magnitude/step;if(v>peak[b]){peak[b]=v;peakTime[b]=k*step;}}last[b]=pos;}
                             var headPos=animator.GetBoneTransform(HumanBodyBones.Head).position;float head=headPos.y;if(head<headMin)lean=headPos.x-hips.x;headMin=Mathf.Min(headMin,head);headMax=Mathf.Max(headMax,head);}
                         // Vitesse naturelle (boucles) : recul moyen du pied d'appui par rapport aux hanches.
-                        float natural=0;if(clip.isLooping){var g2=PlayableGraph.Create("N");g2.SetTimeUpdateMode(DirectorUpdateMode.Manual);var o2=AnimationPlayableOutput.Create(g2,"N",animator);var p2=AnimationClipPlayable.Create(g2,clip);o2.SetSourcePlayable(p2);
-                            var footBone=animator.GetBoneTransform(HumanBodyBones.LeftFoot);float minY=9;var ys=new List<float>();var zs=new List<float>();
-                            for(int k=0;k<=samples;k++){p2.SetTime(k*step);g2.Evaluate(0);var h=animator.GetBoneTransform(HumanBodyBones.Hips).position;ys.Add(footBone.position.y);zs.Add(footBone.position.z-h.z);minY=Mathf.Min(minY,footBone.position.y);}
-                            float sum=0;int count=0;for(int k=1;k<ys.Count;k++)if(ys[k]<minY+.02f&&ys[k-1]<minY+.02f){sum+=-(zs[k]-zs[k-1])/step;count++;}natural=count>0?sum/count:0;g2.Destroy();}
-                        timing.AppendLine($"{clip.name};natural={natural:0.00};lean={lean:0.00};{clip.length:0.000};{clip.isLooping};{peakTime[0]:0.000};{peak[0]:0.0};{peakTime[1]:0.000};{peak[1]:0.0};{peakTime[2]:0.000};{peakTime[3]:0.000};{headMin:0.00};{headMax:0.00}");
+                        float natural=0,naturalX=0;if(clip.isLooping){var g2=PlayableGraph.Create("N");g2.SetTimeUpdateMode(DirectorUpdateMode.Manual);var o2=AnimationPlayableOutput.Create(g2,"N",animator);var p2=AnimationClipPlayable.Create(g2,clip);o2.SetSourcePlayable(p2);
+                            var footBone=animator.GetBoneTransform(HumanBodyBones.LeftFoot);float minY=9;var ys=new List<float>();var zs=new List<float>();var xs=new List<float>();
+                            for(int k=0;k<=samples;k++){p2.SetTime(k*step);g2.Evaluate(0);var h=animator.GetBoneTransform(HumanBodyBones.Hips).position;ys.Add(footBone.position.y);zs.Add(footBone.position.z-h.z);xs.Add(footBone.position.x-h.x);minY=Mathf.Min(minY,footBone.position.y);}
+                            float sum=0,sumX=0;int count=0;for(int k=1;k<ys.Count;k++)if(ys[k]<minY+.02f&&ys[k-1]<minY+.02f){sum+=-(zs[k]-zs[k-1])/step;sumX+=-(xs[k]-xs[k-1])/step;count++;}natural=count>0?sum/count:0;naturalX=count>0?sumX/count:0;g2.Destroy();}
+                        timing.AppendLine($"{clip.name};natural={natural:0.00};naturalX={naturalX:0.00};lean={lean:0.00};{clip.length:0.000};{clip.isLooping};{peakTime[0]:0.000};{peak[0]:0.0};{peakTime[1]:0.000};{peak[1]:0.0};{peakTime[2]:0.000};{peakTime[3]:0.000};{headMin:0.00};{headMax:0.00}");
                         pl.Destroy();}
                      g.Destroy();File.WriteAllText(Path.Combine(output,"clip-timing.csv"),timing.ToString());}
                     var graph=PlayableGraph.Create("Prototype");graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);

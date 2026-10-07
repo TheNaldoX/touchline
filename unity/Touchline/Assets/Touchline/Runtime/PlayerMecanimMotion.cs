@@ -21,7 +21,7 @@ namespace Touchline
             if(mecanimClips==null){mecanimClips=new Dictionary<string,AnimationClip>();foreach(var clip in Resources.LoadAll<AnimationClip>("Animations/Mixamo"))if(clip!=null&&!clip.name.StartsWith("__preview__"))mecanimClips[clip.name]=clip;}
             return mecanimClips;}}
         const string IdleClip="Soccer Idle",JogClip="Jog Forward",DribbleClip="Dribble",KeeperIdleClip="Goalkeeper Idle";
-        const string RunClip="Standard Run",SprintClip="Two Cycle Sprint",JogBackClip="Jog Backward",RunBackClip="Run Backward";
+        const string RunClip="Standard Run",SprintClip="Two Cycle Sprint",JogBackClip="Jog Backward",RunBackClip="Run Backward",StrafeLeftClip="Jog Strafe Left",StrafeRightClip="Jog Strafe Right";
         public static bool MecanimReady=>MecanimClips.ContainsKey(IdleClip)&&MecanimClips.ContainsKey(JogClip);
 
         // Vitesse (m/s) à laquelle le clip de course/conduite est joué à vitesse 1.
@@ -30,10 +30,11 @@ namespace Touchline
         const float JogNaturalSpeed=2.3f,DribbleNaturalSpeed=1.8f;
         const float RunNaturalSpeed=3.8f,SprintNaturalSpeed=5.7f;       // mesurées
         const float JogBackNaturalSpeed=2.1f,RunBackNaturalSpeed=2.9f;  // mesurées
-        const float BackwardFrom=.35f,BackwardTo=.75f; // part de la vitesse dirigée vers l'arrière du joueur (cosinus) : du clip avant au clip arrière
+        const float StrafeNaturalSpeed=2.0f;          // m/s, pas chassés (estimée, mesure à confirmer)
+        const float DirectionTurnAngle=12f;           // ° : en dessous, le côté du pas chassé ne change pas (évite le scintillement gauche/droite)
         const float BackwardSmoothing=6f;              // 1/s : lissage de la direction de course
         // Entrées du mixeur : déplacements, puis deux emplacements de gestes.
-        const int IdleInput=0,JogInput=1,DribbleInput=2,RunInput=3,SprintInput=4,JogBackInput=5,RunBackInput=6,ActionInput=7,MixerInputs=9;
+        const int IdleInput=0,JogInput=1,DribbleInput=2,RunInput=3,SprintInput=4,JogBackInput=5,RunBackInput=6,StrafeLeftInput=7,StrafeRightInput=8,ActionInput=9,MixerInputs=11;
         const float LoopRateMin=.7f,LoopRateMax=2.6f; // cadence relative ; au-delà, le verrouillage des pieds absorbe l'écart
         const float MoveBlendFrom=.25f,MoveBlendTo=1.3f;     // m/s : de l'arrêt à la course
         const float ActionFadeIn=.10f,ActionFadeOut=.22f;     // s
@@ -55,7 +56,8 @@ namespace Touchline
         readonly AnimationClipPlayable[] actionPlayables=new AnimationClipPlayable[2];
         readonly float[] actionWeights=new float[2];readonly bool[] actionLive=new bool[2];
         int activeAction=-1;string mecanimActionKey;int mecanimActionSequence=-1;float mecanimActionElapsed,mecanimActionContact;
-        float moveBlend,dribbleBlend,backwardBlend;bool mecanimKeeper;
+        float moveBlend,dribbleBlend,backwardBlend,sideBlend,sideSign=1;bool mecanimKeeper;
+        AnimationClipPlayable strafeLeftPlayable,strafeRightPlayable;
 
         bool EnsureMecanimGraph(bool keeper)
         {
@@ -74,6 +76,7 @@ namespace Touchline
             runPlayable=Loop(RunClip,JogClip);sprintPlayable=Loop(SprintClip,RunClip);jogBackPlayable=Loop(JogBackClip,JogClip);runBackPlayable=Loop(RunBackClip,JogBackClip);
             mecanimGraph.Connect(idlePlayable,0,mecanimMixer,IdleInput);mecanimGraph.Connect(jogPlayable,0,mecanimMixer,JogInput);mecanimGraph.Connect(dribblePlayable,0,mecanimMixer,DribbleInput);
             mecanimGraph.Connect(runPlayable,0,mecanimMixer,RunInput);mecanimGraph.Connect(sprintPlayable,0,mecanimMixer,SprintInput);mecanimGraph.Connect(jogBackPlayable,0,mecanimMixer,JogBackInput);mecanimGraph.Connect(runBackPlayable,0,mecanimMixer,RunBackInput);
+            strafeLeftPlayable=Loop(StrafeLeftClip,JogClip);strafeRightPlayable=Loop(StrafeRightClip,JogClip);mecanimGraph.Connect(strafeLeftPlayable,0,mecanimMixer,StrafeLeftInput);mecanimGraph.Connect(strafeRightPlayable,0,mecanimMixer,StrafeRightInput);
             for(int i=0;i<2;i++){actionWeights[i]=0;actionLive[i]=false;}activeAction=-1;mecanimActionKey=null;mecanimActionSequence=-1;
             return true;
         }
@@ -128,11 +131,17 @@ namespace Touchline
             dribbleBlend=Mathf.Lerp(dribbleBlend,carrying?1:0,k);
             float Rate(float natural)=>Mathf.Clamp(poseSpeed/natural,LoopRateMin,LoopRateMax);
             jogPlayable.SetSpeed(Rate(JogNaturalSpeed));dribblePlayable.SetSpeed(Rate(DribbleNaturalSpeed));runPlayable.SetSpeed(Rate(RunNaturalSpeed));sprintPlayable.SetSpeed(Rate(SprintNaturalSpeed));
-            jogBackPlayable.SetSpeed(Rate(JogBackNaturalSpeed));runBackPlayable.SetSpeed(Rate(RunBackNaturalSpeed));
-            // Course arrière : le joueur se déplace à l'opposé de son regard (repli défensif).
-            var travel=new Vector3(poseVelocity.x,0,poseVelocity.z);
-            float backward=poseSpeed<MoveBlendFrom?0:Mathf.SmoothStep(0,1,Mathf.InverseLerp(BackwardFrom,BackwardTo,-Vector3.Dot(travel.normalized,transform.forward)));
-            backwardBlend=reset?backward:Mathf.Lerp(backwardBlend,backward,1-Mathf.Exp(-dt*BackwardSmoothing));
+            jogBackPlayable.SetSpeed(Rate(JogBackNaturalSpeed));runBackPlayable.SetSpeed(Rate(RunBackNaturalSpeed));strafeLeftPlayable.SetSpeed(Rate(StrafeNaturalSpeed));strafeRightPlayable.SetSpeed(Rate(StrafeNaturalSpeed));
+            // Direction de course par rapport au regard : avant, arrière (repli) ou de côté
+            // (pas chassés d'un défenseur qui reste face au jeu). Poids = cos² / sin².
+            var travel=transform.InverseTransformDirection(new Vector3(poseVelocity.x,0,poseVelocity.z));travel.y=0;
+            float backward=0,side=0;
+            if(poseSpeed>=MoveBlendFrom&&travel.sqrMagnitude>1e-6f){
+                travel.Normalize();backward=travel.z<0?travel.z*travel.z:0;side=travel.x*travel.x;
+                if(Mathf.Abs(travel.x)>Mathf.Sin(DirectionTurnAngle*Mathf.Deg2Rad))sideSign=Mathf.Sign(travel.x);
+            }
+            float directionK=reset?1:1-Mathf.Exp(-dt*BackwardSmoothing);
+            backwardBlend=Mathf.Lerp(backwardBlend,backward,directionK);sideBlend=Mathf.Lerp(sideBlend,side,directionK);
 
             // Gestes : nouveau geste → emplacement libre, fondu d'entrée, temps calé sur le contact.
             bool acting=MecanimAction(actor,out var clipName,out var simContact);
@@ -166,13 +175,16 @@ namespace Touchline
             // Allure avant : trot → course → sprint selon la vitesse, entre leurs vitesses naturelles.
             float toRun=Mathf.SmoothStep(0,1,Mathf.InverseLerp(JogNaturalSpeed,RunNaturalSpeed,poseSpeed)),toSprint=Mathf.SmoothStep(0,1,Mathf.InverseLerp(RunNaturalSpeed,SprintNaturalSpeed,poseSpeed));
             float toRunBack=Mathf.SmoothStep(0,1,Mathf.InverseLerp(JogBackNaturalSpeed,RunBackNaturalSpeed,poseSpeed));
-            float moving=locomotion*moveBlend,free=moving*(1-dribbleBlend),forward=free*(1-backwardBlend),back=free*backwardBlend;
+            float moving=locomotion*moveBlend,free=moving*(1-dribbleBlend);
+            float sideShare=Mathf.Clamp01(sideBlend),backShare=Mathf.Min(Mathf.Clamp01(backwardBlend),1-sideShare);
+            float forward=free*(1-sideShare-backShare),back=free*backShare,lateral=free*sideShare;
             mecanimMixer.SetInputWeight(IdleInput,locomotion*(1-moveBlend));
             mecanimMixer.SetInputWeight(JogInput,forward*(1-toRun));
             mecanimMixer.SetInputWeight(RunInput,forward*toRun*(1-toSprint));
             mecanimMixer.SetInputWeight(SprintInput,forward*toRun*toSprint);
             mecanimMixer.SetInputWeight(JogBackInput,back*(1-toRunBack));
             mecanimMixer.SetInputWeight(RunBackInput,back*toRunBack);
+            mecanimMixer.SetInputWeight(StrafeLeftInput,sideSign<0?lateral:0);mecanimMixer.SetInputWeight(StrafeRightInput,sideSign>0?lateral:0);
             mecanimMixer.SetInputWeight(DribbleInput,moving*dribbleBlend);
             mecanimMixer.SetInputWeight(ActionInput,a0);mecanimMixer.SetInputWeight(ActionInput+1,a1);
             body.localPosition=Vector3.zero;body.localRotation=Quaternion.identity;
