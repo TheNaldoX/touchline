@@ -28,7 +28,8 @@ jobs:
           n="${GITHUB_REF_NAME#film/}"; n="$(echo "$n" | tr -c 'a-zA-Z0-9.\n-' '-')"
           echo "film=$n" >> "$GITHUB_OUTPUT"
           # film/proto-… : prototype Mecanim ; sinon séquence de match.
-          case "$n" in proto*) echo "method=Touchline.Editor.MecanimPrototypeFilm.Run" >> "$GITHUB_OUTPUT";; *) echo "method=Touchline.Editor.CiMatchFilm.Run" >> "$GITHUB_OUTPUT";; esac
+          # film/ui… : captures d'écran de l'interface (mode Play, Unity quitte seul).
+          case "$n" in proto*) echo "method=Touchline.Editor.MecanimPrototypeFilm.Run" >> "$GITHUB_OUTPUT";; ui*) echo "method=Touchline.Editor.CiUiScreens.Run" >> "$GITHUB_OUTPUT"; echo "manual=true" >> "$GITHUB_OUTPUT";; *) echo "method=Touchline.Editor.CiMatchFilm.Run" >> "$GITHUB_OUTPUT";; esac
 
       - name: Libérer de l'espace disque
         uses: jlumbroso/free-disk-space@v1.3.1
@@ -78,6 +79,7 @@ jobs:
           unityVersion: 6000.3.24f1
           targetPlatform: Android
           buildMethod: ${{ steps.name.outputs.method }}
+          manualExit: ${{ steps.name.outputs.manual == 'true' }}
           allowDirtyBuild: true
           customParameters: -force-glcore -touchlineFilm=${{ steps.name.outputs.film }}
 
@@ -88,6 +90,8 @@ jobs:
           src="unity/Touchline/build/film/${{ steps.name.outputs.film }}"
           out="$RUNNER_TEMP/film/${{ steps.name.outputs.film }}"; mkdir -p "$out"
           ls -la "$src" "$src/broadcast" | head -5
+          cp "$src"/*.png "$src"/*.txt "$out/" 2>/dev/null || true # captures d'interface (film/ui…)
+          [ -d "$src/broadcast" ] || exit 0 # pas de vidéo pour les captures d'interface
           for cam in broadcast follow; do
             ffmpeg -v error -y -framerate 30 -i "$src/$cam/frame-%04d.jpg" -c:v libx264 -pix_fmt yuv420p -crf 26 -preset veryfast "$out/$cam.mp4"
             ffmpeg -v error -y -framerate 30 -i "$src/$cam/frame-%04d.jpg" -vf "fps=2,scale=480:-1,tile=4x5" -frames:v 1 "$out/$cam-sheet.jpg"
