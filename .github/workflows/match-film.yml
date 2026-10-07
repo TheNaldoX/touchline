@@ -45,23 +45,27 @@ jobs:
           key: Library-Android-${{ hashFiles('unity/Touchline/Packages/packages-lock.json', 'unity/Touchline/ProjectSettings/ProjectVersion.txt') }}
           restore-keys: Library-Android-
 
-      - name: Tournage dans Unity
-        uses: game-ci/unity-builder@v4
+      - name: Tournage dans Unity (rendu logiciel Mesa sous xvfb)
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        with:
-          projectPath: unity/Touchline
-          unityVersion: 6000.3.24f1
-          targetPlatform: Android
-          buildMethod: Touchline.Editor.CiMatchFilm.Run
-          allowDirtyBuild: true
-          customParameters: -force-glcore -touchlineFilm=${{ steps.name.outputs.film }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/film-log"
+          printf '%s' "$UNITY_LICENSE" > "$RUNNER_TEMP/unity.ulf"
+          docker run --rm -v "$GITHUB_WORKSPACE:/project" -v "$RUNNER_TEMP:/runner" \
+            unityci/editor:ubuntu-6000.3.24f1-android-3 bash -c '
+              set -x
+              apt-get update -qq >/dev/null && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq libgl1-mesa-dri libglx-mesa0 libegl-mesa0 mesa-vulkan-drivers >/dev/null
+              unity-editor -nographics -logFile /runner/film-log/activation.log -quit -manualLicenseFile /runner/unity.ulf || true
+              unity-editor -logFile /runner/film-log/unity.log -quit -projectPath /project/unity/Touchline -buildTarget Android \
+                -force-glcore -executeMethod Touchline.Editor.CiMatchFilm.Run -touchlineFilm=${{ steps.name.outputs.film }}
+              echo "exit $?" >> /runner/film-log/unity.log
+            ' || true
+          rm -f "$RUNNER_TEMP/unity.ulf"
+          tail -n 40 "$RUNNER_TEMP/film-log/unity.log" || true
 
       - name: Encodage des vidéos et planches
+        if: always()
         run: |
-          set -e
           which ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg)
           src="unity/Touchline/build/film/${{ steps.name.outputs.film }}"
           out="$RUNNER_TEMP/film/${{ steps.name.outputs.film }}"; mkdir -p "$out"
@@ -71,9 +75,13 @@ jobs:
             ffmpeg -v error -y -framerate 30 -i "$src/$cam/frame-%04d.jpg" -vf "fps=2,scale=480:-1,tile=4x5" -frames:v 1 "$out/$cam-sheet.jpg"
           done
           cp "$src/info.txt" "$out/" || true
+          grep -iE "GfxDevice|Renderer:|Vendor:|Version:  |OpenGL|Vulkan|graphics|TOUCHLINE_FILM|Exception|error CS|exit " "$RUNNER_TEMP/film-log/unity.log" | head -80 > "$out/unity-log-excerpt.txt" || true
+          tail -n 120 "$RUNNER_TEMP/film-log/unity.log" > "$out/unity-log-tail.txt" || true
+          tail -n 40 "$RUNNER_TEMP/film-log/activation.log" > "$out/activation-log-tail.txt" || true
           ls -la "$out"
 
       - name: Publication dans la branche films
+        if: always()
         run: |
           set -e
           name="${{ steps.name.outputs.film }}"
