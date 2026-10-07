@@ -5,9 +5,9 @@ UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOpt
 UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
 UnityEngine.Logger:Log (UnityEngine.LogType,object)
 UnityEngine.Debug:Log (object)
-Touchline.Editor.MecanimPrototypeFilm:Run () (at Assets/Touchline/Editor/MecanimPrototypeFilm.cs:106)
+Touchline.Editor.MecanimPrototypeFilm:Run () (at Assets/Touchline/Editor/MecanimPrototypeFilm.cs:111)
 
-(Filename: Assets/Touchline/Editor/MecanimPrototypeFilm.cs Line: 106)
+(Filename: Assets/Touchline/Editor/MecanimPrototypeFilm.cs Line: 111)
 
 [Licensing::Client] Successfully resolved entitlement details
 [UnityConnectServicesConfig] Service configuration:
@@ -22,7 +22,7 @@ Touchline.Editor.MecanimPrototypeFilm:Run () (at Assets/Touchline/Editor/Mecanim
     "licensingServiceBaseUrl": "",
     "enableProxyAutoconfig": "false"
 
-Killing ADB server in 0.110445 seconds.
+Killing ADB server in 0.079534 seconds.
 The command could not be loaded, possibly because:
   * You intended to execute a .NET application:
       The application 'build-server' does not exist.
@@ -34,10 +34,10 @@ https://aka.ms/dotnet-download
 
 Learn about SDK resolution:
 https://aka.ms/dotnet/sdk-not-found
-Start importing ProjectSettings/GraphicsSettings.asset using Guid(00000000000000006100000000000000) (LibraryAssetImporter) -> (artifact id: 'ca34b261beffdc4f550440e53edd2f64') in 0.001776584 seconds
+Start importing ProjectSettings/GraphicsSettings.asset using Guid(00000000000000006100000000000000) (LibraryAssetImporter) -> (artifact id: 'ca34b261beffdc4f550440e53edd2f64') in 0.001558273 seconds
 Refreshing native plugins compatible for Editor in 0.00 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Asset Pipeline Refresh (id=7347446046404c5d39b372f3c323446d): Total: 0.105 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Asset Pipeline Refresh (id=ab38f8f794ef5071fb7aec6e92c4ed17): Total: 0.088 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
 [Physics::Module] Cleanup current backend.
 [Physics::Module] Id: 0xf2b8ea05
 Input System module state changed to: ShutdownInProgress.
@@ -55,7 +55,7 @@ debugger-agent: Unable to listen on 44
 [Package Manager] Server process was shutdown
 Checking for leaked weakptr:
   Found no leaked weakptrs.
-##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1791375555901,"processId":1745,"allocatedMemory":11954096,"memoryLabels":[{"Default":24121},{"Permanent":15960},{"Thread":1084936},{"Manager":804394},{"VertexData":8},{"Geometry":408},{"Texture":160},{"Shader":79820},{"Material":24},{"GfxDevice":36256},{"Animation":28312},{"Audio":3032},{"FreeType":8},{"FontEngine":736},{"Physics":1970},{"Physics2D":16},{"Serialization":360},{"Input":26888},{"JobScheduler":33024},{"TextLib":280},{"Mono":32},{"MonoCode":96},{"ScriptingNativeRuntime":155096},{"BaseObject":1622952},{"Resource":1064},{"Renderer":3000},{"Transform":4717},{"File":832},{"WebCam":80},{"Culling":32},{"Terrain":11298},{"Wind":24},{"String":17632},{"DynamicArray":96434},{"HashMap":90338},{"Utility":2658752},{"Curl":2430},{"PoolAlloc":2048},{"AI":80},{"TypeTree":14981},{"ScriptManager":512},{"RuntimeInitializeOnLoadManager":64},{"SpriteAtlas":112},{"GI":7384},{"Director":8208},{"CloudService":7320},{"WebRequest":5195},{"VR":47754},{"SceneManager":536},{"Video":64},{"LazyScriptCache":32},{"Camera":17},{"Secure":12449},{"SerializationCache":1576},{"APIUpdating":10320},{"Subsystems":336},{"VirtualTexturing":57552},{"StaticSafetyDebugInfo":278528},{"Analytics":464},{"Hierarchy":1416},{"CoreStats":13112},{"Identifiers":6480},{"Gui":128},{"EditorUtility":76533},{"VersionControl":4},{"Undo":979},{"AssetDatabase":4549416},{"EditorGi":328},{"UnityConnect":29408},{"Upm":1744},{"AssetCompliance":64},{"DrivenProperties":72},{"LocalIPC":147},{"ProfilerEditor":9746},{"CoreBusinessMetrics":2377},{"Licensing":1128},{"AssetReference":32},{"IPCStream":32}]}
+##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1791377414836,"processId":1734,"allocatedMemory":11953348,"memoryLabels":[{"Default":24121},{"Permanent":15960},{"Thread":1084936},{"Manager":804394},{"VertexData":8},{"Geometry":408},{"Texture":160},{"Shader":79820},{"Material":24},{"GfxDevice":36256},{"Animation":28312},{"Audio":3032},{"FreeType":8},{"FontEngine":736},{"Physics":1970},{"Physics2D":16},{"Serialization":360},{"Input":26888},{"JobScheduler":33024},{"TextLib":280},{"Mono":32},{"MonoCode":96},{"ScriptingNativeRuntime":155096},{"BaseObject":1622952},{"Resource":1064},{"Renderer":3000},{"Transform":4717},{"File":832},{"WebCam":80},{"Culling":32},{"Terrain":11298},{"Wind":24},{"String":16787},{"DynamicArray":96434},{"HashMap":90338},{"Utility":2658752},{"Curl":2511},{"PoolAlloc":2048},{"AI":80},{"TypeTree":14981},{"ScriptManager":512},{"RuntimeInitializeOnLoadManager":64},{"SpriteAtlas":112},{"GI":7384},{"Director":8208},{"CloudService":7320},{"WebRequest":5211},{"VR":47754},{"SceneManager":536},{"Video":64},{"LazyScriptCache":32},{"Camera":17},{"Secure":12449},{"SerializationCache":1576},{"APIUpdating":10320},{"Subsystems":336},{"VirtualTexturing":57552},{"StaticSafetyDebugInfo":278528},{"Analytics":464},{"Hierarchy":1416},{"CoreStats":13112},{"Identifiers":6480},{"Gui":128},{"EditorUtility":76533},{"VersionControl":4},{"Undo":979},{"AssetDatabase":4549416},{"EditorGi":328},{"UnityConnect":29408},{"Upm":1744},{"AssetCompliance":64},{"DrivenProperties":72},{"LocalIPC":147},{"ProfilerEditor":9746},{"CoreBusinessMetrics":2377},{"Licensing":1128},{"AssetReference":32},{"IPCStream":32}]}
 [UnityConnectServicesConfig] Local config successfully read: "/usr/share/unity3d/config/services-config.json"
 [UnityConnectServicesConfig] "clientConnectTimeoutSec" was overridden with "5"
 [UnityConnectServicesConfig] "clientHandshakeTimeoutSec" was overridden with "10"
@@ -94,26 +94,26 @@ System name:             Linux
 Distro version:          #22-Ubuntu SMP Mon Jul 27 17:24:03 UTC 2026
 Kernel version:          6.17.0-1022-azure
 Architecture:            x86_64
-Available memory:        15993 MB
-Date:                    2026-10-07T12:19:16Z
+Available memory:        15989 MB
+Date:                    2026-10-07T12:50:15Z
 User audibert.victor13500@gmail.com logged in successfully
 [UnityConnect::TryLogin] Request Succeeded.
 [Licensing::Module] Trying to connect to existing licensing client channel...
 [Licensing::IpcConnector] Channel LicenseClient-root doesn't exist
-[Licensing::Module] Successfully launched the LicensingClient (PId: 2145)
-[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root" at "2026-10-07T12:19:17.569327Z"
+[Licensing::Module] Successfully launched the LicensingClient (PId: 2166)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root" at "2026-10-07T12:50:16.371074Z"
 [SignatureVerifier] Application signature verification not supported on this platform.
 [Licensing::Client] Handshaking with LicensingClient:
   Version:                 1.18.3+d7ffd15
-  Session Id:              e4259b80a2e54818b9cb123911a29190
-  Correlation Id:          98720f3dddefd0f007bca7c4d84515db
-  External correlation Id: 5540828698799714983
-  Machine Id:              CCxkBqY+OKOzDbSwaaOgpt1oFPs=
-[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-root" (connect: 0.38s, validation: 0.09s, handshake: 0.00s)
-[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root-notifications" at "2026-10-07T12:19:17.659351Z"
-[Licensing::Module] Connected to LicensingClient (PId: 2145, launch time: 0.00, total connection time: 0.47s)
+  Session Id:              4ccc46cf791a40678922b474fb119ca7
+  Correlation Id:          7323d791b13eb41dc56c8de0a17a58da
+  External correlation Id: 8042383485019235641
+  Machine Id:              1FBa06v7BaONgY4vOXcBTw84lVE=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-root" (connect: 0.25s, validation: 0.07s, handshake: 0.00s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root-notifications" at "2026-10-07T12:50:16.446112Z"
+[Licensing::Module] Connected to LicensingClient (PId: 2166, launch time: 0.00, total connection time: 0.32s)
 [Licensing::Client] Successfully updated the access token
-[Licensing::Module] Successfully updated the access token NBI_2DCmXB...
+[Licensing::Module] Successfully updated the access token ZzWOagArZP...
 [Licensing::Client] Successfully processed license management request
 [Licensing::Module] Successfully returned the entitlement license
 [Licensing::Client] Successfully queried for the EntitlementGroupsDetails
