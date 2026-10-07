@@ -1,0 +1,3 @@
+pied posé, glissement (m/s) : moyenne 0.20 · médiane 0.03 · p95 0.96 · max 12.40 (n=4986)
+à-coup de trajectoire (m/s³) : moyenne 214.42 · médiane 38.31 · p95 731.16 · max 921.74 (n=9812)
+rotation (°/s) : moyenne 53.41 · médiane 9.34 · p95 287.59 · max 998.48 (n=9812)
