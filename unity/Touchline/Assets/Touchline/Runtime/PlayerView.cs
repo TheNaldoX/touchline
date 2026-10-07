@@ -22,6 +22,7 @@ namespace Touchline
         // Trajectoire lissée entre les pas de simulation (vitesse continue) ; poseVelocity
         // pilote l'allure du corps (cadence, mélange marche/course) sans paliers à 10 Hz.
         readonly MotionCurve rootCurve=new MotionCurve();Point poseVelocity;
+        const float ActionTurnRate=600f; // °/s : plafond de rotation du corps pendant un geste (contrôle, frappe, duel)
         float gait,lean;bool initialized,leftFooted;Vector3 lastPosition;Quaternion lastRotation;
         static HumanSource source;
         static Mesh geometry;
@@ -97,7 +98,11 @@ namespace Touchline
                 transform.rotation=Quaternion.Euler(0,locomotionFacing.Sample(facing*Mathf.Rad2Deg,actor.velocity.Length,dt,reset),0);
             else {
                 // Contact actions retain their existing orientation timing.
-                transform.rotation=reset?Quaternion.Euler(0,facing*Mathf.Rad2Deg,0):Quaternion.Slerp(transform.rotation,Quaternion.Euler(0,facing*Mathf.Rad2Deg,0),1-Mathf.Exp(-dt*16));
+                // Same convergence, but never faster than a real quick turn: no
+                // half-turn snapped in two frames when an action starts.
+                var actionFacing=Quaternion.Euler(0,facing*Mathf.Rad2Deg,0);
+                float turnStep=Mathf.Min(Quaternion.Angle(transform.rotation,actionFacing)*(1-Mathf.Exp(-dt*16)),ActionTurnRate*dt);
+                transform.rotation=reset?actionFacing:Quaternion.RotateTowards(transform.rotation,actionFacing,turnStep);
                 locomotionFacing.Sample(transform.eulerAngles.y,actor.velocity.Length,0,true);
             }
             float run=Mathf.Clamp01(poseSpeed/7);
