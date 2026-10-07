@@ -24,7 +24,10 @@ namespace Touchline
         public static bool MecanimReady=>MecanimClips.ContainsKey(IdleClip)&&MecanimClips.ContainsKey(JogClip);
 
         // Vitesse (m/s) à laquelle le clip de course/conduite est joué à vitesse 1.
-        const float JogNaturalSpeed=3.4f,DribbleNaturalSpeed=3.0f;
+        // Vitesses naturelles des boucles (m/s), mesurées sur le modèle Touchline par
+        // MecanimPrototypeFilm (recul du pied d'appui par rapport aux hanches).
+        const float JogNaturalSpeed=2.3f,DribbleNaturalSpeed=1.8f;
+        const float LoopRateMin=.7f,LoopRateMax=2.6f; // cadence relative ; au-delà, le verrouillage des pieds absorbe l'écart
         const float MoveBlendFrom=.25f,MoveBlendTo=1.3f;     // m/s : de l'arrêt à la course
         const float ActionFadeIn=.10f,ActionFadeOut=.22f;     // s
         const float LocomotionBlendRate=8f;                  // 1/s : lissage arrêt/course/conduite
@@ -97,7 +100,7 @@ namespace Touchline
             float k=1-Mathf.Exp(-dt*LocomotionBlendRate);
             moveBlend=Mathf.Lerp(moveBlend,Mathf.SmoothStep(0,1,Mathf.InverseLerp(MoveBlendFrom,MoveBlendTo,poseSpeed)),k);
             dribbleBlend=Mathf.Lerp(dribbleBlend,carrying?1:0,k);
-            jogPlayable.SetSpeed(Mathf.Clamp(poseSpeed/JogNaturalSpeed,.7f,2.1f));dribblePlayable.SetSpeed(Mathf.Clamp(poseSpeed/DribbleNaturalSpeed,.7f,2.1f));
+            jogPlayable.SetSpeed(Mathf.Clamp(poseSpeed/JogNaturalSpeed,LoopRateMin,LoopRateMax));dribblePlayable.SetSpeed(Mathf.Clamp(poseSpeed/DribbleNaturalSpeed,LoopRateMin,LoopRateMax));
 
             // Gestes : nouveau geste → emplacement libre, fondu d'entrée, temps calé sur le contact.
             bool acting=MecanimAction(actor,out var clipName,out var simContact);
