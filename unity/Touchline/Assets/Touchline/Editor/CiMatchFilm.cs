@@ -22,6 +22,8 @@ namespace Touchline.Editor
 
         public static void Run()
         {
+            var log=new System.Text.StringBuilder();Application.LogCallback hook=(message,stack,type)=>{if(log.Length<200000)log.AppendLine(type+": "+message+(type==LogType.Exception||type==LogType.Error?"\n"+stack:""));};
+            Application.logMessageReceived+=hook;string logPath=null;
             try{
                 string name=Arg("-touchlineFilm","film");if(!System.Text.RegularExpressions.Regex.IsMatch(name,"^[a-zA-Z0-9.-]+$"))throw new Exception("Nom de film invalide");
                 float start=float.Parse(Arg("-touchlineFilmStart","95"),System.Globalization.CultureInfo.InvariantCulture);
@@ -36,10 +38,15 @@ namespace Touchline.Editor
                 // Avance la partie jusqu'au moment filmé (pas de rendu pendant ce temps).
                 while(sim.State.clock<start&&!sim.State.halfTime&&!sim.State.finished)sim.Advance(MatchSimulation.Step);
                 var output=Path.GetFullPath(Path.Combine("build","film",name));if(Directory.Exists(output))Directory.Delete(output,true);
+                logPath=Path.Combine(output,"unity-messages.txt");
+                var diagnostics=new System.Text.StringBuilder();
+                diagnostics.AppendLine("pipeline="+(UnityEngine.Rendering.GraphicsSettings.defaultRenderPipeline!=null?UnityEngine.Rendering.GraphicsSettings.defaultRenderPipeline.name:"none")+" quality="+(QualitySettings.renderPipeline!=null?QualitySettings.renderPipeline.name:"none"));
                 var broadcastDir=Path.Combine(output,"broadcast");var followDir=Path.Combine(output,"follow");Directory.CreateDirectory(broadcastDir);Directory.CreateDirectory(followDir);
                 var root=new GameObject("CI match film");var arena=root.AddComponent<MatchArena>();arena.Initialize(db,sim);arena.Speed=1;arena.Paused=false;arena.Broadcast.SetMode(MatchViewingMode.Full);
                 var target=new RenderTexture(Width,Height,24){antiAliasing=2};target.Create();
                 arena.MatchCamera.targetTexture=target;arena.MatchCamera.aspect=(float)Width/Height;
+                {var probe=new GameObject("Probe camera").AddComponent<Camera>();probe.enabled=false;probe.clearFlags=CameraClearFlags.SolidColor;probe.backgroundColor=Color.red;probe.cullingMask=0;probe.targetTexture=target;
+                 Capture(probe,target,root,Path.Combine(output,"probe-red.jpg"));diagnostics.AppendLine("probe-red mean="+MeanColor(target));UnityEngine.Object.DestroyImmediate(probe.gameObject);}
                 // Caméra « télé » rapprochée : basse, sur le côté, qui suit l'action en douceur.
                 var follow=new GameObject("Follow camera").AddComponent<Camera>();follow.enabled=false;follow.fieldOfView=28;follow.nearClipPlane=.15f;follow.farClipPlane=270;
                 follow.clearFlags=CameraClearFlags.SolidColor;follow.backgroundColor=RenderSettings.fogColor;follow.targetTexture=target;follow.aspect=(float)Width/Height;
@@ -52,15 +59,23 @@ namespace Touchline.Editor
                     focus=i==0?desired:Vector3.SmoothDamp(focus,desired,ref focusVelocity,.35f,40,1f/Fps);
                     follow.transform.position=new Vector3(focus.x*.85f,5.5f,Mathf.Max(focus.z-20,-38)); // reste devant les tribunes (touche à 34 m)follow.transform.LookAt(focus);
                     Capture(arena.MatchCamera,target,root,Path.Combine(broadcastDir,"frame-"+i.ToString("D4")+".jpg"));
+                    if(i==0||i==count-1)diagnostics.AppendLine("frame "+i+" broadcast mean="+MeanColor(target)+" camera="+arena.MatchCamera.transform.position+" enabled="+arena.MatchCamera.enabled);
                     Capture(follow,target,root,Path.Combine(followDir,"frame-"+i.ToString("D4")+".jpg"));
                     if(arena.Paused)arena.Paused=false; // pas d'arrêt de diffusion pendant le tournage
                 }
-                File.WriteAllText(Path.Combine(output,"info.txt"),$"home={home} away={away} seed={seed} start={start} seconds={seconds} fps={Fps} clock_end={sim.State.clock:0.0} score={sim.State.score[0]}-{sim.State.score[1]}\ngraphics={SystemInfo.graphicsDeviceType} {SystemInfo.graphicsDeviceName} {SystemInfo.graphicsDeviceVersion}\n");
+                File.WriteAllText(Path.Combine(output,"info.txt"),$"home={home} away={away} seed={seed} start={start} seconds={seconds} fps={Fps} clock_end={sim.State.clock:0.0} score={sim.State.score[0]}-{sim.State.score[1]}\ngraphics={SystemInfo.graphicsDeviceType} {SystemInfo.graphicsDeviceName} {SystemInfo.graphicsDeviceVersion}\n"+diagnostics);
                 arena.MatchCamera.targetTexture=null;target.Release();UnityEngine.Object.DestroyImmediate(target);UnityEngine.Object.DestroyImmediate(follow.gameObject);UnityEngine.Object.DestroyImmediate(root);
-                Debug.Log("TOUCHLINE_FILM_OK "+output);EditorApplication.Exit(0);
-            }catch(Exception e){Debug.LogException(e);EditorApplication.Exit(1);}
+                Debug.Log("TOUCHLINE_FILM_OK "+output);File.WriteAllText(logPath,log.ToString());EditorApplication.Exit(0);
+            }catch(Exception e){Debug.LogException(e);if(logPath!=null)File.WriteAllText(logPath,log.ToString());EditorApplication.Exit(1);}
         }
 
+        static string MeanColor(RenderTexture target)
+        {
+            var previous=RenderTexture.active;RenderTexture.active=target;var image=new Texture2D(target.width,target.height,TextureFormat.RGB24,false);
+            image.ReadPixels(new Rect(0,0,target.width,target.height),0,0);image.Apply();RenderTexture.active=previous;
+            var pixels=image.GetPixels32();double r=0,g=0,b=0;foreach(var p in pixels){r+=p.r;g+=p.g;b+=p.b;}UnityEngine.Object.DestroyImmediate(image);
+            return $"{r/pixels.Length:0}/{g/pixels.Length:0}/{b/pixels.Length:0}";
+        }
         // Même principe que NaturalMatchFilm : les maillages animés sont figés
         // (BakeMesh) avant chaque image, car le mode batch ne les met pas à jour seul.
         static void Capture(Camera camera,RenderTexture target,GameObject root,string path)

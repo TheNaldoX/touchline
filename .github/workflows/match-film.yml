@@ -76,7 +76,7 @@ jobs:
             ffmpeg -v error -y -framerate 30 -i "$src/$cam/frame-%04d.jpg" -c:v libx264 -pix_fmt yuv420p -crf 26 -preset veryfast "$out/$cam.mp4"
             ffmpeg -v error -y -framerate 30 -i "$src/$cam/frame-%04d.jpg" -vf "fps=2,scale=480:-1,tile=4x5" -frames:v 1 "$out/$cam-sheet.jpg"
           done
-          cp "$src/info.txt" "$out/" || true
+          cp "$src/info.txt" "$src/unity-messages.txt" "$src/probe-red.jpg" "$out/" || true
           ls -la "$out"
 
       - name: Publication dans la branche films
