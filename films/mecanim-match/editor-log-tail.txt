@@ -55,7 +55,7 @@ debugger-agent: Unable to listen on 44
 Some stopped graphs remaining at DirectorManager destruction. These graphs should have been destroyed before
 Checking for leaked weakptr:
   Found no leaked weakptrs.
-##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1791384883187,"processId":1748,"allocatedMemory":12088333,"memoryLabels":[{"Default":24121},{"Permanent":15960},{"Thread":1085016},{"Manager":804394},{"VertexData":8},{"Geometry":408},{"Texture":160},{"Shader":79820},{"Material":24},{"GfxDevice":36400},{"Animation":2832},{"Audio":3032},{"FreeType":8},{"FontEngine":736},{"Physics":1970},{"Physics2D":16},{"Serialization":360},{"Input":26888},{"JobScheduler":33024},{"TextLib":280},{"Mono":32},{"MonoCode":96},{"ScriptingNativeRuntime":155096},{"BaseObject":1622952},{"Resource":1064},{"Renderer":3000},{"Transform":4717},{"File":832},{"WebCam":80},{"Culling":32},{"Terrain":11298},{"Wind":24},{"String":24836},{"DynamicArray":115186},{"HashMap":85730},{"Utility":2658752},{"Curl":2430},{"PoolAlloc":2048},{"AI":80},{"TypeTree":14981},{"ScriptManager":512},{"RuntimeInitializeOnLoadManager":64},{"SpriteAtlas":112},{"GI":7384},{"Director":136176},{"CloudService":9480},{"WebRequest":13484},{"VR":47754},{"SceneManager":536},{"Video":64},{"LazyScriptCache":32},{"Camera":17},{"Secure":12449},{"SerializationCache":1576},{"APIUpdating":10320},{"Subsystems":336},{"VirtualTexturing":57552},{"StaticSafetyDebugInfo":278528},{"Analytics":464},{"Hierarchy":1416},{"CoreStats":13112},{"Identifiers":6480},{"Gui":128},{"EditorUtility":76517},{"VersionControl":4},{"Undo":979},{"AssetDatabase":4549160},{"EditorGi":328},{"UnityConnect":29408},{"Upm":1744},{"AssetCompliance":64},{"DrivenProperties":72},{"LocalIPC":147},{"ProfilerEditor":9746},{"CoreBusinessMetrics":2377},{"Licensing":1128},{"AssetReference":32},{"IPCStream":32}]}
+##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1791387518962,"processId":1741,"allocatedMemory":12088492,"memoryLabels":[{"Default":24121},{"Permanent":15960},{"Thread":1085016},{"Manager":804394},{"VertexData":8},{"Geometry":408},{"Texture":160},{"Shader":79820},{"Material":24},{"GfxDevice":36400},{"Animation":2832},{"Audio":3032},{"FreeType":8},{"FontEngine":736},{"Physics":1970},{"Physics2D":16},{"Serialization":360},{"Input":26888},{"JobScheduler":33024},{"TextLib":280},{"Mono":32},{"MonoCode":96},{"ScriptingNativeRuntime":155096},{"BaseObject":1622952},{"Resource":1064},{"Renderer":3000},{"Transform":4717},{"File":832},{"WebCam":80},{"Culling":32},{"Terrain":11298},{"Wind":24},{"String":24854},{"DynamicArray":115186},{"HashMap":85730},{"Utility":2658752},{"Curl":2450},{"PoolAlloc":2048},{"AI":80},{"TypeTree":14981},{"ScriptManager":512},{"RuntimeInitializeOnLoadManager":64},{"SpriteAtlas":112},{"GI":7384},{"Director":136176},{"CloudService":9480},{"WebRequest":13605},{"VR":47754},{"SceneManager":536},{"Video":64},{"LazyScriptCache":32},{"Camera":17},{"Secure":12449},{"SerializationCache":1576},{"APIUpdating":10320},{"Subsystems":336},{"VirtualTexturing":57552},{"StaticSafetyDebugInfo":278528},{"Analytics":464},{"Hierarchy":1416},{"CoreStats":13112},{"Identifiers":6480},{"Gui":128},{"EditorUtility":76517},{"VersionControl":4},{"Undo":979},{"AssetDatabase":4549160},{"EditorGi":328},{"UnityConnect":29408},{"Upm":1744},{"AssetCompliance":64},{"DrivenProperties":72},{"LocalIPC":147},{"ProfilerEditor":9746},{"CoreBusinessMetrics":2377},{"Licensing":1128},{"AssetReference":32},{"IPCStream":32}]}
 [UnityConnectServicesConfig] Local config successfully read: "/usr/share/unity3d/config/services-config.json"
 [UnityConnectServicesConfig] "clientConnectTimeoutSec" was overridden with "5"
 [UnityConnectServicesConfig] "clientHandshakeTimeoutSec" was overridden with "10"
@@ -95,25 +95,25 @@ Distro version:          #22-Ubuntu SMP Mon Jul 27 17:24:03 UTC 2026
 Kernel version:          6.17.0-1022-azure
 Architecture:            x86_64
 Available memory:        15989 MB
-Date:                    2026-10-07T14:54:44Z
+Date:                    2026-10-07T15:38:40Z
 User audibert.victor13500@gmail.com logged in successfully
 [UnityConnect::TryLogin] Request Succeeded.
 [Licensing::Module] Trying to connect to existing licensing client channel...
 [Licensing::IpcConnector] Channel LicenseClient-root doesn't exist
-[Licensing::Module] Successfully launched the LicensingClient (PId: 2211)
-[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root" at "2026-10-07T14:54:45.439364Z"
+[Licensing::Module] Successfully launched the LicensingClient (PId: 2205)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root" at "2026-10-07T15:38:41.102644Z"
 [SignatureVerifier] Application signature verification not supported on this platform.
 [Licensing::Client] Handshaking with LicensingClient:
   Version:                 1.18.3+d7ffd15
-  Session Id:              f874f82f67954e61b63d7e1fc0f2d24b
-  Correlation Id:          84836993ecaa0ecad93883d4856a5d62
-  External correlation Id: 4349533921776756499
-  Machine Id:              4EOGN52m3hITm7q/a1dOh7t0sLQ=
-[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-root" (connect: 0.38s, validation: 0.09s, handshake: 0.00s)
-[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root-notifications" at "2026-10-07T14:54:45.528648Z"
-[Licensing::Module] Connected to LicensingClient (PId: 2211, launch time: 0.00, total connection time: 0.47s)
+  Session Id:              a48cbd35c2b24f67b81384ea49b70d85
+  Correlation Id:          74839e52ee945960b5f216d946a2e7d3
+  External correlation Id: 3122250858389517157
+  Machine Id:              Png1h3/32NfHAoENGtzYgMB6hq0=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-root" (connect: 0.38s, validation: 0.10s, handshake: 0.00s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root-notifications" at "2026-10-07T15:38:41.200721Z"
+[Licensing::Module] Connected to LicensingClient (PId: 2205, launch time: 0.00, total connection time: 0.47s)
 [Licensing::Client] Successfully updated the access token
-[Licensing::Module] Successfully updated the access token bbDErITzqG...
+[Licensing::Module] Successfully updated the access token vgmP-ZZ4wO...
 [Licensing::Client] Successfully processed license management request
 [Licensing::Module] Successfully returned the entitlement license
 [Licensing::Client] Successfully queried for the EntitlementGroupsDetails
