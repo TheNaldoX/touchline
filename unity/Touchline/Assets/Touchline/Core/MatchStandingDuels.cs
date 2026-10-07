@@ -68,6 +68,7 @@ namespace Touchline.Core
         // under .75 m). A boot that meets the exposed ball beside the runner
         // does not. Kept outside the penalty area: a
         // spot kick still needs the measured trip contact above.
+        const float BookedCarefulness=.5f; // part des fautes « en retard » encore commises une fois averti
         bool MistimedChallenge(Actor defender,Actor owner)
         {
             var m=State;float speed=owner.velocity.Length;
@@ -79,6 +80,7 @@ namespace Touchline.Core
             if(area)return false;
             float chance=Mathx.Clamp(.35f+(along<0?.15f:0)+(Skill(owner,"dribbling")-Skill(defender,"standingTackle"))*.004f
                 +(Skill(defender,"aggression")-60)*.003f+owner.velocity.Length*.025f,.10f,.65f);
+            if(defender.yellows>0)chance*=BookedCarefulness; // un joueur averti retient son geste
             if(Random()>=chance)return false;
             m.metrics[defender.side].fouls++;Emit("foul",defender.side,defender.id,Data(defender).name+" accroche son adversaire.");
             // Most such fouls are careless, not reckless.
