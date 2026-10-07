@@ -21,12 +21,19 @@ namespace Touchline
             if(mecanimClips==null){mecanimClips=new Dictionary<string,AnimationClip>();foreach(var clip in Resources.LoadAll<AnimationClip>("Animations/Mixamo"))if(clip!=null&&!clip.name.StartsWith("__preview__"))mecanimClips[clip.name]=clip;}
             return mecanimClips;}}
         const string IdleClip="Soccer Idle",JogClip="Jog Forward",DribbleClip="Dribble",KeeperIdleClip="Goalkeeper Idle";
+        const string RunClip="Standard Run",SprintClip="Two Cycle Sprint",JogBackClip="Jog Backward",RunBackClip="Run Backward";
         public static bool MecanimReady=>MecanimClips.ContainsKey(IdleClip)&&MecanimClips.ContainsKey(JogClip);
 
         // Vitesse (m/s) à laquelle le clip de course/conduite est joué à vitesse 1.
         // Vitesses naturelles des boucles (m/s), mesurées sur le modèle Touchline par
         // MecanimPrototypeFilm (recul du pied d'appui par rapport aux hanches).
         const float JogNaturalSpeed=2.3f,DribbleNaturalSpeed=1.8f;
+        const float RunNaturalSpeed=3.6f,SprintNaturalSpeed=5.2f;       // estimées, à confirmer par la mesure
+        const float JogBackNaturalSpeed=1.6f,RunBackNaturalSpeed=2.6f;  // estimées, à confirmer par la mesure
+        const float BackwardFrom=.35f,BackwardTo=.75f; // part de la vitesse dirigée vers l'arrière du joueur (cosinus) : du clip avant au clip arrière
+        const float BackwardSmoothing=6f;              // 1/s : lissage de la direction de course
+        // Entrées du mixeur : déplacements, puis deux emplacements de gestes.
+        const int IdleInput=0,JogInput=1,DribbleInput=2,RunInput=3,SprintInput=4,JogBackInput=5,RunBackInput=6,ActionInput=7,MixerInputs=9;
         const float LoopRateMin=.7f,LoopRateMax=2.6f; // cadence relative ; au-delà, le verrouillage des pieds absorbe l'écart
         const float MoveBlendFrom=.25f,MoveBlendTo=1.3f;     // m/s : de l'arrêt à la course
         const float ActionFadeIn=.10f,ActionFadeOut=.22f;     // s
@@ -44,11 +51,11 @@ namespace Touchline
         };
 
         Animator mecanimAnimator;PlayableGraph mecanimGraph;AnimationMixerPlayable mecanimMixer;
-        AnimationClipPlayable idlePlayable,jogPlayable,dribblePlayable;
+        AnimationClipPlayable idlePlayable,jogPlayable,dribblePlayable,runPlayable,sprintPlayable,jogBackPlayable,runBackPlayable;
         readonly AnimationClipPlayable[] actionPlayables=new AnimationClipPlayable[2];
         readonly float[] actionWeights=new float[2];readonly bool[] actionLive=new bool[2];
         int activeAction=-1;string mecanimActionKey;int mecanimActionSequence=-1;float mecanimActionElapsed,mecanimActionContact;
-        float moveBlend,dribbleBlend;bool mecanimKeeper;
+        float moveBlend,dribbleBlend,backwardBlend;Vector3 mecanimLastPosition;bool mecanimKeeper;
 
         bool EnsureMecanimGraph(bool keeper)
         {
@@ -59,12 +66,14 @@ namespace Touchline
             mecanimAnimator.avatar=HumanoidAvatar();mecanimAnimator.applyRootMotion=false;mecanimAnimator.cullingMode=AnimatorCullingMode.AlwaysAnimate;
             mecanimGraph=PlayableGraph.Create("Touchline player "+PlayerId);mecanimGraph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
             var output=AnimationPlayableOutput.Create(mecanimGraph,"Body",mecanimAnimator);
-            mecanimMixer=AnimationMixerPlayable.Create(mecanimGraph,5);output.SetSourcePlayable(mecanimMixer);
-            AnimationClipPlayable Loop(string name){var clip=MecanimClips.TryGetValue(name,out var c)?c:MecanimClips[IdleClip];var p=AnimationClipPlayable.Create(mecanimGraph,clip);p.SetApplyFootIK(true);
+            mecanimMixer=AnimationMixerPlayable.Create(mecanimGraph,MixerInputs);output.SetSourcePlayable(mecanimMixer);
+            AnimationClipPlayable Loop(string name,string fallback=IdleClip){var clip=MecanimClips.TryGetValue(name,out var c)?c:MecanimClips[fallback];var p=AnimationClipPlayable.Create(mecanimGraph,clip);p.SetApplyFootIK(true);
                 // Phase de départ propre à chaque joueur : pas de foulées synchronisées.
                 p.SetTime(clip.length*((motionIdentity%97)/97f));return p;}
             idlePlayable=Loop(keeper&&MecanimClips.ContainsKey(KeeperIdleClip)?KeeperIdleClip:IdleClip);jogPlayable=Loop(JogClip);dribblePlayable=Loop(MecanimClips.ContainsKey(DribbleClip)?DribbleClip:JogClip);
-            mecanimGraph.Connect(idlePlayable,0,mecanimMixer,0);mecanimGraph.Connect(jogPlayable,0,mecanimMixer,1);mecanimGraph.Connect(dribblePlayable,0,mecanimMixer,2);
+            runPlayable=Loop(RunClip,JogClip);sprintPlayable=Loop(SprintClip,RunClip);jogBackPlayable=Loop(JogBackClip,JogClip);runBackPlayable=Loop(RunBackClip,JogBackClip);
+            mecanimGraph.Connect(idlePlayable,0,mecanimMixer,IdleInput);mecanimGraph.Connect(jogPlayable,0,mecanimMixer,JogInput);mecanimGraph.Connect(dribblePlayable,0,mecanimMixer,DribbleInput);
+            mecanimGraph.Connect(runPlayable,0,mecanimMixer,RunInput);mecanimGraph.Connect(sprintPlayable,0,mecanimMixer,SprintInput);mecanimGraph.Connect(jogBackPlayable,0,mecanimMixer,JogBackInput);mecanimGraph.Connect(runBackPlayable,0,mecanimMixer,RunBackInput);
             for(int i=0;i<2;i++){actionWeights[i]=0;actionLive[i]=false;}activeAction=-1;mecanimActionKey=null;mecanimActionSequence=-1;
             return true;
         }
@@ -100,16 +109,22 @@ namespace Touchline
             float k=1-Mathf.Exp(-dt*LocomotionBlendRate);
             moveBlend=Mathf.Lerp(moveBlend,Mathf.SmoothStep(0,1,Mathf.InverseLerp(MoveBlendFrom,MoveBlendTo,poseSpeed)),k);
             dribbleBlend=Mathf.Lerp(dribbleBlend,carrying?1:0,k);
-            jogPlayable.SetSpeed(Mathf.Clamp(poseSpeed/JogNaturalSpeed,LoopRateMin,LoopRateMax));dribblePlayable.SetSpeed(Mathf.Clamp(poseSpeed/DribbleNaturalSpeed,LoopRateMin,LoopRateMax));
+            float Rate(float natural)=>Mathf.Clamp(poseSpeed/natural,LoopRateMin,LoopRateMax);
+            jogPlayable.SetSpeed(Rate(JogNaturalSpeed));dribblePlayable.SetSpeed(Rate(DribbleNaturalSpeed));runPlayable.SetSpeed(Rate(RunNaturalSpeed));sprintPlayable.SetSpeed(Rate(SprintNaturalSpeed));
+            jogBackPlayable.SetSpeed(Rate(JogBackNaturalSpeed));runBackPlayable.SetSpeed(Rate(RunBackNaturalSpeed));
+            // Course arrière : le joueur se déplace à l'opposé de son regard (repli défensif).
+            var travel=transform.position-mecanimLastPosition;travel.y=0;mecanimLastPosition=transform.position;
+            float backward=reset||dt<=0||travel.sqrMagnitude<1e-6f?0:Mathf.SmoothStep(0,1,Mathf.InverseLerp(BackwardFrom,BackwardTo,-Vector3.Dot(travel.normalized,transform.forward)));
+            backwardBlend=reset?backward:Mathf.Lerp(backwardBlend,backward,1-Mathf.Exp(-dt*BackwardSmoothing));
 
             // Gestes : nouveau geste → emplacement libre, fondu d'entrée, temps calé sur le contact.
             bool acting=MecanimAction(actor,out var clipName,out var simContact);
             string key=acting?clipName:null;
             if(acting&&(key!=mecanimActionKey||actor.actionSequence!=mecanimActionSequence)){
                 int slot=activeAction<0?0:1-activeAction;
-                if(actionPlayables[slot].IsValid()){mecanimGraph.Disconnect(mecanimMixer,3+slot);actionPlayables[slot].Destroy();}
+                if(actionPlayables[slot].IsValid()){mecanimGraph.Disconnect(mecanimMixer,ActionInput+slot);actionPlayables[slot].Destroy();}
                 var clip=MecanimClips[clipName];actionPlayables[slot]=AnimationClipPlayable.Create(mecanimGraph,clip);actionPlayables[slot].SetApplyFootIK(true);
-                mecanimGraph.Connect(actionPlayables[slot],0,mecanimMixer,3+slot);actionLive[slot]=true;if(activeAction>=0)actionLive[activeAction]=false;
+                mecanimGraph.Connect(actionPlayables[slot],0,mecanimMixer,ActionInput+slot);actionLive[slot]=true;if(activeAction>=0)actionLive[activeAction]=false;
                 activeAction=slot;mecanimActionKey=key;mecanimActionSequence=actor.actionSequence;mecanimActionElapsed=0;
                 mecanimActionContact=(ClipContact.TryGetValue(clipName,out var c)?c:clip.length*.4f)-simContact;
                 if(reset)actionWeights[slot]=1;
@@ -123,16 +138,24 @@ namespace Touchline
                 float target=actionLive[i]?1:0;float rate=actionLive[i]?1/ActionFadeIn:1/ActionFadeOut;
                 actionWeights[i]=Mathf.MoveTowards(actionWeights[i],target,rate*dt);
                 if(!actionLive[i]){actionPlayables[i].SetSpeed(1);} // le geste finit naturellement pendant le fondu de sortie
-                if(!actionLive[i]&&actionWeights[i]<=0){mecanimGraph.Disconnect(mecanimMixer,3+i);actionPlayables[i].Destroy();if(activeAction==i)activeAction=-1;}
+                if(!actionLive[i]&&actionWeights[i]<=0){mecanimGraph.Disconnect(mecanimMixer,ActionInput+i);actionPlayables[i].Destroy();if(activeAction==i)activeAction=-1;}
             }
             float a0=actionPlayables[0].IsValid()?actionWeights[0]:0,a1=actionPlayables[1].IsValid()?actionWeights[1]:0;
             // Deux gestes en fondu enchaîné : leur somme ne dépasse pas 1.
             if(a0+a1>1){float scale=1/(a0+a1);a0*=scale;a1*=scale;}
             float locomotion=1-(a0+a1);
-            mecanimMixer.SetInputWeight(0,locomotion*(1-moveBlend));
-            mecanimMixer.SetInputWeight(1,locomotion*moveBlend*(1-dribbleBlend));
-            mecanimMixer.SetInputWeight(2,locomotion*moveBlend*dribbleBlend);
-            mecanimMixer.SetInputWeight(3,a0);mecanimMixer.SetInputWeight(4,a1);
+            // Allure avant : trot → course → sprint selon la vitesse, entre leurs vitesses naturelles.
+            float toRun=Mathf.SmoothStep(0,1,Mathf.InverseLerp(JogNaturalSpeed,RunNaturalSpeed,poseSpeed)),toSprint=Mathf.SmoothStep(0,1,Mathf.InverseLerp(RunNaturalSpeed,SprintNaturalSpeed,poseSpeed));
+            float toRunBack=Mathf.SmoothStep(0,1,Mathf.InverseLerp(JogBackNaturalSpeed,RunBackNaturalSpeed,poseSpeed));
+            float moving=locomotion*moveBlend,free=moving*(1-dribbleBlend),forward=free*(1-backwardBlend),back=free*backwardBlend;
+            mecanimMixer.SetInputWeight(IdleInput,locomotion*(1-moveBlend));
+            mecanimMixer.SetInputWeight(JogInput,forward*(1-toRun));
+            mecanimMixer.SetInputWeight(RunInput,forward*toRun*(1-toSprint));
+            mecanimMixer.SetInputWeight(SprintInput,forward*toRun*toSprint);
+            mecanimMixer.SetInputWeight(JogBackInput,back*(1-toRunBack));
+            mecanimMixer.SetInputWeight(RunBackInput,back*toRunBack);
+            mecanimMixer.SetInputWeight(DribbleInput,moving*dribbleBlend);
+            mecanimMixer.SetInputWeight(ActionInput,a0);mecanimMixer.SetInputWeight(ActionInput+1,a1);
             body.localPosition=Vector3.zero;body.localRotation=Quaternion.identity;
             mecanimGraph.Evaluate(reset?0:Mathf.Max(0,dt));
             MecanimFootLock(dt,reset);
