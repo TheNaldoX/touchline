@@ -48,7 +48,7 @@ namespace Touchline.Editor
                 {var probe=new GameObject("Probe camera").AddComponent<Camera>();probe.enabled=false;probe.clearFlags=CameraClearFlags.SolidColor;probe.backgroundColor=Color.red;probe.cullingMask=0;probe.targetTexture=target;
                  Capture(probe,target,root,Path.Combine(output,"probe-red.jpg"));diagnostics.AppendLine("probe-red mean="+MeanColor(target));UnityEngine.Object.DestroyImmediate(probe.gameObject);}
                 // Caméra « télé » rapprochée : basse, sur le côté, qui suit l'action en douceur.
-                var follow=new GameObject("Follow camera").AddComponent<Camera>();follow.enabled=false;follow.fieldOfView=28;follow.nearClipPlane=.15f;follow.farClipPlane=270;
+                var follow=new GameObject("Follow camera").AddComponent<Camera>();follow.enabled=false;follow.fieldOfView=32;follow.nearClipPlane=.15f;follow.farClipPlane=270;
                 follow.clearFlags=CameraClearFlags.SolidColor;follow.backgroundColor=RenderSettings.fogColor;follow.targetTexture=target;follow.aspect=(float)Width/Height;
                 Vector3 focus=Vector3.zero,focusVelocity=Vector3.zero;int count=Mathf.RoundToInt(seconds*Fps);
                 for(int i=0;i<count;i++){
@@ -57,7 +57,7 @@ namespace Touchline.Editor
                     var owner=sim.State.ball.owner==null?-1:Array.FindIndex(sim.State.actors,a=>a.id==sim.State.ball.owner);
                     if(owner>=0){var visual=arena.PlayerVisual(owner);if(visual!=null)desired=Vector3.Lerp(visual.transform.position+Vector3.up*.9f,desired,.3f);}
                     focus=i==0?desired:Vector3.SmoothDamp(focus,desired,ref focusVelocity,.35f,40,1f/Fps);
-                    follow.transform.position=new Vector3(focus.x*.85f,5.5f,Mathf.Max(focus.z-20,-38)); // reste devant les tribunes (touche à 34 m)follow.transform.LookAt(focus);
+                    follow.transform.position=new Vector3(focus.x,3.4f,Mathf.Max(focus.z-12,-40));follow.transform.LookAt(focus+Vector3.down*.2f); // caméra basse et proche, façon diffusion rapprochée
                     Capture(arena.MatchCamera,target,root,Path.Combine(broadcastDir,"frame-"+i.ToString("D4")+".jpg"));
                     if(i==0||i==count-1)diagnostics.AppendLine("frame "+i+" broadcast mean="+MeanColor(target)+" camera="+arena.MatchCamera.transform.position+" enabled="+arena.MatchCamera.enabled);
                     Capture(follow,target,root,Path.Combine(followDir,"frame-"+i.ToString("D4")+".jpg"));
