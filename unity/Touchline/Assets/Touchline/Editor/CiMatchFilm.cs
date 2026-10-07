@@ -51,8 +51,18 @@ namespace Touchline.Editor
                 var follow=new GameObject("Follow camera").AddComponent<Camera>();follow.enabled=false;follow.fieldOfView=32;follow.nearClipPlane=.15f;follow.farClipPlane=270;
                 follow.clearFlags=CameraClearFlags.SolidColor;follow.backgroundColor=RenderSettings.fogColor;follow.targetTexture=target;follow.aspect=(float)Width/Height;
                 Vector3 focus=Vector3.zero,focusVelocity=Vector3.zero;int count=Mathf.RoundToInt(seconds*Fps);
+                // Mesures de fluidité sur les 22 joueurs (rendu à 30 i/s) :
+                // glissement d'un pied posé (m/s), à-coup de trajectoire (variation
+                // d'accélération, m/s³) et vitesse de rotation (°/s).
+                var lastRoot=new Vector3[22];var lastVelocity=new Vector3[22];var lastAcceleration=new Vector3[22];var lastYaw=new float[22];var lastFeet=new Vector3[44];
+                var slides=new List<float>();var jerks=new List<float>();var yawRates=new List<float>();float dt=1f/Fps;
                 for(int i=0;i<count;i++){
                     arena.RenderFrame(1f/Fps);
+                    for(int k=0;k<22;k++){var v=arena.PlayerVisual(k);if(v==null||sim.State.actors[k].sentOff)continue;var root=v.transform.position;float yaw=v.transform.eulerAngles.y;
+                        for(int f=0;f<2;f++){var foot=v.FootPosition(f==0);if(i>1&&foot.y<.12f&&lastFeet[k*2+f].y<.12f){var d=foot-lastFeet[k*2+f];d.y=0;slides.Add(d.magnitude/dt);}lastFeet[k*2+f]=foot;}
+                        var velocity=(root-lastRoot[k])/dt;var acceleration=(velocity-lastVelocity[k])/dt;
+                        if(i>3&&(root-lastRoot[k]).magnitude<.5f){jerks.Add((acceleration-lastAcceleration[k]).magnitude/dt);yawRates.Add(Mathf.Abs(Mathf.DeltaAngle(lastYaw[k],yaw))/dt);}
+                        lastRoot[k]=root;lastVelocity[k]=velocity;lastAcceleration[k]=acceleration;lastYaw[k]=yaw;}
                     var desired=arena.BallDisplayPosition;desired.y=.9f;
                     var owner=sim.State.ball.owner==null?-1:Array.FindIndex(sim.State.actors,a=>a.id==sim.State.ball.owner);
                     if(owner>=0){var visual=arena.PlayerVisual(owner);if(visual!=null)desired=Vector3.Lerp(visual.transform.position+Vector3.up*.9f,desired,.3f);}
@@ -63,6 +73,8 @@ namespace Touchline.Editor
                     Capture(follow,target,root,Path.Combine(followDir,"frame-"+i.ToString("D4")+".jpg"));
                     if(arena.Paused)arena.Paused=false; // pas d'arrêt de diffusion pendant le tournage
                 }
+                string Stats(List<float> values){if(values.Count==0)return "—";values.Sort();return $"moyenne {values.Average():0.00} · médiane {values[values.Count/2]:0.00} · p95 {values[(int)(values.Count*.95f)]:0.00} · max {values[values.Count-1]:0.00} (n={values.Count})";}
+                File.WriteAllText(Path.Combine(output,"metrics.txt"),"pied posé, glissement (m/s) : "+Stats(slides)+"\nà-coup de trajectoire (m/s³) : "+Stats(jerks)+"\nrotation (°/s) : "+Stats(yawRates)+"\n");
                 File.WriteAllText(Path.Combine(output,"info.txt"),$"home={home} away={away} seed={seed} start={start} seconds={seconds} fps={Fps} clock_end={sim.State.clock:0.0} score={sim.State.score[0]}-{sim.State.score[1]}\ngraphics={SystemInfo.graphicsDeviceType} {SystemInfo.graphicsDeviceName} {SystemInfo.graphicsDeviceVersion}\n"+diagnostics);
                 arena.MatchCamera.targetTexture=null;target.Release();UnityEngine.Object.DestroyImmediate(target);UnityEngine.Object.DestroyImmediate(follow.gameObject);UnityEngine.Object.DestroyImmediate(root);
                 Debug.Log("TOUCHLINE_FILM_OK "+output);File.WriteAllText(logPath,log.ToString());EditorApplication.Exit(0);
