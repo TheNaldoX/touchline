@@ -58,11 +58,11 @@ namespace Touchline.Editor
                 var slides=new List<float>();var jerks=new List<float>();var yawRates=new List<float>();float dt=1f/Fps;
                 for(int i=0;i<count;i++){
                     arena.RenderFrame(1f/Fps);
-                    for(int k=0;k<22;k++){var v=arena.PlayerVisual(k);if(v==null||sim.State.actors[k].sentOff)continue;var root=v.transform.position;float yaw=v.transform.eulerAngles.y;
+                    for(int k=0;k<22;k++){var v=arena.PlayerVisual(k);if(v==null||sim.State.actors[k].sentOff)continue;var rootPosition=v.transform.position;float yaw=v.transform.eulerAngles.y;
                         for(int f=0;f<2;f++){var foot=v.FootPosition(f==0);if(i>1&&foot.y<.12f&&lastFeet[k*2+f].y<.12f){var d=foot-lastFeet[k*2+f];d.y=0;slides.Add(d.magnitude/dt);}lastFeet[k*2+f]=foot;}
-                        var velocity=(root-lastRoot[k])/dt;var acceleration=(velocity-lastVelocity[k])/dt;
-                        if(i>3&&(root-lastRoot[k]).magnitude<.5f){jerks.Add((acceleration-lastAcceleration[k]).magnitude/dt);yawRates.Add(Mathf.Abs(Mathf.DeltaAngle(lastYaw[k],yaw))/dt);}
-                        lastRoot[k]=root;lastVelocity[k]=velocity;lastAcceleration[k]=acceleration;lastYaw[k]=yaw;}
+                        var velocity=(rootPosition-lastRoot[k])/dt;var acceleration=(velocity-lastVelocity[k])/dt;
+                        if(i>3&&(rootPosition-lastRoot[k]).magnitude<.5f){jerks.Add((acceleration-lastAcceleration[k]).magnitude/dt);yawRates.Add(Mathf.Abs(Mathf.DeltaAngle(lastYaw[k],yaw))/dt);}
+                        lastRoot[k]=rootPosition;lastVelocity[k]=velocity;lastAcceleration[k]=acceleration;lastYaw[k]=yaw;}
                     var desired=arena.BallDisplayPosition;desired.y=.9f;
                     var owner=sim.State.ball.owner==null?-1:Array.FindIndex(sim.State.actors,a=>a.id==sim.State.ball.owner);
                     if(owner>=0){var visual=arena.PlayerVisual(owner);if(visual!=null)desired=Vector3.Lerp(visual.transform.position+Vector3.up*.9f,desired,.3f);}
