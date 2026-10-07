@@ -125,6 +125,8 @@ namespace Touchline
         bool MecanimRender(Actor actor,float dt,bool reset,float poseSpeed,bool carrying)
         {
             if(!UseMecanim||!EnsureMecanimGraph(actor.slot==0))return false;leftFootedNow=leftFooted;mecanimPoseSpeed=poseSpeed;
+            diagActor=actor;diagSpeed=poseSpeed;float yawNow=transform.eulerAngles.y;diagYawRate=dt>0?Mathf.Abs(Mathf.DeltaAngle(diagLastYaw,yawNow))/dt:0;diagLastYaw=yawNow;
+            if(++diagCalls%(22*150)==0)DiagDump();
             if(reset){moveBlend=Mathf.SmoothStep(0,1,Mathf.InverseLerp(MoveBlendFrom,MoveBlendTo,poseSpeed));dribbleBlend=carrying?1:0;}
             float k=1-Mathf.Exp(-dt*LocomotionBlendRate);
             moveBlend=Mathf.Lerp(moveBlend,Mathf.SmoothStep(0,1,Mathf.InverseLerp(MoveBlendFrom,MoveBlendTo,poseSpeed)),k);
@@ -200,6 +202,20 @@ namespace Touchline
         const float FootLockRelease=.30f;   // m : au-delà, le pied décroche et se repose plus loin
         const float FootLockBlend=12f;      // 1/s : entrée/sortie du verrouillage
         readonly Vector3[] footLockPoint=new Vector3[2];readonly bool[] footLocked=new bool[2];readonly float[] footLockWeight=new float[2];
+        static readonly Dictionary<string,List<float>> diagSlides=new Dictionary<string,List<float>>();static int diagCalls;
+        readonly Vector3[] diagLastFoot=new Vector3[2];readonly bool[] diagMiss=new bool[2];Actor diagActor;float diagSpeed,diagYawRate,diagLastYaw;
+        static void DiagDump()
+        {
+            var sb=new System.Text.StringBuilder();sb.AppendLine("DIAG glissement (appels "+diagCalls+") : clé ; n ; somme ; moyenne ; médiane ; p95");
+            var actions=new Dictionary<string,(int n,float sum)>();
+            foreach(var kv in diagSlides){string a=kv.Key.Substring(0,kv.Key.IndexOf(' '));float sum=0;foreach(var v in kv.Value)sum+=v;actions.TryGetValue(a,out var t);actions[a]=(t.n+kv.Value.Count,t.sum+sum);}
+            foreach(var a in actions)sb.AppendLine($"  ACTION {a.Key} ; {a.Value.n} ; {a.Value.sum:0.0}");
+            foreach(var kv in System.Linq.Enumerable.OrderByDescending(diagSlides,x=>{float t=0;foreach(var v in x.Value)t+=v;return t;})){
+                var v=new List<float>(kv.Value);v.Sort();float sum=0;foreach(var x in v)sum+=x;
+                sb.AppendLine($"  {kv.Key} ; {v.Count} ; {sum:0.0} ; {sum/v.Count:0.00} ; {v[v.Count/2]:0.00} ; {v[(int)(v.Count*.95f)]:0.00}");
+            }
+            Debug.Log(sb.ToString());
+        }
         void MecanimFootLock(float dt,bool reset)
         {
             for(int i=0;i<2;i++){
@@ -213,6 +229,18 @@ namespace Touchline
                 if(footLockWeight[i]<=0)continue;
                 var target=Vector3.Lerp(p,new Vector3(footLockPoint[i].x,p.y,footLockPoint[i].z),footLockWeight[i]);var rotation=foot.rotation;
                 SolveLeg(side,target);foot.rotation=rotation;
+                diagMiss[i]=(foot.position-target).magnitude>.03f;
+            }
+            for(int i=0;i<2;i++){
+                var p=Limb(Sides[i]).foot.position;
+                if(!reset&&dt>0&&p.y<.12f&&diagLastFoot[i].y<.12f&&diagActor!=null){
+                    var d=p-diagLastFoot[i];d.y=0;string act=diagActor.action;if(act=="control")act+=":"+diagActor.actionKind;
+                    string clip=activeAction>=0&&actionLive[activeAction]?mecanimActionKey:activeAction>=0?"fadeout":"-";
+                    string lockState=footLockWeight[i]>=1?"lock":footLocked[i]?"in":footLockWeight[i]>0?"out":"free";
+                    string key=$"{act} | {clip} | {lockState}{(footLockWeight[i]>0&&diagMiss[i]?"+ikmiss":"")} | v{(diagSpeed<.7f?"<0.7":diagSpeed<2?"<2":diagSpeed<4?"<4":">4")} | yaw{(diagYawRate<60?"<60":diagYawRate<200?"<200":">200")}";
+                    if(!diagSlides.TryGetValue(key,out var list))diagSlides[key]=list=new List<float>();list.Add(d.magnitude/dt);
+                }
+                diagLastFoot[i]=p;diagMiss[i]=false;
             }
         }
     }
