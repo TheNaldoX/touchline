@@ -51,5 +51,25 @@ namespace Touchline.Tests
             }
             Assert.IsTrue(found,"Aucune position de référence ne déclenche de tacle glissé : test à revoir");
         }
+
+        // Faute en retard dans la surface : penalty, beaucoup plus rare qu'au milieu.
+        [Test]
+        public void LateChallengeInsideAreaIsRareButGivesPenalty()
+        {
+            int inArea=0,outside=0;string phase=null;
+            for(uint seed=1;seed<=600;seed++){
+                foreach(bool area in new[]{true,false}){
+                    var c=new Career{club="a"};c.lineup=Career.Select(Db,"a",c.tactic);var sim=MatchSimulation.Create(Db,c,"b",unchecked(seed*2654435761u),2700);sim.State.professionalRules=true; // graines dispersées : le premier tirage du générateur suit la graine
+                    var owner=sim.State.actors[9];var defender=sim.State.actors[11+3];int dir=sim.Direction(0);float x=area?44:5;
+                    owner.position=new Point(dir*x,0);owner.velocity=new Point(dir*5,0);defender.position=new Point(dir*(x-.4f),.3f);
+                    sim.State.phase="play";sim.State.restart=0;sim.State.ball=new BallState{owner=owner.id,side=0,position=owner.position,height=.11f};
+                    if(!(bool)typeof(MatchSimulation).GetMethod("MistimedChallenge",Flags).Invoke(sim,new object[]{defender,owner}))continue;
+                    if(area){inArea++;phase=sim.State.phase;}else outside++;
+                }
+            }
+            Assert.Greater(inArea,0,"Une faute en retard reste possible dans la surface");
+            Assert.AreEqual("penalty",phase);
+            Assert.Less(inArea,outside*.25f,"Bien plus rare que hors de la surface");
+        }
     }
 }

@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Une faute en retard dans sa propre surface (dix fois plus rare qu'ailleurs) donne un penalty : penalties 0,15 → 0,23 par match.
 - Corrections de relecture : appel en profondeur borné dans le temps, pas de retraite après un précontrat, terrain neutre pour les anciennes sauvegardes, constantes nommées.
 - Forme du jour, avantage du terrain et plongeon du gardien plus long : favori (écart 3–6) 50–53 % de victoires, nuls 26 %, domicile 46 %.
 - Joueur averti plus prudent (plus de tacle glissé, moitié moins de fautes en retard) : cartons rouges 0,30 → 0,20 par match.

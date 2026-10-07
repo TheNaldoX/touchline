@@ -66,8 +66,9 @@ namespace Touchline.Core
         // A lost poke from a defender in the carrier's running corridor, or
         // arriving from behind him, often catches his stride (lateral offset
         // under .75 m). A boot that meets the exposed ball beside the runner
-        // does not. Kept outside the penalty area: a
-        // spot kick still needs the measured trip contact above.
+        // does not. Inside his own area the defender holds back far more,
+        // but a late challenge there is a penalty.
+        const float AreaMistimedShare=.10f; // part des fautes en retard encore commises dans sa propre surface
         const float BookedCarefulness=.5f; // part des fautes « en retard » encore commises une fois averti
         bool MistimedChallenge(Actor defender,Actor owner)
         {
@@ -77,16 +78,16 @@ namespace Touchline.Core
             float along=Point.Dot(toDefender,run),lateral=Math.Abs(toDefender.x*run.z-toDefender.z*run.x);
             if(along< -1f||along>1.2f||lateral>.75f)return false;
             bool area=owner.position.x*Direction(owner.side)>36&&Math.Abs(owner.position.z)<20.16f;
-            if(area)return false;
             float chance=Mathx.Clamp(.35f+(along<0?.15f:0)+(Skill(owner,"dribbling")-Skill(defender,"standingTackle"))*.004f
                 +(Skill(defender,"aggression")-60)*.003f+owner.velocity.Length*.025f,.10f,.65f);
             if(defender.yellows>0)chance*=BookedCarefulness; // un joueur averti retient son geste
+            if(area)chance*=AreaMistimedShare; // dans sa surface, le défenseur retient beaucoup plus son geste
             if(Random()>=chance)return false;
             m.metrics[defender.side].fouls++;Emit("foul",defender.side,defender.id,Data(defender).name+" accroche son adversaire.");
             // Most such fouls are careless, not reckless.
             if(Random()<.16f+Math.Max(0,Skill(defender,"aggression")-70)*.006f)Caution(defender.id);
             BeginContactFall(owner,defender,true);
-            Restart("free-kick",owner.side,owner.position,3);return true;
+            if(area)Restart("penalty",owner.side,new Point(Direction(owner.side)*41.5f,0),3);else Restart("free-kick",owner.side,owner.position,3);return true;
         }
         // Called by the match loop before BeginStandingDuel, which stays a pure
         // reachability check. Only rolls when a poke is physically possible.
