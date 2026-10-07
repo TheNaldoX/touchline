@@ -28,8 +28,8 @@ namespace Touchline
         // Vitesses naturelles des boucles (m/s), mesurées sur le modèle Touchline par
         // MecanimPrototypeFilm (recul du pied d'appui par rapport aux hanches).
         const float JogNaturalSpeed=2.3f,DribbleNaturalSpeed=1.8f;
-        const float RunNaturalSpeed=3.6f,SprintNaturalSpeed=5.2f;       // estimées, à confirmer par la mesure
-        const float JogBackNaturalSpeed=1.6f,RunBackNaturalSpeed=2.6f;  // estimées, à confirmer par la mesure
+        const float RunNaturalSpeed=3.8f,SprintNaturalSpeed=5.7f;       // mesurées
+        const float JogBackNaturalSpeed=2.1f,RunBackNaturalSpeed=2.9f;  // mesurées
         const float BackwardFrom=.35f,BackwardTo=.75f; // part de la vitesse dirigée vers l'arrière du joueur (cosinus) : du clip avant au clip arrière
         const float BackwardSmoothing=6f;              // 1/s : lissage de la direction de course
         // Entrées du mixeur : déplacements, puis deux emplacements de gestes.
@@ -43,9 +43,9 @@ namespace Touchline
         // Mesuré sur les clips (vitesse maximale du membre, voir MecanimPrototypeFilm).
         static readonly Dictionary<string,float> ClipContact=new Dictionary<string,float>{
             // Pic de vitesse du pied qui frappe (analyse 60 Hz des clips Mixamo).
-            {"Kick Soccerball",.517f},{"Kick Soccerball (1)",.417f},{"Soccer Pass",.433f},{"Chip",.483f},{"Soccer Penalty Kick",.733f},{"Goalkeeper Drop Kick",2.083f},
+            {"Kick Soccerball",.517f},{"Kick Soccerball (1)",.417f},{"Soccer Pass",.433f},{"Chip",.483f},{"Soccer Penalty Kick",.733f},{"Strike Forward Jog",.467f},{"Goalkeeper Drop Kick",2.083f},
             // Pic de vitesse des mains.
-            {"Throw In",1.60f},{"Goalkeeper Pass",1.133f},{"Goalkeeper Diving Save",1.25f},{"Goalkeeper Catch",.25f},
+            {"Throw In",1.60f},{"Goalkeeper Overhand Throw",1.60f},{"Goalkeeper Pass",1.133f},{"Goalkeeper Diving Save",1.25f},{"Goalkeeper Catch",.25f},
             // Estimés (pas de membre dominant mesuré) : tête, tacle glissé, chute.
             {"Header",.55f},{"Soccer Header",.95f},{"Soccer Tackle",.45f},{"Soccer Trip",.70f},
         };
