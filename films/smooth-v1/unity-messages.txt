@@ -1,1 +1,0 @@
-Log: TOUCHLINE_FILM_OK /github/workspace/unity/Touchline/build/film/smooth-v1
