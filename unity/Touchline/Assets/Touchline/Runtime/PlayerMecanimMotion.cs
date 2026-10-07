@@ -85,7 +85,7 @@ namespace Touchline
         const string RunningStrikeClip="Strike Forward Jog",KeeperThrowClip="Goalkeeper Overhand Throw";
         const float RunningStrikeSpeed=2.5f; // m/s : au-delà, le tireur frappe dans sa course
         const string ReceiveClip="Receive Soccerball",FallenClip="Fallen Idle",StandUpClip="Standing Up";
-        const float ReceiveMaxSpeed=1.3f;   // m/s : contrôle arrêté (le clip est sur place)
+        const float ReceiveMaxSpeed=.7f;    // m/s : contrôle arrêté seulement (le clip fait des pas sur place)
         const float TripLyingFrom=.9f;      // s après la chute : fin de Soccer Trip, le joueur est au sol
         const float StandUpLead=1.0f;       // s avant la fin de la chute : début du relevé
         const float StandUpSkip=.67f;       // s : début utile de Standing Up (encore allongé avant)
