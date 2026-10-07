@@ -2,35 +2,35 @@ Touchline.Editor.CiMatchFilm:Run () (at Assets/Touchline/Editor/CiMatchFilm.cs:8
 
 [Assets/Touchline/Editor/CiMatchFilm.cs line 80]
 
-Assets/Touchline/Runtime/PlayerMecanimMotion.cs(57): PlayableGraph was not destroyed.
+Assets/Touchline/Runtime/PlayerMecanimMotion.cs(60): PlayableGraph was not destroyed.
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace () (at /home/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
 Touchline.Editor.CiMatchFilm:Run () (at Assets/Touchline/Editor/CiMatchFilm.cs:80)
 
 [Assets/Touchline/Editor/CiMatchFilm.cs line 80]
 
-Assets/Touchline/Runtime/PlayerMecanimMotion.cs(57): PlayableGraph was not destroyed.
+Assets/Touchline/Runtime/PlayerMecanimMotion.cs(60): PlayableGraph was not destroyed.
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace () (at /home/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
 Touchline.Editor.CiMatchFilm:Run () (at Assets/Touchline/Editor/CiMatchFilm.cs:80)
 
 [Assets/Touchline/Editor/CiMatchFilm.cs line 80]
 
-Assets/Touchline/Runtime/PlayerMecanimMotion.cs(57): PlayableGraph was not destroyed.
+Assets/Touchline/Runtime/PlayerMecanimMotion.cs(60): PlayableGraph was not destroyed.
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace () (at /home/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
 Touchline.Editor.CiMatchFilm:Run () (at Assets/Touchline/Editor/CiMatchFilm.cs:80)
 
 [Assets/Touchline/Editor/CiMatchFilm.cs line 80]
 
-Assets/Touchline/Runtime/PlayerMecanimMotion.cs(57): PlayableGraph was not destroyed.
+Assets/Touchline/Runtime/PlayerMecanimMotion.cs(60): PlayableGraph was not destroyed.
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace () (at /home/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
 Touchline.Editor.CiMatchFilm:Run () (at Assets/Touchline/Editor/CiMatchFilm.cs:80)
 
 [Assets/Touchline/Editor/CiMatchFilm.cs line 80]
 
-Assets/Touchline/Runtime/PlayerMecanimMotion.cs(57): PlayableGraph was not destroyed.
+Assets/Touchline/Runtime/PlayerMecanimMotion.cs(60): PlayableGraph was not destroyed.
 UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
 UnityEngine.StackTraceUtility:ExtractStackTrace () (at /home/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
 Touchline.Editor.CiMatchFilm:Run () (at Assets/Touchline/Editor/CiMatchFilm.cs:80)
@@ -55,7 +55,7 @@ debugger-agent: Unable to listen on 44
 Some stopped graphs remaining at DirectorManager destruction. These graphs should have been destroyed before
 Checking for leaked weakptr:
   Found no leaked weakptrs.
-##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1791377610073,"processId":1734,"allocatedMemory":11999826,"memoryLabels":[{"Default":24121},{"Permanent":15960},{"Thread":1084936},{"Manager":804394},{"VertexData":8},{"Geometry":408},{"Texture":160},{"Shader":79820},{"Material":24},{"GfxDevice":36400},{"Animation":1776},{"Audio":3032},{"FreeType":8},{"FontEngine":736},{"Physics":1970},{"Physics2D":16},{"Serialization":360},{"Input":26888},{"JobScheduler":33024},{"TextLib":280},{"Mono":32},{"MonoCode":96},{"ScriptingNativeRuntime":155096},{"BaseObject":1622952},{"Resource":1064},{"Renderer":3000},{"Transform":4717},{"File":832},{"WebCam":80},{"Culling":32},{"Terrain":11298},{"Wind":24},{"String":17594},{"DynamicArray":105330},{"HashMap":85730},{"Utility":2658752},{"Curl":2430},{"PoolAlloc":2048},{"AI":80},{"TypeTree":14981},{"ScriptManager":512},{"RuntimeInitializeOnLoadManager":64},{"SpriteAtlas":112},{"GI":7384},{"Director":76096},{"CloudService":7320},{"WebRequest":5195},{"VR":47754},{"SceneManager":536},{"Video":64},{"LazyScriptCache":32},{"Camera":17},{"Secure":12449},{"SerializationCache":1576},{"APIUpdating":10320},{"Subsystems":336},{"VirtualTexturing":57552},{"StaticSafetyDebugInfo":278528},{"Analytics":464},{"Hierarchy":1416},{"CoreStats":13112},{"Identifiers":6480},{"Gui":128},{"EditorUtility":76517},{"VersionControl":4},{"Undo":979},{"AssetDatabase":4549416},{"EditorGi":328},{"UnityConnect":29408},{"Upm":1744},{"AssetCompliance":64},{"DrivenProperties":72},{"LocalIPC":147},{"ProfilerEditor":9746},{"CoreBusinessMetrics":2377},{"Licensing":1128},{"AssetReference":32},{"IPCStream":32}]}
+##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1791378721541,"processId":1735,"allocatedMemory":11999016,"memoryLabels":[{"Default":24121},{"Permanent":15960},{"Thread":1084936},{"Manager":804394},{"VertexData":8},{"Geometry":408},{"Texture":160},{"Shader":79820},{"Material":24},{"GfxDevice":36400},{"Animation":1776},{"Audio":3032},{"FreeType":8},{"FontEngine":736},{"Physics":1970},{"Physics2D":16},{"Serialization":360},{"Input":26888},{"JobScheduler":33024},{"TextLib":280},{"Mono":32},{"MonoCode":96},{"ScriptingNativeRuntime":155096},{"BaseObject":1622952},{"Resource":1064},{"Renderer":3000},{"Transform":4717},{"File":832},{"WebCam":80},{"Culling":32},{"Terrain":11298},{"Wind":24},{"String":16750},{"DynamicArray":105330},{"HashMap":85730},{"Utility":2658752},{"Curl":2511},{"PoolAlloc":2048},{"AI":80},{"TypeTree":14981},{"ScriptManager":512},{"RuntimeInitializeOnLoadManager":64},{"SpriteAtlas":112},{"GI":7384},{"Director":76096},{"CloudService":7320},{"WebRequest":5148},{"VR":47754},{"SceneManager":536},{"Video":64},{"LazyScriptCache":32},{"Camera":17},{"Secure":12449},{"SerializationCache":1576},{"APIUpdating":10320},{"Subsystems":336},{"VirtualTexturing":57552},{"StaticSafetyDebugInfo":278528},{"Analytics":464},{"Hierarchy":1416},{"CoreStats":13112},{"Identifiers":6480},{"Gui":128},{"EditorUtility":76517},{"VersionControl":4},{"Undo":979},{"AssetDatabase":4549416},{"EditorGi":328},{"UnityConnect":29408},{"Upm":1744},{"AssetCompliance":64},{"DrivenProperties":72},{"LocalIPC":147},{"ProfilerEditor":9746},{"CoreBusinessMetrics":2377},{"Licensing":1128},{"AssetReference":32},{"IPCStream":32}]}
 [UnityConnectServicesConfig] Local config successfully read: "/usr/share/unity3d/config/services-config.json"
 [UnityConnectServicesConfig] "clientConnectTimeoutSec" was overridden with "5"
 [UnityConnectServicesConfig] "clientHandshakeTimeoutSec" was overridden with "10"
@@ -95,25 +95,25 @@ Distro version:          #22-Ubuntu SMP Mon Jul 27 17:24:03 UTC 2026
 Kernel version:          6.17.0-1022-azure
 Architecture:            x86_64
 Available memory:        15989 MB
-Date:                    2026-10-07T12:53:31Z
+Date:                    2026-10-07T13:12:02Z
 User audibert.victor13500@gmail.com logged in successfully
 [UnityConnect::TryLogin] Request Succeeded.
 [Licensing::Module] Trying to connect to existing licensing client channel...
 [Licensing::IpcConnector] Channel LicenseClient-root doesn't exist
-[Licensing::Module] Successfully launched the LicensingClient (PId: 2206)
-[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root" at "2026-10-07T12:53:32.29623Z"
+[Licensing::Module] Successfully launched the LicensingClient (PId: 2154)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root" at "2026-10-07T13:12:03.499837Z"
 [SignatureVerifier] Application signature verification not supported on this platform.
 [Licensing::Client] Handshaking with LicensingClient:
   Version:                 1.18.3+d7ffd15
-  Session Id:              44a4c0e69d014cc1a11be55f71c12b06
-  Correlation Id:          566e6f76bdf49492e956512486235e31
-  External correlation Id: 2429554155000899758
-  Machine Id:              J0NvPsUhgfCGYcVBpxaFPQB9ilk=
-[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-root" (connect: 0.38s, validation: 0.08s, handshake: 0.00s)
-[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root-notifications" at "2026-10-07T12:53:32.377243Z"
-[Licensing::Module] Connected to LicensingClient (PId: 2206, launch time: 0.00, total connection time: 0.46s)
+  Session Id:              9bba7758be084fdebc31b3d4f43b5aaf
+  Correlation Id:          f70bbeaf51ed9745eae488ab620381f2
+  External correlation Id: 1605932888766958957
+  Machine Id:              2hEDXgKEDqZgMkKhM4gbI57lEGw=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-root" (connect: 0.25s, validation: 0.04s, handshake: 0.00s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root-notifications" at "2026-10-07T13:12:03.536674Z"
+[Licensing::Module] Connected to LicensingClient (PId: 2154, launch time: 0.00, total connection time: 0.28s)
 [Licensing::Client] Successfully updated the access token
-[Licensing::Module] Successfully updated the access token g92T5xrADy...
+[Licensing::Module] Successfully updated the access token JagQxIKq2O...
 [Licensing::Client] Successfully processed license management request
 [Licensing::Module] Successfully returned the entitlement license
 [Licensing::Client] Successfully queried for the EntitlementGroupsDetails
