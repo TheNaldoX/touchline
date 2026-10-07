@@ -1,0 +1,87 @@
+# Tourne une séquence de match dans Unity (sans téléphone) pour juger les animations.
+# Déclenchement : pousser une branche "film/<nom>". Résultat : vidéos et planches
+# d'images dans la branche "films", dossier films/<nom>/ (broadcast.mp4, follow.mp4,
+# broadcast-sheet.jpg, follow-sheet.jpg, info.txt).
+# Mêmes secrets Unity que la compilation de l'APK.
+name: Match film
+
+on:
+  push:
+    branches: ['film/**']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: match-film-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  film:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Nom du film
+        id: name
+        run: |
+          n="${GITHUB_REF_NAME#film/}"; n="$(echo "$n" | tr -c 'a-zA-Z0-9.-\n' '-')"
+          echo "film=$n" >> "$GITHUB_OUTPUT"
+
+      - name: Libérer de l'espace disque
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          android: false
+          large-packages: false
+
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - name: Cache Library Unity
+        uses: actions/cache@v4
+        with:
+          path: unity/Touchline/Library
+          key: Library-Android-${{ hashFiles('unity/Touchline/Packages/packages-lock.json', 'unity/Touchline/ProjectSettings/ProjectVersion.txt') }}
+          restore-keys: Library-Android-
+
+      - name: Tournage dans Unity
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: unity/Touchline
+          unityVersion: 6000.3.24f1
+          targetPlatform: Android
+          buildMethod: Touchline.Editor.CiMatchFilm.Run
+          allowDirtyBuild: true
+          customParameters: -force-glcore -touchlineFilm=${{ steps.name.outputs.film }}
+
+      - name: Encodage des vidéos et planches
+        run: |
+          set -e
+          which ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg)
+          src="unity/Touchline/build/film/${{ steps.name.outputs.film }}"
+          out="$RUNNER_TEMP/film/${{ steps.name.outputs.film }}"; mkdir -p "$out"
+          ls -la "$src" "$src/broadcast" | head -5
+          for cam in broadcast follow; do
+            ffmpeg -v error -y -framerate 30 -i "$src/$cam/frame-%04d.jpg" -c:v libx264 -pix_fmt yuv420p -crf 26 -preset veryfast "$out/$cam.mp4"
+            ffmpeg -v error -y -framerate 30 -i "$src/$cam/frame-%04d.jpg" -vf "fps=2,scale=480:-1,tile=4x5" -frames:v 1 "$out/$cam-sheet.jpg"
+          done
+          cp "$src/info.txt" "$out/" || true
+          ls -la "$out"
+
+      - name: Publication dans la branche films
+        run: |
+          set -e
+          name="${{ steps.name.outputs.film }}"
+          git config user.name "touchline-film-bot"; git config user.email "actions@users.noreply.github.com"
+          if git ls-remote --exit-code origin films >/dev/null 2>&1; then
+            git fetch --depth 1 origin films && git checkout -B films FETCH_HEAD
+          else
+            git checkout --orphan films && git rm -rf -q --cached .
+          fi
+          rm -rf "films/$name"; mkdir -p "films/$name"; cp "$RUNNER_TEMP/film/$name/"* "films/$name/"
+          git add "films/$name"; git commit -q -m "film: $name (${GITHUB_SHA::7})"; git push origin films
