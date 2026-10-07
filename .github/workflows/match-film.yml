@@ -65,7 +65,7 @@ jobs:
           targetPlatform: Android
           buildMethod: ${{ steps.name.outputs.method }}
           allowDirtyBuild: true
-          customParameters: -force-glcore -touchlineFilm=${{ steps.name.outputs.film }}
+          customParameters: -force-glcore -logFile /github/workspace/film-editor.log -touchlineFilm=${{ steps.name.outputs.film }}
 
       - name: Encodage des vidéos et planches
         if: always()
@@ -96,4 +96,8 @@ jobs:
           rm -rf "films/$name"; mkdir -p "films/$name"
           cp "$RUNNER_TEMP/film/$name/"* "films/$name/" 2>/dev/null || true
           ls -la "$GITHUB_WORKSPACE/unity/Touchline/build/film/$name" > "films/$name/output-files.txt" 2>&1 || true
+          if [ -f "$GITHUB_WORKSPACE/film-editor.log" ]; then
+            grep -nE "error CS|Exception|Error|TOUCHLINE_|executeMethod|Compilation|warning CS" "$GITHUB_WORKSPACE/film-editor.log" | grep -v "Licensing" | head -150 > "films/$name/editor-errors.txt" || true
+            tail -n 120 "$GITHUB_WORKSPACE/film-editor.log" > "films/$name/editor-log-tail.txt" || true
+          fi
           git add -f "films/$name"; git commit -q -m "film: $name (${GITHUB_SHA::7})"; git push -q origin films
