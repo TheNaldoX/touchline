@@ -96,14 +96,15 @@ Actor best=null;float bestScore=-100;string kind="pass";
  score+=PassPreference(p,candidate,d);if(score>bestScore){bestScore=score;best=mate;kind=candidate;}  
  }  
  float passChance=best==null?0:ShotQuality(best,kind=="cross"&&!LowCross(p,best))*Safety(p,PassTarget(p,best,kind),kind=="cross"?!LowCross(p,best):kind=="switch");  
- float patientValue=.052f-t.mentality*.035f+(counter?-.008f:0);  
+ // Chance (xG) a distant shot must beat to be preferred to keeping the ball.
+ float patientValue=LongShotPatience-t.mentality*LongShotMentalityShift+(counter?-.008f:0);  
  // A chasing defender behind the striker does not close the goal  
  // window. Take a clear central finish unless a genuinely better  
  // passing chance is available. Patient play still allows this shot.  
  bool closeChance=distance<20&&opening>.26f&&(clear||pressure>2.3f||distance<8)&&(!t.workIntoBox||quality>.10f||clear&&distance<18&&opening>.4f||distance<10);  
  bool closeFinish=distance<8&&opening>.6f&&pressure>.65f;  
  if((!prepared||FootDeliveryTurn(p,new Point(dir*52.5f,0))<=Math.PI/3)&&p.slot>0&&closeChance&&quality>passChance*(closeFinish?.72f:.82f)&&(clear||pressure>3.1f||closeFinish)){if(BeginFootDeliveryPreparation(p,new Point(dir*52.5f,0),"shot"))return "prepare";Shoot(p);return "shot";}  
- if((!prepared||FootDeliveryTurn(p,new Point(dir*52.5f,0))<=Math.PI/3)&&p.slot>0&&opening>.19f&&distance<27&&!t.workIntoBox&&(clear||pressure>3.5f)&&pressure>2.5f&&m.carryTime>.6f&&quality*DistantShotPreference(p,distance)>Math.Max(patientValue,passChance*.95f)){if(BeginFootDeliveryPreparation(p,new Point(dir*52.5f,0),"shot"))return "prepare";Shoot(p);return "shot";}  
+ if((!prepared||FootDeliveryTurn(p,new Point(dir*52.5f,0))<=Math.PI/3)&&p.slot>0&&opening>.19f&&distance<27&&!t.workIntoBox&&(clear||pressure>LongShotClearSpace)&&pressure>LongShotMinSpace&&m.carryTime>LongShotSetTime&&quality*DistantShotPreference(p,distance)>Math.Max(patientValue,passChance*.95f)){if(BeginFootDeliveryPreparation(p,new Point(dir*52.5f,0),"shot"))return "prepare";Shoot(p);return "shot";}  
  var carry=ChooseCarry(p);p.carryTarget=carry;float progress=(carry.x-p.position.x)*dir;  
  float carryScore=(p.position.x*dir>12?18:7)+Math.Min(Space(carry,1-p.side),8)*.5f+progress*.35f+(Skill(p,"dribbling")-65)*.055f-(pressure<3?5:0)-Math.Min(m.carryTime,6)*1.2f;  
   
@@ -224,6 +225,12 @@ Actor best=null;float bestScore=-100;string kind="pass";
  // A clearance stays in play only through a clearly open long channel.
  public const float OpenClearanceSafety=.75f;
  public const float LongBallError=2.2f;
+ // Shooting from distance (18–27 m): space (m) to the nearest outfield
+ // opponent needed when the lane is not clear / at all, and time (s) on
+ // the ball to set the body. A shot under a closing defender is often
+ // blocked, which is part of the game.
+ public const float LongShotPatience=.033f,LongShotMentalityShift=.028f;
+ public const float LongShotClearSpace=2.6f,LongShotMinSpace=1.7f,LongShotSetTime=.45f;
  // Length error of a long aerial ball, as a fraction of its distance for a
  // 0-rated passer; the bias (0–1) below 0.5 makes overhitting more common.
  public const float LongBallLengthError=.8f,LongBallOverhitBias=.35f;
