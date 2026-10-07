@@ -51,7 +51,7 @@ namespace Touchline
             exitRestart.Reset();exitSample=default;showingExit=exitWasRepositioned=false;
             NameDisplay=(MatchNameDisplay)Mathf.Clamp(PlayerPrefs.GetInt("match-player-names",1),0,2);Speed=PlayerPrefs.GetInt("match-live-speed",1);if(Array.IndexOf(LiveSpeeds,Speed)<0)Speed=1;
             BallDisplay=(MatchBallDisplay)Mathf.Clamp(PlayerPrefs.GetInt("match-ball-locator",1),0,2);
-            tactical=PlayerPrefs.GetInt("match-camera-mode",0)==1;zoom=Mathf.Clamp(PlayerPrefs.GetFloat("match-camera-zoom",1),.8f,1.35f);cameraReset=true;cameraHasFocus=false;velocity=Vector3.zero;
+            tactical=PlayerPrefs.GetInt("match-camera-mode",0)==1;zoom=Mathf.Clamp(PlayerPrefs.GetFloat("match-camera-zoom",DefaultZoom),.8f,1.35f);cameraReset=true;cameraHasFocus=false;velocity=Vector3.zero;
             poseCache.Reset();renderedAlpha=1;renderedClock=float.NaN;
             PlayerView.UseMecanim=PlayerPrefs.GetInt("match-mecanim",1)==1; // animations capturées (Mixamo) ou procédurales
             renderBudget=TouchlineApp.Instance==null?null:TouchlineApp.Instance.GetComponent<RenderBudget>();renderBudget?.ResetMatchSample();
@@ -171,6 +171,7 @@ namespace Touchline
             go.AddComponent<MeshFilter>().sharedMesh=pitchMesh;var renderer=go.AddComponent<MeshRenderer>();renderer.sharedMaterials=new[]{TurfMaterial(LightStripe),turf};renderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
         }
         static readonly Color LightStripe=new Color(.118f,.325f,.136f),DarkStripe=new Color(.088f,.252f,.100f); // tonte (avant grain)
+        const float DefaultZoom=.85f; // cadrage télé par défaut, plus serré (joueurs plus lisibles) ; réglable au pincement
         static readonly Color SkyColor=new Color(.56f,.67f,.79f);
         Material TurfMaterial(Color stripe){var m=PlayerView.Material(stripe/PitchTurf.MeanBrightness);m.color=new Color(m.color.r,m.color.g,m.color.b,1);m.mainTexture=turfGrain;return m;}
         void Surface(Mesh mesh,Material material,bool shadows){stadiumMeshes.Add(mesh);var go=new GameObject(mesh.name);go.transform.SetParent(world,false);go.AddComponent<MeshFilter>().sharedMesh=mesh;var renderer=go.AddComponent<MeshRenderer>();renderer.sharedMaterial=material;renderer.shadowCastingMode=shadows?UnityEngine.Rendering.ShadowCastingMode.On:UnityEngine.Rendering.ShadowCastingMode.Off;}
