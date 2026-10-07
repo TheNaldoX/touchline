@@ -20,7 +20,7 @@ namespace Touchline.Editor
     public static class MecanimPrototypeFilm
     {
         const int Fps=30,Width=960,Height=540;
-        const string ClipFolder="Assets/Touchline/Animations/Mixamo";
+        const string ClipFolder="Assets/Touchline/Resources/Animations/Mixamo";
         static string Arg(string key,string fallback)=>Environment.GetCommandLineArgs().FirstOrDefault(a=>a.StartsWith(key+"="))?.Substring(key.Length+1)??fallback;
 
         public static void Run()
@@ -76,6 +76,21 @@ namespace Touchline.Editor
                     string[] wanted=Arg("-touchlineClips","Jog Forward;Dribble;Kick Soccerball;Soccer Pass;Receive Soccerball;Soccer Tackle;Header Soccerball;Goalkeeper Diving Save").Split(';');
                     var selection=wanted.Select(w=>clips.FirstOrDefault(c=>string.Equals(c.name,w,StringComparison.OrdinalIgnoreCase))).Where(c=>c!=null).ToList();
                     if(selection.Count==0)selection=clips.OrderBy(c=>c.name).Take(8).ToList();
+                    // Analyse de chaque clip (60 Hz) : instant de vitesse maximale de chaque
+                    // pied et de chaque main, hauteur maxi de la tête — sert à caler le contact
+                    // avec le ballon sur l'instant décidé par le moteur de match.
+                    {var timing=new System.Text.StringBuilder();timing.AppendLine("clip;durée;boucle;pied G pic (s);vitesse G;pied D pic (s);vitesse D;main G pic;main D pic;tête min (m);tête max (m)");
+                     var g=PlayableGraph.Create("Analyse");g.SetTimeUpdateMode(DirectorUpdateMode.Manual);var o=AnimationPlayableOutput.Create(g,"A",animator);
+                     var bones=new[]{HumanBodyBones.LeftFoot,HumanBodyBones.RightFoot,HumanBodyBones.LeftHand,HumanBodyBones.RightHand};
+                     foreach(var clip in clips.OrderBy(c=>c.name)){
+                        var pl=AnimationClipPlayable.Create(g,clip);o.SetSourcePlayable(pl);float step=1f/60;int samples=Mathf.Max(2,Mathf.CeilToInt(clip.length/step));
+                        var last=new Vector3[4];var peak=new float[4];var peakTime=new float[4];float headMin=9,headMax=0;
+                        for(int k=0;k<=samples;k++){pl.SetTime(k*step);g.Evaluate(0);var hips=animator.GetBoneTransform(HumanBodyBones.Hips).position;
+                            for(int b=0;b<4;b++){var pos=animator.GetBoneTransform(bones[b]).position-new Vector3(hips.x,0,hips.z);if(k>0){float v=(pos-last[b]).magnitude/step;if(v>peak[b]){peak[b]=v;peakTime[b]=k*step;}}last[b]=pos;}
+                            float head=animator.GetBoneTransform(HumanBodyBones.Head).position.y;headMin=Mathf.Min(headMin,head);headMax=Mathf.Max(headMax,head);}
+                        timing.AppendLine($"{clip.name};{clip.length:0.000};{clip.isLooping};{peakTime[0]:0.000};{peak[0]:0.0};{peakTime[1]:0.000};{peak[1]:0.0};{peakTime[2]:0.000};{peakTime[3]:0.000};{headMin:0.00};{headMax:0.00}");
+                        pl.Destroy();}
+                     g.Destroy();File.WriteAllText(Path.Combine(output,"clip-timing.csv"),timing.ToString());}
                     var graph=PlayableGraph.Create("Prototype");graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
                     var outputPlayable=AnimationPlayableOutput.Create(graph,"Animation",animator);
                     foreach(var clip in selection){

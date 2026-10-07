@@ -93,7 +93,7 @@ jobs:
             ffmpeg -v error -y -framerate 30 -i "$src/$cam/frame-%04d.jpg" -vf "fps=2,scale=480:-1,tile=4x5" -frames:v 1 "$out/$cam-sheet.jpg"
             ffmpeg -v error -y -framerate 30 -i "$src/$cam/frame-%04d.jpg" -vf "select='not(mod(n\,15))',scale=480:-1,tile=4x5" -frames:v 1 "$out/$cam-sheet-all.jpg" || true
           done
-          cp "$src/info.txt" "$src/metrics.txt" "$src/unity-messages.txt" "$out/" || true
+          cp "$src/info.txt" "$src/metrics.txt" "$src/unity-messages.txt" "$src/clip-timing.csv" "$out/" 2>/dev/null || true
           ls -la "$out"
 
       - name: Publication dans la branche films
