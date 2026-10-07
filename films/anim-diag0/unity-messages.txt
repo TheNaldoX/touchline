@@ -1,0 +1,403 @@
+Log: DIAG glissement (appels 3300) : clé ; n ; somme ; moyenne ; médiane ; p95
+  ACTION idle ; 1088 ; 71.2
+  ACTION kick ; 60 ; 26.7
+  ACTION run ; 1124 ; 534.7
+  ACTION control:control-foot ; 25 ; 47.1
+  ACTION prepare-kick ; 22 ; 28.9
+  ACTION tackle ; 31 ; 12.2
+  run | - | lock | v>4 | yaw<60 ; 226 ; 69.9 ; 0.31 ; 0.00 ; 0.84
+  run | - | in | v>4 | yaw<60 ; 95 ; 55.7 ; 0.59 ; 0.41 ; 1.42
+  run | - | in | v<4 | yaw>200 ; 24 ; 44.2 ; 1.84 ; 0.71 ; 9.23
+  run | - | lock | v<4 | yaw>200 ; 70 ; 38.4 ; 0.55 ; 0.00 ; 5.90
+  run | - | lock | v>4 | yaw<200 ; 48 ; 34.6 ; 0.72 ; 0.00 ; 5.89
+  run | - | lock | v<2 | yaw>200 ; 84 ; 31.7 ; 0.38 ; 0.00 ; 0.82
+  idle | - | lock | v<0.7 | yaw<60 ; 934 ; 29.5 ; 0.03 ; 0.00 ; 0.07
+  run | - | out | v<4 | yaw>200 ; 6 ; 27.8 ; 4.63 ; 4.56 ; 5.68
+  run | - | lock | v<2 | yaw<60 ; 107 ; 25.0 ; 0.23 ; 0.00 ; 0.24
+  run | - | out | v>4 | yaw<60 ; 3 ; 20.9 ; 6.97 ; 5.55 ; 11.19
+  run | - | in | v<4 | yaw<200 ; 14 ; 18.2 ; 1.30 ; 0.51 ; 7.55
+  idle | - | out | v<0.7 | yaw<60 ; 10 ; 17.1 ; 1.71 ; 1.50 ; 3.62
+  run | - | out | v<2 | yaw>200 ; 4 ; 15.2 ; 3.80 ; 3.88 ; 3.98
+  run | - | lock | v<4 | yaw<60 ; 80 ; 15.0 ; 0.19 ; 0.00 ; 0.63
+  idle | - | in | v<0.7 | yaw<60 ; 83 ; 13.8 ; 0.17 ; 0.11 ; 0.48
+  run | - | lock | v<4 | yaw<200 ; 48 ; 13.5 ; 0.28 ; 0.00 ; 0.83
+  run | - | out | v>4 | yaw<200 ; 3 ; 12.4 ; 4.14 ; 3.87 ; 5.37
+  run | - | out | v<2 | yaw<60 ; 4 ; 12.1 ; 3.03 ; 4.24 ; 4.26
+  kick | Soccer Pass | lock | v<4 | yaw<60 ; 5 ; 9.6 ; 1.92 ; 0.00 ; 8.80
+  run | - | lock | v>4 | yaw>200 ; 11 ; 9.4 ; 0.85 ; 0.00 ; 7.54
+  control:control-foot | fadeout | out | v<2 | yaw<60 ; 2 ; 9.0 ; 4.48 ; 5.13 ; 5.13
+  prepare-kick | - | lock | v<2 | yaw>200 ; 6 ; 8.4 ; 1.40 ; 0.07 ; 8.20
+  run | - | out | v>4 | yaw>200 ; 2 ; 8.0 ; 4.01 ; 4.19 ; 4.19
+  run | - | out | v<4 | yaw<200 ; 2 ; 7.9 ; 3.97 ; 4.66 ; 4.66
+  run | - | in | v>4 | yaw<200 ; 16 ; 7.8 ; 0.49 ; 0.46 ; 1.02
+  run | - | in | v<4 | yaw<60 ; 22 ; 7.5 ; 0.34 ; 0.36 ; 0.77
+  prepare-kick | - | in | v<2 | yaw>200 ; 1 ; 7.5 ; 7.51 ; 7.51 ; 7.51
+  control:control-foot | - | out | v<4 | yaw>200 ; 2 ; 7.3 ; 3.66 ; 3.70 ; 3.70
+  tackle | - | lock | v<0.7 | yaw<60 ; 22 ; 7.0 ; 0.32 ; 0.00 ; 0.09
+  kick | Soccer Pass | lock | v<2 | yaw<60 ; 2 ; 6.9 ; 3.44 ; 6.89 ; 6.89
+  control:control-foot | - | lock | v<2 | yaw>200 ; 1 ; 6.6 ; 6.58 ; 6.58 ; 6.58
+  control:control-foot | Receive Soccerball | lock | v<0.7 | yaw<60 ; 3 ; 6.4 ; 2.14 ; 0.20 ; 6.01
+  run | - | lock | v<0.7 | yaw<200 ; 29 ; 6.3 ; 0.22 ; 0.00 ; 0.23
+  prepare-kick | - | out | v<4 | yaw>200 ; 1 ; 5.9 ; 5.88 ; 5.88 ; 5.88
+  run | - | out | v<4 | yaw<60 ; 2 ; 5.9 ; 2.94 ; 3.94 ; 3.94
+  control:control-foot | - | out | v<4 | yaw<200 ; 1 ; 5.7 ; 5.68 ; 5.68 ; 5.68
+  run | - | in | v<2 | yaw<200 ; 8 ; 4.4 ; 0.55 ; 0.31 ; 2.68
+  idle | - | free | v<0.7 | yaw<60 ; 6 ; 4.3 ; 0.71 ; 0.76 ; 0.82
+  run | - | in | v<2 | yaw>200 ; 8 ; 4.2 ; 0.52 ; 0.38 ; 2.01
+  control:control-foot | fadeout | in | v<2 | yaw<200 ; 1 ; 4.1 ; 4.13 ; 4.13 ; 4.13
+  run | - | free | v<4 | yaw<200 ; 2 ; 4.1 ; 2.06 ; 2.38 ; 2.38
+  run | - | out | v<2 | yaw<200 ; 1 ; 4.1 ; 4.11 ; 4.11 ; 4.11
+  control:control-foot | Receive Soccerball | out | v<0.7 | yaw<60 ; 1 ; 4.0 ; 4.04 ; 4.04 ; 4.04
+  kick | Soccer Pass | out | v<4 | yaw<60 ; 1 ; 4.0 ; 3.95 ; 3.95 ; 3.95
+  run | - | out | v<0.7 | yaw<60 ; 1 ; 3.9 ; 3.86 ; 3.86 ; 3.86
+  run | - | out+ikmiss | v<2 | yaw>200 ; 1 ; 3.7 ; 3.73 ; 3.73 ; 3.73
+  kick | Soccer Pass | out | v<2 | yaw<60 ; 1 ; 3.7 ; 3.70 ; 3.70 ; 3.70
+  idle | - | out | v<0.7 | yaw<200 ; 1 ; 3.5 ; 3.54 ; 3.54 ; 3.54
+  tackle | - | in | v<4 | yaw>200 ; 1 ; 3.4 ; 3.42 ; 3.42 ; 3.42
+  prepare-kick | - | out | v<2 | yaw>200 ; 1 ; 3.4 ; 3.40 ; 3.40 ; 3.40
+  run | - | lock | v<2 | yaw<200 ; 58 ; 2.9 ; 0.05 ; 0.00 ; 0.32
+  run | - | in | v>4 | yaw>200 ; 3 ; 2.9 ; 0.95 ; 0.77 ; 1.58
+  run | - | free | v<2 | yaw>200 ; 1 ; 2.7 ; 2.73 ; 2.73 ; 2.73
+  run | - | lock+ikmiss | v<4 | yaw>200 ; 7 ; 2.3 ; 0.33 ; 0.35 ; 0.51
+  prepare-kick | - | free | v<0.7 | yaw>200 ; 1 ; 2.0 ; 1.97 ; 1.97 ; 1.97
+  run | - | lock+ikmiss | v<4 | yaw<200 ; 6 ; 1.8 ; 0.30 ; 0.28 ; 0.64
+  run | - | in | v<0.7 | yaw<60 ; 3 ; 1.7 ; 0.55 ; 0.26 ; 1.23
+  run | - | lock | v<0.7 | yaw<60 ; 77 ; 1.6 ; 0.02 ; 0.00 ; 0.14
+  run | - | lock+ikmiss | v<4 | yaw<60 ; 2 ; 1.5 ; 0.74 ; 0.85 ; 0.85
+  run | - | in | v<2 | yaw<60 ; 5 ; 1.5 ; 0.30 ; 0.25 ; 0.46
+  prepare-kick | - | in | v<4 | yaw>200 ; 1 ; 1.3 ; 1.26 ; 1.26 ; 1.26
+  idle | fadeout | free | v<0.7 | yaw<60 ; 1 ; 1.2 ; 1.23 ; 1.23 ; 1.23
+  control:control-foot | - | lock | v<2 | yaw<200 ; 2 ; 0.9 ; 0.44 ; 0.87 ; 0.87
+  control:control-foot | - | in | v<4 | yaw>200 ; 1 ; 0.9 ; 0.87 ; 0.87 ; 0.87
+  tackle | - | in | v<0.7 | yaw<60 ; 2 ; 0.8 ; 0.42 ; 0.74 ; 0.74
+  idle | - | lock+ikmiss | v<0.7 | yaw<60 ; 30 ; 0.8 ; 0.03 ; 0.03 ; 0.04
+  kick | Soccer Pass | in | v>4 | yaw<60 ; 1 ; 0.8 ; 0.79 ; 0.79 ; 0.79
+  run | - | out | v<0.7 | yaw<200 ; 1 ; 0.8 ; 0.78 ; 0.78 ; 0.78
+  run | - | lock+ikmiss | v<2 | yaw>200 ; 3 ; 0.7 ; 0.22 ; 0.21 ; 0.36
+  kick | Soccer Pass | lock | v<0.7 | yaw<200 ; 4 ; 0.6 ; 0.15 ; 0.07 ; 0.53
+  run | - | lock+ikmiss | v<2 | yaw<200 ; 3 ; 0.6 ; 0.19 ; 0.17 ; 0.25
+  run | - | lock+ikmiss | v>4 | yaw>200 ; 1 ; 0.6 ; 0.56 ; 0.56 ; 0.56
+  control:control-foot | fadeout | in | v<2 | yaw<60 ; 1 ; 0.5 ; 0.53 ; 0.53 ; 0.53
+  control:control-foot | fadeout | lock | v<2 | yaw<60 ; 3 ; 0.5 ; 0.18 ; 0.00 ; 0.53
+  kick | Soccer Pass | in | v<0.7 | yaw>200 ; 1 ; 0.5 ; 0.53 ; 0.53 ; 0.53
+  kick | Soccer Pass | lock | v<0.7 | yaw<60 ; 39 ; 0.5 ; 0.01 ; 0.00 ; 0.07
+  run | - | lock | v<0.7 | yaw>200 ; 23 ; 0.5 ; 0.02 ; 0.00 ; 0.18
+  idle | fadeout | in | v<0.7 | yaw<60 ; 2 ; 0.5 ; 0.24 ; 0.30 ; 0.30
+  tackle | - | in | v<4 | yaw<200 ; 1 ; 0.4 ; 0.40 ; 0.40 ; 0.40
+  tackle | - | lock | v<2 | yaw<200 ; 1 ; 0.4 ; 0.40 ; 0.40 ; 0.40
+  run | - | in | v<0.7 | yaw<200 ; 2 ; 0.4 ; 0.18 ; 0.24 ; 0.24
+  idle | fadeout | lock | v<0.7 | yaw<60 ; 5 ; 0.3 ; 0.06 ; 0.08 ; 0.13
+  control:control-foot | - | in | v<4 | yaw<200 ; 1 ; 0.2 ; 0.25 ; 0.25 ; 0.25
+  control:control-foot | - | lock | v<4 | yaw<60 ; 1 ; 0.2 ; 0.25 ; 0.25 ; 0.25
+  prepare-kick | - | lock | v<4 | yaw>200 ; 5 ; 0.2 ; 0.05 ; 0.00 ; 0.22
+  run | - | in | v<0.7 | yaw>200 ; 1 ; 0.2 ; 0.23 ; 0.23 ; 0.23
+  tackle | - | lock | v<2 | yaw<60 ; 3 ; 0.2 ; 0.07 ; 0.10 ; 0.10
+  control:control-foot | Receive Soccerball | lock+ikmiss | v<0.7 | yaw<60 ; 1 ; 0.2 ; 0.20 ; 0.20 ; 0.20
+  control:control-foot | Receive Soccerball | in | v<0.7 | yaw<60 ; 1 ; 0.2 ; 0.19 ; 0.19 ; 0.19
+  run | fadeout | lock | v<0.7 | yaw<60 ; 2 ; 0.2 ; 0.10 ; 0.19 ; 0.19
+  run | - | lock+ikmiss | v<2 | yaw<60 ; 1 ; 0.2 ; 0.18 ; 0.18 ; 0.18
+  kick | Soccer Pass | lock+ikmiss | v<0.7 | yaw<60 ; 5 ; 0.1 ; 0.03 ; 0.02 ; 0.05
+  control:control-foot | Receive Soccerball | lock | v<0.7 | yaw<200 ; 1 ; 0.1 ; 0.13 ; 0.13 ; 0.13
+  idle | - | in | v<0.7 | yaw<200 ; 1 ; 0.1 ; 0.13 ; 0.13 ; 0.13
+  prepare-kick | - | lock+ikmiss | v<2 | yaw>200 ; 1 ; 0.1 ; 0.12 ; 0.12 ; 0.12
+  control:control-foot | fadeout | lock | v<2 | yaw<200 ; 1 ; 0.1 ; 0.12 ; 0.12 ; 0.12
+  run | fadeout | in | v<0.7 | yaw<60 ; 1 ; 0.1 ; 0.11 ; 0.11 ; 0.11
+  prepare-kick | - | lock | v<0.7 | yaw<200 ; 2 ; 0.1 ; 0.03 ; 0.04 ; 0.04
+  idle | - | lock | v<0.7 | yaw>200 ; 4 ; 0.0 ; 0.01 ; 0.00 ; 0.04
+  idle | - | lock | v<0.7 | yaw<200 ; 8 ; 0.0 ; 0.00 ; 0.00 ; 0.02
+  prepare-kick | - | lock | v<0.7 | yaw>200 ; 3 ; 0.0 ; 0.00 ; 0.00 ; 0.01
+  run | fadeout | lock | v<2 | yaw<200 ; 2 ; 0.0 ; 0.00 ; 0.00 ; 0.00
+  run | fadeout | lock | v<2 | yaw<60 ; 1 ; 0.0 ; 0.00 ; 0.00 ; 0.00
+  kick | Soccer Pass | lock | v<4 | yaw<200 ; 1 ; 0.0 ; 0.00 ; 0.00 ; 0.00
+  idle | - | lock | v<2 | yaw<60 ; 1 ; 0.0 ; 0.00 ; 0.00 ; 0.00
+  idle | - | lock | v<2 | yaw<200 ; 2 ; 0.0 ; 0.00 ; 0.00 ; 0.00
+  control:control-foot | - | lock | v<4 | yaw>200 ; 1 ; 0.0 ; 0.00 ; 0.00 ; 0.00
+  tackle | - | lock | v<4 | yaw<60 ; 1 ; 0.0 ; 0.00 ; 0.00 ; 0.00
+
+Log: DIAG glissement (appels 6600) : clé ; n ; somme ; moyenne ; médiane ; p95
+  ACTION idle ; 1263 ; 83.0
+  ACTION kick ; 79 ; 50.7
+  ACTION run ; 2676 ; 1209.0
+  ACTION control:control-foot ; 52 ; 93.8
+  ACTION prepare-kick ; 22 ; 28.9
+  ACTION tackle ; 31 ; 12.2
+  run | - | in | v>4 | yaw<60 ; 305 ; 201.8 ; 0.66 ; 0.39 ; 1.53
+  run | - | lock | v>4 | yaw<60 ; 731 ; 156.6 ; 0.21 ; 0.00 ; 0.72
+  run | - | lock | v<2 | yaw<60 ; 317 ; 84.5 ; 0.27 ; 0.00 ; 0.24
+  run | - | lock | v<4 | yaw>200 ; 85 ; 58.6 ; 0.69 ; 0.00 ; 8.02
+  run | - | lock | v<4 | yaw<60 ; 210 ; 54.4 ; 0.26 ; 0.00 ; 0.60
+  run | - | lock | v>4 | yaw<200 ; 99 ; 53.4 ; 0.54 ; 0.00 ; 0.98
+  run | - | in | v<4 | yaw>200 ; 27 ; 45.5 ; 1.69 ; 0.49 ; 9.23
+  run | - | lock | v<0.7 | yaw<60 ; 256 ; 45.3 ; 0.18 ; 0.00 ; 0.13
+  run | - | free | v>4 | yaw<60 ; 4 ; 40.0 ; 10.01 ; 12.60 ; 15.31
+  run | - | out | v>4 | yaw<60 ; 6 ; 40.0 ; 6.67 ; 5.55 ; 12.83
+  run | - | out | v<4 | yaw<60 ; 9 ; 37.4 ; 4.16 ; 4.58 ; 5.09
+  idle | - | lock | v<0.7 | yaw<60 ; 1106 ; 37.0 ; 0.03 ; 0.00 ; 0.05
+  run | - | out | v<2 | yaw<60 ; 10 ; 35.1 ; 3.51 ; 3.80 ; 4.32
+  run | - | out | v<4 | yaw>200 ; 7 ; 32.4 ; 4.63 ; 4.56 ; 5.68
+  run | - | lock | v<2 | yaw>200 ; 105 ; 32.3 ; 0.31 ; 0.00 ; 0.48
+  run | - | out | v<0.7 | yaw<60 ; 9 ; 32.1 ; 3.56 ; 3.65 ; 3.86
+  run | - | lock | v>4 | yaw>200 ; 16 ; 27.1 ; 1.69 ; 0.08 ; 16.63
+  run | - | in | v>4 | yaw<200 ; 35 ; 24.1 ; 0.69 ; 0.45 ; 3.57
+  run | - | in | v<4 | yaw<60 ; 47 ; 23.8 ; 0.51 ; 0.28 ; 1.73
+  idle | - | out | v<0.7 | yaw<60 ; 11 ; 21.1 ; 1.91 ; 1.50 ; 3.94
+  run | - | free | v<4 | yaw<60 ; 2 ; 20.6 ; 10.30 ; 10.57 ; 10.57
+  run | - | out | v>4 | yaw<200 ; 5 ; 20.5 ; 4.10 ; 3.87 ; 5.37
+  run | - | in | v<4 | yaw<200 ; 19 ; 19.5 ; 1.02 ; 0.41 ; 7.55
+  control:control-foot | Receive Soccerball | lock | v<0.7 | yaw>200 ; 7 ; 17.0 ; 2.43 ; 0.06 ; 8.67
+  run | - | out | v<2 | yaw>200 ; 5 ; 16.4 ; 3.27 ; 3.68 ; 3.98
+  run | - | lock | v<4 | yaw<200 ; 75 ; 16.0 ; 0.21 ; 0.00 ; 0.83
+  idle | - | in | v<0.7 | yaw<60 ; 83 ; 13.8 ; 0.17 ; 0.11 ; 0.48
+  kick | Soccer Pass | lock | v<2 | yaw<60 ; 7 ; 13.6 ; 1.94 ; 0.00 ; 6.89
+  run | - | out | v<4 | yaw<200 ; 3 ; 12.7 ; 4.24 ; 4.66 ; 4.78
+  kick | Soccer Pass | lock | v<4 | yaw<60 ; 6 ; 9.6 ; 1.60 ; 0.00 ; 8.80
+  run | - | out | v>4 | yaw>200 ; 3 ; 9.4 ; 3.14 ; 3.82 ; 4.19
+  control:control-foot | fadeout | out | v<2 | yaw<60 ; 2 ; 9.0 ; 4.48 ; 5.13 ; 5.13
+  kick | Soccer Pass | lock | v<4 | yaw<200 ; 3 ; 8.7 ; 2.89 ; 0.97 ; 7.70
+  prepare-kick | - | lock | v<2 | yaw>200 ; 6 ; 8.4 ; 1.40 ; 0.07 ; 8.20
+  control:control-foot | fadeout | lock | v<2 | yaw>200 ; 3 ; 8.3 ; 2.76 ; 0.14 ; 8.13
+  control:control-foot | Receive Soccerball | out | v<0.7 | yaw<60 ; 2 ; 7.7 ; 3.85 ; 4.04 ; 4.04
+  run | - | in | v<2 | yaw>200 ; 15 ; 7.6 ; 0.51 ; 0.23 ; 2.01
+  prepare-kick | - | in | v<2 | yaw>200 ; 1 ; 7.5 ; 7.51 ; 7.51 ; 7.51
+  kick | Soccer Pass | out | v<2 | yaw<60 ; 2 ; 7.4 ; 3.68 ; 3.70 ; 3.70
+  control:control-foot | - | out | v<4 | yaw>200 ; 2 ; 7.3 ; 3.66 ; 3.70 ; 3.70
+  tackle | - | lock | v<0.7 | yaw<60 ; 22 ; 7.0 ; 0.32 ; 0.00 ; 0.09
+  control:control-foot | Receive Soccerball | lock | v<0.7 | yaw<60 ; 4 ; 6.6 ; 1.66 ; 0.21 ; 6.01
+  control:control-foot | - | lock | v<2 | yaw>200 ; 1 ; 6.6 ; 6.58 ; 6.58 ; 6.58
+  run | - | lock | v<0.7 | yaw<200 ; 29 ; 6.3 ; 0.22 ; 0.00 ; 0.23
+  prepare-kick | - | out | v<4 | yaw>200 ; 1 ; 5.9 ; 5.88 ; 5.88 ; 5.88
+  control:control-foot | - | out | v<4 | yaw<200 ; 1 ; 5.7 ; 5.68 ; 5.68 ; 5.68
+  run | - | in | v<2 | yaw<200 ; 12 ; 5.3 ; 0.44 ; 0.18 ; 2.68
+  control:control-foot | Receive Soccerball | out | v<0.7 | yaw>200 ; 1 ; 5.1 ; 5.12 ; 5.12 ; 5.12
+  control:control-foot | fadeout | in | v<2 | yaw<200 ; 2 ; 4.8 ; 2.42 ; 4.13 ; 4.13
+  run | - | lock | v<2 | yaw<200 ; 104 ; 4.6 ; 0.04 ; 0.00 ; 0.19
+  run | - | in | v>4 | yaw>200 ; 6 ; 4.5 ; 0.76 ; 0.77 ; 1.58
+  run | - | lock+ikmiss | v<4 | yaw<60 ; 6 ; 4.3 ; 0.71 ; 0.76 ; 1.18
+  idle | - | free | v<0.7 | yaw<60 ; 6 ; 4.3 ; 0.71 ; 0.76 ; 0.82
+  control:control-foot | fadeout | out | v<2 | yaw<200 ; 1 ; 4.2 ; 4.18 ; 4.18 ; 4.18
+  run | - | free | v<4 | yaw<200 ; 2 ; 4.1 ; 2.06 ; 2.38 ; 2.38
+  run | - | out | v<2 | yaw<200 ; 1 ; 4.1 ; 4.11 ; 4.11 ; 4.11
+  kick | Soccer Pass | out | v<4 | yaw<60 ; 1 ; 4.0 ; 3.95 ; 3.95 ; 3.95
+  kick | Soccer Pass | out | v<4 | yaw<200 ; 1 ; 4.0 ; 3.95 ; 3.95 ; 3.95
+  run | - | in | v<2 | yaw<60 ; 21 ; 3.8 ; 0.18 ; 0.14 ; 0.46
+  run | - | out+ikmiss | v<2 | yaw>200 ; 1 ; 3.7 ; 3.73 ; 3.73 ; 3.73
+  idle | - | out | v<0.7 | yaw<200 ; 1 ; 3.5 ; 3.54 ; 3.54 ; 3.54
+  run | fadeout | out | v<2 | yaw<60 ; 1 ; 3.4 ; 3.43 ; 3.43 ; 3.43
+  tackle | - | in | v<4 | yaw>200 ; 1 ; 3.4 ; 3.42 ; 3.42 ; 3.42
+  prepare-kick | - | out | v<2 | yaw>200 ; 1 ; 3.4 ; 3.40 ; 3.40 ; 3.40
+  control:control-foot | fadeout | in | v<2 | yaw>200 ; 1 ; 3.0 ; 2.96 ; 2.96 ; 2.96
+  run | - | free | v<2 | yaw>200 ; 1 ; 2.7 ; 2.73 ; 2.73 ; 2.73
+  control:control-foot | fadeout | free | v<2 | yaw>200 ; 1 ; 2.5 ; 2.49 ; 2.49 ; 2.49
+  run | - | lock+ikmiss | v<4 | yaw>200 ; 8 ; 2.5 ; 0.31 ; 0.35 ; 0.51
+  run | - | lock+ikmiss | v<4 | yaw<200 ; 7 ; 2.2 ; 0.31 ; 0.28 ; 0.64
+  prepare-kick | - | free | v<0.7 | yaw>200 ; 1 ; 2.0 ; 1.97 ; 1.97 ; 1.97
+  run | - | in | v<0.7 | yaw<60 ; 4 ; 1.7 ; 0.43 ; 0.26 ; 1.23
+  run | - | free | v<4 | yaw>200 ; 1 ; 1.3 ; 1.28 ; 1.28 ; 1.28
+  prepare-kick | - | in | v<4 | yaw>200 ; 1 ; 1.3 ; 1.26 ; 1.26 ; 1.26
+  idle | fadeout | free | v<0.7 | yaw<60 ; 1 ; 1.2 ; 1.23 ; 1.23 ; 1.23
+  control:control-foot | Receive Soccerball | in | v<0.7 | yaw<60 ; 3 ; 1.1 ; 0.38 ; 0.19 ; 0.78
+  run | - | lock+ikmiss | v<2 | yaw<60 ; 5 ; 1.0 ; 0.20 ; 0.18 ; 0.25
+  kick | Soccer Pass | in | v<4 | yaw>200 ; 1 ; 1.0 ; 0.97 ; 0.97 ; 0.97
+  control:control-foot | - | lock | v<2 | yaw<200 ; 2 ; 0.9 ; 0.44 ; 0.87 ; 0.87
+  control:control-foot | - | in | v<4 | yaw>200 ; 1 ; 0.9 ; 0.87 ; 0.87 ; 0.87
+  tackle | - | in | v<0.7 | yaw<60 ; 2 ; 0.8 ; 0.42 ; 0.74 ; 0.74
+  idle | - | lock+ikmiss | v<0.7 | yaw<60 ; 30 ; 0.8 ; 0.03 ; 0.03 ; 0.04
+  kick | Soccer Pass | in | v>4 | yaw<60 ; 1 ; 0.8 ; 0.79 ; 0.79 ; 0.79
+  run | - | out | v<0.7 | yaw<200 ; 1 ; 0.8 ; 0.78 ; 0.78 ; 0.78
+  run | - | lock | v<0.7 | yaw>200 ; 28 ; 0.8 ; 0.03 ; 0.00 ; 0.28
+  run | - | lock+ikmiss | v>4 | yaw<60 ; 1 ; 0.7 ; 0.73 ; 0.73 ; 0.73
+  run | - | lock+ikmiss | v<2 | yaw>200 ; 3 ; 0.7 ; 0.22 ; 0.21 ; 0.36
+  run | - | lock+ikmiss | v<0.7 | yaw<60 ; 5 ; 0.6 ; 0.13 ; 0.12 ; 0.16
+  kick | Soccer Pass | lock | v<0.7 | yaw<60 ; 47 ; 0.6 ; 0.01 ; 0.00 ; 0.06
+  kick | Soccer Pass | lock | v<0.7 | yaw<200 ; 4 ; 0.6 ; 0.15 ; 0.07 ; 0.53
+  idle | fadeout | in | v<0.7 | yaw<60 ; 3 ; 0.6 ; 0.19 ; 0.19 ; 0.30
+  run | - | lock+ikmiss | v<2 | yaw<200 ; 3 ; 0.6 ; 0.19 ; 0.17 ; 0.25
+  run | - | lock+ikmiss | v>4 | yaw>200 ; 1 ; 0.6 ; 0.56 ; 0.56 ; 0.56
+  control:control-foot | fadeout | in | v<2 | yaw<60 ; 1 ; 0.5 ; 0.53 ; 0.53 ; 0.53
+  control:control-foot | fadeout | lock | v<2 | yaw<60 ; 3 ; 0.5 ; 0.18 ; 0.00 ; 0.53
+  kick | Soccer Pass | in | v<0.7 | yaw>200 ; 1 ; 0.5 ; 0.53 ; 0.53 ; 0.53
+  control:control-foot | Receive Soccerball | in | v<0.7 | yaw<200 ; 1 ; 0.5 ; 0.49 ; 0.49 ; 0.49
+  run | fadeout | out | v<2 | yaw<200 ; 1 ; 0.5 ; 0.48 ; 0.48 ; 0.48
+  control:control-foot | Receive Soccerball | lock | v<0.7 | yaw<200 ; 2 ; 0.4 ; 0.22 ; 0.31 ; 0.31
+  tackle | - | in | v<4 | yaw<200 ; 1 ; 0.4 ; 0.40 ; 0.40 ; 0.40
+  tackle | - | lock | v<2 | yaw<200 ; 1 ; 0.4 ; 0.40 ; 0.40 ; 0.40
+  run | - | in | v<0.7 | yaw<200 ; 2 ; 0.4 ; 0.18 ; 0.24 ; 0.24
+  idle | fadeout | lock | v<0.7 | yaw<60 ; 5 ; 0.3 ; 0.06 ; 0.08 ; 0.13
+  control:control-foot | Receive Soccerball | lock+ikmiss | v<0.7 | yaw<60 ; 3 ; 0.3 ; 0.10 ; 0.05 ; 0.20
+  run | fadeout | lock | v<0.7 | yaw<60 ; 5 ; 0.3 ; 0.06 ; 0.01 ; 0.19
+  idle | - | in | v<0.7 | yaw>200 ; 1 ; 0.3 ; 0.28 ; 0.28 ; 0.28
+  control:control-foot | Receive Soccerball | lock+ikmiss | v<0.7 | yaw<200 ; 1 ; 0.3 ; 0.27 ; 0.27 ; 0.27
+  control:control-foot | - | in | v<4 | yaw<200 ; 1 ; 0.2 ; 0.25 ; 0.25 ; 0.25
+  control:control-foot | - | lock | v<4 | yaw<60 ; 1 ; 0.2 ; 0.25 ; 0.25 ; 0.25
+  prepare-kick | - | lock | v<4 | yaw>200 ; 5 ; 0.2 ; 0.05 ; 0.00 ; 0.22
+  run | - | in | v<0.7 | yaw>200 ; 1 ; 0.2 ; 0.23 ; 0.23 ; 0.23
+  tackle | - | lock | v<2 | yaw<60 ; 3 ; 0.2 ; 0.07 ; 0.10 ; 0.10
+  kick | Soccer Pass | lock+ikmiss | v<0.7 | yaw<60 ; 5 ; 0.1 ; 0.03 ; 0.02 ; 0.05
+  idle | - | in | v<0.7 | yaw<200 ; 1 ; 0.1 ; 0.13 ; 0.13 ; 0.13
+  prepare-kick | - | lock+ikmiss | v<2 | yaw>200 ; 1 ; 0.1 ; 0.12 ; 0.12 ; 0.12
+  control:control-foot | fadeout | lock | v<2 | yaw<200 ; 4 ; 0.1 ; 0.03 ; 0.00 ; 0.12
+  run | fadeout | in | v<0.7 | yaw<60 ; 1 ; 0.1 ; 0.11 ; 0.11 ; 0.11
+  run | fadeout | lock | v<0.7 | yaw<200 ; 2 ; 0.1 ; 0.05 ; 0.11 ; 0.11
+  prepare-kick | - | lock | v<0.7 | yaw<200 ; 2 ; 0.1 ; 0.03 ; 0.04 ; 0.04
+  idle | - | lock | v<0.7 | yaw>200 ; 4 ; 0.0 ; 0.01 ; 0.00 ; 0.04
+  run | fadeout | lock | v<2 | yaw<200 ; 5 ; 0.0 ; 0.01 ; 0.00 ; 0.03
+  idle | - | lock | v<0.7 | yaw<200 ; 8 ; 0.0 ; 0.00 ; 0.00 ; 0.02
+  prepare-kick | - | lock | v<0.7 | yaw>200 ; 3 ; 0.0 ; 0.00 ; 0.00 ; 0.01
+  run | fadeout | lock | v<2 | yaw<60 ; 2 ; 0.0 ; 0.00 ; 0.00 ; 0.00
+  idle | - | lock | v<2 | yaw<60 ; 1 ; 0.0 ; 0.00 ; 0.00 ; 0.00
+  idle | - | lock | v<2 | yaw<200 ; 2 ; 0.0 ; 0.00 ; 0.00 ; 0.00
+  control:control-foot | - | lock | v<4 | yaw>200 ; 1 ; 0.0 ; 0.00 ; 0.00 ; 0.00
+  tackle | - | lock | v<4 | yaw<60 ; 1 ; 0.0 ; 0.00 ; 0.00 ; 0.00
+  run | fadeout | lock | v<2 | yaw>200 ; 1 ; 0.0 ; 0.00 ; 0.00 ; 0.00
+
+Log: DIAG glissement (appels 9900) : clé ; n ; somme ; moyenne ; médiane ; p95
+  ACTION idle ; 2007 ; 146.0
+  ACTION kick ; 100 ; 52.4
+  ACTION run ; 3960 ; 1773.4
+  ACTION control:control-foot ; 56 ; 94.3
+  ACTION prepare-kick ; 54 ; 55.1
+  ACTION tackle ; 31 ; 12.2
+  run | - | in | v>4 | yaw<60 ; 391 ; 273.9 ; 0.70 ; 0.38 ; 2.97
+  run | - | lock | v>4 | yaw<60 ; 927 ; 214.8 ; 0.23 ; 0.00 ; 0.76
+  run | - | lock | v<2 | yaw<60 ; 564 ; 118.0 ; 0.21 ; 0.00 ; 0.22
+  run | - | lock | v<4 | yaw>200 ; 129 ; 90.0 ; 0.70 ; 0.01 ; 8.02
+  run | - | lock | v<4 | yaw<60 ; 284 ; 80.7 ; 0.28 ; 0.00 ; 0.67
+  run | - | lock | v<0.7 | yaw<60 ; 413 ; 73.8 ; 0.18 ; 0.00 ; 0.15
+  run | - | free | v>4 | yaw<60 ; 7 ; 73.0 ; 10.43 ; 10.38 ; 15.31
+  run | - | lock | v>4 | yaw<200 ; 138 ; 72.9 ; 0.53 ; 0.00 ; 1.22
+  idle | - | lock | v<0.7 | yaw<60 ; 1701 ; 70.0 ; 0.04 ; 0.00 ; 0.05
+  run | - | lock | v<2 | yaw>200 ; 144 ; 68.7 ; 0.48 ; 0.00 ; 5.41
+  run | - | out | v<4 | yaw<60 ; 15 ; 63.9 ; 4.26 ; 4.27 ; 5.66
+  run | - | in | v<4 | yaw>200 ; 43 ; 52.5 ; 1.22 ; 0.47 ; 8.84
+  run | - | out | v>4 | yaw<60 ; 10 ; 52.2 ; 5.22 ; 4.59 ; 12.83
+  run | - | out | v<4 | yaw>200 ; 12 ; 49.4 ; 4.12 ; 4.54 ; 5.68
+  run | - | in | v<4 | yaw<60 ; 77 ; 49.2 ; 0.64 ; 0.27 ; 2.51
+  run | - | out | v<0.7 | yaw<60 ; 13 ; 46.2 ; 3.56 ; 3.65 ; 3.86
+  run | - | out | v<2 | yaw<60 ; 13 ; 42.2 ; 3.25 ; 3.67 ; 4.32
+  idle | - | out | v<0.7 | yaw<60 ; 17 ; 39.0 ; 2.30 ; 2.77 ; 3.94
+  run | - | lock | v<4 | yaw<200 ; 118 ; 34.7 ; 0.29 ; 0.00 ; 0.83
+  run | - | in | v>4 | yaw<200 ; 50 ; 33.5 ; 0.67 ; 0.51 ; 1.38
+  run | - | out | v>4 | yaw<200 ; 8 ; 32.4 ; 4.06 ; 3.87 ; 5.37
+  run | - | out | v<2 | yaw>200 ; 10 ; 31.5 ; 3.15 ; 3.76 ; 4.82
+  run | - | free | v<4 | yaw<60 ; 3 ; 30.8 ; 10.28 ; 10.24 ; 10.57
+  run | - | lock | v>4 | yaw>200 ; 18 ; 27.1 ; 1.51 ; 0.00 ; 16.63
+  run | - | in | v<4 | yaw<200 ; 30 ; 23.3 ; 0.78 ; 0.41 ; 5.18
+  idle | - | in | v<0.7 | yaw<60 ; 97 ; 17.1 ; 0.18 ; 0.11 ; 0.77
+  control:control-foot | Receive Soccerball | lock | v<0.7 | yaw>200 ; 7 ; 17.0 ; 2.43 ; 0.06 ; 8.67
+  run | - | out | v<4 | yaw<200 ; 4 ; 16.5 ; 4.14 ; 4.66 ; 4.78
+  kick | Soccer Pass | lock | v<2 | yaw<60 ; 8 ; 14.0 ; 1.75 ; 0.00 ; 6.89
+  run | - | free | v>4 | yaw<200 ; 1 ; 12.8 ; 12.80 ; 12.80 ; 12.80
+  run | - | in | v<2 | yaw>200 ; 23 ; 9.8 ; 0.43 ; 0.23 ; 1.63
+  run | - | in | v<2 | yaw<60 ; 56 ; 9.6 ; 0.17 ; 0.10 ; 0.46
+  kick | Soccer Pass | lock | v<4 | yaw<60 ; 6 ; 9.6 ; 1.60 ; 0.00 ; 8.80
+  run | - | out | v>4 | yaw>200 ; 3 ; 9.4 ; 3.14 ; 3.82 ; 4.19
+  prepare-kick | - | out | v<0.7 | yaw>200 ; 2 ; 9.0 ; 4.51 ; 5.30 ; 5.30
+  control:control-foot | fadeout | out | v<2 | yaw<60 ; 2 ; 9.0 ; 4.48 ; 5.13 ; 5.13
+  prepare-kick | - | in | v<4 | yaw<60 ; 3 ; 8.8 ; 2.93 ; 1.50 ; 6.51
+  kick | Soccer Pass | lock | v<4 | yaw<200 ; 3 ; 8.7 ; 2.89 ; 0.97 ; 7.70
+  prepare-kick | - | lock | v<2 | yaw>200 ; 11 ; 8.5 ; 0.77 ; 0.00 ; 8.20
+  control:control-foot | fadeout | lock | v<2 | yaw>200 ; 3 ; 8.3 ; 2.76 ; 0.14 ; 8.13
+  run | - | in | v<2 | yaw<200 ; 19 ; 7.8 ; 0.41 ; 0.21 ; 2.68
+  control:control-foot | Receive Soccerball | out | v<0.7 | yaw<60 ; 2 ; 7.7 ; 3.85 ; 4.04 ; 4.04
+  prepare-kick | - | in | v<2 | yaw>200 ; 1 ; 7.5 ; 7.51 ; 7.51 ; 7.51
+  kick | Soccer Pass | out | v<2 | yaw<60 ; 2 ; 7.4 ; 3.68 ; 3.70 ; 3.70
+  control:control-foot | - | out | v<4 | yaw>200 ; 2 ; 7.3 ; 3.66 ; 3.70 ; 3.70
+  run | - | lock | v<0.7 | yaw<200 ; 101 ; 7.0 ; 0.07 ; 0.00 ; 0.05
+  tackle | - | lock | v<0.7 | yaw<60 ; 22 ; 7.0 ; 0.32 ; 0.00 ; 0.09
+  control:control-foot | Receive Soccerball | lock | v<0.7 | yaw<60 ; 4 ; 6.6 ; 1.66 ; 0.21 ; 6.01
+  control:control-foot | - | lock | v<2 | yaw>200 ; 1 ; 6.6 ; 6.58 ; 6.58 ; 6.58
+  prepare-kick | - | out | v<4 | yaw>200 ; 1 ; 5.9 ; 5.88 ; 5.88 ; 5.88
+  run | - | lock+ikmiss | v<4 | yaw<60 ; 10 ; 5.7 ; 0.57 ; 0.64 ; 1.18
+  run | - | in | v>4 | yaw>200 ; 9 ; 5.7 ; 0.63 ; 0.51 ; 1.58
+  control:control-foot | - | out | v<4 | yaw<200 ; 1 ; 5.7 ; 5.68 ; 5.68 ; 5.68
+  prepare-kick | - | out | v<4 | yaw<60 ; 1 ; 5.7 ; 5.66 ; 5.66 ; 5.66
+  run | - | lock | v<2 | yaw<200 ; 154 ; 5.5 ; 0.04 ; 0.00 ; 0.19
+  control:control-foot | Receive Soccerball | out | v<0.7 | yaw>200 ; 1 ; 5.1 ; 5.12 ; 5.12 ; 5.12
+  control:control-foot | fadeout | in | v<2 | yaw<200 ; 2 ; 4.8 ; 2.42 ; 4.13 ; 4.13
+  idle | - | out | v<0.7 | yaw<200 ; 2 ; 4.7 ; 2.36 ; 3.54 ; 3.54
+  run | - | free | v<4 | yaw>200 ; 2 ; 4.6 ; 2.31 ; 3.33 ; 3.33
+  idle | - | free | v<0.7 | yaw<60 ; 6 ; 4.3 ; 0.71 ; 0.76 ; 0.82
+  control:control-foot | fadeout | out | v<2 | yaw<200 ; 1 ; 4.2 ; 4.18 ; 4.18 ; 4.18
+  run | - | free | v<4 | yaw<200 ; 2 ; 4.1 ; 2.06 ; 2.38 ; 2.38
+  run | - | out | v<2 | yaw<200 ; 1 ; 4.1 ; 4.11 ; 4.11 ; 4.11
+  run | - | in | v<0.7 | yaw<60 ; 15 ; 4.1 ; 0.27 ; 0.21 ; 1.23
+  kick | Soccer Pass | out | v<4 | yaw<60 ; 1 ; 4.0 ; 3.95 ; 3.95 ; 3.95
+  kick | Soccer Pass | out | v<4 | yaw<200 ; 1 ; 4.0 ; 3.95 ; 3.95 ; 3.95
+  run | - | out+ikmiss | v<2 | yaw>200 ; 1 ; 3.7 ; 3.73 ; 3.73 ; 3.73
+  run | fadeout | out | v<2 | yaw<60 ; 1 ; 3.4 ; 3.43 ; 3.43 ; 3.43
+  tackle | - | in | v<4 | yaw>200 ; 1 ; 3.4 ; 3.42 ; 3.42 ; 3.42
+  prepare-kick | - | out | v<2 | yaw>200 ; 1 ; 3.4 ; 3.40 ; 3.40 ; 3.40
+  run | - | in | v<0.7 | yaw<200 ; 5 ; 3.1 ; 0.62 ; 0.24 ; 2.18
+  control:control-foot | fadeout | in | v<2 | yaw>200 ; 1 ; 3.0 ; 2.96 ; 2.96 ; 2.96
+  run | - | free | v<2 | yaw>200 ; 1 ; 2.7 ; 2.73 ; 2.73 ; 2.73
+  run | - | lock+ikmiss | v<4 | yaw<200 ; 8 ; 2.5 ; 0.32 ; 0.37 ; 0.64
+  control:control-foot | fadeout | free | v<2 | yaw>200 ; 1 ; 2.5 ; 2.49 ; 2.49 ; 2.49
+  run | - | lock+ikmiss | v<4 | yaw>200 ; 8 ; 2.5 ; 0.31 ; 0.35 ; 0.51
+  idle | - | lock+ikmiss | v<0.7 | yaw<60 ; 84 ; 2.4 ; 0.03 ; 0.02 ; 0.08
+  idle | fadeout | free | v<0.7 | yaw<60 ; 2 ; 2.3 ; 1.15 ; 1.23 ; 1.23
+  run | - | lock+ikmiss | v>4 | yaw<60 ; 3 ; 2.1 ; 0.70 ; 0.71 ; 0.73
+  prepare-kick | - | free | v<0.7 | yaw>200 ; 1 ; 2.0 ; 1.97 ; 1.97 ; 1.97
+  run | - | lock+ikmiss | v<2 | yaw<60 ; 14 ; 1.9 ; 0.13 ; 0.14 ; 0.25
+  run | - | in | v<0.7 | yaw>200 ; 5 ; 1.9 ; 0.37 ; 0.23 ; 1.00
+  idle | fadeout | out | v<0.7 | yaw<60 ; 1 ; 1.7 ; 1.69 ; 1.69 ; 1.69
+  idle | - | in | v<0.7 | yaw<200 ; 4 ; 1.5 ; 0.38 ; 0.16 ; 1.16
+  run | - | lock+ikmiss | v>4 | yaw<200 ; 2 ; 1.4 ; 0.70 ; 1.04 ; 1.04
+  prepare-kick | - | in | v<4 | yaw>200 ; 1 ; 1.3 ; 1.26 ; 1.26 ; 1.26
+  idle | fadeout | in | v<0.7 | yaw<60 ; 4 ; 1.2 ; 0.31 ; 0.30 ; 0.64
+  prepare-kick | - | in | v<0.7 | yaw>200 ; 3 ; 1.1 ; 0.38 ; 0.11 ; 0.92
+  control:control-foot | Receive Soccerball | in | v<0.7 | yaw<60 ; 3 ; 1.1 ; 0.38 ; 0.19 ; 0.78
+  run | - | lock+ikmiss | v<2 | yaw<200 ; 5 ; 1.1 ; 0.22 ; 0.25 ; 0.28
+  run | - | lock | v<0.7 | yaw>200 ; 58 ; 1.1 ; 0.02 ; 0.00 ; 0.21
+  kick | Soccer Pass | lock | v<0.7 | yaw<60 ; 65 ; 1.0 ; 0.02 ; 0.00 ; 0.06
+  kick | Soccer Pass | in | v<4 | yaw>200 ; 1 ; 1.0 ; 0.97 ; 0.97 ; 0.97
+  control:control-foot | - | lock | v<2 | yaw<200 ; 2 ; 0.9 ; 0.44 ; 0.87 ; 0.87
+  control:control-foot | - | in | v<4 | yaw>200 ; 1 ; 0.9 ; 0.87 ; 0.87 ; 0.87
+  tackle | - | in | v<0.7 | yaw<60 ; 2 ; 0.8 ; 0.42 ; 0.74 ; 0.74
+  prepare-kick | - | lock | v<4 | yaw<60 ; 2 ; 0.8 ; 0.42 ; 0.76 ; 0.76
+  kick | Soccer Pass | in | v>4 | yaw<60 ; 1 ; 0.8 ; 0.79 ; 0.79 ; 0.79
+  run | - | lock+ikmiss | v<0.7 | yaw<60 ; 7 ; 0.8 ; 0.11 ; 0.12 ; 0.16
+  run | - | out | v<0.7 | yaw<200 ; 1 ; 0.8 ; 0.78 ; 0.78 ; 0.78
+  run | - | lock+ikmiss | v<2 | yaw>200 ; 3 ; 0.7 ; 0.22 ; 0.21 ; 0.36
+  idle | - | in | v<0.7 | yaw>200 ; 3 ; 0.6 ; 0.21 ; 0.28 ; 0.28
+  kick | Soccer Pass | lock | v<0.7 | yaw<200 ; 4 ; 0.6 ; 0.15 ; 0.07 ; 0.53
+  run | - | lock+ikmiss | v>4 | yaw>200 ; 1 ; 0.6 ; 0.56 ; 0.56 ; 0.56
+  control:control-foot | fadeout | in | v<2 | yaw<60 ; 1 ; 0.5 ; 0.53 ; 0.53 ; 0.53
+  control:control-foot | fadeout | lock | v<2 | yaw<60 ; 3 ; 0.5 ; 0.18 ; 0.00 ; 0.53
+  kick | Soccer Pass | in | v<0.7 | yaw>200 ; 1 ; 0.5 ; 0.53 ; 0.53 ; 0.53
+  idle | - | lock | v<0.7 | yaw<200 ; 60 ; 0.5 ; 0.01 ; 0.00 ; 0.06
+  control:control-foot | Receive Soccerball | in | v<0.7 | yaw<200 ; 1 ; 0.5 ; 0.49 ; 0.49 ; 0.49
+  control:control-foot | - | lock | v<4 | yaw<60 ; 2 ; 0.5 ; 0.24 ; 0.25 ; 0.25
+  run | fadeout | out | v<2 | yaw<200 ; 1 ; 0.5 ; 0.48 ; 0.48 ; 0.48
+  kick | Soccer Pass | in | v<0.7 | yaw<60 ; 1 ; 0.4 ; 0.45 ; 0.45 ; 0.45
+  control:control-foot | Receive Soccerball | lock | v<0.7 | yaw<200 ; 2 ; 0.4 ; 0.22 ; 0.31 ; 0.31
+  kick | Soccer Pass | in | v<2 | yaw<60 ; 1 ; 0.4 ; 0.42 ; 0.42 ; 0.42
+  tackle | - | in | v<4 | yaw<200 ; 1 ; 0.4 ; 0.40 ; 0.40 ; 0.40
+  tackle | - | lock | v<2 | yaw<200 ; 1 ; 0.4 ; 0.40 ; 0.40 ; 0.40
+  idle | - | lock | v<0.7 | yaw>200 ; 13 ; 0.4 ; 0.03 ; 0.00 ; 0.28
+  prepare-kick | - | lock+ikmiss | v<0.7 | yaw>200 ; 2 ; 0.3 ; 0.16 ; 0.22 ; 0.22
+  idle | fadeout | lock | v<0.7 | yaw<60 ; 6 ; 0.3 ; 0.05 ; 0.08 ; 0.13
+  control:control-foot | Receive Soccerball | lock+ikmiss | v<0.7 | yaw<60 ; 3 ; 0.3 ; 0.10 ; 0.05 ; 0.20
+  run | fadeout | lock | v<0.7 | yaw<60 ; 5 ; 0.3 ; 0.06 ; 0.01 ; 0.19
+  control:control-foot | Receive Soccerball | lock+ikmiss | v<0.7 | yaw<200 ; 1 ; 0.3 ; 0.27 ; 0.27 ; 0.27
+  run | fadeout | in | v<0.7 | yaw<60 ; 2 ; 0.3 ; 0.13 ; 0.16 ; 0.16
+  prepare-kick | - | lock | v<0.7 | yaw>200 ; 11 ; 0.3 ; 0.02 ; 0.00 ; 0.11
+  control:control-foot | - | in | v<4 | yaw<200 ; 1 ; 0.2 ; 0.25 ; 0.25 ; 0.25
+  prepare-kick | - | lock | v<4 | yaw>200 ; 5 ; 0.2 ; 0.05 ; 0.00 ; 0.22
+  control:control-foot | - | in | v<4 | yaw<60 ; 1 ; 0.2 ; 0.23 ; 0.23 ; 0.23
+  tackle | - | lock | v<2 | yaw<60 ; 3 ; 0.2 ; 0.07 ; 0.10 ; 0.10
+  run | fadeout | lock | v<2 | yaw<200 ; 7 ; 0.2 ; 0.03 ; 0.00 ; 0.16
+  prepare-kick | - | lock | v<2 | yaw<200 ; 4 ; 0.2 ; 0.04 ; 0.04 ; 0.11
+  kick | Soccer Pass | lock+ikmiss | v<0.7 | yaw<60 ; 5 ; 0.1 ; 0.03 ; 0.02 ; 0.05
+  prepare-kick | - | lock+ikmiss | v<2 | yaw>200 ; 1 ; 0.1 ; 0.12 ; 0.12 ; 0.12
+  control:control-foot | fadeout | lock | v<2 | yaw<200 ; 4 ; 0.1 ; 0.03 ; 0.00 ; 0.12
+  run | fadeout | lock | v<0.7 | yaw<200 ; 2 ; 0.1 ; 0.05 ; 0.11 ; 0.11
+  prepare-kick | - | lock | v<0.7 | yaw<200 ; 4 ; 0.1 ; 0.02 ; 0.03 ; 0.04
+  idle | - | lock | v<2 | yaw<60 ; 2 ; 0.0 ; 0.01 ; 0.01 ; 0.01
+  run | fadeout | lock | v<2 | yaw<60 ; 2 ; 0.0 ; 0.00 ; 0.00 ; 0.00
+  idle | - | lock | v<2 | yaw<200 ; 5 ; 0.0 ; 0.00 ; 0.00 ; 0.00
+  control:control-foot | - | lock | v<4 | yaw>200 ; 1 ; 0.0 ; 0.00 ; 0.00 ; 0.00
+  tackle | - | lock | v<4 | yaw<60 ; 1 ; 0.0 ; 0.00 ; 0.00 ; 0.00
+  run | fadeout | lock | v<2 | yaw>200 ; 1 ; 0.0 ; 0.00 ; 0.00 ; 0.00
+  control:control-foot | - | lock | v<4 | yaw<200 ; 2 ; 0.0 ; 0.00 ; 0.00 ; 0.00
+
+Log: TOUCHLINE_FILM_OK /github/workspace/unity/Touchline/build/film/anim-diag0
