@@ -45,23 +45,25 @@ jobs:
           key: Library-Android-${{ hashFiles('unity/Touchline/Packages/packages-lock.json', 'unity/Touchline/ProjectSettings/ProjectVersion.txt') }}
           restore-keys: Library-Android-
 
-      - name: Tournage dans Unity (rendu logiciel Mesa sous xvfb)
+      - name: Image Unity avec rendu logiciel (Mesa)
+        run: |
+          printf 'FROM unityci/editor:ubuntu-6000.3.24f1-android-3\nRUN apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq libgl1-mesa-dri libglx-mesa0 libegl-mesa0 mesa-vulkan-drivers && rm -rf /var/lib/apt/lists/*\n' > "$RUNNER_TEMP/Dockerfile"
+          docker build -q -t touchline-unity-mesa:local "$RUNNER_TEMP"
+
+      - name: Tournage dans Unity
+        uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-        run: |
-          mkdir -p "$RUNNER_TEMP/film-log"
-          printf '%s' "$UNITY_LICENSE" > "$RUNNER_TEMP/unity.ulf"
-          docker run --rm -v "$GITHUB_WORKSPACE:/project" -v "$RUNNER_TEMP:/runner" \
-            unityci/editor:ubuntu-6000.3.24f1-android-3 bash -c '
-              set -x
-              apt-get update -qq >/dev/null && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq libgl1-mesa-dri libglx-mesa0 libegl-mesa0 mesa-vulkan-drivers >/dev/null
-              unity-editor -nographics -logFile /runner/film-log/activation.log -quit -manualLicenseFile /runner/unity.ulf || true
-              unity-editor -logFile /runner/film-log/unity.log -quit -projectPath /project/unity/Touchline -buildTarget Android \
-                -force-glcore -executeMethod Touchline.Editor.CiMatchFilm.Run -touchlineFilm=${{ steps.name.outputs.film }}
-              echo "exit $?" >> /runner/film-log/unity.log
-            ' || true
-          rm -f "$RUNNER_TEMP/unity.ulf"
-          tail -n 40 "$RUNNER_TEMP/film-log/unity.log" || true
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          customImage: touchline-unity-mesa:local
+          projectPath: unity/Touchline
+          unityVersion: 6000.3.24f1
+          targetPlatform: Android
+          buildMethod: Touchline.Editor.CiMatchFilm.Run
+          allowDirtyBuild: true
+          customParameters: -force-glcore -touchlineFilm=${{ steps.name.outputs.film }}
 
       - name: Encodage des vidéos et planches
         if: always()
@@ -75,9 +77,6 @@ jobs:
             ffmpeg -v error -y -framerate 30 -i "$src/$cam/frame-%04d.jpg" -vf "fps=2,scale=480:-1,tile=4x5" -frames:v 1 "$out/$cam-sheet.jpg"
           done
           cp "$src/info.txt" "$out/" || true
-          grep -iE "GfxDevice|Renderer:|Vendor:|Version:  |OpenGL|Vulkan|graphics|TOUCHLINE_FILM|Exception|error CS|exit " "$RUNNER_TEMP/film-log/unity.log" | head -80 > "$out/unity-log-excerpt.txt" || true
-          tail -n 120 "$RUNNER_TEMP/film-log/unity.log" > "$out/unity-log-tail.txt" || true
-          tail -n 40 "$RUNNER_TEMP/film-log/activation.log" > "$out/activation-log-tail.txt" || true
           ls -la "$out"
 
       - name: Publication dans la branche films
@@ -93,6 +92,5 @@ jobs:
           cd "$pub"; git config user.name "touchline-film-bot"; git config user.email "actions@users.noreply.github.com"
           rm -rf "films/$name"; mkdir -p "films/$name"
           cp "$RUNNER_TEMP/film/$name/"* "films/$name/" 2>/dev/null || true
-          for f in unity activation; do tail -n 150 "$RUNNER_TEMP/film-log/$f.log" > "films/$name/$f-log-tail.txt" 2>/dev/null || true; done
-          ls -la "$RUNNER_TEMP" "$RUNNER_TEMP/film-log" > "films/$name/runner-files.txt" 2>&1 || true
+          ls -la "$GITHUB_WORKSPACE/unity/Touchline/build/film/$name" > "films/$name/output-files.txt" 2>&1 || true
           git add -f "films/$name"; git commit -q -m "film: $name (${GITHUB_SHA::7})"; git push -q origin films
