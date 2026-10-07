@@ -33,5 +33,15 @@ namespace Touchline.Tests
             int o=outfield.Count(p=>c.ChoosesToRetire(p,ending)),k=keepers.Count(p=>c.ChoosesToRetire(p,ending)),s=stars.Count(p=>c.ChoosesToRetire(p,ending));
             Assert.Less(k,o);Assert.Less(s,o);
         }
+
+        [Test]
+        public void PlayerWithAgreedMoveDoesNotRetire()
+        {
+            var ending=new Employment{club="c",until=310};var c=At(2027);
+            var players=Enumerable.Range(0,200).Select(i=>new PlayerData{id="rp"+i,team="c",age=36,rating=60,position="MIL"}).ToArray();
+            foreach(var p in players)c.world.offers.Add(new TransferOffer{player=p.id,status="scheduled"});
+            Assert.That(players.Count(p=>c.ChoosesToRetire(p,ending)),Is.EqualTo(0));
+            Assert.IsFalse(c.ChoosesToRetire(new PlayerData{id="nt",team=null,age=36},ending),"Sans équipe connue : pas d'exception");
+        }
     }
 }

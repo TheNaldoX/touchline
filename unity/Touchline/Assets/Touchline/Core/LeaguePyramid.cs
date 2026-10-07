@@ -19,6 +19,7 @@ namespace Touchline.Core
             if(change==null){change=new RevenueChange{club=id,baseRevenue=data.annualRevenue};changedRevenues.Add(change);}
             if(change.baseRevenue<=0){change.baseRevenue=data.annualRevenue;change.divisionMoves=0;}
             change.divisionMoves+=promoted?1:-1;
+            if(id==club)change.merit=0; // the managed club has no AI merit coefficient
             // Reversible projection: a promotion/relegation cycle cannot manufacture revenue.
             data.annualRevenue=ProjectedRevenue(change);change.revenue=data.annualRevenue;
             data.financeSource="Projection de carrière par division, ancrée aux recettes initiales";

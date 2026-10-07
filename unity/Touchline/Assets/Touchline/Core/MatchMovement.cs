@@ -20,6 +20,8 @@ namespace Touchline.Core
                     if(d<first){second=first;coverPress[side]=firstPress[side];first=d;firstPress[side]=i;}else if(d<second){second=d;coverPress[side]=i;}}}
             for(int i=0;i<22;i++){
                 var p=m.actors[i];
+                // A run in behind lasts a fixed time whatever happens to the ball.
+                if(p.runBehind>0)p.runBehind=Math.Max(0,p.runBehind-Step);
                 if(PreparingFootDelivery(p)&&(b.owner!=p.id||p.sentOff)){p.action=p.velocity.Length>.4f?"run":"idle";p.actionTime=0;}
                 if(p.sentOff){targets[i]=p.position;continue;}var dir=Direction(p.side);var has=possession==p.side;var t=Tactic(p.side);var slot=(has?t.withBall:t.withoutBall)[p.slot];var bx=b.position.x*dir;
                 var q=t.Position(p.slot,has,bx);p.intent=has?"support":"shape";

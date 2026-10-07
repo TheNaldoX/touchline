@@ -17,19 +17,23 @@ namespace Touchline.Core
         const float ThroughMinSafety=.15f;          // risque accepté pour servir un appel (0–1)
         const float ThroughBonus=1.5f;               // attrait d'une passe dans la course (points de score)
         const float RunBehindOwnerSpace=3.5f;      // espace minimal autour du porteur (m)
+        const float RunBehindOwnerDepth=6f;        // le porteur doit être au moins à cette distance de la ligne (m)
+        const float RunBehindAttackDuty=1.4f,RunBehindSupportDuty=.6f; // fréquence selon la consigne du joueur (×)
+        const float RunBehindBaseTendency=.5f;     // + placement/100 : 0,5× (placement 0) à 1,5× (placement 100)
+        const float RunBehindReactionMin=.1f,RunBehindReactionPerPoint=.004f; // réaction du porteur (s, s par point de vision manquant)
 
         // Retourne true si p est en train de faire un appel ; met à jour sa cible.
         bool RunBehind(Actor p,Actor owner,string duty,ref Point q)
         {
-            if(p.runBehind>0){p.runBehind-=Step;q.x=Math.Min(48,Math.Max(q.x,OffsideLine(p.side)+RunBehindDepth));p.intent="run-behind";return true;}
+            if(p.runBehind>0){q.x=Math.Min(48,Math.Max(q.x,OffsideLine(p.side)+RunBehindDepth));p.intent="run-behind";return true;}
             if(duty=="defend"||p.slot==0)return false;
             int dir=Direction(p.side);float line=OffsideLine(p.side),x=p.position.x*dir,ownerX=owner.position.x*dir;
-            if(line>46||x<line-RunBehindTrigger||x>line||ownerX>line-6||Space(owner.position,1-p.side)<RunBehindOwnerSpace)return false;
-            float off=Skill(p,"positioning")*.01f;float rate=RunBehindRatePerSecond*(duty=="attack"?1.4f:.6f)*(.5f+off);
+            if(line>46||x<line-RunBehindTrigger||x>line||ownerX>line-RunBehindOwnerDepth||Space(owner.position,1-p.side)<RunBehindOwnerSpace)return false;
+            float off=Skill(p,"positioning")*.01f;float rate=RunBehindRatePerSecond*(duty=="attack"?RunBehindAttackDuty:RunBehindSupportDuty)*(RunBehindBaseTendency+off);
             if(Random()>=rate*Step)return false;
             p.runBehind=RunBehindSeconds;
             // Le porteur voit l'appel et relève la tête : réaction 0,1 s (vision 100) à 0,5 s (vision 0).
-            State.decision=Math.Min(State.decision,.1f+(100-Skill(owner,"vision"))*.004f);q.x=Math.Min(48,line+RunBehindDepth);p.intent="run-behind";return true;
+            State.decision=Math.Min(State.decision,RunBehindReactionMin+(100-Skill(owner,"vision"))*RunBehindReactionPerPoint);q.x=Math.Min(48,line+RunBehindDepth);p.intent="run-behind";return true;
         }
     }
 }

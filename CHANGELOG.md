@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Corrections de relecture : appel en profondeur borné dans le temps, pas de retraite après un précontrat, terrain neutre pour les anciennes sauvegardes, constantes nommées.
 - Forme du jour, avantage du terrain et plongeon du gardien plus long : favori (écart 3–6) 50–53 % de victoires, nuls 26 %, domicile 46 %.
 - Joueur averti plus prudent (plus de tacle glissé, moitié moins de fautes en retard) : cartons rouges 0,30 → 0,20 par match.
 - Monde qui ne vieillit plus : retraites dès 31–36 ans en fin de contrat, contrats d'un an après 31 ans, un jeune du centre par club et par été (âge moyen sur 6 saisons 24,7 → 25,7 au lieu de 27,6).

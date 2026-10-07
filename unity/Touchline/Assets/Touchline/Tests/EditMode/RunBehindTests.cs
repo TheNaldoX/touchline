@@ -51,13 +51,14 @@ namespace Touchline.Tests
         }
 
         [Test]
-        public void RunningPlayerKeepsTargetBehindLineUntilRunEnds()
+        public void RunningPlayerKeepsTargetBehindLineAndStoppageEndsRun()
         {
             var sim=Setup(0,0,out var owner,out var runner,out _);runner.runBehind=.25f;var q=new Point(20,4);
             Assert.IsTrue(Call(sim,runner,owner,"attack",ref q));Assert.GreaterOrEqual(q.x,30f);
-            q=new Point(20,4);Assert.IsTrue(Call(sim,runner,owner,"attack",ref q));
-            q=new Point(20,4);Assert.IsTrue(Call(sim,runner,owner,"attack",ref q));
-            Assert.LessOrEqual(runner.runBehind,0f,"L'appel doit s'arrêter après sa durée.");
+            // The countdown runs in Move() for every player, whoever has the ball.
+            sim.Advance(.3);Assert.LessOrEqual(runner.runBehind,0f,"L'appel doit s'arrêter après sa durée, même sans porteur.");
+            runner.runBehind=1f;typeof(MatchSimulation).GetMethod("Restart",Flags).Invoke(sim,new object[]{"throw-in",0,new Point(0,34),2f});
+            Assert.AreEqual(0f,runner.runBehind,"Un arrêt de jeu met fin à l'appel.");
         }
     }
 }
