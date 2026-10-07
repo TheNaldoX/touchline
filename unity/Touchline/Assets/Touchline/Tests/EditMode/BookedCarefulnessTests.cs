@@ -12,11 +12,12 @@ namespace Touchline.Tests
         const BindingFlags Flags=BindingFlags.Instance|BindingFlags.NonPublic;
         static readonly Database Db=new Database{players=Enumerable.Range(0,40).Select(i=>new PlayerData{id="bk"+i,name="B"+i,team=i<20?"a":"b",position=i%20==0?"GB":i%20<5?"DEF":i%20<9?"MIL":"ATT",rating=80}).ToArray()};
 
-        static bool Mistimed(uint seed,int yellows)
+        static bool Mistimed(uint seed,int yellows)=>Mistimed(seed,yellows,-.4f);
+        static bool Mistimed(uint seed,int yellows,float along)
         {
             var c=new Career{club="a"};c.lineup=Career.Select(Db,"a",c.tactic);var sim=MatchSimulation.Create(Db,c,"b",seed,2700);sim.State.professionalRules=true;
             var owner=sim.State.actors[7];var defender=sim.State.actors[11+6];defender.yellows=yellows;int dir=sim.Direction(0);
-            owner.position=new Point(dir*5,0);owner.velocity=new Point(dir*5,0);defender.position=new Point(dir*4.6f,.3f);
+            owner.position=new Point(dir*5,0);owner.velocity=new Point(dir*5,0);defender.position=new Point(dir*(5+along),.3f);
             sim.State.phase="play";sim.State.restart=0;sim.State.ball=new BallState{owner=owner.id,side=0,position=owner.position,height=.11f};
             return (bool)typeof(MatchSimulation).GetMethod("MistimedChallenge",Flags).Invoke(sim,new object[]{defender,owner});
         }
@@ -70,6 +71,15 @@ namespace Touchline.Tests
             Assert.Greater(inArea,0,"Une faute en retard reste possible dans la surface");
             Assert.AreEqual("penalty",phase);
             Assert.Less(inArea,outside*.25f,"Bien plus rare que hors de la surface");
+        }
+
+        // Un poke perdu par un défenseur placé devant le porteur, dans sa course,
+        // accroche souvent : environ deux fois sur trois entre joueurs égaux.
+        [Test]
+        public void LostPokeInRunningLaneOftenCatchesCarrier()
+        {
+            int fouls=0;for(uint s=1;s<=400;s++)if(Mistimed(unchecked(s*2654435761u),0,.4f))fouls++;
+            Assert.That(fouls,Is.InRange(220,300),"Fautes sur 400 pokes perdus");
         }
     }
 }

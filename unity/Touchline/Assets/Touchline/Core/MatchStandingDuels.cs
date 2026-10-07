@@ -68,6 +68,7 @@ namespace Touchline.Core
         // under .75 m). A boot that meets the exposed ball beside the runner
         // does not. Inside his own area the defender holds back far more,
         // but a late challenge there is a penalty.
+        const float MistimedBaseChance=.55f; // part des pokes perdus qui accrochent le porteur (joueurs égaux, à l'arrêt)
         const float AreaMistimedShare=.10f; // part des fautes en retard encore commises dans sa propre surface
         const float BookedCarefulness=.5f; // part des fautes « en retard » encore commises une fois averti
         bool MistimedChallenge(Actor defender,Actor owner)
@@ -78,7 +79,7 @@ namespace Touchline.Core
             float along=Point.Dot(toDefender,run),lateral=Math.Abs(toDefender.x*run.z-toDefender.z*run.x);
             if(along< -1f||along>1.2f||lateral>.75f)return false;
             bool area=owner.position.x*Direction(owner.side)>36&&Math.Abs(owner.position.z)<20.16f;
-            float chance=Mathx.Clamp(.35f+(along<0?.15f:0)+(Skill(owner,"dribbling")-Skill(defender,"standingTackle"))*.004f
+            float chance=Mathx.Clamp(MistimedBaseChance+(along<0?.15f:0)+(Skill(owner,"dribbling")-Skill(defender,"standingTackle"))*.004f
                 +(Skill(defender,"aggression")-60)*.003f+owner.velocity.Length*.025f,.10f,.65f);
             if(defender.yellows>0)chance*=BookedCarefulness; // un joueur averti retient son geste
             if(area)chance*=AreaMistimedShare; // dans sa surface, le défenseur retient beaucoup plus son geste
