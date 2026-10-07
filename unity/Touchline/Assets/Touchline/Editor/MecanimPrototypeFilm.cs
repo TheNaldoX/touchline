@@ -88,7 +88,12 @@ namespace Touchline.Editor
                         for(int k=0;k<=samples;k++){pl.SetTime(k*step);g.Evaluate(0);var hips=animator.GetBoneTransform(HumanBodyBones.Hips).position;
                             for(int b=0;b<4;b++){var pos=animator.GetBoneTransform(bones[b]).position-new Vector3(hips.x,0,hips.z);if(k>0){float v=(pos-last[b]).magnitude/step;if(v>peak[b]){peak[b]=v;peakTime[b]=k*step;}}last[b]=pos;}
                             float head=animator.GetBoneTransform(HumanBodyBones.Head).position.y;headMin=Mathf.Min(headMin,head);headMax=Mathf.Max(headMax,head);}
-                        timing.AppendLine($"{clip.name};{clip.length:0.000};{clip.isLooping};{peakTime[0]:0.000};{peak[0]:0.0};{peakTime[1]:0.000};{peak[1]:0.0};{peakTime[2]:0.000};{peakTime[3]:0.000};{headMin:0.00};{headMax:0.00}");
+                        // Vitesse naturelle (boucles) : recul moyen du pied d'appui par rapport aux hanches.
+                        float natural=0;if(clip.isLooping){var g2=PlayableGraph.Create("N");g2.SetTimeUpdateMode(DirectorUpdateMode.Manual);var o2=AnimationPlayableOutput.Create(g2,"N",animator);var p2=AnimationClipPlayable.Create(g2,clip);o2.SetSourcePlayable(p2);
+                            var footBone=animator.GetBoneTransform(HumanBodyBones.LeftFoot);float minY=9;var ys=new List<float>();var zs=new List<float>();
+                            for(int k=0;k<=samples;k++){p2.SetTime(k*step);g2.Evaluate(0);var h=animator.GetBoneTransform(HumanBodyBones.Hips).position;ys.Add(footBone.position.y);zs.Add(footBone.position.z-h.z);minY=Mathf.Min(minY,footBone.position.y);}
+                            float sum=0;int count=0;for(int k=1;k<ys.Count;k++)if(ys[k]<minY+.02f&&ys[k-1]<minY+.02f){sum+=-(zs[k]-zs[k-1])/step;count++;}natural=count>0?sum/count:0;g2.Destroy();}
+                        timing.AppendLine($"{clip.name};natural={natural:0.00};{clip.length:0.000};{clip.isLooping};{peakTime[0]:0.000};{peak[0]:0.0};{peakTime[1]:0.000};{peak[1]:0.0};{peakTime[2]:0.000};{peakTime[3]:0.000};{headMin:0.00};{headMax:0.00}");
                         pl.Destroy();}
                      g.Destroy();File.WriteAllText(Path.Combine(output,"clip-timing.csv"),timing.ToString());}
                     var graph=PlayableGraph.Create("Prototype");graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);

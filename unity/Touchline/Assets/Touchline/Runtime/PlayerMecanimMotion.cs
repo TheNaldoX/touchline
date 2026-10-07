@@ -132,7 +132,31 @@ namespace Touchline
             mecanimMixer.SetInputWeight(3,a0);mecanimMixer.SetInputWeight(4,a1);
             body.localPosition=Vector3.zero;body.localRotation=Quaternion.identity;
             mecanimGraph.Evaluate(reset?0:Mathf.Max(0,dt));
+            MecanimFootLock(dt,reset);
             return true;
+        }
+
+        // Verrouillage des pieds : un pied qui touche le sol reste à sa place sur la
+        // pelouse pendant l'appui (la jambe s'ajuste par IK) au lieu de glisser
+        // quand la foulée du clip ne correspond pas exactement à la vitesse réelle.
+        const float FootContactHeight=.12f; // m (cheville), joueur de 1,82 m
+        const float FootLockRelease=.30f;   // m : au-delà, le pied décroche et se repose plus loin
+        const float FootLockBlend=12f;      // 1/s : entrée/sortie du verrouillage
+        readonly Vector3[] footLockPoint=new Vector3[2];readonly bool[] footLocked=new bool[2];readonly float[] footLockWeight=new float[2];
+        void MecanimFootLock(float dt,bool reset)
+        {
+            for(int i=0;i<2;i++){
+                string side=Sides[i];var foot=Limb(side).foot;var p=foot.position;
+                if(reset){footLocked[i]=false;footLockWeight[i]=0;continue;}
+                bool contact=p.y<FootContactHeight*transform.localScale.y;
+                if(contact&&!footLocked[i]){footLocked[i]=true;footLockPoint[i]=p;}
+                var drift=footLockPoint[i]-p;drift.y=0;
+                if(footLocked[i]&&(!contact||drift.magnitude>FootLockRelease))footLocked[i]=false;
+                footLockWeight[i]=Mathf.MoveTowards(footLockWeight[i],footLocked[i]?1:0,dt*FootLockBlend);
+                if(footLockWeight[i]<=0)continue;
+                var target=Vector3.Lerp(p,new Vector3(footLockPoint[i].x,p.y,footLockPoint[i].z),footLockWeight[i]);var rotation=foot.rotation;
+                SolveLeg(side,target);foot.rotation=rotation;
+            }
         }
     }
 }
