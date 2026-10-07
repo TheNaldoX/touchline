@@ -14,6 +14,9 @@ namespace Touchline.Editor
         static readonly string[] LoopKeywords={"idle","walk","jog","run","strafe","backward","sidestep","dribble","sprint"};
         static readonly string[] OneShotKeywords={"stop","turn","kick","pass","shot","chip","header","tackle","trip","catch","save","throw","scoop","place","receive","victory","celebrat","defeat","pump"};
 
+        // À incrémenter quand les réglages changent : Unity réimporte alors les clips.
+        public override uint GetVersion()=>2;
+
         static bool Mixamo(string path)=>path.Replace('\\','/').StartsWith(Folder)&&path.EndsWith(".fbx",System.StringComparison.OrdinalIgnoreCase);
 
         void OnPreprocessModel()
@@ -40,9 +43,13 @@ namespace Touchline.Editor
                 clip.loopTime=loop;clip.loopPose=loop;
                 // Racine : rotation et hauteur figées sur la pose, déplacement horizontal
                 // ignoré (animations « In Place » ou non) ; le moteur pilote la position.
-                clip.lockRootRotation=true;clip.keepOriginalOrientation=true;
+                // Orientation figée sur celle du corps (une course arrière regarde vers l'avant),
+                // hauteur gardée dans la pose (sauts, plongeons), déplacement horizontal laissé
+                // en mouvement de racine, ignoré à la lecture (applyRootMotion=false) : un clip
+                // qui avance (Standard Run, sprint) reste sur place au lieu de dériver puis revenir.
+                clip.lockRootRotation=true;clip.keepOriginalOrientation=false;
                 clip.lockRootHeightY=true;clip.keepOriginalPositionY=true;
-                clip.lockRootPositionXZ=true;clip.keepOriginalPositionXZ=false;
+                clip.lockRootPositionXZ=false;clip.keepOriginalPositionXZ=false;
             }
             importer.clipAnimations=clips;
         }

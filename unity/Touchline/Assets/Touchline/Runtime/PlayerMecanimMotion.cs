@@ -55,7 +55,7 @@ namespace Touchline
         readonly AnimationClipPlayable[] actionPlayables=new AnimationClipPlayable[2];
         readonly float[] actionWeights=new float[2];readonly bool[] actionLive=new bool[2];
         int activeAction=-1;string mecanimActionKey;int mecanimActionSequence=-1;float mecanimActionElapsed,mecanimActionContact;
-        float moveBlend,dribbleBlend,backwardBlend;Vector3 mecanimLastPosition;bool mecanimKeeper;
+        float moveBlend,dribbleBlend,backwardBlend;bool mecanimKeeper;
 
         bool EnsureMecanimGraph(bool keeper)
         {
@@ -116,8 +116,8 @@ namespace Touchline
             jogPlayable.SetSpeed(Rate(JogNaturalSpeed));dribblePlayable.SetSpeed(Rate(DribbleNaturalSpeed));runPlayable.SetSpeed(Rate(RunNaturalSpeed));sprintPlayable.SetSpeed(Rate(SprintNaturalSpeed));
             jogBackPlayable.SetSpeed(Rate(JogBackNaturalSpeed));runBackPlayable.SetSpeed(Rate(RunBackNaturalSpeed));
             // Course arrière : le joueur se déplace à l'opposé de son regard (repli défensif).
-            var travel=transform.position-mecanimLastPosition;travel.y=0;mecanimLastPosition=transform.position;
-            float backward=reset||dt<=0||travel.sqrMagnitude<1e-6f?0:Mathf.SmoothStep(0,1,Mathf.InverseLerp(BackwardFrom,BackwardTo,-Vector3.Dot(travel.normalized,transform.forward)));
+            var travel=new Vector3(poseVelocity.x,0,poseVelocity.z);
+            float backward=poseSpeed<MoveBlendFrom?0:Mathf.SmoothStep(0,1,Mathf.InverseLerp(BackwardFrom,BackwardTo,-Vector3.Dot(travel.normalized,transform.forward)));
             backwardBlend=reset?backward:Mathf.Lerp(backwardBlend,backward,1-Mathf.Exp(-dt*BackwardSmoothing));
 
             // Gestes : nouveau geste → emplacement libre, fondu d'entrée, temps calé sur le contact.
