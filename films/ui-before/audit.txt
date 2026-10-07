@@ -1,0 +1,587 @@
+Audit d'interface Touchline · 1 dp = 2.625 px physiques · seuils : cible tactile 48 dp, texte 12 sp
+ÉCHEC : délai dépassé à l'étape 33
+
+## plie-bureau · 1080×2520 px · échelle 2.45 · 1 unité UI = 0.94 dp · largeur logique 440 · hauteur 1027
+   boutons visibles 19 · < 48 dp : 12 · textes 37 · < 12 sp : 24 · plus petit texte 8.4 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 41×41 dp
+   petit bouton ×1 « › » 41×41 dp
+   petit bouton ×1 « Continuer  → » 127×41 dp
+   petit bouton ×1 « Bureau » 75×45 dp
+   petit bouton ×2 « Effectif » 75×45 dp
+   petit bouton ×1 « Tactique » 75×45 dp
+   petit bouton ×1 « Messages » 75×45 dp
+   petit bouton ×1 « Plus » 75×45 dp
+   petit bouton ×1 « Préparer la rencontre » 213×41 dp
+   petit bouton ×1 « Calendrier » 109×41 dp
+   petit bouton ×1 « Infrastructures » 181×41 dp
+   petit texte ×9 [unity-text-element.unity-button 11.2 sp] ex. « Bureau »
+   petit texte ×6 [unity-text-element.unity-label 10.3 sp] ex. « DANS 67 JOURS »
+   petit texte ×4 [unity-text-element.unity-label 11.2 sp] ex. « lun. 15 juin 2026 »
+   petit texte ×4 [unity-text-element.unity-label 8.4 sp] ex. « TRÉSORERIE »
+   petit texte ×1 [unity-text-element.unity-label 9.4 sp] ex. « BUREAU / LUNDI 15 JUIN »
+
+## plie-effectif · 1080×2520 px · échelle 2.45 · 1 unité UI = 0.94 dp · largeur logique 440 · hauteur 1027
+   boutons visibles 19 · < 48 dp : 19 · textes 64 · < 12 sp : 26 · plus petit texte 9.4 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 41×41 dp
+   petit bouton ×1 « › » 41×41 dp
+   petit bouton ×1 « Continuer  → » 127×41 dp
+   petit bouton ×1 « Bureau » 75×45 dp
+   petit bouton ×1 « Effectif » 75×45 dp
+   petit bouton ×1 « Tactique » 75×45 dp
+   petit bouton ×1 « Messages » 75×45 dp
+   petit bouton ×1 « Plus » 75×45 dp
+   petit bouton ×1 « Comparer » 158×41 dp
+   petit bouton ×1 « Préparer le onze » 201×41 dp
+   petit bouton ×1 « Effacer » 45×41 dp
+   petit bouton ×8 « Fiche » 51×41 dp
+   petit texte ×3 [unity-text-element.unity-base-popup-field__text 11.2 sp] ex. « Tous les postes »
+   petit texte ×7 [unity-text-element.unity-button 11.2 sp] ex. « Bureau »
+   petit texte ×1 [unity-text-element.unity-button 9.4 sp] ex. « Effacer »
+   petit texte ×7 [unity-text-element.unity-label 10.3 sp] ex. « Titulaire »
+   petit texte ×1 [unity-text-element.unity-label 11.2 sp] ex. « lun. 15 juin 2026 »
+   petit texte ×7 [unity-text-element.unity-label 9.4 sp] ex. « 12 · GB · 28 ans »
+
+## plie-tactique · 1080×2520 px · échelle 2.45 · 1 unité UI = 0.94 dp · largeur logique 440 · hauteur 1027
+   boutons visibles 16 · < 48 dp : 16 · textes 59 · < 12 sp : 45 · plus petit texte 9.4 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 41×41 dp
+   petit bouton ×1 « › » 41×41 dp
+   petit bouton ×1 « Continuer  → » 127×41 dp
+   petit bouton ×1 « Bureau » 75×45 dp
+   petit bouton ×1 « Effectif » 75×45 dp
+   petit bouton ×1 « Tactique » 75×45 dp
+   petit bouton ×1 « Messages » 75×45 dp
+   petit bouton ×1 « Plus » 75×45 dp
+   petit bouton ×1 « Composition » 95×41 dp
+   petit bouton ×1 « Avec ballon » 89×41 dp
+   petit bouton ×1 « Sans ballon » 89×41 dp
+   petit bouton ×1 « Transitions » 86×41 dp
+   petit bouton ×1 « Adjoint » 370×41 dp
+   petit bouton ×1 « Annuler » 72×41 dp
+   petit bouton ×1 « Onze conseillé » 118×41 dp
+   petit bouton ×1 « Fiche » 52×43 dp
+   petit texte ×10 [unity-text-element.unity-button 11.2 sp] ex. « Bureau »
+   petit texte ×11 [unity-text-element.unity-label 10.3 sp] ex. « 12  GB »
+   petit texte ×13 [unity-text-element.unity-label 11.2 sp] ex. « lun. 15 juin 2026 »
+   petit texte ×11 [unity-text-element.unity-label 9.4 sp] ex. « 100 % »
+
+## plie-tactique-avec-ballon · 1080×2520 px · échelle 2.45 · 1 unité UI = 0.94 dp · largeur logique 440 · hauteur 1027
+   boutons visibles 19 · < 48 dp : 19 · textes 36 · < 12 sp : 16 · plus petit texte 11.2 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 41×41 dp
+   petit bouton ×1 « › » 41×41 dp
+   petit bouton ×1 « Continuer  → » 127×41 dp
+   petit bouton ×1 « Bureau » 75×45 dp
+   petit bouton ×1 « Effectif » 75×45 dp
+   petit bouton ×1 « Tactique » 75×45 dp
+   petit bouton ×1 « Messages » 75×45 dp
+   petit bouton ×1 « Plus » 75×45 dp
+   petit bouton ×1 « Composition » 95×41 dp
+   petit bouton ×1 « Avec ballon » 89×41 dp
+   petit bouton ×1 « Sans ballon » 89×41 dp
+   petit bouton ×1 « Transitions » 86×41 dp
+   petit bouton ×1 « Adjoint » 370×41 dp
+   petit bouton ×1 « Voir le terrain » 109×41 dp
+   petit bouton ×1 « Étroite » 54×41 dp
+   petit bouton ×1 « Resserrée » 73×41 dp
+   petit bouton ×1 « Normale » 64×41 dp
+   petit bouton ×1 « Large » 50×41 dp
+   petit bouton ×1 « Très large » 72×41 dp
+   petit texte ×15 [unity-text-element.unity-button 11.2 sp] ex. « Bureau »
+   petit texte ×1 [unity-text-element.unity-label 11.2 sp] ex. « lun. 15 juin 2026 »
+
+## plie-calendrier · 1080×2520 px · échelle 2.45 · 1 unité UI = 0.94 dp · largeur logique 440 · hauteur 1027
+   boutons visibles 45 · < 48 dp : 15 · textes 66 · < 12 sp : 51 · plus petit texte 9.4 sp · coupés au bord : 0
+   petit bouton ×2 « ‹ » 41×41 dp
+   petit bouton ×2 « › » 41×41 dp
+   petit bouton ×1 « Continuer  → » 127×41 dp
+   petit bouton ×1 « Bureau » 75×45 dp
+   petit bouton ×1 « Effectif » 75×45 dp
+   petit bouton ×1 « Tactique » 75×45 dp
+   petit bouton ×1 « Messages » 75×45 dp
+   petit bouton ×1 « Plus » 75×45 dp
+   petit bouton ×1 « Organiser un stage » 173×41 dp
+   petit bouton ×1 « Proposer un amical » 173×41 dp
+   petit bouton ×1 « Calendrier » 122×41 dp
+   petit bouton ×1 « Préparation » 122×41 dp
+   petit bouton ×1 « Aujourd’hui » 78×41 dp
+   petit texte ×8 [unity-text-element.unity-button 11.2 sp] ex. « Bureau »
+   petit texte ×30 [unity-text-element.unity-button 9.4 sp] ex. « 1 /  »
+   petit texte ×9 [unity-text-element.unity-label 10.3 sp] ex. « SAISON 2026 / 2027 »
+   petit texte ×3 [unity-text-element.unity-label 11.2 sp] ex. « lun. 15 juin 2026 »
+   petit texte ×1 [unity-text-element.unity-label 9.4 sp] ex. « Vert : rencontre · Or : stage · Invitation : ré… »
+
+## plie-messages · 1080×2520 px · échelle 2.45 · 1 unité UI = 0.94 dp · largeur logique 440 · hauteur 1027
+   boutons visibles 17 · < 48 dp : 17 · textes 42 · < 12 sp : 28 · plus petit texte 10.3 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 41×41 dp
+   petit bouton ×1 « › » 41×41 dp
+   petit bouton ×1 « Continuer  → » 127×41 dp
+   petit bouton ×1 « Bureau » 75×45 dp
+   petit bouton ×1 « Effectif » 75×45 dp
+   petit bouton ×1 « Tactique » 75×45 dp
+   petit bouton ×1 « Messages » 75×45 dp
+   petit bouton ×1 « Plus » 75×45 dp
+   petit bouton ×1 « Contacter un joueur » 179×41 dp
+   petit bouton ×1 « Marquer ces messages lus » 180×41 dp
+   petit bouton ×1 « Tous » 89×41 dp
+   petit bouton ×1 « Non lus » 89×41 dp
+   petit bouton ×1 « À traiter » 89×41 dp
+   petit bouton ×1 « Épinglés » 89×41 dp
+   petit bouton ×3 « Lire » 40×41 dp
+   petit texte ×14 [unity-text-element.unity-button 11.2 sp] ex. « Bureau »
+   petit texte ×7 [unity-text-element.unity-label 10.3 sp] ex. « 15 juin »
+   petit texte ×7 [unity-text-element.unity-label 11.2 sp] ex. « lun. 15 juin 2026 »
+
+## plie-plus · 1080×2520 px · échelle 2.45 · 1 unité UI = 0.94 dp · largeur logique 440 · hauteur 1027
+   boutons visibles 39 · < 48 dp : 19 · textes 71 · < 12 sp : 33 · plus petit texte 10.3 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 41×41 dp
+   petit bouton ×1 « › » 41×41 dp
+   petit bouton ×1 « Continuer  → » 127×41 dp
+   petit bouton ×1 « Bureau » 75×45 dp
+   petit bouton ×1 « Effectif » 75×45 dp
+   petit bouton ×1 « Tactique » 75×45 dp
+   petit bouton ×1 « Messages » 75×45 dp
+   petit bouton ×1 « Plus » 75×45 dp
+   petit bouton ×1 « Contacter un joueur » 179×41 dp
+   petit bouton ×1 « Marquer ces messages lus » 180×41 dp
+   petit bouton ×1 « Tous » 89×41 dp
+   petit bouton ×1 « Non lus » 89×41 dp
+   petit bouton ×1 « À traiter » 89×41 dp
+   petit bouton ×1 « Épinglés » 89×41 dp
+   petit bouton ×3 « Lire » 40×41 dp
+   petit bouton ×1 « Fermer » 78×43 dp
+   petit bouton ×1 « Menu principal » 352×43 dp
+   petit texte ×14 [unity-text-element.unity-button 11.2 sp] ex. « Bureau »
+   petit texte ×12 [unity-text-element.unity-label 10.3 sp] ex. « 15 juin »
+   petit texte ×7 [unity-text-element.unity-label 11.2 sp] ex. « lun. 15 juin 2026 »
+
+## plie-accueil · 1080×2520 px · échelle 2.45 · 1 unité UI = 0.94 dp · largeur logique 440 · hauteur 1027
+   boutons visibles 5 · < 48 dp : 1 · textes 13 · < 12 sp : 2 · plus petit texte 10.3 sp · coupés au bord : 0
+   petit bouton ×1 « Quitter » 77×43 dp
+   petit texte ×2 [unity-text-element.unity-label 10.3 sp] ex. « HORS CONNEXION · ANDROID »
+
+## deplie-bureau · 2184×1968 px · échelle 1.95 · 1 unité UI = 0.74 dp · largeur logique 1120 · hauteur 1009
+   boutons visibles 31 · < 48 dp : 24 · textes 70 · < 12 sp : 58 · plus petit texte 6.7 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 33×32 dp
+   petit bouton ×1 « › » 33×32 dp
+   petit bouton ×1 « Continuer  → » 101×32 dp
+   petit bouton ×1 « Bureau » 115×33 dp
+   petit bouton ×2 « Effectif » 115×33 dp
+   petit bouton ×2 « Tactique » 115×32 dp
+   petit bouton ×1 « Match » 115×33 dp
+   petit bouton ×2 « Calendrier » 115×33 dp
+   petit bouton ×2 « Recrutement » 115×33 dp
+   petit bouton ×2 « Formation » 115×33 dp
+   petit bouton ×1 « Finances » 115×32 dp
+   petit bouton ×1 « Messages » 115×33 dp
+   petit bouton ×1 « Plus » 115×33 dp
+   petit bouton ×1 « Changer de club » 115×33 dp
+   petit bouton ×1 « Tous les menus » 81×32 dp
+   petit bouton ×1 « Préparer la rencontre » 194×33 dp
+   petit bouton ×1 « Infrastructures » 162×33 dp
+   petit bouton ×1 « Staff et délégation » 173×32 dp
+   petit bouton ×1 « Santé » 120×32 dp
+   petit texte ×1 [unity-text-element.unity-base-popup-field__text 9.7 sp] ex. « Équilibré »
+   petit texte ×1 [unity-text-element.unity-button 11.1 sp] ex. « Continuer  → »
+   petit texte ×10 [unity-text-element.unity-button 8.9 sp] ex. « Tous les menus »
+   petit texte ×11 [unity-text-element.unity-button 9.7 sp] ex. « Bureau »
+   petit texte ×2 [unity-text-element.unity-label 10.4 sp] ex. « À domicile · Stade Vélodrome »
+   petit texte ×2 [unity-text-element.unity-label 11.1 sp] ex. « Marseille »
+   petit texte ×12 [unity-text-element.unity-label 6.7 sp] ex. « TOUCHLINE / BUREAU »
+   petit texte ×2 [unity-text-element.unity-label 7.4 sp] ex. « 5 »
+   petit texte ×8 [unity-text-element.unity-label 8.2 sp] ex. « DANS 67 JOURS »
+   petit texte ×6 [unity-text-element.unity-label 8.9 sp] ex. « Victor · Saison 2026 / 2027 »
+   petit texte ×3 [unity-text-element.unity-label 9.7 sp] ex. « lun. 15 juin 2026 »
+
+## deplie-effectif · 2184×1968 px · échelle 1.95 · 1 unité UI = 0.74 dp · largeur logique 1120 · hauteur 1009
+   boutons visibles 26 · < 48 dp : 26 · textes 85 · < 12 sp : 69 · plus petit texte 6.7 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 33×32 dp
+   petit bouton ×1 « › » 33×32 dp
+   petit bouton ×1 « Continuer  → » 101×32 dp
+   petit bouton ×1 « Bureau » 115×33 dp
+   petit bouton ×1 « Effectif » 115×33 dp
+   petit bouton ×1 « Tactique » 115×32 dp
+   petit bouton ×1 « Match » 115×33 dp
+   petit bouton ×1 « Calendrier » 115×33 dp
+   petit bouton ×1 « Recrutement » 115×33 dp
+   petit bouton ×1 « Formation » 115×33 dp
+   petit bouton ×1 « Finances » 115×32 dp
+   petit bouton ×1 « Messages » 115×33 dp
+   petit bouton ×1 « Plus » 115×33 dp
+   petit bouton ×1 « Changer de club » 115×33 dp
+   petit bouton ×1 « Comparer » 58×32 dp
+   petit bouton ×1 « Préparer le onze » 92×32 dp
+   petit bouton ×1 « Effacer » 45×33 dp
+   petit bouton ×9 « Fiche » 41×33 dp
+   petit texte ×1 [unity-text-element.unity-button 11.1 sp] ex. « Continuer  → »
+   petit texte ×3 [unity-text-element.unity-button 8.9 sp] ex. « Comparer »
+   petit texte ×20 [unity-text-element.unity-button 9.7 sp] ex. « Bureau »
+   petit texte ×1 [unity-text-element.unity-label 10.4 sp] ex. « 24 / 24 joueurs · 24 disponibles · 0 à ménager »
+   petit texte ×18 [unity-text-element.unity-label 11.9 sp] ex. « Jeffrey de Lange »
+   petit texte ×6 [unity-text-element.unity-label 6.7 sp] ex. « TOUCHLINE / EFFECTIF »
+   petit texte ×1 [unity-text-element.unity-label 7.4 sp] ex. « 5 »
+   petit texte ×8 [unity-text-element.unity-label 8.2 sp] ex. « Titulaire »
+   petit texte ×9 [unity-text-element.unity-label 8.9 sp] ex. « 12 · GB · 28 ans »
+   petit texte ×2 [unity-text-element.unity-label 9.7 sp] ex. « lun. 15 juin 2026 »
+
+## deplie-tactique · 2184×1968 px · échelle 1.95 · 1 unité UI = 0.74 dp · largeur logique 1120 · hauteur 1009
+   boutons visibles 30 · < 48 dp : 30 · textes 105 · < 12 sp : 90 · plus petit texte 6.7 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 33×32 dp
+   petit bouton ×1 « › » 33×32 dp
+   petit bouton ×1 « Continuer  → » 101×32 dp
+   petit bouton ×1 « Bureau » 115×33 dp
+   petit bouton ×1 « Effectif » 115×33 dp
+   petit bouton ×1 « Tactique » 115×32 dp
+   petit bouton ×1 « Match » 115×33 dp
+   petit bouton ×1 « Calendrier » 115×33 dp
+   petit bouton ×1 « Recrutement » 115×33 dp
+   petit bouton ×1 « Formation » 115×33 dp
+   petit bouton ×1 « Finances » 115×32 dp
+   petit bouton ×1 « Messages » 115×33 dp
+   petit bouton ×1 « Plus » 115×33 dp
+   petit bouton ×1 « Changer de club » 115×33 dp
+   petit bouton ×1 « Composition » 140×33 dp
+   petit bouton ×1 « Avec ballon » 134×33 dp
+   petit bouton ×1 « Sans ballon » 135×33 dp
+   petit bouton ×1 « Transitions » 132×33 dp
+   petit bouton ×1 « Adjoint » 112×33 dp
+   petit bouton ×1 « Annuler » 57×32 dp
+   petit bouton ×1 « Onze conseillé » 93×32 dp
+   petit bouton ×1 « Fiche » 54×34 dp
+   petit bouton ×8 « Aligner » 51×33 dp
+   petit texte ×9 [unity-text-element.unity-button 11.1 sp] ex. « Continuer  → »
+   petit texte ×8 [unity-text-element.unity-button 8.9 sp] ex. « Aligner »
+   petit texte ×11 [unity-text-element.unity-button 9.7 sp] ex. « Bureau »
+   petit texte ×10 [unity-text-element.unity-label 10.4 sp] ex. « Glissez sur un partenaire pour permuter. Touche… »
+   petit texte ×6 [unity-text-element.unity-label 6.7 sp] ex. « TOUCHLINE / TACTIQUE »
+   petit texte ×12 [unity-text-element.unity-label 7.4 sp] ex. « 5 »
+   petit texte ×18 [unity-text-element.unity-label 8.2 sp] ex. « 12  GB »
+   petit texte ×11 [unity-text-element.unity-label 8.9 sp] ex. « de Lange »
+   petit texte ×5 [unity-text-element.unity-label 9.7 sp] ex. « lun. 15 juin 2026 »
+
+## deplie-tactique-avec-ballon · 2184×1968 px · échelle 1.95 · 1 unité UI = 0.74 dp · largeur logique 1120 · hauteur 1009
+   boutons visibles 34 · < 48 dp : 34 · textes 94 · < 12 sp : 82 · plus petit texte 6.7 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 33×32 dp
+   petit bouton ×1 « › » 33×32 dp
+   petit bouton ×1 « Continuer  → » 101×32 dp
+   petit bouton ×1 « Bureau » 115×33 dp
+   petit bouton ×1 « Effectif » 115×33 dp
+   petit bouton ×1 « Tactique » 115×32 dp
+   petit bouton ×1 « Match » 115×33 dp
+   petit bouton ×1 « Calendrier » 115×33 dp
+   petit bouton ×1 « Recrutement » 115×33 dp
+   petit bouton ×1 « Formation » 115×33 dp
+   petit bouton ×1 « Finances » 115×32 dp
+   petit bouton ×1 « Messages » 115×33 dp
+   petit bouton ×1 « Plus » 115×33 dp
+   petit bouton ×1 « Changer de club » 115×33 dp
+   petit bouton ×1 « Composition » 140×33 dp
+   petit bouton ×1 « Avec ballon » 134×33 dp
+   petit bouton ×1 « Sans ballon » 135×33 dp
+   petit bouton ×1 « Transitions » 132×33 dp
+   petit bouton ×1 « Adjoint » 112×33 dp
+   petit bouton ×1 « Étroite » 61×33 dp
+   petit bouton ×1 « Resserrée » 75×33 dp
+   petit bouton ×1 « Normale » 69×33 dp
+   petit bouton ×1 « Large » 57×33 dp
+   petit bouton ×1 « Très large » 75×33 dp
+   petit bouton ×1 « Très patient » 80×33 dp
+   petit texte ×6 [unity-text-element.unity-button 11.1 sp] ex. « Continuer  → »
+   petit texte ×15 [unity-text-element.unity-button 8.9 sp] ex. « Étroite »
+   petit texte ×11 [unity-text-element.unity-button 9.7 sp] ex. « Bureau »
+   petit texte ×5 [unity-text-element.unity-label 10.4 sp] ex. « Activez Déplacer les postes pour ajuster la str… »
+   petit texte ×6 [unity-text-element.unity-label 6.7 sp] ex. « TOUCHLINE / TACTIQUE »
+   petit texte ×12 [unity-text-element.unity-label 7.4 sp] ex. « 5 »
+   petit texte ×11 [unity-text-element.unity-label 8.2 sp] ex. « 12  GB »
+   petit texte ×11 [unity-text-element.unity-label 8.9 sp] ex. « de Lange »
+   petit texte ×5 [unity-text-element.unity-label 9.7 sp] ex. « lun. 15 juin 2026 »
+
+## deplie-calendrier · 2184×1968 px · échelle 1.95 · 1 unité UI = 0.74 dp · largeur logique 1120 · hauteur 1009
+   boutons visibles 54 · < 48 dp : 54 · textes 93 · < 12 sp : 81 · plus petit texte 6.7 sp · coupés au bord : 0
+   petit bouton ×2 « ‹ » 33×32 dp
+   petit bouton ×2 « › » 33×32 dp
+   petit bouton ×1 « Continuer  → » 101×32 dp
+   petit bouton ×1 « Bureau » 115×33 dp
+   petit bouton ×1 « Effectif » 115×33 dp
+   petit bouton ×1 « Tactique » 115×32 dp
+   petit bouton ×1 « Match » 115×33 dp
+   petit bouton ×2 « Calendrier » 115×33 dp
+   petit bouton ×1 « Recrutement » 115×33 dp
+   petit bouton ×1 « Formation » 115×33 dp
+   petit bouton ×1 « Finances » 115×32 dp
+   petit bouton ×1 « Messages » 115×33 dp
+   petit bouton ×1 « Plus » 115×33 dp
+   petit bouton ×1 « Changer de club » 115×33 dp
+   petit bouton ×1 « Organiser un stage » 104×33 dp
+   petit bouton ×1 « Proposer un amical » 104×33 dp
+   petit bouton ×1 « Préparation » 97×33 dp
+   petit bouton ×1 « Aujourd’hui » 62×32 dp
+   petit bouton ×1 « 1 /  » 53×39 dp
+   petit bouton ×1 « 2 /  » 53×39 dp
+   petit bouton ×1 « 3 /  » 54×39 dp
+   petit bouton ×1 « 4 /  » 53×39 dp
+   petit bouton ×1 « 5 /  » 53×39 dp
+   petit bouton ×1 « 6 /  » 54×39 dp
+   petit bouton ×1 « 7 /  » 53×39 dp
+   petit texte ×2 [unity-text-element.unity-base-popup-field__text 9.7 sp] ex. « Marseille »
+   petit texte ×6 [unity-text-element.unity-button 11.1 sp] ex. « Continuer  → »
+   petit texte ×30 [unity-text-element.unity-button 8.2 sp] ex. « 1 /  »
+   petit texte ×3 [unity-text-element.unity-button 8.9 sp] ex. « Organiser un stage »
+   petit texte ×11 [unity-text-element.unity-button 9.7 sp] ex. « Bureau »
+   petit texte ×5 [unity-text-element.unity-label 10.4 sp] ex. « Aujourd’hui · lundi 15 juin »
+   petit texte ×6 [unity-text-element.unity-label 6.7 sp] ex. « TOUCHLINE / CALENDRIER »
+   petit texte ×2 [unity-text-element.unity-label 7.4 sp] ex. « 5 »
+   petit texte ×12 [unity-text-element.unity-label 8.2 sp] ex. « SAISON 2026 / 2027 »
+   petit texte ×3 [unity-text-element.unity-label 8.9 sp] ex. « Afficher »
+   petit texte ×1 [unity-text-element.unity-label 9.7 sp] ex. « lun. 15 juin 2026 »
+
+## deplie-messages · 2184×1968 px · échelle 1.95 · 1 unité UI = 0.74 dp · largeur logique 1120 · hauteur 1009
+   boutons visibles 25 · < 48 dp : 25 · textes 64 · < 12 sp : 59 · plus petit texte 6.7 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 33×32 dp
+   petit bouton ×1 « › » 33×32 dp
+   petit bouton ×1 « Continuer  → » 101×32 dp
+   petit bouton ×1 « Bureau » 115×33 dp
+   petit bouton ×1 « Effectif » 115×33 dp
+   petit bouton ×1 « Tactique » 115×32 dp
+   petit bouton ×1 « Match » 115×33 dp
+   petit bouton ×1 « Calendrier » 115×33 dp
+   petit bouton ×1 « Recrutement » 115×33 dp
+   petit bouton ×1 « Formation » 115×33 dp
+   petit bouton ×1 « Finances » 115×32 dp
+   petit bouton ×1 « Messages » 115×33 dp
+   petit bouton ×1 « Plus » 115×33 dp
+   petit bouton ×1 « Changer de club » 115×33 dp
+   petit bouton ×1 « Contacter un joueur » 114×33 dp
+   petit bouton ×1 « Marquer ces messages lus » 134×33 dp
+   petit bouton ×1 « Tous » 95×33 dp
+   petit bouton ×1 « Non lus » 95×33 dp
+   petit bouton ×1 « À traiter » 95×33 dp
+   petit bouton ×1 « Épinglés » 95×33 dp
+   petit bouton ×5 « Lire » 32×32 dp
+   petit texte ×1 [unity-text-element.unity-button 11.1 sp] ex. « Continuer  → »
+   petit texte ×5 [unity-text-element.unity-button 8.9 sp] ex. « Lire »
+   petit texte ×17 [unity-text-element.unity-button 9.7 sp] ex. « Bureau »
+   petit texte ×5 [unity-text-element.unity-label 10.4 sp] ex. « Ouverture du mercato estival »
+   petit texte ×5 [unity-text-element.unity-label 11.1 sp] ex. « Cellule mercato »
+   petit texte ×6 [unity-text-element.unity-label 6.7 sp] ex. « TOUCHLINE / MESSAGES »
+   petit texte ×1 [unity-text-element.unity-label 7.4 sp] ex. « 5 »
+   petit texte ×10 [unity-text-element.unity-label 8.2 sp] ex. « 15 juin »
+   petit texte ×8 [unity-text-element.unity-label 8.9 sp] ex. « 5 non lu(s) · 0 message(s) liés à une décision »
+   petit texte ×1 [unity-text-element.unity-label 9.7 sp] ex. « lun. 15 juin 2026 »
+
+## deplie-plus · 2184×1968 px · échelle 1.95 · 1 unité UI = 0.74 dp · largeur logique 1120 · hauteur 1009
+   boutons visibles 48 · < 48 dp : 48 · textes 94 · < 12 sp : 88 · plus petit texte 6.7 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 33×32 dp
+   petit bouton ×1 « › » 33×32 dp
+   petit bouton ×1 « Continuer  → » 101×32 dp
+   petit bouton ×2 « Bureau » 115×33 dp
+   petit bouton ×3 « Effectif » 115×33 dp
+   petit bouton ×3 « Tactique » 115×32 dp
+   petit bouton ×2 « Match » 115×33 dp
+   petit bouton ×3 « Calendrier » 115×33 dp
+   petit bouton ×2 « Recrutement » 115×33 dp
+   petit bouton ×2 « Formation » 115×33 dp
+   petit bouton ×2 « Finances » 115×32 dp
+   petit bouton ×3 « Messages » 115×33 dp
+   petit bouton ×1 « Plus » 115×33 dp
+   petit bouton ×2 « Changer de club » 115×33 dp
+   petit bouton ×1 « Contacter un joueur » 114×33 dp
+   petit bouton ×1 « Marquer ces messages lus » 134×33 dp
+   petit bouton ×1 « Tous » 95×33 dp
+   petit bouton ×1 « Non lus » 95×33 dp
+   petit bouton ×1 « À traiter » 95×33 dp
+   petit bouton ×1 « Épinglés » 95×33 dp
+   petit bouton ×5 « Lire » 32×32 dp
+   petit bouton ×1 « Fermer » 62×34 dp
+   petit bouton ×1 « Santé » 201×38 dp
+   petit bouton ×1 « Staff et délégation » 201×38 dp
+   petit bouton ×1 « Infrastructures » 614×38 dp
+   petit texte ×24 [unity-text-element.unity-button 11.1 sp] ex. « Continuer  → »
+   petit texte ×5 [unity-text-element.unity-button 8.9 sp] ex. « Lire »
+   petit texte ×17 [unity-text-element.unity-button 9.7 sp] ex. « Bureau »
+   petit texte ×5 [unity-text-element.unity-label 10.4 sp] ex. « Ouverture du mercato estival »
+   petit texte ×5 [unity-text-element.unity-label 11.1 sp] ex. « Cellule mercato »
+   petit texte ×6 [unity-text-element.unity-label 6.7 sp] ex. « TOUCHLINE / MESSAGES »
+   petit texte ×1 [unity-text-element.unity-label 7.4 sp] ex. « 5 »
+   petit texte ×15 [unity-text-element.unity-label 8.2 sp] ex. « 15 juin »
+   petit texte ×8 [unity-text-element.unity-label 8.9 sp] ex. « 5 non lu(s) · 0 message(s) liés à une décision »
+   petit texte ×2 [unity-text-element.unity-label 9.7 sp] ex. « lun. 15 juin 2026 »
+
+## deplie-accueil · 2184×1968 px · échelle 1.95 · 1 unité UI = 0.74 dp · largeur logique 1120 · hauteur 1009
+   boutons visibles 5 · < 48 dp : 2 · textes 17 · < 12 sp : 11 · plus petit texte 8.2 sp · coupés au bord : 0
+   petit bouton ×1 « Reprendre la carrière  → » 352×39 dp
+   petit bouton ×1 « Quitter » 61×34 dp
+   petit texte ×2 [unity-text-element.unity-button 11.1 sp] ex. « Reprendre la carrière  → »
+   petit texte ×2 [unity-text-element.unity-label 10.4 sp] ex. « Victor · 15 juin 2026 »
+   petit texte ×4 [unity-text-element.unity-label 8.2 sp] ex. « VOTRE HISTOIRE COMMENCE ICI »
+   petit texte ×3 [unity-text-element.unity-label 9.7 sp] ex. « Choisir un club et votre expérience de recrutem… »
+
+## plie-bureau-jour-de-match · 1080×2520 px · échelle 2.45 · 1 unité UI = 0.94 dp · largeur logique 440 · hauteur 1027
+   boutons visibles 19 · < 48 dp : 12 · textes 37 · < 12 sp : 24 · plus petit texte 8.4 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 41×41 dp
+   petit bouton ×1 « › » 41×41 dp
+   petit bouton ×1 « Continuer  → » 127×41 dp
+   petit bouton ×1 « Bureau » 75×45 dp
+   petit bouton ×2 « Effectif » 75×45 dp
+   petit bouton ×1 « Tactique » 75×45 dp
+   petit bouton ×1 « Messages » 75×45 dp
+   petit bouton ×1 « Plus » 75×45 dp
+   petit bouton ×1 « Préparer la rencontre » 213×41 dp
+   petit bouton ×1 « Calendrier » 109×41 dp
+   petit bouton ×1 « Infrastructures » 181×41 dp
+   petit texte ×9 [unity-text-element.unity-button 11.2 sp] ex. « Bureau »
+   petit texte ×6 [unity-text-element.unity-label 10.3 sp] ex. « JOUR DE MATCH »
+   petit texte ×4 [unity-text-element.unity-label 11.2 sp] ex. « ven. 21 août 2026 »
+   petit texte ×4 [unity-text-element.unity-label 8.4 sp] ex. « TRÉSORERIE »
+   petit texte ×1 [unity-text-element.unity-label 9.4 sp] ex. « BUREAU / VENDREDI 21 AOÛT »
+
+## plie-avant-match · 1080×2520 px · échelle 2.45 · 1 unité UI = 0.94 dp · largeur logique 440 · hauteur 1027
+   boutons visibles 12 · < 48 dp : 12 · textes 20 · < 12 sp : 8 · plus petit texte 10.3 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 41×41 dp
+   petit bouton ×1 « › » 41×41 dp
+   petit bouton ×1 « Continuer  → » 127×41 dp
+   petit bouton ×1 « Bureau » 75×45 dp
+   petit bouton ×1 « Effectif » 75×45 dp
+   petit bouton ×1 « Tactique » 75×45 dp
+   petit bouton ×1 « Messages » 75×45 dp
+   petit bouton ×1 « Plus » 75×45 dp
+   petit bouton ×1 « Composition » 115×43 dp
+   petit bouton ×1 « Conférence » 109×43 dp
+   petit bouton ×1 « Entrer sur le terrain » 193×43 dp
+   petit bouton ×1 « Déléguer à l’adjoint » 158×43 dp
+   petit texte ×5 [unity-text-element.unity-button 11.2 sp] ex. « Bureau »
+   petit texte ×1 [unity-text-element.unity-label 10.3 sp] ex. « LIGUE 1 »
+   petit texte ×2 [unity-text-element.unity-label 11.2 sp] ex. « ven. 21 août 2026 »
+
+## plie-presentation · 1080×2520 px · échelle 2.45 · 1 unité UI = 0.94 dp · largeur logique 440 · hauteur 1027
+   boutons visibles 13 · < 48 dp : 13 · textes 33 · < 12 sp : 17 · plus petit texte 9.4 sp · coupés au bord : 0
+   petit bouton ×1 « Vue : Temps forts » 113×41 dp
+   petit bouton ×1 « ×1 » 33×41 dp
+   petit bouton ×1 « Reprendre » 127×41 dp
+   petit bouton ×1 « Tactique » 127×41 dp
+   petit bouton ×1 « Banc » 127×41 dp
+   petit bouton ×1 « Analyse » 127×41 dp
+   petit bouton ×1 « Options du match » 127×41 dp
+   petit bouton ×1 « Bureau » 127×41 dp
+   petit bouton ×1 « Avant-match » 389×41 dp
+   petit bouton ×1 « ← Retour » 175×45 dp
+   petit bouton ×1 « Pause présentation » 175×45 dp
+   petit bouton ×1 « Suivant → » 175×45 dp
+   petit bouton ×1 « Coup d’envoi » 175×45 dp
+   petit texte ×9 [unity-text-element.unity-button 11.2 sp] ex. « Vue : Temps forts »
+   petit texte ×4 [unity-text-element.unity-label 10.3 sp] ex. « Gouiri »
+   petit texte ×3 [unity-text-element.unity-label 11.2 sp] ex. « Marseille »
+   petit texte ×1 [unity-text-element.unity-label 9.4 sp] ex. « EN PAUSE · Engagement »
+
+## plie-match-pause · 1080×2520 px · échelle 2.45 · 1 unité UI = 0.94 dp · largeur logique 440 · hauteur 1027
+   boutons visibles 8 · < 48 dp : 8 · textes 15 · < 12 sp : 13 · plus petit texte 9.4 sp · coupés au bord : 0
+   petit bouton ×1 « Vue : Temps forts » 113×41 dp
+   petit bouton ×1 « ×1 » 33×41 dp
+   petit bouton ×1 « Reprendre » 127×41 dp
+   petit bouton ×1 « Tactique » 127×41 dp
+   petit bouton ×1 « Banc » 127×41 dp
+   petit bouton ×1 « Analyse » 127×41 dp
+   petit bouton ×1 « Options du match » 127×41 dp
+   petit bouton ×1 « Bureau » 127×41 dp
+   petit texte ×8 [unity-text-element.unity-button 11.2 sp] ex. « Vue : Temps forts »
+   petit texte ×2 [unity-text-element.unity-label 10.3 sp] ex. « Gouiri »
+   petit texte ×2 [unity-text-element.unity-label 11.2 sp] ex. « Marseille »
+   petit texte ×1 [unity-text-element.unity-label 9.4 sp] ex. « EN PAUSE · Engagement »
+
+## plie-match-direct · 1080×2520 px · échelle 2.45 · 1 unité UI = 0.94 dp · largeur logique 440 · hauteur 1027
+   boutons visibles 29 · < 48 dp : 29 · textes 58 · < 12 sp : 40 · plus petit texte 9.4 sp · coupés au bord : 0
+   petit bouton ×1 « Vue : Temps forts » 113×41 dp
+   petit bouton ×1 « ×1 » 33×41 dp
+   petit bouton ×1 « Consulter l’adjoint » 346×43 dp
+   petit bouton ×1 « GB  de Lange / 100 % de condition » 166×41 dp
+   petit bouton ×1 « DG  Garcia / 100 % de condition » 166×41 dp
+   petit bouton ×1 « DC  Aguerd / 100 % de condition » 166×41 dp
+   petit bouton ×1 « DC  Egan-Riley / 100 % de condition » 166×41 dp
+   petit bouton ×1 « DD  Weah / 100 % de condition » 166×41 dp
+   petit bouton ×1 « MC  Højbjerg / 100 % de condition » 166×41 dp
+   petit bouton ×1 « MDC  Kondogbia / 100 % de condition » 166×41 dp
+   petit bouton ×1 « MC  Gomes / 100 % de condition » 166×41 dp
+   petit bouton ×1 « AG  Paixão / 100 % de condition » 166×41 dp
+   petit bouton ×1 « BT  Gouiri / 100 % de condition » 166×41 dp
+   petit bouton ×1 « GB  Jørgensen / 100 % de condition » 165×41 dp
+   petit bouton ×1 « DG  Del Blanco / 100 % de condition » 165×41 dp
+   petit bouton ×1 « DC  Doukoure / 100 % de condition » 165×41 dp
+   petit bouton ×1 « DC  Høgsberg / 100 % de condition » 165×41 dp
+   petit bouton ×1 « DD  Mitchell / 100 % de condition » 165×41 dp
+   petit bouton ×1 « MC  Nanasi / 100 % de condition » 165×41 dp
+   petit bouton ×1 « MDC  Essugo / 100 % de condition » 165×41 dp
+   petit bouton ×1 « MC  El Mourabet / 100 % de condition » 165×41 dp
+   petit bouton ×1 « AG  Godo / 100 % de condition » 165×41 dp
+   petit bouton ×1 « BT  Panichelli / 100 % de condition » 165×41 dp
+   petit bouton ×1 « Pause » 127×41 dp
+   petit bouton ×1 « Tactique » 127×41 dp
+   petit texte ×20 [unity-text-element.unity-button 10.3 sp] ex. « GB  de Lange / 100 % de condition »
+   petit texte ×8 [unity-text-element.unity-button 11.2 sp] ex. « Vue : Temps forts »
+   petit texte ×1 [unity-text-element.unity-label 10.3 sp] ex. « LA RENCONTRE EN CHIFFRES »
+   petit texte ×8 [unity-text-element.unity-label 11.2 sp] ex. « Marseille »
+   petit texte ×3 [unity-text-element.unity-label 9.4 sp] ex. « SUIVI DU MATCH · CHRONO ×60 »
+
+## plie-banc · 1080×2520 px · échelle 2.45 · 1 unité UI = 0.94 dp · largeur logique 440 · hauteur 1027
+   boutons visibles 43 · < 48 dp : 43 · textes 98 · < 12 sp : 61 · plus petit texte 9.4 sp · coupés au bord : 0
+   petit bouton ×1 « Vue : Temps forts » 113×41 dp
+   petit bouton ×1 « ×1 » 33×41 dp
+   petit bouton ×1 « Consulter l’adjoint » 346×43 dp
+   petit bouton ×1 « GB  de Lange / 100 % de condition » 166×41 dp
+   petit bouton ×1 « DG  Garcia / 100 % de condition » 166×41 dp
+   petit bouton ×1 « DC  Aguerd / 100 % de condition » 166×41 dp
+   petit bouton ×1 « DC  Egan-Riley / 100 % de condition » 166×41 dp
+   petit bouton ×1 « DD  Weah / 100 % de condition » 166×41 dp
+   petit bouton ×1 « MC  Højbjerg / 100 % de condition » 166×41 dp
+   petit bouton ×1 « MDC  Kondogbia / 100 % de condition » 166×41 dp
+   petit bouton ×1 « MC  Gomes / 100 % de condition » 166×41 dp
+   petit bouton ×1 « AG  Paixão / 100 % de condition » 166×41 dp
+   petit bouton ×1 « BT  Gouiri / 100 % de condition » 166×41 dp
+   petit bouton ×1 « GB  Jørgensen / 100 % de condition » 165×41 dp
+   petit bouton ×1 « DG  Del Blanco / 100 % de condition » 165×41 dp
+   petit bouton ×1 « DC  Doukoure / 100 % de condition » 165×41 dp
+   petit bouton ×1 « DC  Høgsberg / 100 % de condition » 165×41 dp
+   petit bouton ×1 « DD  Mitchell / 100 % de condition » 165×41 dp
+   petit bouton ×1 « MC  Nanasi / 100 % de condition » 165×41 dp
+   petit bouton ×1 « MDC  Essugo / 100 % de condition » 165×41 dp
+   petit bouton ×1 « MC  El Mourabet / 100 % de condition » 165×41 dp
+   petit bouton ×1 « AG  Godo / 100 % de condition » 165×41 dp
+   petit bouton ×1 « BT  Panichelli / 100 % de condition » 165×41 dp
+   petit bouton ×1 « Reprendre » 127×41 dp
+   petit bouton ×1 « Tactique » 127×41 dp
+   petit texte ×20 [unity-text-element.unity-button 10.3 sp] ex. « GB  de Lange / 100 % de condition »
+   petit texte ×19 [unity-text-element.unity-button 11.2 sp] ex. « Vue : Temps forts »
+   petit texte ×1 [unity-text-element.unity-label 10.3 sp] ex. « LA RENCONTRE EN CHIFFRES »
+   petit texte ×18 [unity-text-element.unity-label 11.2 sp] ex. « Marseille »
+   petit texte ×3 [unity-text-element.unity-label 9.4 sp] ex. « EN PAUSE · TABLEAU DE BORD »
+
+## plie-regie · 1080×2520 px · échelle 2.45 · 1 unité UI = 0.94 dp · largeur logique 440 · hauteur 1027
+   boutons visibles 33 · < 48 dp : 33 · textes 80 · < 12 sp : 40 · plus petit texte 9.4 sp · coupés au bord : 0
+   petit bouton ×1 « Vue : Temps forts » 113×41 dp
+   petit bouton ×1 « ×1 » 33×41 dp
+   petit bouton ×1 « Consulter l’adjoint » 346×43 dp
+   petit bouton ×1 « GB  de Lange / 100 % de condition » 166×41 dp
+   petit bouton ×1 « DG  Garcia / 100 % de condition » 166×41 dp
+   petit bouton ×1 « DC  Aguerd / 100 % de condition » 166×41 dp
+   petit bouton ×1 « DC  Egan-Riley / 100 % de condition » 166×41 dp
+   petit bouton ×1 « DD  Weah / 100 % de condition » 166×41 dp
+   petit bouton ×1 « MC  Højbjerg / 100 % de condition » 166×41 dp
+   petit bouton ×1 « MDC  Kondogbia / 100 % de condition » 166×41 dp
+   petit bouton ×1 « MC  Gomes / 100 % de condition » 166×41 dp
+   petit bouton ×1 « AG  Paixão / 100 % de condition » 166×41 dp
+   petit bouton ×1 « BT  Gouiri / 100 % de condition » 166×41 dp
+   petit bouton ×1 « GB  Jørgensen / 100 % de condition » 165×41 dp
+   petit bouton ×1 « DG  Del Blanco / 100 % de condition » 165×41 dp
+   petit bouton ×1 « DC  Doukoure / 100 % de condition » 165×41 dp
+   petit bouton ×1 « DC  Høgsberg / 100 % de condition » 165×41 dp
+   petit bouton ×1 « DD  Mitchell / 100 % de condition » 165×41 dp
+   petit bouton ×1 « MC  Nanasi / 100 % de condition » 165×41 dp
+   petit bouton ×1 « MDC  Essugo / 100 % de condition » 165×41 dp
+   petit bouton ×1 « MC  El Mourabet / 100 % de condition » 165×41 dp
+   petit bouton ×1 « AG  Godo / 100 % de condition » 165×41 dp
+   petit bouton ×1 « BT  Panichelli / 100 % de condition » 165×41 dp
+   petit bouton ×1 « Reprendre » 127×41 dp
+   petit bouton ×1 « Tactique » 127×41 dp
+   petit texte ×20 [unity-text-element.unity-button 10.3 sp] ex. « GB  de Lange / 100 % de condition »
+   petit texte ×8 [unity-text-element.unity-button 11.2 sp] ex. « Vue : Temps forts »
+   petit texte ×1 [unity-text-element.unity-label 10.3 sp] ex. « LA RENCONTRE EN CHIFFRES »
+   petit texte ×8 [unity-text-element.unity-label 11.2 sp] ex. « Marseille »
+   petit texte ×3 [unity-text-element.unity-label 9.4 sp] ex. « EN PAUSE · TABLEAU DE BORD »
+
