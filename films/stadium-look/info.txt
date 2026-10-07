@@ -3,5 +3,5 @@ mecanim=True ready=True
 graphics=OpenGLCore llvmpipe (LLVM 15.0.7, 256 bits) OpenGL 4.5 (Core Profile) Mesa 23.2.1-1ubuntu3.1~22.04.4
 pipeline=TouchlineURP quality=TouchlineURP
 probe-red mean=255/0/0
-frame 0 broadcast mean=52/83/58 camera=(-15.65, 23.67, 38.45) enabled=True
-frame 449 broadcast mean=62/87/67 camera=(18.97, 23.67, 55.53) enabled=True
+frame 0 broadcast mean=15/19/21 camera=(-15.86, 20.21, 32.49) enabled=True
+frame 449 broadcast mean=63/90/65 camera=(18.76, 20.21, 49.57) enabled=True
