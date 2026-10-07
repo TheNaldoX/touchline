@@ -45,9 +45,9 @@ namespace Touchline
             // Pic de vitesse du pied qui frappe (analyse 60 Hz des clips Mixamo).
             {"Kick Soccerball",.517f},{"Kick Soccerball (1)",.417f},{"Soccer Pass",.433f},{"Chip",.483f},{"Soccer Penalty Kick",.733f},{"Strike Forward Jog",.467f},{"Goalkeeper Drop Kick",2.083f},
             // Pic de vitesse des mains.
-            {"Throw In",1.60f},{"Goalkeeper Overhand Throw",1.60f},{"Goalkeeper Pass",1.133f},{"Goalkeeper Diving Save",1.25f},{"Goalkeeper Catch",.25f},
+            {"Throw In",1.60f},{"Goalkeeper Overhand Throw",1.60f},{"Goalkeeper Pass",1.133f},{"Goalkeeper Diving Save",1.25f},{"Goalkeeper Diving Save (miroir)",1.25f},{"Goalkeeper Catch",.25f},
             // Estimés (pas de membre dominant mesuré) : tête, tacle glissé, chute.
-            {"Header",.55f},{"Soccer Header",.95f},{"Soccer Tackle",.45f},{"Soccer Trip",.70f},
+            {"Header",.55f},{"Receive Soccerball",.30f},{"Fallen Idle",0f},{"Standing Up",StandUpSkip},{"Soccer Header",.95f},{"Soccer Tackle",.45f},{"Soccer Trip",.70f},
         };
 
         Animator mecanimAnimator;PlayableGraph mecanimGraph;AnimationMixerPlayable mecanimMixer;
@@ -84,9 +84,17 @@ namespace Touchline
         bool leftFootedNow;float mecanimPoseSpeed;
         const string RunningStrikeClip="Strike Forward Jog",KeeperThrowClip="Goalkeeper Overhand Throw";
         const float RunningStrikeSpeed=2.5f; // m/s : au-delà, le tireur frappe dans sa course
+        const string ReceiveClip="Receive Soccerball",FallenClip="Fallen Idle",StandUpClip="Standing Up";
+        const float ReceiveMaxSpeed=1.3f;   // m/s : contrôle arrêté (le clip est sur place)
+        const float TripLyingFrom=.9f;      // s après la chute : fin de Soccer Trip, le joueur est au sol
+        const float StandUpLead=1.0f;       // s avant la fin de la chute : début du relevé
+        const float StandUpSkip=.67f;       // s : début utile de Standing Up (encore allongé avant)
+        // Côté (+1 droite du gardien) vers lequel plongent les clips d'origine ; mesuré (colonne lean).
+        const float DiveClipSide=1f;
+        bool mecanimPhased; // geste en plusieurs clips (chute → au sol → relevé)
         bool MecanimAction(Actor actor,out string clip,out float simContact)
         {
-            clip=null;simContact=0;
+            clip=null;simContact=0;mecanimPhased=false;
             switch(actor.action){
                 case "kick":
                     // Kick Soccerball frappe du pied gauche, Kick Soccerball (1) du droit.
@@ -96,9 +104,15 @@ namespace Touchline
                     simContact=.18f;break;
                 case "header":clip="Header";simContact=actor.actionContactTime>0?actor.actionContactTime:.12f;break;
                 case "slide":clip="Soccer Tackle";simContact=actor.actionContactTime>0?actor.actionContactTime:.2f;break;
-                case "fall":clip="Soccer Trip";simContact=0;break;
+                case "fall":{
+                    // Chute de contact : trébuche, reste au sol, se relève avant la fin.
+                    float elapsed=MatchSimulation.ContactFallDuration-actor.actionTime;mecanimPhased=true;
+                    clip=actor.actionTime<=StandUpLead&&MecanimClips.ContainsKey(StandUpClip)?StandUpClip:elapsed>=TripLyingFrom&&MecanimClips.ContainsKey(FallenClip)?FallenClip:"Soccer Trip";simContact=0;break;}
+                case "control":
+                    if(actor.actionKind==MatchSimulation.ChestControl||actor.actionKind==MatchSimulation.ThighControl||mecanimPoseSpeed>ReceiveMaxSpeed)break;
+                    clip=ReceiveClip;simContact=0;break;
                 case "throw":clip=actor.slot==0?(MecanimClips.ContainsKey(KeeperThrowClip)?KeeperThrowClip:"Goalkeeper Pass"):"Throw In";simContact=actor.actionContactTime>0?actor.actionContactTime:.5f;break;
-                case "dive":clip="Goalkeeper Diving Save";simContact=actor.actionContactTime>0?actor.actionContactTime:.2f;break;
+                case "dive":clip=(actor.diveSide>=0)==(DiveClipSide>0)?"Goalkeeper Diving Save":"Goalkeeper Diving Save (miroir)";simContact=actor.actionContactTime>0?actor.actionContactTime:.2f;break;
                 case "claim":clip="Goalkeeper Catch";simContact=.2f;break;
             }
             return clip!=null&&MecanimClips.ContainsKey(clip);
@@ -123,7 +137,7 @@ namespace Touchline
             // Gestes : nouveau geste → emplacement libre, fondu d'entrée, temps calé sur le contact.
             bool acting=MecanimAction(actor,out var clipName,out var simContact);
             // Un geste garde le clip choisi à son début, même si la vitesse change ensuite.
-            if(acting&&mecanimActionKey!=null&&actor.actionSequence==mecanimActionSequence)clipName=mecanimActionKey;
+            if(acting&&!mecanimPhased&&mecanimActionKey!=null&&actor.actionSequence==mecanimActionSequence)clipName=mecanimActionKey;
             string key=acting?clipName:null;
             if(acting&&(key!=mecanimActionKey||actor.actionSequence!=mecanimActionSequence)){
                 int slot=activeAction<0?0:1-activeAction;

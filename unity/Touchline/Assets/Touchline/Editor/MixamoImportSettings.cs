@@ -12,10 +12,12 @@ namespace Touchline.Editor
     {
         const string Folder="Assets/Touchline/Resources/Animations/Mixamo/";
         static readonly string[] LoopKeywords={"idle","walk","jog","run","strafe","backward","sidestep","dribble","sprint"};
+        // Clips doublés en version miroir (gauche/droite) : « <nom> (miroir) ».
+        static readonly string[] MirroredClips={"Goalkeeper Diving Save","Goalkeeper Diving Save (1)"};
         static readonly string[] OneShotKeywords={"stop","turn","strike","kick","pass","shot","chip","header","tackle","trip","catch","save","throw","scoop","place","receive","victory","celebrat","defeat","pump"};
 
         // À incrémenter quand les réglages changent : Unity réimporte alors les clips.
-        public override uint GetVersion()=>3;
+        public override uint GetVersion()=>4;
 
         static bool Mixamo(string path)=>path.Replace('\\','/').StartsWith(Folder)&&path.EndsWith(".fbx",System.StringComparison.OrdinalIgnoreCase);
 
@@ -51,7 +53,15 @@ namespace Touchline.Editor
                 clip.lockRootHeightY=true;clip.keepOriginalPositionY=true;
                 clip.lockRootPositionXZ=false;clip.keepOriginalPositionXZ=false;
             }
-            importer.clipAnimations=clips;
+            var all=clips.ToList();
+            if(MirroredClips.Contains(System.IO.Path.GetFileNameWithoutExtension(assetPath)))
+                foreach(var clip in clips){
+                    var mirror=new ModelImporterClipAnimation{name=clip.name+" (miroir)",takeName=clip.takeName,firstFrame=clip.firstFrame,lastFrame=clip.lastFrame,mirror=true,
+                        loopTime=clip.loopTime,loopPose=clip.loopPose,lockRootRotation=clip.lockRootRotation,keepOriginalOrientation=clip.keepOriginalOrientation,
+                        lockRootHeightY=clip.lockRootHeightY,keepOriginalPositionY=clip.keepOriginalPositionY,lockRootPositionXZ=clip.lockRootPositionXZ,keepOriginalPositionXZ=clip.keepOriginalPositionXZ};
+                    all.Add(mirror);
+                }
+            importer.clipAnimations=all.ToArray();
         }
     }
 }
