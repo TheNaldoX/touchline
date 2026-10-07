@@ -12,6 +12,23 @@ namespace Touchline.Core
     public partial class Career
     {
         public static int RetirementThreshold(PlayerData player)=>(player.Goalkeeper?40:37)+(player.rating>=80?3:player.rating>=72?1:0);
+        // Chance that an outfield player retires at a given age when his contract
+        // ends (or he is without a club); goalkeepers three years later. Most
+        // professionals stop between 32 and 36; the best play on longer.
+        // Youth graduates per computer-run club and summer, extra places they may
+        // take above the reference squad size, and rating below a replacement.
+        const int YouthIntakePerSeason=1,YouthSquadAllowance=2;const float YouthRatingGap=8f;
+        static readonly float[] RetirementByAge={.04f,.10f,.18f,.28f,.40f,.55f}; // ages 31 to 36
+        public bool ChoosesToRetire(PlayerData p,Employment contract)
+        {
+            int age=p.age-(p.Goalkeeper?3:0);if(age<31||p.team=="retired"||p.team.StartsWith("academy-"))return false;
+            // Only at the end of a deal: nobody walks away from a running contract.
+            bool free=p.team=="free"||contract==null||contract.club!=p.team;
+            if(!free&&(contract.until>life.day+21||contract.parent!=null))return false;
+            float chance=RetirementByAge[Math.Min(age-31,RetirementByAge.Length-1)]*(p.rating>=80?.4f:p.rating>=72?.7f:1f)*(free&&p.team=="free"?1.5f:1f);
+            // Stable per player and season: no draw from the career generator.
+            return StableIdentity("retire:"+p.id+":"+world.year)%1000<chance*1000;
+        }
         void AnnualPlayerDevelopment(Database db)
         {
             ProcessAiEmployment(db);
@@ -45,7 +62,7 @@ namespace Touchline.Core
                     p.rating+=gain;foreach(var a in p.attributes??Array.Empty<AttributeValue>())a.value=Math.Min(99,a.value+gain);
                 }
                 if(p.age>31){p.rating=Math.Max(25,p.rating-(p.Goalkeeper?.5f:1.3f));p.potential=Math.Max(p.rating,p.potential-1);foreach(var a in p.attributes??Array.Empty<AttributeValue>()){bool physical=a.key=="sprintSpeed"||a.key=="acceleration"||a.key=="stamina";a.value=Mathx.Clamp(a.value-(physical?1.8f:p.Goalkeeper?.35f:.6f),10,99);}}
-                if(p.age>=RetirementThreshold(p)||contracts.TryGetValue(p.id,out var retirementContract)&&retirementContract.retirement>=0&&retirementContract.retirement<=life.day){
+                if(p.age>=RetirementThreshold(p)||ChoosesToRetire(p,contracts.TryGetValue(p.id,out var endingContract)?endingContract:null)||contracts.TryGetValue(p.id,out var retirementContract)&&retirementContract.retirement>=0&&retirementContract.retirement<=life.day){
                     bool managed=p.team==club;ArchiveRetiredPlayer(p);p.team="retired";if(contracts.TryGetValue(p.id,out var employment)){employment.club="retired";CloseRetiredLoan(employment);}
                     life.players.RemoveAll(x=>x.id==p.id);
                     if(managed)Mail("Secrétariat","Retraite effective",p.name+" met un terme à sa carrière.",p.id);
@@ -70,6 +87,14 @@ namespace Touchline.Core
                     if(candidate==null){candidate=CreateReplacement(db,team,reference,template,additions.Count);additions.Add(candidate);}else candidate.team=team.id;
                     live.Add(candidate);
                 }
+                // Academy graduates join every summer, even with a full squad: the
+                // expiring fringe below is then released rather than renewed.
+                for(int k=0;k<YouthIntakePerSeason&&live.Count<reference.squadSize+YouthSquadAllowance;k++){
+                    var youth=CreateReplacement(db,team,reference,live[(int)(Roll()*live.Count)],additions.Count);youth.age=17+(int)(Roll()*2);
+                    youth.rating=Math.Max(30,youth.rating-YouthRatingGap);foreach(var a in youth.attributes??Array.Empty<AttributeValue>())a.value=Math.Max(10,a.value-YouthRatingGap);
+                    youth.potential=Math.Min(94,Math.Max(youth.potential,youth.rating+YouthRatingGap+Roll()*8));
+                    additions.Add(youth);live.Add(youth);
+                }
                 var surplus=new HashSet<string>();int remaining=live.Count,keepers=live.Count(p=>p.Goalkeeper);
                 foreach(var fringe in live.Where(p=>contracts.TryGetValue(p.id,out var e)&&e.parent==null&&e.until<=life.day+21).OrderBy(p=>p.rating)){
                     if(remaining<=reference.squadSize)break;if(fringe.Goalkeeper&&keepers<=2)continue;
@@ -92,7 +117,7 @@ namespace Touchline.Core
                         p.salarySource="Projection de carrière : contrat estimé, niveau et plafond salarial du club";p.valueSource="Estimation de simulation, hors cotation réelle";
                         if(contract==null){contract=new Employment{player=p.id,club=team.id};world.contracts.Add(contract);contracts.Add(p.id,contract);}
                         if(!newEmployment&&contract.until>life.day){contract.nextWage=offer;contract.wageChangeDay=contract.until+1;}else {p.wage=offer;contract.wage=offer;contract.nextWage=0;contract.wageChangeDay=0;}
-                        contract.club=team.id;contract.until=life.day+365*(p.age>30?2:3);contract.estimated=true;contract.aiRelease=false;
+                        contract.club=team.id;contract.until=life.day+365*(p.age>=31?1:p.age>=29?2:3);contract.estimated=true;contract.aiRelease=false;
                     }
                 }
                 // Announced non-renewals open an academy pathway now; the departing player keeps

@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Monde qui ne vieillit plus : retraites dès 31–36 ans en fin de contrat, contrats d'un an après 31 ans, un jeune du centre par club et par été (âge moyen sur 6 saisons 24,7 → 25,7 au lieu de 27,6).
 - Têtes au but sur centre dans la surface : têtes cadrées ou non 1,3 → 4,3 par match, buts 2,34 → 3,0, tirs 20,9 → 23,2.
 - Fautes tactiques pour stopper une contre-attaque (jamais par un joueur averti) : fautes 17 → 19,7 par match.
 - Frappes de loin quand un défenseur est à 2–3 m : tirs 19,6 → 21,1 par match.
