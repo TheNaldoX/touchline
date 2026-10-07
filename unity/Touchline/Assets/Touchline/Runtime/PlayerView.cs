@@ -17,6 +17,10 @@ namespace Touchline
         Transform body;Transform[] skeleton;Material shirt;Material[] ownedMaterials;
         readonly Vector3[] planted=new Vector3[2],swingFrom=new Vector3[2],previousFeet=new Vector3[2];
         readonly bool[] stance=new bool[2];
+        // Pas d'ajustement à l'arrêt : un pied trop loin de sa position de repos
+        // (pivot, replacement) est déplacé par un petit pas, l'autre reste posé.
+        readonly float[] adjustStep=new float[2];readonly Vector3[] adjustFrom=new Vector3[2];
+        const float AdjustStepTrigger=.14f,AdjustStepDuration=.24f,AdjustStepLift=.07f; // m, s, m
         readonly Quaternion[] previousFootRotations=new Quaternion[2];
         readonly LocomotionFacing locomotionFacing=new LocomotionFacing();
         // Trajectoire lissée entre les pas de simulation (vitesse continue) ; poseVelocity
@@ -137,7 +141,16 @@ namespace Touchline
                 if(!onGround&&stance[i])swingFrom[i]=planted[i];
                 planted[i].y=.08f;stance[i]=onGround;
                 Vector3 target;
-                if(onGround){target=planted[i];if(run<.035f){planted[i]=Vector3.Lerp(planted[i],rest,1-Mathf.Exp(-dt*8));target=planted[i];}}
+                if(onGround){target=planted[i];if(run<.035f){
+                    if(reset){adjustStep[i]=0;planted[i]=rest;}
+                    else if(adjustStep[i]>0){
+                        adjustStep[i]=Mathf.Min(1,adjustStep[i]+dt/AdjustStepDuration);float eased=Mathf.SmoothStep(0,1,adjustStep[i]);
+                        planted[i]=Vector3.Lerp(adjustFrom[i],rest,eased);target=planted[i];target.y=.08f+Mathf.Sin(adjustStep[i]*Mathf.PI)*AdjustStepLift;
+                        if(adjustStep[i]>=1){adjustStep[i]=0;planted[i]=rest;}
+                    }
+                    else if(adjustStep[1-i]<=0&&Vector3.Distance(new Vector3(planted[i].x,0,planted[i].z),new Vector3(rest.x,0,rest.z))>AdjustStepTrigger){adjustStep[i]=.0001f;adjustFrom[i]=planted[i];}
+                    if(adjustStep[i]<=0)target=planted[i];
+                }else adjustStep[i]=0;}
                 else{float swing=(phase-contact)/(1-contact);var end=rest+travelDirection*Mathf.Lerp(.18f,.62f,run);target=Vector3.Lerp(swingFrom[i],end,Mathf.SmoothStep(0,1,swing));float lift=CapturedLocomotion.Available?Mathf.Lerp(.09f,Mathf.Max(.1f,i==0?captured.leftLift:captured.rightLift),run):Mathf.Lerp(.09f,.25f,run);target.y=.08f+Mathf.Sin(swing*Mathf.PI)*lift;}
                 // Keep a planted foot within the anatomical reach during tight turns.
                 var relative=target-rest;if(relative.magnitude>.68f)target=rest+relative.normalized*.68f;
