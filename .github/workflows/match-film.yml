@@ -1,0 +1,96 @@
+# Tourne une séquence de match dans Unity (sans téléphone) pour juger les animations.
+# Déclenchement : pousser une branche "film/<nom>". Résultat : vidéos et planches
+# d'images dans la branche "films", dossier films/<nom>/ (broadcast.mp4, follow.mp4,
+# broadcast-sheet.jpg, follow-sheet.jpg, info.txt).
+# Mêmes secrets Unity que la compilation de l'APK.
+name: Match film
+
+on:
+  push:
+    branches: ['film/**']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: match-film-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  film:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Nom du film
+        id: name
+        run: |
+          n="${GITHUB_REF_NAME#film/}"; n="$(echo "$n" | tr -c 'a-zA-Z0-9.\n-' '-')"
+          echo "film=$n" >> "$GITHUB_OUTPUT"
+
+      - name: Libérer de l'espace disque
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          android: false
+          large-packages: false
+
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - name: Cache Library Unity
+        uses: actions/cache@v4
+        with:
+          path: unity/Touchline/Library
+          key: Library-Android-${{ hashFiles('unity/Touchline/Packages/packages-lock.json', 'unity/Touchline/ProjectSettings/ProjectVersion.txt') }}
+          restore-keys: Library-Android-
+
+      - name: Image Unity avec rendu logiciel (Mesa)
+        run: |
+          printf 'FROM unityci/editor:ubuntu-6000.3.24f1-android-3\nRUN apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq libgl1-mesa-dri libglx-mesa0 libegl-mesa0 mesa-vulkan-drivers && rm -rf /var/lib/apt/lists/*\n' > "$RUNNER_TEMP/Dockerfile"
+          docker build -q -t touchline-unity-mesa:local "$RUNNER_TEMP"
+
+      - name: Tournage dans Unity
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          customImage: touchline-unity-mesa:local
+          projectPath: unity/Touchline
+          unityVersion: 6000.3.24f1
+          targetPlatform: Android
+          buildMethod: Touchline.Editor.CiMatchFilm.Run
+          allowDirtyBuild: true
+          customParameters: -force-glcore -touchlineFilm=${{ steps.name.outputs.film }}
+
+      - name: Encodage des vidéos et planches
+        if: always()
+        run: |
+          which ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg)
+          src="unity/Touchline/build/film/${{ steps.name.outputs.film }}"
+          out="$RUNNER_TEMP/film/${{ steps.name.outputs.film }}"; mkdir -p "$out"
+          ls -la "$src" "$src/broadcast" | head -5
+          for cam in broadcast follow; do
+            ffmpeg -v error -y -framerate 30 -i "$src/$cam/frame-%04d.jpg" -c:v libx264 -pix_fmt yuv420p -crf 26 -preset veryfast "$out/$cam.mp4"
+            ffmpeg -v error -y -framerate 30 -i "$src/$cam/frame-%04d.jpg" -vf "fps=2,scale=480:-1,tile=4x5" -frames:v 1 "$out/$cam-sheet.jpg"
+          done
+          cp "$src/info.txt" "$src/metrics.txt" "$src/unity-messages.txt" "$out/" || true
+          ls -la "$out"
+
+      - name: Publication dans la branche films
+        if: always()
+        env:
+          TOKEN: ${{ github.token }}
+        run: |
+          # Dépôt séparé : l'arbre de travail contient des fichiers créés par Unity (root).
+          name="${{ steps.name.outputs.film }}"; pub="$RUNNER_TEMP/publish"; rm -rf "$pub"
+          url="https://x-access-token:$TOKEN@github.com/${GITHUB_REPOSITORY}.git"
+          if git ls-remote --exit-code "$url" films >/dev/null 2>&1; then git clone -q --depth 1 --branch films "$url" "$pub"
+          else git init -q "$pub" && git -C "$pub" checkout -q --orphan films && git -C "$pub" remote add origin "$url"; fi
+          cd "$pub"; git config user.name "touchline-film-bot"; git config user.email "actions@users.noreply.github.com"
+          rm -rf "films/$name"; mkdir -p "films/$name"
+          cp "$RUNNER_TEMP/film/$name/"* "films/$name/" 2>/dev/null || true
+          ls -la "$GITHUB_WORKSPACE/unity/Touchline/build/film/$name" > "films/$name/output-files.txt" 2>&1 || true
+          git add -f "films/$name"; git commit -q -m "film: $name (${GITHUB_SHA::7})"; git push -q origin films
