@@ -11,7 +11,7 @@ namespace Touchline.Editor
     public sealed class MixamoImportSettings : AssetPostprocessor
     {
         const string Folder="Assets/Touchline/Resources/Animations/Mixamo/";
-        static readonly string[] LoopKeywords={"idle","walk","jog","run","strafe","backward","sidestep","dribble"};
+        static readonly string[] LoopKeywords={"idle","walk","jog","run","strafe","backward","sidestep","dribble","sprint"};
         static readonly string[] OneShotKeywords={"stop","turn","kick","pass","shot","chip","header","tackle","trip","catch","save","throw","scoop","place","receive","victory","celebrat","defeat","pump"};
 
         static bool Mixamo(string path)=>path.Replace('\\','/').StartsWith(Folder)&&path.EndsWith(".fbx",System.StringComparison.OrdinalIgnoreCase);
