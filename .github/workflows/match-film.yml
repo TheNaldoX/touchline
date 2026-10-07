@@ -27,6 +27,8 @@ jobs:
         run: |
           n="${GITHUB_REF_NAME#film/}"; n="$(echo "$n" | tr -c 'a-zA-Z0-9.\n-' '-')"
           echo "film=$n" >> "$GITHUB_OUTPUT"
+          # film/proto-… : prototype Mecanim ; sinon séquence de match.
+          case "$n" in proto*) echo "method=Touchline.Editor.MecanimPrototypeFilm.Run" >> "$GITHUB_OUTPUT";; *) echo "method=Touchline.Editor.CiMatchFilm.Run" >> "$GITHUB_OUTPUT";; esac
 
       - name: Libérer de l'espace disque
         uses: jlumbroso/free-disk-space@v1.3.1
@@ -61,7 +63,7 @@ jobs:
           projectPath: unity/Touchline
           unityVersion: 6000.3.24f1
           targetPlatform: Android
-          buildMethod: Touchline.Editor.CiMatchFilm.Run
+          buildMethod: ${{ steps.name.outputs.method }}
           allowDirtyBuild: true
           customParameters: -force-glcore -touchlineFilm=${{ steps.name.outputs.film }}
 
@@ -75,6 +77,7 @@ jobs:
           for cam in broadcast follow; do
             ffmpeg -v error -y -framerate 30 -i "$src/$cam/frame-%04d.jpg" -c:v libx264 -pix_fmt yuv420p -crf 26 -preset veryfast "$out/$cam.mp4"
             ffmpeg -v error -y -framerate 30 -i "$src/$cam/frame-%04d.jpg" -vf "fps=2,scale=480:-1,tile=4x5" -frames:v 1 "$out/$cam-sheet.jpg"
+            ffmpeg -v error -y -framerate 30 -i "$src/$cam/frame-%04d.jpg" -vf "select='not(mod(n\,15))',scale=480:-1,tile=4x5" -frames:v 1 "$out/$cam-sheet-all.jpg" || true
           done
           cp "$src/info.txt" "$src/metrics.txt" "$src/unity-messages.txt" "$out/" || true
           ls -la "$out"
