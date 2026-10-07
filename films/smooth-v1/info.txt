@@ -1,0 +1,1 @@
+home=176 away=160 seed=731 start=95 seconds=15 fps=30 clock_end=110.0 score=0-0
