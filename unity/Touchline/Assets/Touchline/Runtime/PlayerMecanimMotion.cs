@@ -81,20 +81,23 @@ namespace Touchline
         void DisposeMecanim(){if(mecanimGraph.IsValid())mecanimGraph.Destroy();}
 
         // Geste du moteur → (clip, instant de contact côté moteur en s depuis le début du geste).
-        bool leftFootedNow;
+        bool leftFootedNow;float mecanimPoseSpeed;
+        const string RunningStrikeClip="Strike Forward Jog",KeeperThrowClip="Goalkeeper Overhand Throw";
+        const float RunningStrikeSpeed=2.5f; // m/s : au-delà, le tireur frappe dans sa course
         bool MecanimAction(Actor actor,out string clip,out float simContact)
         {
             clip=null;simContact=0;
             switch(actor.action){
                 case "kick":
                     // Kick Soccerball frappe du pied gauche, Kick Soccerball (1) du droit.
-                    clip=actor.actionKind=="shot"?(leftFootedNow?"Kick Soccerball":"Kick Soccerball (1)"):actor.actionKind=="cross"||actor.actionKind=="switch"||actor.actionKind=="clearance"?"Chip":"Soccer Pass";
+                    // Frappe en pleine course (élan) : Strike Forward Jog, sinon frappe arrêtée selon le pied fort.
+                    clip=actor.actionKind=="shot"?(mecanimPoseSpeed>=RunningStrikeSpeed&&MecanimClips.ContainsKey(RunningStrikeClip)?RunningStrikeClip:leftFootedNow?"Kick Soccerball":"Kick Soccerball (1)"):actor.actionKind=="cross"||actor.actionKind=="switch"||actor.actionKind=="clearance"?"Chip":"Soccer Pass";
                     if(actor.slot==0&&MecanimClips.ContainsKey("Goalkeeper Drop Kick")&&actor.actionKind=="clearance")clip="Goalkeeper Drop Kick";
                     simContact=.18f;break;
                 case "header":clip="Header";simContact=actor.actionContactTime>0?actor.actionContactTime:.12f;break;
                 case "slide":clip="Soccer Tackle";simContact=actor.actionContactTime>0?actor.actionContactTime:.2f;break;
                 case "fall":clip="Soccer Trip";simContact=0;break;
-                case "throw":clip=actor.slot==0?"Goalkeeper Pass":"Throw In";simContact=actor.actionContactTime>0?actor.actionContactTime:.5f;break;
+                case "throw":clip=actor.slot==0?(MecanimClips.ContainsKey(KeeperThrowClip)?KeeperThrowClip:"Goalkeeper Pass"):"Throw In";simContact=actor.actionContactTime>0?actor.actionContactTime:.5f;break;
                 case "dive":clip="Goalkeeper Diving Save";simContact=actor.actionContactTime>0?actor.actionContactTime:.2f;break;
                 case "claim":clip="Goalkeeper Catch";simContact=.2f;break;
             }
@@ -104,7 +107,7 @@ namespace Touchline
         // Retourne false si l'animation capturée n'est pas disponible (repli procédural).
         bool MecanimRender(Actor actor,float dt,bool reset,float poseSpeed,bool carrying)
         {
-            if(!UseMecanim||!EnsureMecanimGraph(actor.slot==0))return false;leftFootedNow=leftFooted;
+            if(!UseMecanim||!EnsureMecanimGraph(actor.slot==0))return false;leftFootedNow=leftFooted;mecanimPoseSpeed=poseSpeed;
             if(reset){moveBlend=Mathf.SmoothStep(0,1,Mathf.InverseLerp(MoveBlendFrom,MoveBlendTo,poseSpeed));dribbleBlend=carrying?1:0;}
             float k=1-Mathf.Exp(-dt*LocomotionBlendRate);
             moveBlend=Mathf.Lerp(moveBlend,Mathf.SmoothStep(0,1,Mathf.InverseLerp(MoveBlendFrom,MoveBlendTo,poseSpeed)),k);
@@ -119,6 +122,8 @@ namespace Touchline
 
             // Gestes : nouveau geste → emplacement libre, fondu d'entrée, temps calé sur le contact.
             bool acting=MecanimAction(actor,out var clipName,out var simContact);
+            // Un geste garde le clip choisi à son début, même si la vitesse change ensuite.
+            if(acting&&mecanimActionKey!=null&&actor.actionSequence==mecanimActionSequence)clipName=mecanimActionKey;
             string key=acting?clipName:null;
             if(acting&&(key!=mecanimActionKey||actor.actionSequence!=mecanimActionSequence)){
                 int slot=activeAction<0?0:1-activeAction;
