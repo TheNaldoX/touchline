@@ -19,6 +19,9 @@ namespace Touchline
         readonly bool[] stance=new bool[2];
         readonly Quaternion[] previousFootRotations=new Quaternion[2];
         readonly LocomotionFacing locomotionFacing=new LocomotionFacing();
+        // Trajectoire lissée entre les pas de simulation (vitesse continue) ; poseVelocity
+        // pilote l'allure du corps (cadence, mélange marche/course) sans paliers à 10 Hz.
+        readonly MotionCurve rootCurve=new MotionCurve();Point poseVelocity;
         float gait,lean;bool initialized,leftFooted;Vector3 lastPosition;Quaternion lastRotation;
         static HumanSource source;
         static Mesh geometry;
@@ -77,7 +80,9 @@ namespace Touchline
             float actionTime=actor.actionTime+Mathf.Clamp01(1-alpha)*MatchSimulation.Step;
             gripOffset=Vector3.zero;
             if(initialized)for(int i=0;i<2;i++){previousFeet[i]=Limb(Sides[i]).foot.position;previousFootRotations[i]=Limb(Sides[i]).foot.rotation;}
-            var p=Point.Lerp(actor.previous,actor.position,alpha);transform.position=new Vector3(p.x,0,p.z);
+            rootCurve.Observe(actor.previous,actor.position,MatchSimulation.Step);
+            var p=rootCurve.Position(actor.previous,actor.position,MatchSimulation.Step,alpha);transform.position=new Vector3(p.x,0,p.z);
+            poseVelocity=rootCurve.Velocity(actor.previous,actor.position,MatchSimulation.Step,alpha);float poseSpeed=poseVelocity.Length;
             float travel=Vector3.Distance(transform.position,lastPosition);bool reset=!initialized||travel>2.5f;
             bool wall=actor.intent=="wall"&&actor.velocity.Length<.5f;float facing=wall?Mathf.Atan2(ballPosition.x-p.x,ballPosition.z-p.z):actor.angle;
             bool defend=actor.slot>0&&context.defending&&!context.carrying&&(actor.action=="run"||actor.action=="idle")&&(actor.intent=="shape"||DefensiveReadinessIntent(actor.intent)||actor.intent=="recover"||actor.intent=="delay");
@@ -95,8 +100,8 @@ namespace Touchline
                 transform.rotation=reset?Quaternion.Euler(0,facing*Mathf.Rad2Deg,0):Quaternion.Slerp(transform.rotation,Quaternion.Euler(0,facing*Mathf.Rad2Deg,0),1-Mathf.Exp(-dt*16));
                 locomotionFacing.Sample(transform.eulerAngles.y,actor.velocity.Length,0,true);
             }
-            float run=Mathf.Clamp01(actor.velocity.Length/7);
-            var travelDirection=actor.velocity.Length>.2f?new Vector3(actor.velocity.x,0,actor.velocity.z).normalized:transform.forward;
+            float run=Mathf.Clamp01(poseSpeed/7);
+            var travelDirection=poseSpeed>.2f?new Vector3(poseVelocity.x,0,poseVelocity.z).normalized:transform.forward;
             var localTravel=transform.InverseTransformDirection(travelDirection);
             var previousBodyPosition=body.localPosition;var previousBodyRotation=body.localRotation;
             if(actor.action=="control"&&(reset||poseAction!="control"||poseSequence!=actor.actionSequence)){var contact=MatchSimulation.IsBodyControl(actor)?new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z):ballPosition;float lateral=transform.InverseTransformPoint(contact).x;receivingLeft=Mathf.Abs(lateral)<.06f?leftFooted:lateral>0;}
@@ -107,12 +112,12 @@ namespace Touchline
             if(!reset&&actionChanged){transitionDuration=poseAction=="dive"||poseAction=="tackle"?.20f:.10f;transitionRemaining=transitionDuration;transitionBodyPosition=previousBodyPosition;transitionBodyRotation=previousBodyRotation;for(int i=0;i<skeleton.Length;i++)transitionPose[i]=skeleton[i].localRotation;}
             poseAction=actor.action;
             if(reset){transitionRemaining=0;lean=0;gait=0;}
-            if(!reset)gait+=travel/((FullBodyMotion.Available?DirectionalBodyMotion.Stride(actor.velocity.Length,localTravel,motionIdentity,actor.injured):Mathf.Lerp(1.2f,3.15f,run))*transform.localScale.y);
+            if(!reset)gait+=travel/((FullBodyMotion.Available?DirectionalBodyMotion.Stride(poseSpeed,localTravel,motionIdentity,actor.injured):Mathf.Lerp(1.2f,3.15f,run))*transform.localScale.y);
             float turn=reset?0:Mathf.DeltaAngle(lastRotation.eulerAngles.y,transform.eulerAngles.y)/Mathf.Max(.01f,dt);
             lean=Mathf.Lerp(lean,Mathf.Clamp(-turn*.035f,-9,9)*run,1-Mathf.Exp(-dt*8));
             for(int i=0;i<skeleton.Length;i++){previousPose[i]=skeleton[i].localRotation;skeleton[i].localRotation=Quaternion.identity;}
             float cycle=gait*Mathf.PI*2;
-            var captured=CapturedLocomotion.Sample(gait,actor.velocity.Length);
+            var captured=CapturedLocomotion.Sample(gait,poseSpeed);
             body.localPosition=new Vector3(0,-.025f+Mathf.Abs(Mathf.Sin(cycle*2))*.018f*run,0);body.localRotation=Quaternion.Euler(run*5*localTravel.z,Mathf.Sin(cycle)*3*run,lean-run*3*localTravel.x);
             Rotate("spine02",0,-Mathf.Sin(cycle)*5*run,-lean*.35f);
             var look=transform.InverseTransformDirection(ballPosition-transform.position);Rotate("head",Mathf.Clamp(-look.y*4,-12,12),Mathf.Clamp(Mathf.Atan2(look.x,look.z)*Mathf.Rad2Deg,-45,45)*.6f,0);

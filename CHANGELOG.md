@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Animation plus fluide : trajectoire des joueurs et allure du corps à vitesse continue entre les pas de simulation, ballon en vol sur sa vraie parabole.
 - Appels en profondeur un peu plus fréquents (0,30 → 0,38 par seconde) : hors-jeu 2,9 → 3,3 par match.
 - Pokes perdus plus souvent fautifs (part de base 0,35 → 0,55) : fautes 18,8 → 20,2 par match.
 - Une faute en retard dans sa propre surface (dix fois plus rare qu'ailleurs) donne un penalty : penalties 0,15 → 0,23 par match.

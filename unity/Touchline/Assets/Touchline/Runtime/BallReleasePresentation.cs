@@ -16,7 +16,12 @@ namespace Touchline
         public static Vector3 Position(BallReleaseContact contact,MatchState state,float alpha)
         {
             alpha=Mathf.Clamp01(alpha);var b=state.ball;
-            if(!Current(contact,state))return Vector3.Lerp(Position(b.previous,b.previousHeight),Position(b.position,b.height),alpha);
+            if(!Current(contact,state)){
+                // A ball in its scripted flight follows the exact simulation curve
+                // between steps: no polyline corners at the top of a lofted pass.
+                if(BallFlight.InScriptedFlight(b,MatchSimulation.Step)){var f=BallFlight.At(b,b.elapsed-(1-alpha)*MatchSimulation.Step);return Position(f.position,f.height);}
+                return Vector3.Lerp(Position(b.previous,b.previousHeight),Position(b.position,b.height),alpha);
+            }
             return PathPosition(contact,alpha);
         }
         // The immutable incoming path remains usable until a physical impact,
