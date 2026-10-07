@@ -34,7 +34,7 @@ namespace Touchline.Core
             float touch=.30f+.26f*(.5f+.5f*(float)Math.Sin(owner.stride*2.4f));var target=owner.action=="keeper-rise"?owner.actionTarget:owner.position+forward*touch;
             b.controlElapsed+=Step;b.position=Point.Lerp(b.controlOrigin,target,BodyControlProgress(owner,b));b.height=ControlledBallHeight(owner,b);
             if(owner.slot==0&&(owner.action=="dive"||owner.action=="claim")){b.height=.7f;return;}
-            if(ResolveSlidingDuels(owner)||ResolveStandingDuels(owner))return;
+            if(TacticalFoul(owner)||ResolveSlidingDuels(owner)||ResolveStandingDuels(owner))return;
             foreach(var defender in m.actors){if(defender.sentOff||GroundedAction(defender)||defender.side==owner.side||defender.duelCooldown>0||owner.controlTime>0)continue;
                 if(defender.slot==0){if(InOwnArea(defender,b.position)&&Point.Distance(defender.position,b.position)<1.15f&&b.height<.8f){var claimImpact=b.position;float claimHeight=b.height;Control(defender);b.held=true;BeginRecordedKeeperClaim(defender,claimImpact,claimHeight,1);defender.duelCooldown=1.2f;m.metrics[defender.side].keeperClaims++;Emit("claim",defender.side,defender.id,Data(defender).name+" se couche dans les pieds de l’attaquant.");return;}continue;}
                 if(!BeginSlidingDuel(defender,owner)&&CommitsToChallenge(defender,owner))BeginStandingDuel(defender,owner);

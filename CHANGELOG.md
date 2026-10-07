@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Fautes tactiques pour stopper une contre-attaque (jamais par un joueur averti) : fautes 17 → 19,7 par match.
 - Frappes de loin quand un défenseur est à 2–3 m : tirs 19,6 → 21,1 par match.
 - Économie IA : propriétaires prudents ou dépensiers, recettes liées au classement (±15 %) ; sur 6 saisons, 20 % des clubs jouables endettés (avant 9 %).
 - Ballon libre qui roule plus loin (1,65 → 0,95 m/s²), longs ballons trop appuyés, interceptions déviées : touches 29 → 35 par match.

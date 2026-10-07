@@ -3,6 +3,28 @@ namespace Touchline.Core
 {
     public sealed partial class MatchSimulation
     {
+        // Tactical foul: a counter-attack carrier breaking through midfield with
+        // an opponent chasing at his shoulder gets his shirt pulled. Rate per
+        // second for an average-aggression chaser; window (s) after the turnover;
+        // minimum forward speed (m/s); chaser distance (m); share booked.
+        public const float TacticalFoulRatePerSecond=.6f,TacticalFoulWindow=6f,TacticalFoulMinSpeed=3.5f,TacticalFoulReach=1.4f,TacticalFoulCaution=.25f;
+        bool TacticalFoul(Actor carrier)
+        {
+            var m=State;if(!m.professionalRules||m.restart>0||m.ball.held||carrier.slot==0||m.clock-m.turnoverAt>TacticalFoulWindow)return false;
+            int dir=Direction(carrier.side);float x=carrier.position.x*dir;if(x< -25||x>28||carrier.velocity.x*dir<TacticalFoulMinSpeed)return false;
+            Actor chaser=null;float best=TacticalFoulReach;
+            foreach(var p in m.actors){if(p.sentOff||p.side==carrier.side||p.slot==0||p.yellows>0||p.duelCooldown>0||GroundedAction(p))continue;
+                // Only an unbooked chaser level with or behind the carrier (he has lost
+                // the race; a booked player does not risk a second yellow).
+                if((p.position.x-carrier.position.x)*dir>.3f)continue;float d=Point.Distance(p.position,carrier.position);if(d<best){best=d;chaser=p;}}
+            if(chaser==null)return false;
+            float rate=TacticalFoulRatePerSecond*(.5f+Skill(chaser,"aggression")*.01f)*(Tactic(chaser.side).pressing>.5f?1.2f:1f);
+            if(Random()>=rate*Step)return false;
+            chaser.duelCooldown=2;m.metrics[chaser.side].fouls++;
+            Emit("foul",chaser.side,chaser.id,Data(chaser).name+" tire le maillot pour stopper la contre-attaque.");
+            if(Random()<TacticalFoulCaution)Caution(chaser.id);
+            Restart("free-kick",carrier.side,carrier.position,3);return true;
+        }
         void ConsiderContactFoul(Actor a,Actor b,float closing)
         {
             if(!State.professionalRules||State.restart>0||State.ball.held||State.ball.elapsed<0||a.side==b.side||closing>=-2.2f)return;
