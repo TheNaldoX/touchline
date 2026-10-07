@@ -46,11 +46,11 @@ namespace Touchline
                 // Côté anatomique déduit de la géométrie (le joueur regarde +Z, sa droite
                 // est +X) : si les os « .L » sont à +X, les étiquettes sont inversées.
                 bool swap=bones.TryGetValue("upperleg01.L",out var leftLeg)&&body.InverseTransformPoint(leftLeg.position).x>0;
-                var human=new List<HumanBone>();
+                var human=new List<UnityEngine.HumanBone>();
                 foreach(var (bone,humanName) in HumanMap){
                     if(!bones.ContainsKey(bone))continue;
                     string name=humanName;if(swap)name=name.StartsWith("Left")?"Right"+name.Substring(4):name.StartsWith("Right")?"Left"+name.Substring(5):name;
-                    human.Add(new HumanBone{boneName=bone,humanName=name,limit=new HumanLimit{useDefaultValues=true}});
+                    human.Add(new UnityEngine.HumanBone{boneName=bone,humanName=name,limit=new HumanLimit{useDefaultValues=true}});
                 }
                 HumanSidesSwapped=swap;
                 var description=new HumanDescription{human=human.ToArray(),skeleton=skeleton.ToArray(),upperArmTwist=.5f,lowerArmTwist=.5f,upperLegTwist=.5f,lowerLegTwist=.5f,armStretch=.05f,legStretch=.05f,feetSpacing=0,hasTranslationDoF=false};
