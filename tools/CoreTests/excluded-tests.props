@@ -121,6 +121,7 @@
   <ExcludedTest Include="StadiumCrowdGeometryTests.cs" />
   <ExcludedTest Include="StadiumGeometryTests.cs" />
   <ExcludedTest Include="StadiumLookTests.cs" />
+  <ExcludedTest Include="MatchFreezeTests.cs" />
   <ExcludedTest Include="StaffEmployerSerializationTests.cs" />
   <ExcludedTest Include="StopStepMotionTests.cs" />
   <ExcludedTest Include="StopStepRestartAuditTests.cs" />

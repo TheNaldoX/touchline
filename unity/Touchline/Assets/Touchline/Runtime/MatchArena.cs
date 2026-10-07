@@ -39,7 +39,10 @@ namespace Touchline
         public bool ExitBallIsOutgoing=>showingExit&&!exitSample.repositioned;
         RenderBudget renderBudget;
         float zoom=1;Vector3 focus,velocity;float cameraDistance,cameraDistanceVelocity;float cameraAspect=-1;bool cameraReset=true,cameraHasFocus;
-        bool tactical;Vector2 pointerStart;float saveAt;
+        bool tactical;Vector2 pointerStart;float saveAt;bool savedAtStop;
+        public const float LiveSaveInterval=300; // s de temps réel entre deux sauvegardes pendant le jeu
+        // Vrai si la carrière doit être sauvée maintenant : une fois à chaque arrêt, sinon toutes les LiveSaveInterval s.
+        public static bool AutosaveDue(bool paused,bool savedAtStop,float sinceLastSave)=>paused?!savedAtStop:sinceLastSave>LiveSaveInterval;
         bool wasQuiet;Database database;
         public Action SaveRequested;
         Material turf,white;Mesh pitchMesh;Texture2D turfGrain;readonly System.Collections.Generic.List<Mesh> stadiumMeshes=new System.Collections.Generic.List<Mesh>();
@@ -101,7 +104,12 @@ namespace Touchline
             frameDelta=Mathf.Min(.1f,frameDelta);
             if(!Paused){Broadcast.Advance(frameDelta,Speed);if(Broadcast.PauseRequested)Paused=true;}else Broadcast.Refresh();
             var m=Simulation.State;if(m.halfTime||m.finished)Paused=true;
-            if(Time.unscaledTime-saveAt>12){saveAt=Time.unscaledTime;SaveRequested?.Invoke();}
+            // Sauvegarde : sérialiser la carrière (plusieurs Mo) bloque le jeu une fraction de
+            // seconde sur téléphone. On sauve aux arrêts (pause, mi-temps, fin de match), et en
+            // jeu continu seulement toutes les LiveSaveInterval secondes (la mise en veille
+            // de l'application sauve aussi, voir TouchlineApp.OnApplicationPause).
+            if(AutosaveDue(Paused,savedAtStop,Time.unscaledTime-saveAt)){saveAt=Time.unscaledTime;SaveRequested?.Invoke();savedAtStop=Paused;}
+            if(!Paused)savedAtStop=false;
             MatchCamera.enabled=!QuietPresentation;
             if(QuietPresentation){wasQuiet=true;ClearUnseenGoalReplay();return;}
             bool returning=wasQuiet;wasQuiet=false;
