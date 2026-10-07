@@ -82,14 +82,17 @@ jobs:
 
       - name: Publication dans la branche films
         if: always()
+        env:
+          TOKEN: ${{ github.token }}
         run: |
-          set -e
-          name="${{ steps.name.outputs.film }}"
-          git config user.name "touchline-film-bot"; git config user.email "actions@users.noreply.github.com"
-          if git ls-remote --exit-code origin films >/dev/null 2>&1; then
-            git fetch --depth 1 origin films && git checkout -B films FETCH_HEAD
-          else
-            git checkout --orphan films && git rm -rf -q --cached .
-          fi
-          rm -rf "films/$name"; mkdir -p "films/$name"; cp "$RUNNER_TEMP/film/$name/"* "films/$name/"
-          git add "films/$name"; git commit -q -m "film: $name (${GITHUB_SHA::7})"; git push origin films
+          # Dépôt séparé : l'arbre de travail contient des fichiers créés par Unity (root).
+          name="${{ steps.name.outputs.film }}"; pub="$RUNNER_TEMP/publish"; rm -rf "$pub"
+          url="https://x-access-token:$TOKEN@github.com/${GITHUB_REPOSITORY}.git"
+          if git ls-remote --exit-code "$url" films >/dev/null 2>&1; then git clone -q --depth 1 --branch films "$url" "$pub"
+          else git init -q "$pub" && git -C "$pub" checkout -q --orphan films && git -C "$pub" remote add origin "$url"; fi
+          cd "$pub"; git config user.name "touchline-film-bot"; git config user.email "actions@users.noreply.github.com"
+          rm -rf "films/$name"; mkdir -p "films/$name"
+          cp "$RUNNER_TEMP/film/$name/"* "films/$name/" 2>/dev/null || true
+          for f in unity activation; do tail -n 150 "$RUNNER_TEMP/film-log/$f.log" > "films/$name/$f-log-tail.txt" 2>/dev/null || true; done
+          ls -la "$RUNNER_TEMP" "$RUNNER_TEMP/film-log" > "films/$name/runner-files.txt" 2>&1 || true
+          git add -f "films/$name"; git commit -q -m "film: $name (${GITHUB_SHA::7})"; git push -q origin films
