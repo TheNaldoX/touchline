@@ -1,0 +1,120 @@
+"Assets/Touchline/Runtime/ProfessionalUI.cs"
+"Assets/Touchline/Runtime/RecruitmentWorkspaceUI.cs"
+"Assets/Touchline/Runtime/RenderBudget.cs"
+"Assets/Touchline/Runtime/ScoutingWorkspaceUI.cs"
+"Assets/Touchline/Runtime/SeasonPlanningUI.cs"
+"Assets/Touchline/Runtime/SquadUI.cs"
+"Assets/Touchline/Runtime/StadiumAtmosphere.cs"
+"Assets/Touchline/Runtime/StadiumGeometry.cs"
+"Assets/Touchline/Runtime/StaffUI.cs"
+"Assets/Touchline/Runtime/StopStepMotion.cs"
+"Assets/Touchline/Runtime/TacticalBoardUI.cs"
+"Assets/Touchline/Runtime/TouchlineApp.cs"
+-langversion:9.0
+/deterministic
+/optimize+
+/debug:portable
+/nologo
+/RuntimeMetadataVersion:v4.0.30319
+/nowarn:0169
+/nowarn:0649
+/nowarn:0282
+/nowarn:1701
+/nowarn:1702
+/utf8output
+/preferreduilang:en-US
+/additionalfile:"Library/Bee/artifacts/1300b0aE.dag/Touchline.Runtime.UnityAdditionalFile.txt"
+##### Custom Environment Variables
+DOTNET_MULTILEVEL_LOOKUP=0
+##### ExitCode
+1
+##### Output
+Assets/Touchline/Runtime/PlayerViewHumanoid.cs(36,16): error CS1069: The type name 'Avatar' could not be found in the namespace 'UnityEngine'. This type has been forwarded to assembly 'UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' Consider adding a reference to that assembly.
+Assets/Touchline/Runtime/PlayerViewHumanoid.cs(30,16): error CS1069: The type name 'Avatar' could not be found in the namespace 'UnityEngine'. This type has been forwarded to assembly 'UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' Consider adding a reference to that assembly.
+*** Tundra build failed (40.57 seconds), 538 items updated, 550 evaluated
+## Script Compilation Error for: Csc Library/Bee/artifacts/1300b0aE.dag/Touchline.Runtime.dll (+2 others)
+## CmdLine: "/opt/unity/Editor/Data/NetCoreRuntime/dotnet" exec "/opt/unity/Editor/Data/DotNetSdkRoslyn/csc.dll" /nostdlib /noconfig /shared "@Library/Bee/artifacts/1300b0aE.dag/Touchline.Runtime.rsp" "@Library/Bee/artifacts/1300b0aE.dag/Touchline.Runtime.rsp2"
+## Output:
+Assets/Touchline/Runtime/PlayerViewHumanoid.cs(36,16): error CS1069: The type name 'Avatar' could not be found in the namespace 'UnityEngine'. This type has been forwarded to assembly 'UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' Consider adding a reference to that assembly.
+Assets/Touchline/Runtime/PlayerViewHumanoid.cs(30,16): error CS1069: The type name 'Avatar' could not be found in the namespace 'UnityEngine'. This type has been forwarded to assembly 'UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' Consider adding a reference to that assembly.
+
+Total cache size 19159556
+Assets/Touchline/Runtime/PlayerViewHumanoid.cs(36,16): error CS1069: The type name 'Avatar' could not be found in the namespace 'UnityEngine'. This type has been forwarded to assembly 'UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' Enable the built in package 'Animation' in the Package Manager window to fix this error.
+Assets/Touchline/Runtime/PlayerViewHumanoid.cs(30,16): error CS1069: The type name 'Avatar' could not be found in the namespace 'UnityEngine'. This type has been forwarded to assembly 'UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' Enable the built in package 'Animation' in the Package Manager window to fix this error.
+Runtime/PlayerViewHumanoid.cs(30,16): error CS1069: The type name 'Avatar' could not be found in the namespace 'UnityEngine'. This type has been forwarded to assembly 'UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' Enable the built in package 'Animation' in the Package Manager window to fix this error.
+ntime/PlayerViewHumanoid.cs(30,16): error CS1069: The type name 'Avatar' could not be found in the namespace 'UnityEngine'. This type has been forwarded to assembly 'UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' Enable the built in package 'Animation' in the Package Manager window to fix this error.
+Total cache size after purge 19159556, took 00:00:00.0552932
+AssetDatabase: script compilation time: 42.122616s
+Scripts have compiler errors.
+
+Aborting batchmode due to failure:
+Scripts have compiler errors.
+
+
+SDL leaked 2 allocations
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...
+[40m[32minfo[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      ALC ILPP context 1 is unloading
+[UnityConnectServicesConfig] Local config successfully read: "/usr/share/unity3d/config/services-config.json"
+[UnityConnectServicesConfig] "clientConnectTimeoutSec" was overridden with "5"
+[UnityConnectServicesConfig] "clientHandshakeTimeoutSec" was overridden with "10"
+[UnityConnectServicesConfig] Service configuration:
+    "servicesConfigBaseUrl": "",
+    "disableServicesWindow": false,
+    "disableUserLogin": false,
+    "entitlementCacheTimeoutInSeconds": 60,
+    "clientConnectTimeoutSec": 5,
+    "clientHandshakeTimeoutSec": 10,
+    "clientResolveEntitlementsTimeoutSec": 30,
+    "clientUpdateLicenseTimeoutSec": 30,
+    "licensingServiceBaseUrl": "",
+    "enableProxyAutoconfig": "false"
+
+[UnityConnectServicesConfig] Local config successfully read: "/usr/share/unity3d/config/services-config.json"
+[UnityConnectServicesConfig] "clientConnectTimeoutSec" was overridden with "5"
+[UnityConnectServicesConfig] "clientHandshakeTimeoutSec" was overridden with "10"
+[UnityConnectServicesConfig] Service configuration:
+    "servicesConfigBaseUrl": "",
+    "disableServicesWindow": false,
+    "disableUserLogin": false,
+    "entitlementCacheTimeoutInSeconds": 60,
+    "clientConnectTimeoutSec": 5,
+    "clientHandshakeTimeoutSec": 10,
+    "clientResolveEntitlementsTimeoutSec": 30,
+    "clientUpdateLicenseTimeoutSec": 30,
+    "licensingServiceBaseUrl": "",
+    "enableProxyAutoconfig": "false"
+
+Unity Editor version:    6000.3.24f1 (4e7b9b5b6244)
+Branch:                  6000.3/staging
+Build type:              Release
+Batch mode:              YES
+System name:             Linux
+Distro version:          #22-Ubuntu SMP Mon Jul 27 17:24:03 UTC 2026
+Kernel version:          6.17.0-1022-azure
+Architecture:            x86_64
+Available memory:        15989 MB
+Date:                    2026-10-07T11:40:21Z
+User audibert.victor13500@gmail.com logged in successfully
+[UnityConnect::TryLogin] Request Succeeded.
+[Licensing::Module] Trying to connect to existing licensing client channel...
+[Licensing::IpcConnector] Channel LicenseClient-root doesn't exist
+[Licensing::Module] Successfully launched the LicensingClient (PId: 5073)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root" at "2026-10-07T11:40:22.723404Z"
+[SignatureVerifier] Application signature verification not supported on this platform.
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.3+d7ffd15
+  Session Id:              17dce48ba6e24de4a8c64f9ade7d152d
+  Correlation Id:          143d4c39589019f9e62713e4b8ec3acc
+  External correlation Id: 3760956967835331286
+  Machine Id:              1dofotagRuIBO9wteFkFl7U+G88=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-root" (connect: 0.38s, validation: 0.07s, handshake: 0.00s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root-notifications" at "2026-10-07T11:40:22.797618Z"
+[Licensing::Module] Connected to LicensingClient (PId: 5073, launch time: 0.00, total connection time: 0.45s)
+[Licensing::Client] Successfully updated the access token
+[Licensing::Module] Successfully updated the access token GUy26EVGaa...
+[Licensing::Client] Successfully processed license management request
+[Licensing::Module] Successfully returned the entitlement license
+[Licensing::Client] Successfully queried for the EntitlementGroupsDetails
+[Licensing::Client] Successfully returned ULF license with serial number : "F4-U776-56HB-EXF8-B6C4-XXXX"

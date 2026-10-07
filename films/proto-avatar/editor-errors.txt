@@ -1,0 +1,37 @@
+213:			LogAssemblyErrors (0ms)
+256:[ScriptCompilation] Requested script compilation because: Assembly Definition File(s) changed
+257:[ScriptCompilation] Requested script compilation because: Assetdatabase observed changes in script compilation related files
+279:Starting: /opt/unity/Editor/Data/netcorerun/netcorerun "/opt/unity/Editor/Data/Tools/BuildPipeline/ScriptCompilationBuildProgram.exe" "Library/Bee/2400b0aE.dag.json" "Library/Bee/2400b0aE-inputdata.json" "Library/Bee/buildprogram0.traceevents"
+350:[ 65/194    0s] MovedFromExtractor Library/Bee/artifacts/mvdfrm/UnityEditor.ShaderCompilationModule.dll_DF5B79229DBB99F4.mvfrm
+556:Start importing Packages/com.unity.modules.ui/package.ModuleCompilationTrigger using Guid(51fa60bb2bd1e5bc74e8cc95a7bfd5b7) (DefaultImporter) -> (artifact id: '237e32f9541121b786ca4b06eace0dfe') in 0.000538244 seconds
+557:Start importing Packages/com.unity.modules.hierarchycore/package.ModuleCompilationTrigger using Guid(d104359075a97392b803d3d5aebc77f7) (DefaultImporter) -> (artifact id: '5f087c93c58d9b1c35f89c539ed3a98d') in 0.000576915 seconds
+558:Start importing Packages/com.unity.modules.ai/package.ModuleCompilationTrigger using Guid(e2d09a26ce46dc617b54e49a534ace20) (DefaultImporter) -> (artifact id: 'a71f1fd08e4e9bf1ecd2d64209645034') in 0.000599598 seconds
+559:Start importing Packages/com.unity.modules.imageconversion/package.ModuleCompilationTrigger using Guid(830a36a23cf3ab1e61fa47940a6dc35e) (DefaultImporter) -> (artifact id: 'ee0f0c801f95c19382d8b454dc7586e1') in 0.000537673 seconds
+560:Start importing Packages/com.unity.modules.jsonserialize/package.ModuleCompilationTrigger using Guid(e6a135e3ea9cb46795d1b0e05ac3e1e5) (DefaultImporter) -> (artifact id: '8d26f1c211bce77f7cf17eccccd57b0d') in 0.000548092 seconds
+561:Start importing Packages/com.unity.modules.accessibility/package.ModuleCompilationTrigger using Guid(4745d06d5a7ca576dcf9e5e67b417652) (DefaultImporter) -> (artifact id: 'ae9e01646ac31a09b3de296582cd6de0') in 0.000555245 seconds
+562:Start importing Packages/com.unity.modules.adaptiveperformance/package.ModuleCompilationTrigger using Guid(1af35a910338381f753e8a985eb5daab) (DefaultImporter) -> (artifact id: '867fce9a42b816ffb5ac55f16cf2007e') in 0.000611861 seconds
+563:Start importing Packages/com.unity.modules.uielements/package.ModuleCompilationTrigger using Guid(8a752aaaadd2410dd9a84e01c1bace9f) (DefaultImporter) -> (artifact id: 'ae37e7f0f1483578fc0d8d28fd17e0e2') in 0.000592675 seconds
+564:Start importing Packages/com.unity.modules.vectorgraphics/package.ModuleCompilationTrigger using Guid(3cc1ebf2abb7fef6871ad48f499b6e21) (DefaultImporter) -> (artifact id: '51ba5d987381c742b47376b47674c513') in 0.000518056 seconds
+565:Start importing Packages/com.unity.modules.physics/package.ModuleCompilationTrigger using Guid(5c1ee4056d0ac7ad3c5a16597fcaa38a) (DefaultImporter) -> (artifact id: '288b7a03d6481d4e92cee0ae908758ad') in 0.000551649 seconds
+566:Start importing Packages/com.unity.modules.subsystems/package.ModuleCompilationTrigger using Guid(8d4bc6bfa28760b29f13174d6b6ea710) (DefaultImporter) -> (artifact id: '86683c86d6892e456463f75256ee724d') in 0.000550797 seconds
+567:Start importing Packages/com.unity.modules.imgui/package.ModuleCompilationTrigger using Guid(be13c398521e3c1ad21fb9da30ab2ab6) (DefaultImporter) -> (artifact id: 'ea0574aa05344c7e80357502346d73fc') in 0.000606992 seconds
+596:			LogAssemblyErrors (0ms)
+680:Start importing Packages/com.unity.ai.navigation/ValidationExceptions.json using Guid(203bedb65db239c4aa5d9cf073cd3b73) (TextScriptImporter) -> (artifact id: 'b0adf71f88467c8339d665a36ccdf3e8') in 0.004427988 seconds
+868:-executeMethod
+1039:			LogAssemblyErrors (0ms)
+1083:[ScriptCompilation] Requested script compilation because: InitialRefresh: Force Refresh Recompile flag enabled
+1086:[ScriptCompilation] Requested script compilation because: Assembly Definition File(s) changed
+1087:[ScriptCompilation] Requested script compilation because: Assetdatabase observed changes in script compilation related files
+1109:Starting: /opt/unity/Editor/Data/netcorerun/netcorerun "/opt/unity/Editor/Data/Tools/BuildPipeline/ScriptCompilationBuildProgram.exe" "Library/Bee/1300b0aE.dag.json" "Library/Bee/1300b0aE-inputdata.json" "Library/Bee/buildprogram0.traceevents"
+1801:[100/550    0s] MovedFromExtractor Library/Bee/artifacts/mvdfrm/UnityEditor.ShaderCompilationModule.dll_DF5B79229DBB99F4.mvfrm
+1900:[198/550    0s] MovedFromExtractor Library/Bee/artifacts/mvdfrm/Unity.CompilationPipeline.Common.dll_5C4868E2B701CBCB.mvfrm
+2604:-r:"/opt/unity/Editor/Data/Managed/UnityEngine/UnityEditor.ShaderCompilationModule.dll"
+2930:Assets/Touchline/Runtime/PlayerViewHumanoid.cs(36,16): error CS1069: The type name 'Avatar' could not be found in the namespace 'UnityEngine'. This type has been forwarded to assembly 'UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' Consider adding a reference to that assembly.
+2931:Assets/Touchline/Runtime/PlayerViewHumanoid.cs(30,16): error CS1069: The type name 'Avatar' could not be found in the namespace 'UnityEngine'. This type has been forwarded to assembly 'UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' Consider adding a reference to that assembly.
+2933:## Script Compilation Error for: Csc Library/Bee/artifacts/1300b0aE.dag/Touchline.Runtime.dll (+2 others)
+2936:Assets/Touchline/Runtime/PlayerViewHumanoid.cs(36,16): error CS1069: The type name 'Avatar' could not be found in the namespace 'UnityEngine'. This type has been forwarded to assembly 'UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' Consider adding a reference to that assembly.
+2937:Assets/Touchline/Runtime/PlayerViewHumanoid.cs(30,16): error CS1069: The type name 'Avatar' could not be found in the namespace 'UnityEngine'. This type has been forwarded to assembly 'UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' Consider adding a reference to that assembly.
+2940:Assets/Touchline/Runtime/PlayerViewHumanoid.cs(36,16): error CS1069: The type name 'Avatar' could not be found in the namespace 'UnityEngine'. This type has been forwarded to assembly 'UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' Enable the built in package 'Animation' in the Package Manager window to fix this error.
+2941:Assets/Touchline/Runtime/PlayerViewHumanoid.cs(30,16): error CS1069: The type name 'Avatar' could not be found in the namespace 'UnityEngine'. This type has been forwarded to assembly 'UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' Enable the built in package 'Animation' in the Package Manager window to fix this error.
+2942:Runtime/PlayerViewHumanoid.cs(30,16): error CS1069: The type name 'Avatar' could not be found in the namespace 'UnityEngine'. This type has been forwarded to assembly 'UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' Enable the built in package 'Animation' in the Package Manager window to fix this error.
+2943:ntime/PlayerViewHumanoid.cs(30,16): error CS1069: The type name 'Avatar' could not be found in the namespace 'UnityEngine'. This type has been forwarded to assembly 'UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' Enable the built in package 'Animation' in the Package Manager window to fix this error.
