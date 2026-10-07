@@ -1,9 +1,9 @@
-total 72
-drwxr-xr-x 4 root root  4096 Oct  7 14:10 .
-drwxr-xr-x 3 root root  4096 Oct  7 14:08 ..
-drwxr-xr-x 2 root root 20480 Oct  7 14:10 broadcast
--rw-r--r-- 1 root root  5794 Oct  7 14:08 clip-timing.csv
-drwxr-xr-x 2 root root 20480 Oct  7 14:10 follow
--rw-r--r-- 1 root root  2887 Oct  7 14:10 info.txt
--rw-r--r-- 1 root root    18 Oct  7 14:10 metrics.txt
--rw-r--r-- 1 root root    24 Oct  7 14:10 unity-messages.txt
+total 76
+drwxr-xr-x 4 root root  4096 Oct  7 14:51 .
+drwxr-xr-x 3 root root  4096 Oct  7 14:49 ..
+drwxr-xr-x 2 root root 20480 Oct  7 14:51 broadcast
+-rw-r--r-- 1 root root  6720 Oct  7 14:49 clip-timing.csv
+drwxr-xr-x 2 root root 20480 Oct  7 14:51 follow
+-rw-r--r-- 1 root root  3029 Oct  7 14:51 info.txt
+-rw-r--r-- 1 root root    18 Oct  7 14:51 metrics.txt
+-rw-r--r-- 1 root root    24 Oct  7 14:51 unity-messages.txt
