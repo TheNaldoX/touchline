@@ -25,7 +25,7 @@ jobs:
       - name: Nom du film
         id: name
         run: |
-          n="${GITHUB_REF_NAME#film/}"; n="$(echo "$n" | tr -c 'a-zA-Z0-9.-\n' '-')"
+          n="${GITHUB_REF_NAME#film/}"; n="$(echo "$n" | tr -c 'a-zA-Z0-9.\n-' '-')"
           echo "film=$n" >> "$GITHUB_OUTPUT"
 
       - name: Libérer de l'espace disque
