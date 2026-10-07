@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Animation : pas chassés à gauche et à droite et course arrière choisis selon la direction de course par rapport au regard du joueur.
 - IA de match : un joueur qui s'est orienté pour passer ou frapper va au bout de son geste (préparations avortées en conduite 49 → 18 par match) : tirs 23,2 → 26,0, buts 3,18 → 2,77.
 - Visuel : gazon texturé (grain, tonte plus marquée), ciel, second anneau et toit de la tribune d'en face, caméra télé moins plongeante.
 - Animation : mouvements capturés Mixamo joués en match par Mecanim (trot, course, sprint, course arrière, conduite, frappes arrêtées et en course, têtes, tacles, gardien), calés sur les instants de contact du moteur, pieds verrouillés au sol.

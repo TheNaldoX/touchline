@@ -30,7 +30,7 @@ namespace Touchline
         const float JogNaturalSpeed=2.3f,DribbleNaturalSpeed=1.8f;
         const float RunNaturalSpeed=3.8f,SprintNaturalSpeed=5.7f;       // mesurées
         const float JogBackNaturalSpeed=2.1f,RunBackNaturalSpeed=2.9f;  // mesurées
-        const float StrafeNaturalSpeed=2.0f;          // m/s, pas chassés (estimée, mesure à confirmer)
+        const float StrafeLeftNaturalSpeed=2.9f,StrafeRightNaturalSpeed=2.0f; // m/s, pas chassés (mesurées, colonne naturalX)
         const float DirectionTurnAngle=12f;           // ° : en dessous, le côté du pas chassé ne change pas (évite le scintillement gauche/droite)
         const float BackwardSmoothing=6f;              // 1/s : lissage de la direction de course
         // Entrées du mixeur : déplacements, puis deux emplacements de gestes.
@@ -131,7 +131,7 @@ namespace Touchline
             dribbleBlend=Mathf.Lerp(dribbleBlend,carrying?1:0,k);
             float Rate(float natural)=>Mathf.Clamp(poseSpeed/natural,LoopRateMin,LoopRateMax);
             jogPlayable.SetSpeed(Rate(JogNaturalSpeed));dribblePlayable.SetSpeed(Rate(DribbleNaturalSpeed));runPlayable.SetSpeed(Rate(RunNaturalSpeed));sprintPlayable.SetSpeed(Rate(SprintNaturalSpeed));
-            jogBackPlayable.SetSpeed(Rate(JogBackNaturalSpeed));runBackPlayable.SetSpeed(Rate(RunBackNaturalSpeed));strafeLeftPlayable.SetSpeed(Rate(StrafeNaturalSpeed));strafeRightPlayable.SetSpeed(Rate(StrafeNaturalSpeed));
+            jogBackPlayable.SetSpeed(Rate(JogBackNaturalSpeed));runBackPlayable.SetSpeed(Rate(RunBackNaturalSpeed));strafeLeftPlayable.SetSpeed(Rate(StrafeLeftNaturalSpeed));strafeRightPlayable.SetSpeed(Rate(StrafeRightNaturalSpeed));
             // Direction de course par rapport au regard : avant, arrière (repli) ou de côté
             // (pas chassés d'un défenseur qui reste face au jeu). Poids = cos² / sin².
             var travel=transform.InverseTransformDirection(new Vector3(poseVelocity.x,0,poseVelocity.z));travel.y=0;
