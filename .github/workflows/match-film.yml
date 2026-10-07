@@ -49,7 +49,21 @@ jobs:
 
       - name: Image Unity avec rendu logiciel (Mesa)
         run: |
-          printf 'FROM unityci/editor:ubuntu-6000.3.24f1-android-3\nRUN apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq libgl1-mesa-dri libglx-mesa0 libegl-mesa0 mesa-vulkan-drivers && rm -rf /var/lib/apt/lists/*\n' > "$RUNNER_TEMP/Dockerfile"
+          # unity-editor est enveloppé pour recopier la sortie d'Unity dans
+          # /github/workspace/film-editor.log (journal lisible après le tournage).
+          cat > "$RUNNER_TEMP/unity-editor-tee" <<'SCRIPT'
+          #!/bin/bash
+          /usr/bin/unity-editor-real "$@" 2>&1 | tee -a /github/workspace/film-editor.log
+          exit ${PIPESTATUS[0]}
+          SCRIPT
+          sed -i 's/^          //' "$RUNNER_TEMP/unity-editor-tee"
+          cat > "$RUNNER_TEMP/Dockerfile" <<'DOCKER'
+          FROM unityci/editor:ubuntu-6000.3.24f1-android-3
+          RUN apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq libgl1-mesa-dri libglx-mesa0 libegl-mesa0 mesa-vulkan-drivers && rm -rf /var/lib/apt/lists/*
+          COPY unity-editor-tee /usr/bin/unity-editor-tee
+          RUN p="$(command -v unity-editor)" && mv "$p" /usr/bin/unity-editor-real && mv /usr/bin/unity-editor-tee "$p" && chmod +x "$p"
+          DOCKER
+          sed -i 's/^          //' "$RUNNER_TEMP/Dockerfile"
           docker build -q -t touchline-unity-mesa:local "$RUNNER_TEMP"
 
       - name: Tournage dans Unity
@@ -65,7 +79,7 @@ jobs:
           targetPlatform: Android
           buildMethod: ${{ steps.name.outputs.method }}
           allowDirtyBuild: true
-          customParameters: -force-glcore -logFile /github/workspace/film-editor.log -touchlineFilm=${{ steps.name.outputs.film }}
+          customParameters: -force-glcore -touchlineFilm=${{ steps.name.outputs.film }}
 
       - name: Encodage des vidéos et planches
         if: always()
