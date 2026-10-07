@@ -114,4 +114,6 @@ jobs:
             grep -nE "error CS|Exception|Error|TOUCHLINE_|executeMethod|Compilation|warning CS" "$GITHUB_WORKSPACE/film-editor.log" | grep -v "Licensing" | head -150 > "films/$name/editor-errors.txt" || true
             tail -n 120 "$GITHUB_WORKSPACE/film-editor.log" > "films/$name/editor-log-tail.txt" || true
           fi
-          git add -f "films/$name"; git commit -q -m "film: $name (${GITHUB_SHA::7})"; git push -q origin films
+          git add -f "films/$name"; git commit -q -m "film: $name (${GITHUB_SHA::7})"
+          # Plusieurs films peuvent publier en même temps : on rejoue sur la dernière version.
+          for attempt in 1 2 3 4 5 6; do git push -q origin films && break; sleep $((attempt*5)); git pull -q --rebase origin films; done
