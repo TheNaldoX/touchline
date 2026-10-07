@@ -176,6 +176,8 @@ namespace Touchline.Core
     {
         public string home, away;
         public uint seed=731;
+        public float homeForm,awayForm; // forme du jour de chaque équipe (multiplicateur −/+, 0 = neutre)
+        public int venueSide; // côté qui reçoit (0 = club dirigé, 1 = adversaire, -1 = terrain neutre)
         public double remainder;
         public float clock, restart=2, decision=.7f, carryTime;
         public int period=1, restartSide;

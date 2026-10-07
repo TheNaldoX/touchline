@@ -33,7 +33,7 @@ public static class KeeperSubstepScenarios
             float expected=2;
             for(int i=0;i<=5000;i++){
                 float f=i/5000f,time=elapsed-MatchSimulation.Step*(1-f);
-                float reach=time<=reaction?.42f:pose<0?.55f+diving*.0035f:.55f+(diving*.008f+.30f)*Mathx.Clamp((pose-MatchSimulation.Step*(1-f))/.28f,0,1);
+                float reach=time<=reaction?.42f:pose<0?.55f+diving*.0035f:.55f+(diving*.010f+.40f)*Mathx.Clamp((pose-MatchSimulation.Step*(1-f))/.28f,0,1);
                 var ball=Point.Lerp(shot.previous,shot.position,f);if(Math.Abs(ball.x)>52.61f)break;
                 if(Point.Distance(ball,Point.Lerp(keeper.previous,keeper.position,f))<=reach){expected=f;break;}
             }

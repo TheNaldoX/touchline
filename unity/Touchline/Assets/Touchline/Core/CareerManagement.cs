@@ -195,6 +195,8 @@ namespace Touchline.Core
         public void ApplyMatchContext(MatchSimulation simulation)
         {
             simulation.State.professionalRules=world!=null;
+            var fixture=world?.fixtures.FirstOrDefault(f=>f.id==world.activeFixture);
+            simulation.State.venueSide=fixture==null||fixture.home==club?0:fixture.away==club?1:-1;
             life.recordedMatch=false;foreach(var c in life.investigations.Where(c=>c.kind=="fixing"&&c.accepted&&c.status=="pending")){foreach(var p in simulation.State.actors.Where(p=>p.side==1))p.fitness=Math.Max(30,p.fitness-5);c.accepted=false;Mail("Coulisses • fiction","Influence incertaine","Un léger désavantage adverse est simulé pour cette rencontre seulement. Le moteur décide toujours des actions et du résultat.",null,"integrity");}
         }
         public void ProcessMedicalEvents(Database db)
