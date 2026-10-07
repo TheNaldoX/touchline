@@ -105,10 +105,19 @@ Actor best=null;float bestScore=-100;string kind="pass";
  bool closeFinish=distance<8&&opening>.6f&&pressure>.65f;  
  if((!prepared||FootDeliveryTurn(p,new Point(dir*52.5f,0))<=Math.PI/3)&&p.slot>0&&closeChance&&quality>passChance*(closeFinish?.72f:.82f)&&(clear||pressure>3.1f||closeFinish)){if(BeginFootDeliveryPreparation(p,new Point(dir*52.5f,0),"shot"))return "prepare";Shoot(p);return "shot";}  
  if((!prepared||FootDeliveryTurn(p,new Point(dir*52.5f,0))<=Math.PI/3)&&p.slot>0&&opening>.19f&&distance<27&&!t.workIntoBox&&(clear||pressure>LongShotClearSpace)&&pressure>LongShotMinSpace&&m.carryTime>LongShotSetTime&&quality*DistantShotPreference(p,distance)>Math.Max(patientValue,passChance*.95f)){if(BeginFootDeliveryPreparation(p,new Point(dir*52.5f,0),"shot"))return "prepare";Shoot(p);return "shot";}  
+ // Engagement : un joueur qui a orienté son corps pour frapper (préparation
+ // vers le centre du but, voir ci-dessus) frappe tant que l'angle reste
+ // ouvert, au lieu de repartir en conduite ; le contre fait partie du jeu.
+ bool preparedShot=prepared&&Point.Distance(p.actionTarget,new Point(dir*52.5f,0))<.01f;
+ if(preparedShot&&p.slot>0&&FootDeliveryTurn(p,new Point(dir*52.5f,0))<=Math.PI/3&&opening>PreparedShotMinOpening&&distance<PreparedShotMaxDistance&&passChance<quality*PreparedShotPassMargin){Shoot(p);return "shot";}
  var carry=ChooseCarry(p);p.carryTarget=carry;float progress=(carry.x-p.position.x)*dir;  
  float carryScore=(p.position.x*dir>12?18:7)+Math.Min(Space(carry,1-p.side),8)*.5f+progress*.35f+(Skill(p,"dribbling")-65)*.055f-(pressure<3?5:0)-Math.Min(m.carryTime,6)*1.2f;  
   
  carryScore+=CarryPreference(p);  
+ // Engagement : un joueur qui vient d'orienter son corps pour donner le
+ // ballon joue la passe si elle reste disponible, au lieu de repartir en
+ // conduite (arrêt, pivot, puis départ dans une autre direction).
+ if(prepared&&best!=null)carryScore-=PreparedDeliveryCommitment;
  // In the crossing zone a wide player delivers rather than dribbling to
  // the byline every time; good crossers more readily.
  if(p.slot>0&&Math.Abs(p.position.z)>17&&p.position.x*dir>25&&kind=="cross")carryScore-=3+(Skill(p,"crossing")-60)*.06f;
@@ -225,6 +234,13 @@ Actor best=null;float bestScore=-100;string kind="pass";
  // A clearance stays in play only through a clearly open long channel.
  public const float OpenClearanceSafety=.75f;
  public const float LongBallError=2.2f;
+ // Points de score retirés à la conduite d'un joueur qui vient d'orienter
+ // son corps pour une passe encore jouable.
+ public const float PreparedDeliveryCommitment=4f;
+ // Engagement dans la frappe préparée : angle d'ouverture minimal (rad),
+ // distance maximale au but (m), et facteur par lequel l'occasion offerte
+ // à un coéquipier doit dépasser la sienne pour qu'il renonce à frapper.
+ public const float PreparedShotMinOpening=.19f,PreparedShotMaxDistance=27f,PreparedShotPassMargin=2f;
  // Shooting from distance (18–27 m): space (m) to the nearest outfield
  // opponent needed when the lane is not clear / at all, and time (s) on
  // the ball to set the body. A shot under a closing defender is often
