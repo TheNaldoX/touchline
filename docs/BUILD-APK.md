@@ -23,7 +23,8 @@ perdre oblige à désinstaller une dernière fois.
 
 ## 2. Lancer un build
 - Onglet **Actions → Build Android APK → Run workflow** (branche au choix), ou
-- pousser un tag `apk-<version>` : l'APK est alors aussi publié dans **Releases**.
+- pousser un tag `apk-<version>` : l'APK est alors aussi publié dans **Releases** ;
+- pousser une branche `release/<version>` : l'APK est construit et déposé en artefact du run.
 
 Durée : 30 à 60 min la première fois (import complet), moins ensuite grâce au cache.
 
