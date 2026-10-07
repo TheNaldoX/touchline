@@ -1,120 +1,120 @@
-Start importing Assets/Touchline/Resources/Logos/club-10307.png using Guid(d6b7b9ca67fd3074d883fc93b91a4bd6) (TextureImporter) -> (artifact id: 'c98a8f76d7a0c788a86b8aeef0c17251') in 0.1695886 seconds
-Start importing Assets/Touchline/Resources/Logos/club-570.png using Guid(d628ed425d7f6284db039d58c7f41175) (TextureImporter) -> (artifact id: 'f4c37339fd6eb05f162090cc0b4af902') in 0.23787529 seconds
-Start importing Assets/Touchline/Resources/Logos/club-365.png using Guid(d6fbea75b43e18a4c879369c62f793e4) (TextureImporter) -> (artifact id: 'e13db2f2f92cdfe75d7c0c090b00bc9b') in 0.353536747 seconds
-Start importing Assets/Touchline/Resources/Logos/club-223.png using Guid(d6bc99b2f27baa4438c7176669c40db1) (TextureImporter) -> (artifact id: 'e959f773cec387c91bfc09ac245c72a1') in 0.13794753 seconds
-Start importing Assets/Touchline/Resources/Logos/club-6137.png using Guid(e6511fa5bb25c8541ab3482781e89147) (TextureImporter) -> (artifact id: '03ecf96934b6e2c361e30095bd3e1ac5') in 0.352510851 seconds
-Start importing Packages/com.unity.shadergraph/GraphTemplates/BuiltIn/BuiltInUnlitBasicTemplateThumbnail.png using Guid(e6831b07772f59844b5c282e8a4aa736) (TextureImporter) -> (artifact id: '592aee1d272f7c9c621ad7eb8b69365f') in 0.811473554 seconds
-Start importing Assets/Touchline/Resources/Logos/club-4426.png using Guid(e63ef05d8cfdb444c9e847f40d4409e8) (TextureImporter) -> (artifact id: '62310aa4bb429525bb1096a51bc73998') in 0.401654781 seconds
-Start importing Packages/com.unity.render-pipelines.universal/Textures/BlueNoise16/L/LDR_LLL1_5.png using Guid(e63eef8f54aa9dc4da9a5ac094b503b5) (TextureImporter) -> (artifact id: '64f47d613aea81fda8ec0046dd32a571') in 0.001603403 seconds
-Start importing Packages/com.unity.render-pipelines.core/Editor/Lighting/Icons/LightUnitIcons/d_Moonlight.png using Guid(f64528e1d51f6d74c9f7a1738deaa602) (TextureImporter) -> (artifact id: '5e0009ac7f9b40e44aef639c21a962a2') in 0.003206984 seconds
-Start importing Packages/com.unity.render-pipelines.universal/Textures/BlueNoise16/L/LDR_LLL1_22.png using Guid(f69770e54f2823f43badf77916acad83) (TextureImporter) -> (artifact id: '7eb3369644451f65a636f90fe5710278') in 0.001329123 seconds
-Start importing Packages/com.unity.render-pipelines.core/Editor/Lighting/Icons/DownSnatchFocused.png using Guid(f6ca176a623705248878abeaf560002a) (TextureImporter) -> (artifact id: '7324828a92f21d712888e5b06c9cf100') in 0.001977159 seconds
-Start importing Assets/Touchline/Resources/Logos/club-5326.png using Guid(0754c0120ca7a2a4fa7d7f54b9c8480b) (TextureImporter) -> (artifact id: '98a58ad8cbbfbc6f28be00e7a11dc6a3') in 0.205261036 seconds
-Start importing Packages/com.unity.render-pipelines.core/Editor/Icons/MipLevels/d_RenderPipelineResources@128.png using Guid(07d524f53c3f0a24b952dad4f0d95192) (TextureImporter) -> (artifact id: 'bc13ada84ca6d2ded7c5a4734e377aa2') in 0.002026349 seconds
-Start importing Packages/com.unity.collections/Unity.Collections.PerformanceTests/PerformanceTestFrameworkOutputFixedSize.png using Guid(079c3d43b74823a41bb33198b8221c23) (TextureImporter) -> (artifact id: 'c6b7ce92d4e9063f23b743d69ac37662') in 0.700558681 seconds
-Start importing Assets/Touchline/Resources/Logos/club-8.png using Guid(077d2373dd907d1428d12c489b7f42c5) (TextureImporter) -> (artifact id: '6c22d9398c7746784ae03929e18bff04') in 0.143463258 seconds
-Start importing Packages/com.unity.render-pipelines.universal/Textures/BlueNoise16/L/LDR_LLL1_9.png using Guid(071e954febf155243a6c81e48f452644) (TextureImporter) -> (artifact id: 'dbc2a5be877b12cf92cc436ee9f5c578') in 0.001276565 seconds
-Start importing Assets/Touchline/Resources/Logos/club-9318.png using Guid(17731ef6c31554d4bbaaa2892ddf7027) (TextureImporter) -> (artifact id: 'a7390ebe325565070852d96bf4fa481c') in 0.37035365 seconds
-Start importing Assets/Touchline/Resources/Logos/club-2722.png using Guid(17558aa0bc230d14abcb2c39279b6d62) (TextureImporter) -> (artifact id: '1904c84f99e0d0c719dca1a5a91a2723') in 0.167127798 seconds
-Start importing Packages/com.unity.shadergraph/Editor/Resources/Icons/sg_graph_icon.png using Guid(170afdc32bbba284e8d0740a464b9fbd) (TextureImporter) -> (artifact id: '05e7827a8ddfd54825e32ab2cbc255cc') in 0.006799509 seconds
-Start importing Assets/Touchline/Resources/Logos/club-262.png using Guid(178cc064282f67c4c8acecd8869d6341) (TextureImporter) -> (artifact id: 'ac3bc4d24ee00aa4835a6230a768b405') in 0.195080593 seconds
-Start importing Packages/com.unity.render-pipelines.core/Editor/Icons/MipLevels/RenderGraphViewer/d_PassInspector@16.png using Guid(179c26b8104e4a84bb9ba82aa6ec463b) (TextureImporter) -> (artifact id: '3ccae961c942514ce5c13e0e2f842bde') in 0.004331777 seconds
-Start importing Packages/com.unity.render-pipelines.universal/Textures/BlueNoise16/L/LDR_LLL1_31.png using Guid(179f794063d2a66478e6e726f84a65bc) (TextureImporter) -> (artifact id: '6e674e9569cac467d552d2fbc18dd47b') in 0.00147228 seconds
-Start importing Assets/Touchline/Resources/Logos/club-2250.png using Guid(27985304d1fffd445ba3eba36be3aa7a) (TextureImporter) -> (artifact id: 'd6415648ca7dc688a83504283f21e388') in 0.130924093 seconds
-Start importing Packages/com.unity.render-pipelines.core/Editor/Lighting/Icons/d_LightPlacement_Icon On@16.png using Guid(27ddd7fccc437254da38f2ffe1983567) (TextureImporter) -> (artifact id: '916521ff4e593645d20eb657540fa9fb') in 0.003126235 seconds
-Start importing Assets/Touchline/Resources/Logos/club-119.png using Guid(27bfa7bfd41e0fa4caa76147b4fe6174) (TextureImporter) -> (artifact id: '5b3b733f3903a6985dc89917fe5e9ee6') in 0.067271364 seconds
-Start importing Packages/com.unity.render-pipelines.core/Editor/PostProcessing/LensFlareResource/CircleFlareThumbnail@2x.png using Guid(37e93113453ac0d46863acd4090899c8) (TextureImporter) -> (artifact id: '02f76670a341d02294ebce500a59e120') in 0.031857074 seconds
-Start importing Packages/com.unity.render-pipelines.core/Editor/Lighting/Icons/LightUnitIcons/VeryBrightSun@2x.png using Guid(37ca6c7ad753f1648a24db2b740ba2ca) (TextureImporter) -> (artifact id: '4e3cc76f7858277cec4f891c5da3c3cb') in 0.004299267 seconds
-Start importing Assets/Touchline/Resources/Logos/club-177.png using Guid(37fadcc5dfaaddd4e963f5d51dd6323b) (TextureImporter) -> (artifact id: 'f79a7bf44e19604a12205c29061462a2') in 0.097693639 seconds
-Start importing Assets/Touchline/Resources/Logos/club-222.png using Guid(375eed43b6cab2141af7d9620e822f6e) (TextureImporter) -> (artifact id: '0d31cc4b0365fcd7d724a305bf619465') in 0.148303252 seconds
-Start importing Assets/Touchline/Resources/Logos/club-7853.png using Guid(373f0498eb9ecb147a07b806fcb3c335) (TextureImporter) -> (artifact id: '756e74216782664ff757b001e748b7c1') in 0.241359943 seconds
-Start importing Packages/com.unity.render-pipelines.universal/Textures/BlueNoise16/L/LDR_LLL1_14.png using Guid(47a45908f6db0cb44a0d5e961143afec) (TextureImporter) -> (artifact id: 'dcdd37e5f8902287bc4a6f03c5c7adc4') in 0.001417784 seconds
-Start importing Assets/Touchline/Resources/Logos/club-8109.png using Guid(4709aa082853c6246aa5ce9b14b28c00) (TextureImporter) -> (artifact id: 'a94c9c62162282bbbbc3cb34ac6b79cb') in 0.227701812 seconds
-Start importing Packages/com.unity.render-pipelines.core/Editor/LookDev/Icons/d_LayoutVertical@2x.png using Guid(472b4042959bbd844b8fd760bddd7a47) (TextureImporter) -> (artifact id: '09b5f75c489672b3fcb92f3cdbfb6373') in 0.00393833 seconds
-Start importing Packages/com.unity.shadergraph/Editor/Resources/Icons/Settings_Flyout_9slice.png using Guid(57517c89a809f44458493cef0310e46f) (TextureImporter) -> (artifact id: '9e6e20b4fac58498ec16db9837d133a4') in 0.002069826 seconds
-Start importing Assets/Touchline/Resources/Logos/club-20851.png using Guid(57b1ef973212cc64f83bbf77d6843e52) (TextureImporter) -> (artifact id: 'c73edbbf35c8aa7585760b4111edb0b8') in 0.148823796 seconds
-Start importing Assets/Touchline/Resources/Logos/club-17856.png using Guid(57a679c4cf49a6145be267a68e02dc70) (TextureImporter) -> (artifact id: '58f0ae0e6168e248d686db81bba18f3e') in 0.372850665 seconds
-Start importing Assets/Touchline/Resources/Logos/club-360.png using Guid(57dc753aa7c8d3242ad8e007a6840030) (TextureImporter) -> (artifact id: '2f14648f2719266d71db86b39b4e37e6') in 0.294722082 seconds
-Start importing Assets/Touchline/Resources/Logos/club-131705.png using Guid(575f09b81ddb4f8449ef58422098739b) (TextureImporter) -> (artifact id: '448f7f79722f881da1dfc724d03a2454') in 0.25566428 seconds
-Start importing Assets/Touchline/Resources/Logos/club-443.png using Guid(6718d03bfbe243d46a648fded1315e5f) (TextureImporter) -> (artifact id: '32dd4df8177fc61bed2c13fa6ac1851f') in 0.157542682 seconds
-Start importing Packages/com.unity.render-pipelines.core/Editor/Icons/MipLevels/d_Volume@32.png using Guid(675ff9ea9d96a004a85fc91680242734) (TextureImporter) -> (artifact id: 'b0e0c5ec551d3f83fb2a8521e3863313') in 0.00212085 seconds
-Start importing Assets/Touchline/Resources/Logos/club-13294.png using Guid(7713489dba5c5f04d9399bd093d2e82f) (TextureImporter) -> (artifact id: '6a94ef520b0d54c9d1179eb3cd511c3f') in 0.232678013 seconds
-Start importing Packages/com.unity.render-pipelines.core/Editor/Lighting/Icons/LightPlacement_Icon.png using Guid(77f3e0d20577fcd4ebb29c14ff5d58c7) (TextureImporter) -> (artifact id: '8db6e0336b2191811e1a0758a2ac42c0') in 0.003845653 seconds
-Start importing Assets/Touchline/Resources/Logos/club-379.png using Guid(7747b1b47d8559a4984021d6cc23d0d1) (TextureImporter) -> (artifact id: '41ae3e8eb868e3627f248e6f302c8f9c') in 0.137734103 seconds
-Start importing Assets/Touchline/Resources/Logos/club-344.png using Guid(77b727dd6fe2c0c48ae82affa4166227) (TextureImporter) -> (artifact id: 'ef364d6e7073bf21af0f9ef0d1d9ca2c') in 0.408692886 seconds
-Start importing Assets/Touchline/Resources/Logos/club-929.png using Guid(87c13fb38388e524a92f17cb47f201e7) (TextureImporter) -> (artifact id: 'f43fe3ca795252f186d1cda504fdddc0') in 0.115878889 seconds
-Start importing Assets/Touchline/Resources/Logos/club-402.png using Guid(8732775ad12aba04eacd5d0b29af294c) (TextureImporter) -> (artifact id: 'e1b2779543c32be8f8546329a82fd408') in 0.234417529 seconds
-Start importing Assets/Touchline/Resources/Logos/club-4007.png using Guid(87a285a78bbfedf478ae04a52ed090c9) (TextureImporter) -> (artifact id: '34234d44e6b4f047b90c133c04f08573') in 0.223677051 seconds
-Start importing Assets/Touchline/Resources/Logos/club-4422.png using Guid(87c7dd79e6bc471489f397b572de9508) (TextureImporter) -> (artifact id: '2ea9954b102b83162994c590566a10de') in 0.134855348 seconds
-Start importing Assets/Touchline/Resources/Logos/club-92.png using Guid(876bb1193e2502f40a39066e9afacd36) (TextureImporter) -> (artifact id: 'fc9f38c46289bfc874ca53dc8886121f') in 0.180686448 seconds
-Start importing Assets/Touchline/Resources/Logos/club-315.png using Guid(9737208e87555894b9fd870a9b18cd6d) (TextureImporter) -> (artifact id: 'dc9a720d8ca65664b621b1f0c156828f') in 0.263739045 seconds
-Start importing Assets/Touchline/Resources/Logos/club-6079.png using Guid(97ca5bf5a37dd8c4b91312afab5bce19) (TextureImporter) -> (artifact id: '4f70caa6f8bceacae7217b8f47b36180') in 0.207952801 seconds
-Start importing Assets/Touchline/Resources/Logos/club-7318.png using Guid(970b40b65a4c9b742a8d94f7baf58781) (TextureImporter) -> (artifact id: 'ac5549e1d3dfd60935d24cc32fc95538') in 0.153468566 seconds
-Start importing Assets/Touchline/Resources/Logos/club-15515.png using Guid(97bbf67b0933ca84582b7f905793e813) (TextureImporter) -> (artifact id: '5389f2be836865cd1109b73d960c861e') in 0.33363285 seconds
-Start importing Assets/Touchline/Resources/Logos/club-13450.png using Guid(a730efc69dc82584e97aa9a32be371bf) (TextureImporter) -> (artifact id: '348782b243161ac86c19ea832703d176') in 0.360155359 seconds
-Start importing Assets/Touchline/Resources/Logos/club-4129.png using Guid(a742239643a9c394da7be87fb374ae5c) (TextureImporter) -> (artifact id: 'c92ea0d7ec6cc35a1cf7ad29145fa76b') in 0.269997944 seconds
-Start importing Assets/Touchline/Resources/Logos/club-1936.png using Guid(a782e314ab480684da470f753a7ac110) (TextureImporter) -> (artifact id: '66d5c6db14bd04e54e430876431505d0') in 0.204698433 seconds
-Start importing Assets/Touchline/Resources/Logos/club-3747.png using Guid(a7137f5abfc70264c920f356bc6c26a0) (TextureImporter) -> (artifact id: '8f4119ce5232443fbc423f72c5bf0bea') in 0.091713644 seconds
-Start importing Assets/Touchline/Resources/Logos/club-96.png using Guid(a7b958460cb7f544b9c550a02089089a) (TextureImporter) -> (artifact id: 'c9704496dc3d30d9249288f1b706e112') in 0.285632321 seconds
-Start importing Assets/Touchline/Resources/Logos/club-20024.png using Guid(a77ac8decfa6fcc4aa3176df9e73f501) (TextureImporter) -> (artifact id: 'b6b4bbc6f8e54c19eccd0e4e4043756b') in 0.148488138 seconds
-Start importing Packages/com.unity.ugui/Editor Resources/Gizmos/TMP - Dropdown Icon.psd using Guid(a7ec9e7ad8b847b7ae4510af83c5d868) (TextureImporter) -> (artifact id: '466d2cd7bb5d936ea134eb6b04d11ac6') in 0.003483684 seconds
-Start importing Assets/Touchline/Resources/Logos/club-18267.png using Guid(b730d691abf96aa43976df7ceb81aca7) (TextureImporter) -> (artifact id: '3fb6801903c49109e6a927bb73afccfe') in 0.229024752 seconds
-Start importing Packages/com.unity.render-pipelines.core/Editor/LookDev/Icons/d_LayoutCustom@2x.png using Guid(b753c88a6aeb2674fa1d4f0a4c0a285a) (TextureImporter) -> (artifact id: 'c1db90a564ad80893a5deba97d7efd43') in 0.005107253 seconds
-Start importing Assets/Touchline/Resources/Logos/club-20293.png using Guid(b75ab91ad70d3fd49a2b8c124844e775) (TextureImporter) -> (artifact id: '83adec6412437c428e1049b68cf93d64') in 0.167441246 seconds
-Start importing Packages/com.unity.ugui/Editor Resources/Textures/btn_AlignCenterGeo.psd using Guid(c76700ea0062413d9f69409b4e9e151b) (TextureImporter) -> (artifact id: '70da008c5bba4048067dc8705932ff7c') in 0.002649351 seconds
-Start importing Assets/Touchline/Resources/Logos/club-267.png using Guid(c73a193eb551a4a4495a10c19bb1307c) (TextureImporter) -> (artifact id: '59c41be1f811d511cfc2b572289e8f53') in 0.326116562 seconds
-Start importing Assets/Touchline/Resources/Logos/club-149.png using Guid(c7fb9684010c0c143a17b5d76201b488) (TextureImporter) -> (artifact id: '1e2117a4f89cf5da5cebbdf9d26dc7c3') in 0.23052428 seconds
-Start importing Packages/com.unity.render-pipelines.core/Editor/Lighting/Icons/d_LightPlacement_Icon@128.png using Guid(c7cdaebf43bf99948bf392ce8f4088af) (TextureImporter) -> (artifact id: '714d754a35e2132a7f24bdd35d4acf5d') in 0.034118148 seconds
-Start importing Assets/Touchline/Resources/Logos/club-5323.png using Guid(d713dfe2df0bb414985dceb9688460d5) (TextureImporter) -> (artifact id: '26611ca3bdce62129e63759cb8d73355') in 0.400559524 seconds
-Start importing Packages/com.unity.render-pipelines.core/Editor/Icons/MipLevels/d_Volume@128.png using Guid(d765b90a4ccbfae4ba0b8512144b99f0) (TextureImporter) -> (artifact id: 'ab808895906510e2c06b20a83301b7fa') in 0.001901515 seconds
-Start importing Assets/Touchline/Resources/Logos/club-17313.png using Guid(d717040c4c8c62b4dbb2fe418f5837e6) (TextureImporter) -> (artifact id: '64e9cc89c7935cf4a2eb2075a84e4fc4') in 0.479678003 seconds
-Start importing Packages/com.unity.render-pipelines.core/Editor/PostProcessing/LensFlareResource/Flare128.png using Guid(d7b90718ad2a7af4aab8546a0897d5db) (TextureImporter) -> (artifact id: '0aec40136a7a805ab33db47c8af4bfff') in 0.040946032 seconds
-Start importing Assets/Touchline/Resources/Logos/club-8169.png using Guid(e742491f1e6216a4397b9d88fcc2ee2e) (TextureImporter) -> (artifact id: '7942cbc0dd537f1f362ab772183aed73') in 0.182994612 seconds
-Start importing Assets/Touchline/Resources/Logos/club-249.png using Guid(e7f37a343dae5a34cbf83f4aa5ab39d1) (TextureImporter) -> (artifact id: '0f44ac01575fbb2f4601896e71378f5b') in 0.386528181 seconds
-Start importing Assets/Touchline/Resources/Logos/club-11551.png using Guid(e714b71408915564a9b8ea73951d38e7) (TextureImporter) -> (artifact id: '50fafb9c3f077c2d91ff59abb8ecec78') in 0.097016316 seconds
-Start importing Packages/com.unity.render-pipelines.core/Editor/Lighting/Icons/LightUnitIcons/d_SunriseSunset@2x.png using Guid(e737fd1dd31046c4da43e8ba94fdaf63) (TextureImporter) -> (artifact id: '9990e187cc059d953d3f202dfdcedac1') in 0.004214544 seconds
-Start importing Assets/Touchline/Resources/Logos/club-7102.png using Guid(e7e71529c1b22774ca1a130343276c35) (TextureImporter) -> (artifact id: 'a994750a54687725bd61b1e763eea769') in 0.311873252 seconds
-Start importing Assets/Touchline/Resources/Logos/club-6832.png using Guid(e7a8ef9e14aa4c6478a64a1a801f19d8) (TextureImporter) -> (artifact id: 'ca0aa5233bc5c6784575a840677435a0') in 0.30481255 seconds
-Start importing Assets/Touchline/Resources/Logos/club-143.png using Guid(e7bedf30953107045b65d479a544d10e) (TextureImporter) -> (artifact id: 'ee8dc74356e658058f3d5ed2b42c4ec9') in 0.321010278 seconds
-Start importing Assets/Touchline/Resources/Logos/club-7084.png using Guid(f731098401a84b04a92bcce37dce8a41) (TextureImporter) -> (artifact id: '87466039cfb5fd0e796dad22fdaec32d') in 0.248068181 seconds
-Start importing Packages/com.unity.shadergraph/GraphTemplates/Cross Pipeline/TerrainSimpleTemplateThumbnail.png using Guid(f7b60a412d492fa4a96583e253626880) (TextureImporter) -> (artifact id: '1ae1e7ac8795d2b9385db6f12534a8f3') in 0.904822257 seconds
-Start importing Assets/Touchline/Resources/Logos/club-114.png using Guid(f7882ea249a5a1348a9dd3b5e70ebe11) (TextureImporter) -> (artifact id: '1aad8e92c23e84a16cf78ad25b288e46') in 0.100309053 seconds
-Start importing Packages/com.unity.render-pipelines.core/Editor/Lighting/Icons/d_LightPlacement_Icon@16.png using Guid(f75902f05f887d847bd7573bdac61eca) (TextureImporter) -> (artifact id: '1007b7caf932ee6aea1e238d300fd1a9') in 0.003718091 seconds
-Start importing Assets/Touchline/Resources/Logos/club-147.png using Guid(f7cad22fe8f4e584ebde92d1150e1a1b) (TextureImporter) -> (artifact id: '24bceeaf83a9d99ccf7604dfedc2c0c9') in 0.603349304 seconds
-Start importing Assets/Touchline/Resources/Logos/club-10318.png using Guid(f74bc53afbe902448b29c5f3f0f98dd6) (TextureImporter) -> (artifact id: '6f131b6e04f609dfd5aa786c8f779d49') in 0.416878701 seconds
-Start importing Packages/com.unity.render-pipelines.core/Editor/Lighting/Icons/LightUnitIcons/d_CloudySky@2x.png using Guid(088373792f5db604fa5b045cb5dff9c9) (TextureImporter) -> (artifact id: '0ef81ad1682293122b39973b9c0b5766') in 0.005598231 seconds
-Start importing Packages/com.unity.render-pipelines.core/Editor/Lighting/Icons/LightUnitIcons/d_VeryBrightSun.png using Guid(083778a134a402a4f82b55a98ac21530) (TextureImporter) -> (artifact id: '6f1860c0d27a868098894a19ddf6e49f') in 0.003433669 seconds
-Start importing Assets/Touchline/Resources/Logos/club-243.png using Guid(08a77328c334ff04580bd833f476363b) (TextureImporter) -> (artifact id: '8fe6ef4b362613e68f4c0992d110808b') in 0.268483325 seconds
-Start importing Assets/Touchline/Resources/Logos/club-333.png using Guid(0879eb59b46f69147b92699605f9513f) (TextureImporter) -> (artifact id: '5406d3ce8ef9fe77306803da07ff6926') in 0.210026855 seconds
-Start importing Packages/com.unity.shadergraph/Editor/Resources/Icons/sg_subgraph_icon_gray_dark.png using Guid(18c6490536702e840b89a326d93a92a1) (TextureImporter) -> (artifact id: '8b5d9cbbd0c7b58287a55e92efeb9879') in 0.003275911 seconds
-Start importing Packages/com.unity.ugui/Editor Resources/Textures/btn_AlignBaseLine_Light.psd using Guid(18775b51e3bd42299fd30bd036ea982f) (TextureImporter) -> (artifact id: 'c9b1818fe92a0f8907a81a6e72fec3e1') in 0.002543319 seconds
-Start importing Assets/Touchline/Resources/Logos/club-218.png using Guid(18096c7ac774f5946a1dfa559dca7ec4) (TextureImporter) -> (artifact id: '1e115c8572a976be863430b9e2f82764') in 0.157852842 seconds
-Start importing Assets/Touchline/Resources/Logos/club-10309.png using Guid(1879c82fa0ed7334bbaccff806fce57a) (TextureImporter) -> (artifact id: 'de01a0a0323dd54f16fe6a5f135398fd') in 0.227582767 seconds
-Start importing Assets/Touchline/Resources/Logos/club-9785.png using Guid(18992865e3ceb01409f47648a465aba4) (TextureImporter) -> (artifact id: 'e918a837eed8199a513449ba41862942') in 0.303293864 seconds
-Start importing Packages/com.unity.render-pipelines.core/Editor/LookDev/Icons/d_Camera2.png using Guid(281160d54742cbb44a88a61bf8ccfb16) (TextureImporter) -> (artifact id: '5178b4c6b54a64e34760cd6330397332') in 0.003826912 seconds
-Start importing Assets/Touchline/Resources/Logos/club-11706.png using Guid(28915580bb089fb478ce1416833d3698) (TextureImporter) -> (artifact id: 'a90ed0422dec5f02a77ffbd1d9507011') in 0.239362518 seconds
-Start importing Assets/Touchline/Resources/Logos/club-3019.png using Guid(28029c59992431046a8c1c8328f3abf2) (TextureImporter) -> (artifact id: '148a7485a09eb3ef647f464e66491ff3') in 0.191752217 seconds
-Start importing Packages/com.unity.render-pipelines.core/Editor/LookDev/Icons/Camera2@2x.png using Guid(28f2917353630ce4fa307eeceadcd26d) (TextureImporter) -> (artifact id: '31d842c0c16c8384b7c52fc9fb2e54f7') in 0.005382271 seconds
-Start importing Assets/Touchline/Resources/Logos/club-268.png using Guid(28f32aa3ad13f924c9fb7a1b6ac60f13) (TextureImporter) -> (artifact id: '941f04149557ce9851e6f6510bbd2aa8') in 0.151869353 seconds
-Start importing Packages/com.unity.render-pipelines.core/Editor/LookDev/Icons/d_RightArrow@2x.png using Guid(28d47cbaafc98254f8d4f6184dff22cd) (TextureImporter) -> (artifact id: '23f471c146cd6f97069d0f1888aeca19') in 0.006532913 seconds
-Start importing Assets/Touchline/Resources/Logos/club-307.png using Guid(28497d1e5774d5b4599c31381ae56afe) (TextureImporter) -> (artifact id: 'ad31e796a5fdd083b48c0bb0643d3fd2') in 0.311278395 seconds
-Start importing Packages/com.unity.render-pipelines.core/Editor/Icons/MipLevels/d_VolumeProfile@64.png using Guid(2889bb1951831234789d947901bce53e) (TextureImporter) -> (artifact id: 'f74c3e72dcd51c2a09aabffc0dc1f22b') in 0.002704765 seconds
-Start importing Assets/Touchline/Resources/Logos/club-3.png using Guid(3850fe2aff3e9ad4d8b89ea908183e91) (TextureImporter) -> (artifact id: '3cf25d51d015a9b2a4910e145eb3c01a') in 0.323040291 seconds
-Start importing Assets/Touchline/Resources/Logos/club-11913.png using Guid(3843d284384f257489194337e139067f) (TextureImporter) -> (artifact id: '69596fed1cc3335b3b31fd5c7a02803a') in 0.334284812 seconds
-Start importing Assets/Touchline/Resources/Logos/club-370.png using Guid(3846482787144014db8422c680370375) (TextureImporter) -> (artifact id: '46e3578ed26bb050f57f117b86e9e52f') in 0.110560311 seconds
-Start importing Packages/com.unity.render-pipelines.core/Editor/Icons/RenderGraphViewer/Texture@2x.png using Guid(38d7c20ac7a9de246a75479d66d518fd) (TextureImporter) -> (artifact id: '9d7daa54ba71a78954bc168e196b6ee8') in 0.005063054 seconds
-Start importing Packages/com.unity.ugui/Editor Resources/Textures/btn_AlignTop.psd using Guid(48d034c499ee4697af9dd6e327110249) (TextureImporter) -> (artifact id: '30ffc29617fbd4258b2e4a25c00aaa27') in 0.002160699 seconds
-Start importing Packages/com.unity.render-pipelines.core/Editor/Icons/MipLevels/RenderGraphViewer/PassInspector@16.png using Guid(48b566d9e8cf828409d6879b70fe00b5) (TextureImporter) -> (artifact id: 'eb1c3753ac03ad96bc9d1c035db82afb') in 0.002935481 seconds
-Start importing Assets/Touchline/Resources/Logos/club-235.png using Guid(48ce091bc0f4f464b93f2b640e49a414) (TextureImporter) -> (artifact id: '21c3d156affa2aaafa6d11b10c6e2022') in 0.168896261 seconds
-Start importing Assets/Touchline/Resources/Logos/club-3024.png using Guid(5810f5e0be224d541963cca3d5d88675) (TextureImporter) -> (artifact id: 'fbe93affca7977a72647653d3c0a009a') in 0.195955046 seconds
-Start importing Assets/Touchline/Resources/Logos/club-3345.png using Guid(5809dc365be41db47944c0c39b552b01) (TextureImporter) -> (artifact id: '1ad7474dfae8fe672becd26c4c8174fe') in 0.370283139 seconds
-Start importing Packages/com.unity.ugui/Editor Resources/Textures/btn_AlignBottom_Light.psd using Guid(585b70cb75dd43efbfead809c30a1731) (TextureImporter) -> (artifact id: 'c67e049c5ea0f393c427b1717d17e3fc') in 0.002130835 seconds
-Start importing Packages/com.unity.render-pipelines.universal/Editor/2D/Resources/InspectorIcons/FreeformLight.png using Guid(68e5bb6e60bebc046b26d3c3100a523b) (TextureImporter) -> (artifact id: '640e79abf91f1a1c27f76da849dec7c0') in 0.002309628 seconds
-Start importing Assets/Touchline/Resources/Logos/club-411.png using Guid(68fea63ee6490b44fad9a863edde042b) (TextureImporter) -> (artifact id: '0a825b193a28ce00d786cf68d29f0970') in 0.322656912 seconds
-Start importing Assets/Touchline/Resources/Logos/club-2684.png using Guid(78d2178f8937c4f4088723a508288dc1) (TextureImporter) -> (artifact id: 'cff30b736201be371b6a1a737fa2ffa8') in 0.119154973 seconds
-Start importing Assets/Touchline/Resources/Logos/club-5322.png using Guid(78d24af37c609034ea6c570c5764c142) (TextureImporter) -> (artifact id: '3d457dfed07db4ec067f4ea7f19ba6dd') in 0.282400898 seconds
-Start importing Assets/Touchline/Resources/Logos/club-336.png using Guid(78c3de44d11faa6449c87d2514b55b73) (TextureImporter) -> (artifact id: 'c1240ea530bb1a7bc01137b67ff3044b') in 0.160471109 seconds
-Start importing Assets/Touchline/Resources/Logos/club-7116.png using Guid(7804f8d2a7290fd4db20551ce4bd5cb9) (TextureImporter) -> (artifact id: 'a0bf444b73d89623644d21a59bd90b2c') in 0.230683358 seconds
-Start importing Assets/Touchline/Resources/Logos/club-7635.png using Guid(78142f60377d0b04494be62152350a1a) (TextureImporter) -> (artifact id: '9fb020d8379e31aebe78f0981d9f6f74') in 0.205108307 seconds
-Start importing Packages/com.unity.render-pipelines.core/Editor/Icons/RenderGraphViewer/AccelerationStructure@2x.png using Guid(78c530431f09533469990aeb78f31210) (TextureImporter) -> (artifact id: 'e6938fbe4b16ce7ff90394ca55422044') in 0.006369214 seconds
-Start importing Assets/Touchline/Resources/Logos/club-3393.png using Guid(781b84f625bc98741bbc4b4eecde1f8b) (TextureImporter)
+Unloading 0 unused Assets / (Unknown). Loaded Objects now: 4558.
+Memory consumption went from 204.6 MB to 204.6 MB.
+Total: 37.394603 ms (FindLiveObjects: 0.330827 ms CreateObjectMapping: 0.165689 ms MarkObjects: 36.886196 ms  DeleteObjects: 0.010850 ms)
+
+[Licensing::Client] Successfully resolved entitlement details
+TOUCHLINE_PROTO_OK
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /home/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+Touchline.Editor.MecanimPrototypeFilm:Run () (at Assets/Touchline/Editor/MecanimPrototypeFilm.cs:91)
+
+(Filename: Assets/Touchline/Editor/MecanimPrototypeFilm.cs Line: 91)
+
+[UnityConnectServicesConfig] Service configuration:
+    "servicesConfigBaseUrl": "",
+    "disableServicesWindow": false,
+    "disableUserLogin": false,
+    "entitlementCacheTimeoutInSeconds": 60,
+    "clientConnectTimeoutSec": 5,
+    "clientHandshakeTimeoutSec": 10,
+    "clientResolveEntitlementsTimeoutSec": 30,
+    "clientUpdateLicenseTimeoutSec": 30,
+    "licensingServiceBaseUrl": "",
+    "enableProxyAutoconfig": "false"
+
+Killing ADB server in 0.109701 seconds.
+The command could not be loaded, possibly because:
+  * You intended to execute a .NET application:
+      The application 'build-server' does not exist.
+  * You intended to execute a .NET SDK command:
+      No .NET SDKs were found.
+
+Download a .NET SDK:
+https://aka.ms/dotnet-download
+
+Learn about SDK resolution:
+https://aka.ms/dotnet/sdk-not-found
+[Physics::Module] Cleanup current backend.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input System polling thread exited.
+Input System module state changed to: Shutdown.
+[Licensing::IpcConnector] LicenseClient-root-notifications channel disconnected successfully.
+[Licensing::IpcConnector] LicenseClient-root channel disconnected successfully.
+AcceleratorClientConnectionCallback - disconnected - :0
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...
+[40m[32minfo[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      ALC ILPP context 1 is unloading
+Cleanup mono
+debugger-agent: Unable to listen on 35
+[Package Manager] Server process was shutdown
+Checking for leaked weakptr:
+  Found no leaked weakptrs.
+##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1791374925289,"processId":1739,"allocatedMemory":16538054,"memoryLabels":[{"Default":24121},{"Permanent":15960},{"Thread":1084616},{"Manager":804394},{"VertexData":8},{"Geometry":408},{"Texture":160},{"Shader":129420},{"Material":24},{"GfxDevice":36328},{"Animation":28312},{"Audio":3032},{"Font":1782565},{"FreeType":63508},{"FontEngine":736},{"Physics":1970},{"Physics2D":16},{"Serialization":360},{"Input":26888},{"JobScheduler":33024},{"TextLib":280},{"Mono":32},{"MonoCode":96},{"ScriptingNativeRuntime":155096},{"BaseObject":1631144},{"Resource":1064},{"Renderer":3000},{"Transform":4717},{"File":15457},{"WebCam":80},{"Culling":32},{"Terrain":11298},{"Wind":24},{"String":1790196},{"DynamicArray":96434},{"HashMap":90483},{"Utility":2658752},{"Curl":2511},{"PoolAlloc":2048},{"AI":80},{"TypeTree":14981},{"ScriptManager":512},{"RuntimeInitializeOnLoadManager":64},{"SpriteAtlas":112},{"GI":7384},{"Director":8208},{"CloudService":604488},{"WebRequest":552},{"VR":47754},{"SceneManager":536},{"Video":64},{"LazyScriptCache":32},{"Camera":17},{"Secure":12449},{"Image":16384},{"SerializationCache":1576},{"APIUpdating":10320},{"Subsystems":336},{"VirtualTexturing":57552},{"StaticSafetyDebugInfo":278528},{"Analytics":464},{"Hierarchy":1416},{"CoreStats":13112},{"Identifiers":6480},{"Gui":128},{"EditorUtility":353382},{"VersionControl":4},{"Undo":979},{"AssetDatabase":4556592},{"EditorGi":328},{"UnityConnect":29408},{"Upm":1744},{"AssetCompliance":64},{"DrivenProperties":72},{"LocalIPC":147},{"ProfilerEditor":9746},{"CoreBusinessMetrics":2377},{"Licensing":1128},{"AssetReference":32},{"IPCStream":32}]}
+[UnityConnectServicesConfig] Local config successfully read: "/usr/share/unity3d/config/services-config.json"
+[UnityConnectServicesConfig] "clientConnectTimeoutSec" was overridden with "5"
+[UnityConnectServicesConfig] "clientHandshakeTimeoutSec" was overridden with "10"
+[UnityConnectServicesConfig] Service configuration:
+    "servicesConfigBaseUrl": "",
+    "disableServicesWindow": false,
+    "disableUserLogin": false,
+    "entitlementCacheTimeoutInSeconds": 60,
+    "clientConnectTimeoutSec": 5,
+    "clientHandshakeTimeoutSec": 10,
+    "clientResolveEntitlementsTimeoutSec": 30,
+    "clientUpdateLicenseTimeoutSec": 30,
+    "licensingServiceBaseUrl": "",
+    "enableProxyAutoconfig": "false"
+
+[UnityConnectServicesConfig] Local config successfully read: "/usr/share/unity3d/config/services-config.json"
+[UnityConnectServicesConfig] "clientConnectTimeoutSec" was overridden with "5"
+[UnityConnectServicesConfig] "clientHandshakeTimeoutSec" was overridden with "10"
+[UnityConnectServicesConfig] Service configuration:
+    "servicesConfigBaseUrl": "",
+    "disableServicesWindow": false,
+    "disableUserLogin": false,
+    "entitlementCacheTimeoutInSeconds": 60,
+    "clientConnectTimeoutSec": 5,
+    "clientHandshakeTimeoutSec": 10,
+    "clientResolveEntitlementsTimeoutSec": 30,
+    "clientUpdateLicenseTimeoutSec": 30,
+    "licensingServiceBaseUrl": "",
+    "enableProxyAutoconfig": "false"
+
+Unity Editor version:    6000.3.24f1 (4e7b9b5b6244)
+Branch:                  6000.3/staging
+Build type:              Release
+Batch mode:              YES
+System name:             Linux
+Distro version:          #22-Ubuntu SMP Mon Jul 27 17:24:03 UTC 2026
+Kernel version:          6.17.0-1022-azure
+Architecture:            x86_64
+Available memory:        15989 MB
+Date:                    2026-10-07T12:08:45Z
+User audibert.victor13500@gmail.com logged in successfully
+[UnityConnect::TryLogin] Request Succeeded.
+[Licensing::Module] Trying to connect to existing licensing client channel...
+[Licensing::IpcConnector] Channel LicenseClient-root doesn't exist
+[Licensing::Module] Successfully launched the LicensingClient (PId: 5285)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root" at "2026-10-07T12:08:46.97718Z"
+[SignatureVerifier] Application signature verification not supported on this platform.
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.3+d7ffd15
+  Session Id:              0189a973c72c4d0e9d206e327cfeeb6e
+  Correlation Id:          266ad007547966f93b0214863564db0e
+  External correlation Id: 8546114209454955684
+  Machine Id:              vcf69RTlwsLnqzFrzK1I/lLsfuA=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-root" (connect: 0.38s, validation: 0.09s, handshake: 0.00s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root-notifications" at "2026-10-07T12:08:47.068126Z"
+[Licensing::Module] Connected to LicensingClient (PId: 5285, launch time: 0.00, total connection time: 0.47s)
+[Licensing::Client] Successfully updated the access token
+[Licensing::Module] Successfully updated the access token X6_L_SBM32...
+[Licensing::Client] Successfully processed license management request
+[Licensing::Module] Successfully returned the entitlement license
+[Licensing::Client] Successfully queried for the EntitlementGroupsDetails
+[Licensing::Client] Successfully returned ULF license with serial number : "F4-U776-56HB-EXF8-B6C4-XXXX"
