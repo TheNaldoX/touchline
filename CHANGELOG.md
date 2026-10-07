@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Outil : film de match rendu par Unity dans GitHub Actions (branche film/…), avec mesures de fluidité, publié dans la branche films.
 - Animation : rotation du corps plafonnée à 600°/s pendant un geste, petits pas d'ajustement à l'arrêt au lieu de pieds qui glissent.
 - Animation plus fluide : trajectoire des joueurs et allure du corps à vitesse continue entre les pas de simulation, ballon en vol sur sa vraie parabole.
 - Appels en profondeur un peu plus fréquents (0,30 → 0,38 par seconde) : hors-jeu 2,9 → 3,3 par match.

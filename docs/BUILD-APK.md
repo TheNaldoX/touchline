@@ -34,3 +34,10 @@ Durée : 30 à 60 min la première fois (import complet), moins ensuite grâce a
 ## Version
 Numéro et `versionCode` : `Editor/ProjectBuilder.cs` (`Configure`). Augmenter
 `bundleVersionCode` à chaque APK installé, sinon Android refuse la mise à jour.
+
+## Filmer un match sans téléphone
+Pousser une branche `film/<nom>` lance le workflow **Match film** : Unity rend
+15 s de match (caméra du jeu + caméra basse qui suit l'action) avec un rendu
+logiciel, puis publie dans la branche `films`, dossier `films/<nom>/` :
+`broadcast.mp4`, `follow.mp4`, planches d'images et `metrics.txt` (glissement des
+pieds, à-coups de trajectoire, vitesse de rotation, par action).
