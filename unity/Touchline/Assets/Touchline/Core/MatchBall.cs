@@ -149,6 +149,16 @@ namespace Touchline.Core
             if(!intercept&&pass)State.completedPasses[hit.side]++;b.position=impact;b.height=impactHeight;Control(hit);if(intercept)Emit("interception",hit.side,hit.id,Data(hit).name+" coupe la trajectoire.");return true;
         }
         public const float MiscontrolRate=.15f;
+        // An attacker meeting a cross inside the box (within HeaderShotRange m of
+        // goal) goes for goal unless the angle is hopeless; further out only a
+        // genuinely good chance is headed at goal, otherwise he lays it off.
+        public const float HeaderShotRange=14f,HeaderShotMinQuality=.02f;
+        bool HeadsForGoal(Actor aerial)
+        {
+            float quality=ShotQuality(aerial,true),distance=Point.Distance(aerial.position,new Point(Direction(aerial.side)*52.5f,0));
+            if(distance<HeaderShotRange)return quality>HeaderShotMinQuality;
+            return quality>(Tactic(aerial.side).workIntoBox?.12f:.07f);
+        }
         bool ResolveAerial(float progress)
         {
             var b=State.ball;if(b.kind!="cross"||progress<.74f)return false;
@@ -158,7 +168,7 @@ namespace Touchline.Core
             // A short plant before take-off keeps the prepared head contact
             // reachable rather than coasting a full sprint step beyond it.
             aerial.velocity=new Point();
-            if(attack&&ShotQuality(aerial,true)>(Tactic(aerial.side).workIntoBox?.12f:.07f)){var contact=b.position;float height=b.height;Shoot(aerial,true);BeginAerialContest(contestant,aerial,contact,height);return true;}
+            if(attack&&HeadsForGoal(aerial)){var contact=b.position;float height=b.height;Shoot(aerial,true);BeginAerialContest(contestant,aerial,contact,height);return true;}
             DistributeHeader(aerial,contestant);return true;
         }
         bool InOwnArea(Actor keeper,Point point)=>point.x*Direction(keeper.side)< -36&&Math.Abs(point.z)<20.16f;
