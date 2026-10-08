@@ -57,7 +57,18 @@ namespace Touchline.Tests
             Assert.AreEqual(1f,day.a);
             // Plus sombre qu'au soleil, mais moins que la pelouse : les contremarches vues de la caméra sont déjà à contre-jour.
             foreach(var (shade,turf) in new[]{(day.r,tint.r),(day.g,tint.g),(day.b,tint.b)})Assert.That(shade,Is.InRange(turf,.85f));
-            Assert.Less(StadiumLighting.ShadeSmoothness,.16f,"Pas de reflet du ciel sur la pelouse à l'ombre");
+        }
+        [Test] public void ShadedSurfacesUseAnUnlitMaterialIncludedInTheBuild()
+        {
+            // Lit assombri gardait le reflet rasant du soleil (pelouse grise) : Unlit, chargé depuis Resources.
+            var template=Resources.Load<Material>(StadiumLighting.ShadeMaterialPath);
+            Assert.IsNotNull(template,"Matériau d'ombre absent de Resources : shader Unlit exclu de l'APK");
+            Assert.AreEqual("Universal Render Pipeline/Unlit",template.shader.name);
+            var turf=new Color(.13f,.36f,.15f);var tint=StadiumLighting.ShadeTint();var material=StadiumLighting.ShadedMaterial(turf);
+            try{
+                Assert.AreEqual(template.shader,material.shader);Assert.AreNotSame(template,material);
+                Assert.AreEqual(turf.g*tint.g,material.color.g,1e-4f);Assert.AreEqual(1f,material.color.a);
+            }finally{Object.DestroyImmediate(material);}
         }
         [Test] public void LitAndShadedTurfTileThePitchExactly()
         {

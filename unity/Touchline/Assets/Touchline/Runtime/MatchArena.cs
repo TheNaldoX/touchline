@@ -65,13 +65,13 @@ namespace Touchline
             // sans ombre portée reçue) car elle dépasse la distance des ombres temps réel.
             var career=TouchlineApp.Instance!=null?TouchlineApp.Instance.Career:null;var fixture=career?.world?.fixtures?.Find(f=>f.id==career.world.activeFixture);
             bool floodlit=StadiumLighting.Floodlit(PlayerPrefs.GetInt(StadiumLighting.PreferenceKey,StadiumLighting.Auto),fixture);
-            float shadeEdge=floodlit?float.NegativeInfinity:StadiumLighting.RoofShadowEdge(),shadeEndX=floodlit?float.NegativeInfinity:StadiumLighting.RoofShadowEndX();var shade=StadiumLighting.ShadeTint();
-            CreatePitchSurface(false,shadeEdge,shadeEndX,Color.white);
+            float shadeEdge=floodlit?float.NegativeInfinity:StadiumLighting.RoofShadowEdge(),shadeEndX=floodlit?float.NegativeInfinity:StadiumLighting.RoofShadowEndX();
+            CreatePitchSurface(false,shadeEdge,shadeEndX);
             Surface(StadiumGeometry.Surround(false,shadeEdge,shadeEndX),PlayerView.Material(SurroundGreen),false);
             Surface(StadiumGeometry.PitchMarkings(false,shadeEdge,shadeEndX),white,false);
-            if(!floodlit){CreatePitchSurface(true,shadeEdge,shadeEndX,shade);
-                Surface(StadiumGeometry.Surround(true,shadeEdge,shadeEndX),Matte(PlayerView.Material(SurroundGreen*shade)),false,false);
-                Surface(StadiumGeometry.PitchMarkings(true,shadeEdge,shadeEndX),Matte(PlayerView.Material(MarkingWhite*shade)),false,false);}
+            if(!floodlit){CreatePitchSurface(true,shadeEdge,shadeEndX);
+                Surface(StadiumGeometry.Surround(true,shadeEdge,shadeEndX),StadiumLighting.ShadedMaterial(SurroundGreen),false,false);
+                Surface(StadiumGeometry.PitchMarkings(true,shadeEdge,shadeEndX),StadiumLighting.ShadedMaterial(MarkingWhite),false,false);}
             for(int sign=-1;sign<=1;sign+=2){var x=52.5f*sign;
                 Line(new[]{new Vector3(x,0,-3.66f),new Vector3(x,2.44f,-3.66f),new Vector3(x,2.44f,3.66f),new Vector3(x,0,3.66f)},.12f);
                 Surface(StadiumGeometry.GoalNet(sign),white,false);
@@ -180,17 +180,16 @@ namespace Touchline
         public void ToggleTacticalOverlay(){showTactics=!showTactics;foreach(var line in tacticalLines)line.enabled=showTactics;}
         public void Zoom(float delta){zoom=Mathf.Clamp(zoom+delta,.8f,1.35f);cameraReset=true;PlayerPrefs.SetFloat("match-camera-zoom",zoom);}
         public void ScaleZoom(float factor){if(float.IsNaN(factor)||float.IsInfinity(factor)||factor<=0)return;zoom=Mathf.Clamp(zoom*factor,.8f,1.35f);cameraReset=true;PlayerPrefs.SetFloat("match-camera-zoom",zoom);}
-        // shaded : partie à l'ombre simulée du toit, matières multipliées par tint, sans ombre reçue.
-        void CreatePitchSurface(bool shaded,float shadeEdge,float shadeEndX,Color tint)
+        // shaded : partie à l'ombre simulée du toit, matières sans éclairage (StadiumLighting.ShadedMaterial).
+        void CreatePitchSurface(bool shaded,float shadeEdge,float shadeEndX)
         {
             var go=new GameObject(shaded?"Pitch in roof shadow":"105 × 68 m pitch");go.transform.SetParent(world,false);
             var mesh=PitchTurf.Surface(shaded,shadeEdge,shadeEndX);if(shaded)stadiumMeshes.Add(mesh);else pitchMesh=mesh;
-            go.AddComponent<MeshFilter>().sharedMesh=mesh;var renderer=go.AddComponent<MeshRenderer>();renderer.sharedMaterials=shaded?new[]{Matte(TurfMaterial(LightStripe*tint)),Matte(TurfMaterial(DarkStripe*tint))}:new[]{TurfMaterial(LightStripe),turf};renderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;renderer.receiveShadows=!shaded;
+            go.AddComponent<MeshFilter>().sharedMesh=mesh;var renderer=go.AddComponent<MeshRenderer>();renderer.sharedMaterials=shaded?new[]{StadiumLighting.ShadedMaterial(LightStripe/PitchTurf.MeanBrightness,turfGrain),StadiumLighting.ShadedMaterial(DarkStripe/PitchTurf.MeanBrightness,turfGrain)}:new[]{TurfMaterial(LightStripe),turf};renderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;renderer.receiveShadows=!shaded;
         }
         static readonly Color MarkingWhite=new Color(.88f,.89f,.81f),SurroundGreen=new Color(.075f,.18f,.09f);
         static readonly Color LightStripe=new Color(.118f,.325f,.136f),DarkStripe=new Color(.088f,.252f,.100f); // tonte (avant grain)
         const float DefaultZoom=.85f; // cadrage télé par défaut, plus serré (joueurs plus lisibles) ; réglable au pincement
-        static Material Matte(Material m){m.SetFloat("_Smoothness",StadiumLighting.ShadeSmoothness);return m;}
         Material TurfMaterial(Color stripe){var m=PlayerView.Material(stripe/PitchTurf.MeanBrightness);m.color=new Color(m.color.r,m.color.g,m.color.b,1);m.mainTexture=turfGrain;return m;}
         void Surface(Mesh mesh,Material material,bool shadows,bool receiveShadows=true){stadiumMeshes.Add(mesh);var go=new GameObject(mesh.name);go.transform.SetParent(world,false);go.AddComponent<MeshFilter>().sharedMesh=mesh;var renderer=go.AddComponent<MeshRenderer>();renderer.sharedMaterial=material;renderer.shadowCastingMode=shadows?UnityEngine.Rendering.ShadowCastingMode.On:UnityEngine.Rendering.ShadowCastingMode.Off;renderer.receiveShadows=receiveShadows;}
         void Line(Vector3[] points,float width){var go=new GameObject("Pitch marking");go.transform.SetParent(world);var line=go.AddComponent<LineRenderer>();line.sharedMaterial=white;line.useWorldSpace=true;line.positionCount=points.Length;line.SetPositions(points);line.widthMultiplier=width;line.numCornerVertices=1;line.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;if(Array.TrueForAll(points,p=>p.y<.1f)){line.alignment=LineAlignment.TransformZ;go.transform.rotation=Quaternion.Euler(90,0,0);}}

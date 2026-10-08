@@ -58,20 +58,28 @@ namespace Touchline
         // Fin de l'ombre côté +x (m) : le soleil venant de biais, le coin du toit ne couvre pas tout le terrain.
         public static float RoofShadowEndX()=>SunShadowOnGround(new Vector3(StadiumGeometry.RoofWidth*.5f,RoofTop,-StadiumGeometry.RoofFront)).x;
 
-        // Facteur (couleur à multiplier, espace sRGB) qui donne à une surface horizontale
-        // la luminosité qu'elle aurait sans le soleil direct, avec la part du ciel que
-        // la tribune et le toit lui cachent encore. Calcul en linéaire (projet linéaire).
+        // Surfaces à l'ombre simulée du toit (pelouse, abords, lignes) : matière sans
+        // éclairage (Unlit) dont la couleur = couleur de base × ShadeTint(). Une matière
+        // Lit assombrie gardait le reflet rasant du soleil et du ciel (pelouse grise,
+        // ≈ 60/66/55 au lieu d'un vert sombre) ; Unlit est aussi moins coûteux.
+        // Le matériau de Resources garantit que le shader Unlit est inclus dans l'APK.
+        public const string ShadeMaterialPath="Rendering/ShadeUnlit";
+        // Lumière reçue à l'ombre (couleur à multiplier, sRGB) : l'ambiance du ciel seule,
+        // dont la tribune et le toit cachent une partie. Calcul en linéaire (projet linéaire).
         const float ShadeSkyView=.6f; // part du ciel visible depuis la pelouse à l'ombre (0–1)
         public static Color ShadeTint()
         {
-            float sun=SunIntensity*Mathf.Sin(SunElevation*Mathf.Deg2Rad);
-            float Channel(float ambient,float light){float a=Mathf.GammaToLinearSpace(ambient)*ShadeSkyView;return Mathf.LinearToGammaSpace(a/(a+Mathf.GammaToLinearSpace(light)*sun));}
-            return new Color(Channel(DayAmbient.r,SunColor.r),Channel(DayAmbient.g,SunColor.g),Channel(DayAmbient.b,SunColor.b),1);
+            float Channel(float ambient)=>Mathf.LinearToGammaSpace(Mathf.GammaToLinearSpace(ambient)*ShadeSkyView);
+            return new Color(Channel(DayAmbient.r),Channel(DayAmbient.g),Channel(DayAmbient.b),1);
         }
-        // Lissé (0–1) des surfaces à l'ombre du toit : vu de la caméra, leur reflet est
-        // celui de la tribune sombre, pas du ciel. Avec le lissé courant (0,16), le reflet
-        // rasant du ciel par défaut grisait la pelouse à l'ombre (≈ 71/77/71 au lieu d'un vert).
-        public const float ShadeSmoothness=0f;
+        // Matière d'une surface à l'ombre : Unlit (repli Lit si le matériau manque).
+        public static Material ShadedMaterial(Color baseColor,Texture texture=null)
+        {
+            var template=Resources.Load<Material>(ShadeMaterialPath);
+            var m=template!=null?new Material(template):PlayerView.Material(Color.white);
+            var c=baseColor*ShadeTint();c.a=1;m.color=c;if(texture!=null)m.mainTexture=texture;
+            return m;
+        }
         // Tribune d'en face (gradins, second anneau, toit, public du second anneau) l'après-midi :
         // entièrement sous l'ombre du toit. Multiplicateur de couleur (sRGB) entre celui des
         // faces horizontales (ShadeTint) et celui des contremarches déjà à contre-jour (≈ 0,8).
