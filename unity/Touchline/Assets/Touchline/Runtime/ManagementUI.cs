@@ -16,7 +16,7 @@ namespace Touchline
         static VisualElement Card(VisualElement parent,string cls=""){var c=new VisualElement();c.AddToClassList("card");if(cls!="")c.AddToClassList(cls);parent.Add(c);return c;}
         void BuildShell()
         {
-            root.Clear();modal=null;root.EnableInClassList("reduce-motion",!MotionEnabled);root.EnableInClassList("live-match",page=="Match"&&Career.match!=null);root.EnableInClassList("manager-shell",page!="Match"||Career.match==null);root.EnableInClassList("compact",compact);root.EnableInClassList("short-wide",root.resolvedStyle.width>=1000&&root.resolvedStyle.height<680);
+            root.Clear();modal=null;root.EnableInClassList("reduce-motion",!MotionEnabled);root.EnableInClassList("live-match",page=="Match"&&Career.match!=null);root.EnableInClassList("manager-shell",page!="Match"||Career.match==null);root.EnableInClassList("compact",compact);root.EnableInClassList("short-wide",root.resolvedStyle.width>=InterfaceViewport.WideLayoutMinWidth&&root.resolvedStyle.height<InterfaceViewport.WideLayoutMinHeight);
             var header=Row(root,"header");var brand=Row(header,"brand-group");NavigationButtons(brand);var crest=Resources.Load<Texture2D>("Logos/club-"+Career.club);if(crest!=null){var logo=new Image{image=crest,scaleMode=ScaleMode.ScaleToFit};logo.AddToClassList("nav-crest");brand.Add(logo);}var clubTitle=new VisualElement();brand.Add(clubTitle);Text(clubTitle,"TOUCHLINE / "+PageLabel(page).ToUpper(French),"eyebrow");Text(clubTitle,Own.name,"club-title");
             var today=Row(header,"header-actions");Text(today,Career.Date.ToString("ddd dd MMM yyyy",French),"date-label");var go=Button(today,"Continuer  →",ContinueDay);go.AddToClassList("primary");go.name="manager-continue";go.tooltip="Avancer d’un jour. Une rencontre à disputer doit être terminée avant de poursuivre.";
             var shell=new VisualElement();shell.AddToClassList("workspace");root.Add(shell);var nav=new VisualElement();nav.AddToClassList("navigation");shell.Add(nav);
@@ -35,6 +35,19 @@ namespace Touchline
             if(Time.unscaledTime<continueAllowedAt)return;continueAllowedAt=Time.unscaledTime+.4f;
             try{CloseFinishedMatch();int before=Career.life.serial;Career.AdvanceDay(Database);newMessageIds=Career.life.messages.Where(m=>m.id>before).Select(m=>m.id).ToArray();page="Club";Save();Build();var go=root.Q<Button>("manager-continue");if(go!=null){go.SetEnabled(false);go.schedule.Execute(()=>go.SetEnabled(true)).StartingIn(400);}}
             catch(Exception e){Message(e.Message);if(Career.life.day>=Career.life.nextFixture)Button(modal.Q(className:"modal-panel"),"Préparer le match",()=>Navigate("Match"));}
+        }
+        void AdvanceToMatch()
+        {
+            if(Time.unscaledTime<continueAllowedAt)return;continueAllowedAt=Time.unscaledTime+.4f;
+            string failure=null;bool decision=false;
+            try{CloseFinishedMatch();int before=Career.life.serial;
+                for(int advanced=0;PhoneShortcuts.KeepAdvancing(Career.life.day,Career.life.nextFixture,advanced);advanced++){
+                    int serial=Career.life.serial;Career.AdvanceDay(Database);
+                    if(Career.life.messages.Any(m=>m.id>serial&&Career.MessageNeedsDecision(m))){decision=true;break;}}
+                newMessageIds=Career.life.messages.Where(m=>m.id>before).Select(m=>m.id).ToArray();}
+            catch(Exception e){failure=e.Message;}
+            page="Club";Save();Build();
+            if(failure!=null)Message(failure);else if(!decision&&Career.life.day>=Career.life.nextFixture)Navigate("Match");
         }
         void StartCareerMatch(bool delegated)
         {

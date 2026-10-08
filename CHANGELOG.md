@@ -6,6 +6,7 @@ Une ligne par pull request, la plus récente en haut.
 - Fluidité : plus de petits gels en match (sauvegarde aux arrêts de jeu au lieu de toutes les 12 s, résolution dynamique sans oscillation).
 - Moteur de match : un porteur serré de près peut se faire chiper le ballon (tacle/placement contre dribble/contrôle, nombre de presseurs, vitesse), et l'IA en tient compte (conduites dans 2+ défenseurs 17,7 → 7,6, porteur non pressé dans son tiers 73 → 28 s par match) : fautes 19,9 → 22,5, touches 34,1 → 36,9, corners 8,1 → 8,9.
 - IA des clubs : effectifs tenus entre 22 et 30 joueurs (départs remplacés d'abord par des joueurs libres, jusqu'à la taille visée), titulaires conservés face à un club de même taille, propriétaire endetté qui cesse de financer les pertes, vétérans sous le niveau du club non prolongés, rotation en coupe nationale ; `SeasonSim --report`.
+- Interface téléphone : tailles réelles au doigt sur le Fold plié et déplié (1 unité ≈ 1 dp, cibles 48 dp, textes ≥ 11), mentalité en une touche pendant le match, « Jusqu’au match » au bureau, captures d’écran CI (film/ui…).
 - Animation : pas chassés à gauche et à droite et course arrière choisis selon la direction de course par rapport au regard du joueur.
 - IA de match : un joueur qui s'est orienté pour passer ou frapper va au bout de son geste (préparations avortées en conduite 49 → 18 par match) : tirs 23,2 → 26,0, buts 3,18 → 2,77.
 - Visuel : gazon texturé (grain, tonte plus marquée), ciel, second anneau et toit de la tribune d'en face, caméra télé moins plongeante.

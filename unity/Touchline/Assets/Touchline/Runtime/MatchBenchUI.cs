@@ -13,7 +13,8 @@ namespace Touchline
             arena.Paused=true;var m=Career.match;var panel=Modal("Le banc de touche");panel.name="match-bench";panel.AddToClassList("match-bench");
             var summary=Text(panel,"","bench-summary");var available=m.actors.Where(a=>a.side==0&&!a.sentOff).OrderBy(a=>a.slot).ToArray();
             if(m.finished||available.Length==0){Text(panel,"Aucun changement possible dans cette rencontre.");return;}
-            int selection=System.Array.IndexOf(available,available.OrderBy(a=>a.fitness).First());
+            // Joueur le plus fatigué parmi ceux qui n’ont pas déjà un remplaçant préparé : un deuxième changement ne repasse pas par la liste.
+            var replaced=m.pendingSubstitutions.Where(p=>p.side==0).Select(p=>p.outgoing).ToArray();int selection=System.Array.IndexOf(available,available.OrderBy(a=>replaced.Contains(a.id)?1:0).ThenBy(a=>a.fitness).First());
             var labels=available.Select(a=>Database.Find(a.id).name+" · "+Mathf.RoundToInt(a.fitness)+" % de condition"+(a.injured?" · blessé":"")).ToList();
             var outgoing=new DropdownField("Joueur à remplacer",labels,selection){name="bench-outgoing"};panel.Add(outgoing);
             Text(panel,"Les joueurs sont triés selon leur aisance au poste. Un changement préparé attend le prochain arrêt de jeu.","muted");
