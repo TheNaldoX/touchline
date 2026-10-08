@@ -93,6 +93,9 @@ Actor best=null;float bestScore=-100;string kind="pass";
  if(forward< -4&&pressure>4&&space<pressure)score-=5;  
  // A weak passer under pressure recognises fewer ambitious options.  
  score-=aerial?(100-Skill(p,"vision"))*.02f:0;score+=(Random()-.5f)*(1.8f-Skill(p,"vision")*.01f);  
+ // Servir un partenaire marqué de près hors de la zone de finition, quand
+ // on pourrait jouer ailleurs, revient souvent à lui faire perdre le ballon.
+ if((candidate=="pass"||candidate=="switch")&&mate.position.x*dir<MarkedReceiverZone)score-=MarkedReceiverCost(space);
  score+=PassPreference(p,candidate,d);if(score>bestScore){bestScore=score;best=mate;kind=candidate;}  
  }  
  float passChance=best==null?0:ShotQuality(best,kind=="cross"&&!LowCross(p,best))*Safety(p,PassTarget(p,best,kind),kind=="cross"?!LowCross(p,best):kind=="switch");  
@@ -114,6 +117,8 @@ Actor best=null;float bestScore=-100;string kind="pass";
  float carryScore=(p.position.x*dir>12?18:7)+Math.Min(Space(carry,1-p.side),8)*.5f+progress*.35f+(Skill(p,"dribbling")-65)*.055f-(pressure<3?5:0)-Math.Min(m.carryTime,6)*1.2f;  
   
  carryScore+=CarryPreference(p);  
+ // Conduire dans plusieurs adversaires coûte le ballon.
+ carryScore-=CarryCrowdCost(p,carry);
  // Engagement : un joueur qui vient d'orienter son corps pour donner le
  // ballon joue la passe si elle reste disponible, au lieu de repartir en
  // conduite (arrêt, pivot, puis départ dans une autre direction).
@@ -152,7 +157,7 @@ Actor best=null;float bestScore=-100;string kind="pass";
  if(wideRole&&tactic.workIntoBox&&p.position.x*dir>35)laneWeight*=.5f;  
  for(int i=-5;i<=5;i++){float angle=i*.62f;var end=p.position+new Point(dir*(float)Math.Cos(angle)*6,(float)Math.Sin(angle)*6);end.x=Mathx.Clamp(end.x,-50.5f,50.5f);end.z=Mathx.Clamp(end.z,-32,32);  
  float progress=(end.x-p.position.x)*dir;float space=Space(end,1-p.side);float lane=CarryLaneSafety(p,end);float score=lane*7+Math.Min(space,9)*.6f+progress*(ProtectingLead(p.side)?.12f:.7f)-Math.Abs(end.z-(wideRole?assignedFlank:0))*laneWeight;  
- if(Point.Dot(p.velocity.Normalized,(end-p.position).Normalized)<0)score-=2;if(score>bestScore){bestScore=score;best=end;}}  
+ if(Point.Dot(p.velocity.Normalized,(end-p.position).Normalized)<0)score-=2;score-=CarryCrowdCost(p,end);if(score>bestScore){bestScore=score;best=end;}}  
  return best;  
  }  
  float CarryLaneSafety(Actor carrier,Point end)  
