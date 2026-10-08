@@ -120,6 +120,7 @@
   <ExcludedTest Include="StadiumAtmosphereTests.cs" />
   <ExcludedTest Include="StadiumCrowdGeometryTests.cs" />
   <ExcludedTest Include="StadiumGeometryTests.cs" />
+  <ExcludedTest Include="StadiumLightingTests.cs" />
   <ExcludedTest Include="StadiumLookTests.cs" />
   <ExcludedTest Include="MatchFreezeTests.cs" />
   <ExcludedTest Include="PhoneShortcutsTests.cs" />

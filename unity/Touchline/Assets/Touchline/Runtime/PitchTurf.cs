@@ -33,6 +33,31 @@ namespace Touchline
             return texture;
         }
 
+        // Surface du terrain 105 × 68 m en bandes de tonte : sous-maillage 0 = bandes
+        // claires, 1 = sombres. Le coin à l'ombre du toit (x < shadeEndX, z < shadeEdge)
+        // forme un maillage à part (shaded) pour recevoir une matière assombrie.
+        public const float HalfLength=52.5f,HalfWidth=34f,StripeWidth=10.5f; // m
+        public static Mesh Surface(bool shaded,float shadeEdge=-HalfWidth,float shadeEndX=-HalfLength)
+        {
+            shadeEdge=Mathf.Clamp(shadeEdge,-HalfWidth,HalfWidth);shadeEndX=Mathf.Clamp(shadeEndX,-HalfLength,HalfLength);
+            var vertices=new System.Collections.Generic.List<Vector3>();var stripes=new[]{new System.Collections.Generic.List<int>(),new System.Collections.Generic.List<int>()};
+            void Rect(int stripe,float x0,float x1,float z0,float z1)
+            {
+                if(x1-x0<.001f||z1-z0<.001f)return;int v=vertices.Count;
+                vertices.Add(new Vector3(x0,0,z0));vertices.Add(new Vector3(x0,0,z1));vertices.Add(new Vector3(x1,0,z1));vertices.Add(new Vector3(x1,0,z0));
+                stripes[stripe].AddRange(new[]{v,v+1,v+2,v,v+2,v+3});
+            }
+            int count=Mathf.RoundToInt(2*HalfLength/StripeWidth);
+            for(int i=0;i<count;i++){
+                float x0=-HalfLength+i*StripeWidth,x1=x0+StripeWidth;int stripe=i%2;
+                if(shaded)Rect(stripe,x0,Mathf.Min(x1,shadeEndX),-HalfWidth,shadeEdge);
+                else{Rect(stripe,x0,x1,shadeEdge,HalfWidth);Rect(stripe,Mathf.Max(x0,shadeEndX),x1,-HalfWidth,shadeEdge);}
+            }
+            var uv=new Vector2[vertices.Count];for(int i=0;i<uv.Length;i++)uv[i]=new Vector2(vertices[i].x,vertices[i].z)/GrainTile;
+            var mesh=new Mesh{name=shaded?"Mowing surface in roof shadow":"Continuous mowing surface"};mesh.SetVertices(vertices);mesh.uv=uv;mesh.subMeshCount=2;mesh.SetTriangles(stripes[0],0);mesh.SetTriangles(stripes[1],1);mesh.RecalculateNormals();mesh.RecalculateBounds();
+            return mesh;
+        }
+
         // Bruit de valeur lissé, période = Size pixels (cells cellules sur la largeur).
         static float Octave(int x,int y,int cells,uint seed)
         {

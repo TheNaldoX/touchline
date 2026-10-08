@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Visuel : ombre du toit sur la pelouse l'après-midi, panneaux publicitaires aux couleurs des deux clubs (motifs générés), éclairage de soirée avec projecteurs selon l'horaire du match (préférence match-lighting).
 - Fluidité : plus de petits gels en match (sauvegarde aux arrêts de jeu au lieu de toutes les 12 s, résolution dynamique sans oscillation).
 - Moteur de match : un porteur serré de près peut se faire chiper le ballon (tacle/placement contre dribble/contrôle, nombre de presseurs, vitesse), et l'IA en tient compte (conduites dans 2+ défenseurs 17,7 → 7,6, porteur non pressé dans son tiers 73 → 28 s par match) : fautes 19,9 → 22,5, touches 34,1 → 36,9, corners 8,1 → 8,9.
 - IA des clubs : effectifs tenus entre 22 et 30 joueurs (départs remplacés d'abord par des joueurs libres, jusqu'à la taille visée), titulaires conservés face à un club de même taille, propriétaire endetté qui cesse de financer les pertes, vétérans sous le niveau du club non prolongés, rotation en coupe nationale ; `SeasonSim --report`.

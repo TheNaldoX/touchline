@@ -45,7 +45,7 @@ namespace Touchline
         public static bool AutosaveDue(bool paused,bool savedAtStop,float sinceLastSave)=>paused?!savedAtStop:sinceLastSave>LiveSaveInterval;
         bool wasQuiet;Database database;
         public Action SaveRequested;
-        Material turf,white;Mesh pitchMesh;Texture2D turfGrain;readonly System.Collections.Generic.List<Mesh> stadiumMeshes=new System.Collections.Generic.List<Mesh>();
+        Material turf,white;Mesh pitchMesh;Texture2D turfGrain,boardAtlas;readonly System.Collections.Generic.List<Mesh> stadiumMeshes=new System.Collections.Generic.List<Mesh>();
         LineRenderer[] tacticalLines;bool showTactics;Material tacticalMaterial;
         public void Initialize(Database database,MatchSimulation simulation)
         {
@@ -60,32 +60,41 @@ namespace Touchline
             renderBudget=TouchlineApp.Instance==null?null:TouchlineApp.Instance.GetComponent<RenderBudget>();renderBudget?.ResetMatchSample();
             var root=new GameObject("Stadium · metres");root.transform.SetParent(transform);world=root.transform;
             // Bandes de tonte claire/sombre ; la texture de grain les assombrit en moyenne (compensé).
-            turfGrain=PitchTurf.Grain();turf=TurfMaterial(DarkStripe);white=PlayerView.Material(new Color(.88f,.89f,.81f));
-            CreatePitchSurface();
-            Surface(StadiumGeometry.Surround(),PlayerView.Material(new Color(.075f,.18f,.09f)),false);
-            Surface(StadiumGeometry.PerimeterBoards(),PlayerView.Material(new Color(.15f,.32f,.37f)),false);
-            Surface(StadiumGeometry.PitchMarkings(),white,false);
+            turfGrain=PitchTurf.Grain();turf=TurfMaterial(DarkStripe);white=PlayerView.Material(MarkingWhite);
+            // Après-midi : l'ombre du toit d'en face sur la pelouse est simulée (matières assombries,
+            // sans ombre portée reçue) car elle dépasse la distance des ombres temps réel.
+            var career=TouchlineApp.Instance!=null?TouchlineApp.Instance.Career:null;var fixture=career?.world?.fixtures?.Find(f=>f.id==career.world.activeFixture);
+            bool floodlit=StadiumLighting.Floodlit(PlayerPrefs.GetInt(StadiumLighting.PreferenceKey,StadiumLighting.Auto),fixture);
+            float shadeEdge=floodlit?float.NegativeInfinity:StadiumLighting.RoofShadowEdge(),shadeEndX=floodlit?float.NegativeInfinity:StadiumLighting.RoofShadowEndX();var shade=StadiumLighting.ShadeTint();
+            CreatePitchSurface(false,shadeEdge,shadeEndX,Color.white);
+            Surface(StadiumGeometry.Surround(false,shadeEdge,shadeEndX),PlayerView.Material(SurroundGreen),false);
+            Surface(StadiumGeometry.PitchMarkings(false,shadeEdge,shadeEndX),white,false);
+            if(!floodlit){CreatePitchSurface(true,shadeEdge,shadeEndX,shade);
+                Surface(StadiumGeometry.Surround(true,shadeEdge,shadeEndX),PlayerView.Material(SurroundGreen*shade),false,false);
+                Surface(StadiumGeometry.PitchMarkings(true,shadeEdge,shadeEndX),PlayerView.Material(MarkingWhite*shade),false,false);}
             for(int sign=-1;sign<=1;sign+=2){var x=52.5f*sign;
                 Line(new[]{new Vector3(x,0,-3.66f),new Vector3(x,2.44f,-3.66f),new Vector3(x,2.44f,3.66f),new Vector3(x,0,3.66f)},.12f);
                 Surface(StadiumGeometry.GoalNet(sign),white,false);
             }
-            var concrete=PlayerView.Material(new Color(.18f,.23f,.28f));var seats=PlayerView.Material(new Color(.23f,.31f,.36f));
+            var stands=StadiumLighting.StandLight(floodlit);var concrete=PlayerView.Material(new Color(.18f,.23f,.28f)*stands);var seats=PlayerView.Material(new Color(.23f,.31f,.36f)*stands);
             for(int side=-1;side<=1;side+=2){Surface(StadiumGeometry.Stand(side,false),concrete,true);Surface(StadiumGeometry.Stand(side,true),seats,true);Surface(StadiumGeometry.EndStand(side),seats,true);}
-            Surface(StadiumGeometry.UpperStand(),seats,false);Surface(StadiumGeometry.StadiumShell(),PlayerView.Material(new Color(.26f,.29f,.33f)),false);
+            // Le toit, le second anneau et le mur du fond projettent aussi une ombre réelle (joueurs proches de la caméra).
+            Surface(StadiumGeometry.UpperStand(),seats,true);Surface(StadiumGeometry.StadiumShell(),PlayerView.Material(new Color(.26f,.29f,.33f)*stands),true);
+            Surface(StadiumGeometry.FloodlightMasts(),concrete,false);Surface(StadiumGeometry.FloodlightLamps(),PlayerView.Material(StadiumLighting.LampColor(floodlit)),false);
             var homeClub=Array.Find(database.clubs,c=>c.id==simulation.State.home);var awayClub=Array.Find(database.clubs,c=>c.id==simulation.State.away);
             if(!ColorUtility.TryParseHtmlString(homeClub?.color,out var homeColor))homeColor=new Color(.2f,.42f,.57f);
             if(!ColorUtility.TryParseHtmlString(awayClub?.color,out var awayColor))awayColor=new Color(.65f,.3f,.2f);
+            boardAtlas=StadiumAtmosphere.BoardAtlas(homeColor,awayColor);var boards=PlayerView.Material(StadiumLighting.BoardGlow(floodlit));boards.mainTexture=boardAtlas;Surface(StadiumGeometry.PerimeterBoards(),boards,false);
             Surface(StadiumGeometry.TechnicalArea(),concrete,false);Surface(StadiumGeometry.ClubBanners(),PlayerView.Material(Color.Lerp(homeColor,Color.gray,.25f)),false);
             var crowdMesh=StadiumAtmosphere.Crowd(simulation.State.home,simulation.State.away);stadiumMeshes.Add(crowdMesh);
             var crowd=new GameObject(crowdMesh.name);crowd.transform.SetParent(world,false);crowd.AddComponent<MeshFilter>().sharedMesh=crowdMesh;
-            var crowdRenderer=crowd.AddComponent<MeshRenderer>();crowdRenderer.sharedMaterials=Array.ConvertAll(StadiumAtmosphere.Palette(homeColor,awayColor),PlayerView.Material);
+            var crowdRenderer=crowd.AddComponent<MeshRenderer>();crowdRenderer.sharedMaterials=Array.ConvertAll(StadiumAtmosphere.Palette(homeColor,awayColor),c=>PlayerView.Material(c*stands));
             crowdRenderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;crowdRenderer.receiveShadows=false;
             var upperMesh=StadiumAtmosphere.UpperCrowd(simulation.State.home,simulation.State.away);stadiumMeshes.Add(upperMesh);
             var upper=new GameObject(upperMesh.name);upper.transform.SetParent(world,false);upper.AddComponent<MeshFilter>().sharedMesh=upperMesh;
             var upperRenderer=upper.AddComponent<MeshRenderer>();upperRenderer.sharedMaterials=crowdRenderer.sharedMaterials;upperRenderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;upperRenderer.receiveShadows=false;
-            RenderSettings.ambientLight=new Color(.48f,.57f,.67f);RenderSettings.fog=true;RenderSettings.fogColor=SkyColor;RenderSettings.fogMode=FogMode.Linear;RenderSettings.fogStartDistance=110;RenderSettings.fogEndDistance=240;
-            var sun=new GameObject("Afternoon sun").AddComponent<Light>();sun.transform.SetParent(world);sun.type=LightType.Directional;sun.intensity=1.5f;sun.color=new Color(1,.94f,.84f);sun.shadows=LightShadows.Soft;sun.transform.rotation=Quaternion.Euler(48,-35,0);
-            MatchCamera=new GameObject("Broadcast camera").AddComponent<Camera>();MatchCamera.transform.SetParent(world);MatchCamera.fieldOfView=46;MatchCamera.nearClipPlane=.15f;MatchCamera.farClipPlane=270;MatchCamera.clearFlags=CameraClearFlags.SolidColor;MatchCamera.backgroundColor=SkyColor;MatchCamera.tag="MainCamera";MatchCamera.gameObject.AddComponent<AudioListener>();MatchCamera.transform.position=new Vector3(0,19,29);
+            var sky=StadiumLighting.Apply(world,floodlit);RenderSettings.fogStartDistance=110;RenderSettings.fogEndDistance=240;
+            MatchCamera=new GameObject("Broadcast camera").AddComponent<Camera>();MatchCamera.transform.SetParent(world);MatchCamera.fieldOfView=46;MatchCamera.nearClipPlane=.15f;MatchCamera.farClipPlane=270;MatchCamera.clearFlags=CameraClearFlags.SolidColor;MatchCamera.backgroundColor=sky;MatchCamera.tag="MainCamera";MatchCamera.gameObject.AddComponent<AudioListener>();MatchCamera.transform.position=new Vector3(0,19,29);
             players=new PlayerView[22];var m=simulation.State;var homeStrip=MatchKitPalette.Home(homeColor);var awayStrip=MatchKitPalette.Away(homeStrip,awayColor);
             for(int i=0;i<22;i++){var p=m.actors[i];var color=p.side==0?homeStrip:awayStrip;var go=new GameObject("Player "+database.Find(p.id).name);go.transform.SetParent(world);players[i]=go.AddComponent<PlayerView>();players[i].Build(database.Find(p.id),p.side,p.slot,color);}
             var football=FootballBallMesh.Create(white,PlayerView.Material(new Color(.025f,.032f,.04f)));football.transform.SetParent(world,false);ball=football.transform;
@@ -169,22 +178,20 @@ namespace Touchline
         public void ToggleTacticalOverlay(){showTactics=!showTactics;foreach(var line in tacticalLines)line.enabled=showTactics;}
         public void Zoom(float delta){zoom=Mathf.Clamp(zoom+delta,.8f,1.35f);cameraReset=true;PlayerPrefs.SetFloat("match-camera-zoom",zoom);}
         public void ScaleZoom(float factor){if(float.IsNaN(factor)||float.IsInfinity(factor)||factor<=0)return;zoom=Mathf.Clamp(zoom*factor,.8f,1.35f);cameraReset=true;PlayerPrefs.SetFloat("match-camera-zoom",zoom);}
-        void CreatePitchSurface()
+        // shaded : partie à l'ombre simulée du toit, matières multipliées par tint, sans ombre reçue.
+        void CreatePitchSurface(bool shaded,float shadeEdge,float shadeEndX,Color tint)
         {
-            var go=new GameObject("105 × 68 m pitch");go.transform.SetParent(world,false);
-            var vertices=new Vector3[40];var first=new System.Collections.Generic.List<int>();var second=new System.Collections.Generic.List<int>();
-            for(int i=0;i<10;i++){int v=i*4;float x=-52.5f+i*10.5f;vertices[v]=new Vector3(x,0,-34);vertices[v+1]=new Vector3(x,0,34);vertices[v+2]=new Vector3(x+10.5f,0,34);vertices[v+3]=new Vector3(x+10.5f,0,-34);var indices=i%2==0?first:second;indices.AddRange(new[]{v,v+1,v+2,v,v+2,v+3});}
-            var uv=new Vector2[vertices.Length];for(int i=0;i<uv.Length;i++)uv[i]=new Vector2(vertices[i].x,vertices[i].z)/PitchTurf.GrainTile;
-            pitchMesh=new Mesh{name="Continuous mowing surface"};pitchMesh.vertices=vertices;pitchMesh.uv=uv;pitchMesh.subMeshCount=2;pitchMesh.SetTriangles(first,0);pitchMesh.SetTriangles(second,1);pitchMesh.RecalculateNormals();pitchMesh.RecalculateBounds();
-            go.AddComponent<MeshFilter>().sharedMesh=pitchMesh;var renderer=go.AddComponent<MeshRenderer>();renderer.sharedMaterials=new[]{TurfMaterial(LightStripe),turf};renderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
+            var go=new GameObject(shaded?"Pitch in roof shadow":"105 × 68 m pitch");go.transform.SetParent(world,false);
+            var mesh=PitchTurf.Surface(shaded,shadeEdge,shadeEndX);if(shaded)stadiumMeshes.Add(mesh);else pitchMesh=mesh;
+            go.AddComponent<MeshFilter>().sharedMesh=mesh;var renderer=go.AddComponent<MeshRenderer>();renderer.sharedMaterials=new[]{TurfMaterial(LightStripe*tint),shaded?TurfMaterial(DarkStripe*tint):turf};renderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;renderer.receiveShadows=!shaded;
         }
+        static readonly Color MarkingWhite=new Color(.88f,.89f,.81f),SurroundGreen=new Color(.075f,.18f,.09f);
         static readonly Color LightStripe=new Color(.118f,.325f,.136f),DarkStripe=new Color(.088f,.252f,.100f); // tonte (avant grain)
         const float DefaultZoom=.85f; // cadrage télé par défaut, plus serré (joueurs plus lisibles) ; réglable au pincement
-        static readonly Color SkyColor=new Color(.56f,.67f,.79f);
         Material TurfMaterial(Color stripe){var m=PlayerView.Material(stripe/PitchTurf.MeanBrightness);m.color=new Color(m.color.r,m.color.g,m.color.b,1);m.mainTexture=turfGrain;return m;}
-        void Surface(Mesh mesh,Material material,bool shadows){stadiumMeshes.Add(mesh);var go=new GameObject(mesh.name);go.transform.SetParent(world,false);go.AddComponent<MeshFilter>().sharedMesh=mesh;var renderer=go.AddComponent<MeshRenderer>();renderer.sharedMaterial=material;renderer.shadowCastingMode=shadows?UnityEngine.Rendering.ShadowCastingMode.On:UnityEngine.Rendering.ShadowCastingMode.Off;}
+        void Surface(Mesh mesh,Material material,bool shadows,bool receiveShadows=true){stadiumMeshes.Add(mesh);var go=new GameObject(mesh.name);go.transform.SetParent(world,false);go.AddComponent<MeshFilter>().sharedMesh=mesh;var renderer=go.AddComponent<MeshRenderer>();renderer.sharedMaterial=material;renderer.shadowCastingMode=shadows?UnityEngine.Rendering.ShadowCastingMode.On:UnityEngine.Rendering.ShadowCastingMode.Off;renderer.receiveShadows=receiveShadows;}
         void Line(Vector3[] points,float width){var go=new GameObject("Pitch marking");go.transform.SetParent(world);var line=go.AddComponent<LineRenderer>();line.sharedMaterial=white;line.useWorldSpace=true;line.positionCount=points.Length;line.SetPositions(points);line.widthMultiplier=width;line.numCornerVertices=1;line.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;if(Array.TrueForAll(points,p=>p.y<.1f)){line.alignment=LineAlignment.TransformZ;go.transform.rotation=Quaternion.Euler(90,0,0);}}
         static void DisposeArenaObject(UnityEngine.Object item){if(item==null)return;if(Application.isPlaying)Destroy(item);else DestroyImmediate(item);}
-        void OnDestroy(){var materials=new System.Collections.Generic.HashSet<Material>();foreach(var r in GetComponentsInChildren<Renderer>())if(r.GetComponentInParent<PlayerView>()==null)foreach(var material in r.sharedMaterials)if(material!=null)materials.Add(material);foreach(var material in materials)DisposeArenaObject(material);foreach(var mesh in stadiumMeshes)DisposeArenaObject(mesh);DisposeArenaObject(pitchMesh);DisposeArenaObject(turfGrain);if(world!=null)DisposeArenaObject(world.gameObject);}
+        void OnDestroy(){var materials=new System.Collections.Generic.HashSet<Material>();foreach(var r in GetComponentsInChildren<Renderer>())if(r.GetComponentInParent<PlayerView>()==null)foreach(var material in r.sharedMaterials)if(material!=null)materials.Add(material);foreach(var material in materials)DisposeArenaObject(material);foreach(var mesh in stadiumMeshes)DisposeArenaObject(mesh);DisposeArenaObject(pitchMesh);DisposeArenaObject(turfGrain);DisposeArenaObject(boardAtlas);if(world!=null)DisposeArenaObject(world.gameObject);}
     }
 }

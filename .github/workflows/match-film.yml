@@ -30,6 +30,8 @@ jobs:
           # film/proto-… : prototype Mecanim ; sinon séquence de match.
           # film/ui… : captures d'écran de l'interface (mode Play, Unity quitte seul).
           case "$n" in proto*) echo "method=Touchline.Editor.MecanimPrototypeFilm.Run" >> "$GITHUB_OUTPUT";; ui*) echo "method=Touchline.Editor.CiUiScreens.Run" >> "$GITHUB_OUTPUT"; echo "manual=true" >> "$GITHUB_OUTPUT";; *) echo "method=Touchline.Editor.CiMatchFilm.Run" >> "$GITHUB_OUTPUT";; esac
+          # film/…-night : séquence de match en éclairage de soirée.
+          case "$n" in *-night|look-night*) echo "extra=-touchlineLighting=night" >> "$GITHUB_OUTPUT";; esac
 
       - name: Libérer de l'espace disque
         uses: jlumbroso/free-disk-space@v1.3.1
@@ -81,7 +83,7 @@ jobs:
           buildMethod: ${{ steps.name.outputs.method }}
           manualExit: ${{ steps.name.outputs.manual == 'true' }}
           allowDirtyBuild: true
-          customParameters: -force-glcore -touchlineFilm=${{ steps.name.outputs.film }}
+          customParameters: -force-glcore -touchlineFilm=${{ steps.name.outputs.film }} ${{ steps.name.outputs.extra }}
 
       - name: Encodage des vidéos et planches
         if: always()
