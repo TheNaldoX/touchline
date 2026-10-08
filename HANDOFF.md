@@ -35,22 +35,14 @@ Jeu de gestion de football type Football Manager, Unity **6000.3.24f1**, URP, An
   `tools/Calibration` (`dotnet run -c Release -- 200 1` = 200 matchs, graine 1),
   `tools/SeasonSim` (plusieurs saisons, `--report`, `--dump`).
 
-## 3. État au 8 octobre 2026
+## 3. État au 9 octobre 2026
 
 ### Branches et PR
-- **PR #34 `integ/0.56` → `main`** : fusion de toute la pile (PR #21 à #33). **À fusionner en premier**,
-  puis fermer #21–#33 et #20 (release/0.47, déjà couvert).
-- **PR #35 `feat/player-look` → `integ/0.56`** : tenues de club, flocage nom/numéro, cheveux,
-  chaussures, étalonnage télé (post-process), usure du gazon, filet réactif. À fusionner après #34
-  (rebaser la base sur `main`).
-- **PR #36 `feat/atmosphere` → `feat/player-look`** : tribunes qui réagissent (vague, sauts, bras et
-  écharpes sur un but, demi-levée sur une frappe ; `Runtime/CrowdReaction.cs`), virage populaire
-  (x < 0) aux couleurs du club avec écharpes et drapeaux, drapeaux de coin qui flottent
-  (`Runtime/StadiumFlags.cs`), ombres de contact (`Runtime/ContactShadows.cs`), ralenti des buts en
-  plan bas à côté du but (`Runtime/GoalReplayCamera.cs`), filet rejoué au ralenti. **À fusionner après
-  #35.** Contient aussi `main` (HANDOFF.md) fusionné.
+- **PR #34, #35 et #36 fusionnées** : main `ae2df218` contient la pile intégrée, les tenues et l'ambiance.
+- **PR #37 `feat/tactical-audit` → `main`** : brouillon publié, consignes en deux touches et audit tactique. 699 tests Core réussis ; captures Unity en cours, aucune nouvelle APK livrée pour cette PR.
+- Git HTTPS fonctionne sur ce PC. Le connecteur GitHub renvoie encore 403 en écriture ; utiliser Git pour les branches et REST avec les identifiants Git en mémoire pour la PR, sans exposer de secret.
 - Branches `release/0.xx` : uniquement pour construire un APK (voir §4). Ne pas fusionner.
-- APK le plus récent : **0.57** (= `feat/player-look` + numéro de version), code 50.
+- APK le plus récent : **0.58**, code 51 ; build GitHub Actions 37833581975 réussi. Prochaine version prévue : **0.59**, code 52, après validation Unity de #37.
 
 ### Ce qui a été fait (0.47 → 0.57)
 - **Moteur / IA de match** : appels en profondeur, frappes de loin, retard de lecture, interceptions,
@@ -122,7 +114,7 @@ touches 36,9 · passes 81,8 % · possession favori 56 %. **Hors fourchette** : p
 
 ## 6. À faire (par priorité)
 
-1. **#34, #35 et #36 sont fusionnées** (main ae2df218). Reprendre `feat/tactical-audit` : tests Core et audit terminés, publication/CI en attente des droits GitHub. La branche release/0.58 existe (code 51) : réserver 0.59/code 52 après vérification des branches distantes. Faire tester Victor (gels, fluidité,
+1. **#37 est publiée en brouillon** : tests Core et audit terminés, captures de référence en cours (Actions 37850958030), puis captures du candidat et revue visuelle. La branche release/0.58 existe (code 51) : préparer 0.59/code 52 après validation. Faire tester Victor (gels, fluidité,
    rendu). Si ça rame : réduire post-process, flocage, ombres (`RenderBudget`). Ambiance (#36) : vérifier
    sur le Fold qu'un but ne provoque pas d'à-coup (maillage des tribunes réécrit à 20 Hz pendant ~10 s).
    Ralenti de nuit : le plan bas est à contre-jour (joueurs sombres), à régler (lumière d'appoint ou
@@ -178,3 +170,11 @@ léger zoom sur les grosses occasions, tribune haute qui réagit aussi (aujourd'
 - Réserves : ligne haute très avantageuse dans cet échantillon (buts pour 1,68→2,42 et contre 2,19→1,05), missions offensives des milieux très fortes ; tempo rapide n'augmente pas significativement le nombre de passes. Penalties 0,17, sorties de but 13,14, favori 67,68 % : non corrigés dans ce lot. IA adverse déjà présente (score/minute/formes observées, effectif et niveau initial), pas refaite ni prétendue nouvelle. Les lots management, identité UI complète et calibration restent à réaliser.
 - Prochaine étape : débloquer l'écriture GitHub, publier cette branche et sa PR (modèle du dépôt), lancer film/ui-tactical-before sur ae2df218 puis film/ui-tactical-after sur le commit candidat, vérifier les captures et erreurs, préparer release/0.59/code52 avec déclencheur release/** (absent de main), livrer le lien Actions après succès. Ne pas fusionner main/release automatiquement. Puis corriger les compromis de la ligne haute et les consignes non concluantes avec calibration avant/après, poursuivre les lots B/C/D.
 - Diagnostic carrière terminé : tools/SeasonSim 10 176 --world --report --worldseed 77, années 2026–2036, 533 s, zéro match au moteur complet (mode monde). Rapport tools/SeasonSim/Reports/world-10-seasons-seed77.txt. Effectifs finaux min/médiane/max 23/30/45 : zéro club sous 18, quatre au-dessus de 40. Niveau moyen 64,3→64,2 ; ratio médian salaires/recettes 35→37 % ; 51 % des promus maintenus. Réserves : certains effectifs restent surdimensionnés, dette chez 126/384 clubs ; pas de preuve que tous les systèmes humains sont équilibrés. Le cumul affiché des transferts plafonne à 3000 car l’historique est borné dans CareerAiEconomy, pas parce que le mercato s’arrête. Aucun changement carrière dans ce lot.
+
+### Session Codex du 9 octobre 2026 — publication débloquée
+- Git HTTPS authentifié : branche feat/tactical-audit publiée (d64d568), PR brouillon #37 créée : https://github.com/TheNaldoX/touchline/pull/37. Le connecteur reste en erreur 403 ; création effectuée via GitHub REST avec les identifiants Git, sans les afficher ni les conserver dans un fichier.
+- Captures de référence lancées sur film/ui-tactical-before (ae2df218) : https://github.com/TheNaldoX/touchline/actions/runs/37850958030, en cours lors de cette mise à jour.
+- Prochaine étape : attendre la référence, lancer film/ui-tactical-after sur le candidat, contrôler la compilation et les captures ; puis préparer la release après vérification des versions distantes. Aucun APK nouveau ni validation Unity réussie annoncés à ce stade. Les anciennes mentions de blocage Git ci-dessus sont désormais historiques.
+- Parcours complet de référence 37850958030 annulé avant résultat : une exécution historique comparable consacrait 51 minutes au parcours après configuration. Nouveau mode CiUiScreens `ui-tactical-focus-*` limité aux écrans modifiés, toujours en résolution native, trois images de stabilisation au lieu de douze. Le parcours complet reste disponible. Le candidat vérifie explicitement les consignes avec pause puis en direct x2 ; le parcours `-before` capture seulement les contrôles existants. Ne pas présenter ce contrôle ciblé comme une revalidation de tous les menus.
+- APK précédente 0.58 téléchargée pour comparaison : package fr.personal.touchline.unity, code 51, ARM64, certificat SHA256 130917e6d2b4ea2dcca487587dcff03b1356b14e7de39c3e01657097ad57ee13 (apksigner verify réussi).
+- Revue tactique en lecture seule : DefensiveFocus utilise la destination finale dès la préparation de passe (avant contact) ; piste à tester séparément. La consigne de ligne modifie aussi le seuil de pressing : couplage avéré, effet sur le déséquilibre restant à isoler. Aucun changement moteur ajouté au candidat.

@@ -43,6 +43,10 @@ namespace Touchline.Editor
         }
 
         static string Output=>SessionState.GetString(OutputKey,"build/film/ui");
+        // Focused PR validation still renders at native Fold resolution. Three frames
+        // allow layout/repaint to settle without twelve expensive software-rendered frames.
+        static bool FocusedTactics=>Path.GetFileName(Output).StartsWith("ui-tactical-focus-",StringComparison.Ordinal);
+        const int FocusedStepFrames=3;
         static TouchlineApp App=>TouchlineApp.Instance;
         static UIDocument Document=>App.GetComponent<UIDocument>();
         static VisualElement Root=>Document.rootVisualElement;
@@ -66,6 +70,7 @@ namespace Touchline.Editor
 
         static List<Action> BuildSteps()
         {
+            if(FocusedTactics)return BuildFocusedTacticSteps();
             var list=new List<Action>();
             list.Add(()=>{App.Career.EnsureWorld(App.Database);});
             foreach(var s in Screens){
@@ -105,13 +110,46 @@ namespace Touchline.Editor
             return list;
         }
 
+        static List<Action> BuildFocusedTacticSteps()
+        {
+            bool reference=Path.GetFileName(Output).EndsWith("-before",StringComparison.Ordinal);
+            audit.AppendLine("Parcours ciblé : interface du match, deux résolutions natives. Les autres écrans ne sont pas revalidés par ce parcours.");
+            var list=new List<Action>();var first=Screens[0];
+            list.Add(()=>{App.Career.EnsureWorld(App.Database);Resize(first.width,first.height);App.Career.life.day=App.Career.life.nextFixture;Call("Navigate","Match");});
+            list.Add(()=>Click("Entrer sur le terrain"));
+            list.Add(()=>{if(Root.Q<Button>("prematch-kickoff")!=null)Click("prematch-kickoff");});
+            foreach(var s in Screens){
+                var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Match");});
+                list.Add(()=>{if(Arena==null)throw new Exception("Match absent");Arena.Paused=true;});
+                list.Add(()=>{Capture(screen.tag+"-match-pause");if(!reference)Click("match-instructions-open");});
+                if(!reference){
+                    list.Add(()=>{Capture(screen.tag+"-consignes-rapides");AssertQuickPressing(2,true);});
+                    list.Add(()=>{Arena.Paused=false;Arena.Speed=2;Click("match-instructions-open");});
+                    list.Add(()=>AssertQuickPressing(1,false));
+                    list.Add(()=>{Capture(screen.tag+"-match-retour");Arena.Paused=true;});
+                }
+            }
+            return list;
+        }
+
+        static void AssertQuickPressing(int level,bool paused)
+        {
+            float expected=level==2?.8f:.5f;float speed=Arena.Speed;
+            if(Arena.Paused!=paused)throw new Exception("L'ouverture des consignes a changé la pause");
+            Click("quick-tactic-Pressing-"+level);
+            if(App.Career.tactic.pressing!=expected||App.Career.match.homeTactic.pressing!=expected||Arena.Paused!=paused||Arena.Speed!=speed||Root.Q("match-instructions")!=null)
+                throw new Exception("Consigne en deux touches : application/retour/pause/vitesse incorrects");
+            audit.AppendLine("Consigne en deux touches validée : pressing "+expected.ToString(CultureInfo.InvariantCulture)+", pause "+paused+", vitesse "+speed.ToString(CultureInfo.InvariantCulture)+", retour au match.");
+        }
+
         static void Tick()
         {
             if(!SessionState.GetBool(Flag,false)||!EditorApplication.isPlaying)return;
             float now=Time.realtimeSinceStartup;if(startedAt<0){startedAt=now;Application.logMessageReceived+=(m,st,t)=>{if(log.Length<200000)log.AppendLine(t+": "+m+(t==LogType.Exception?"\n"+st:""));};}
             if(TouchlineApp.Instance==null){if(now-startedAt>BootTimeoutSeconds)Finish("TouchlineApp absent");return;}
             if(now-startedAt>RunTimeoutSeconds){Finish("délai dépassé à l'étape "+stage);return;}
-            if(++frames<StepFrames||now-stepAt<StepSeconds)return;frames=0;stepAt=now;
+            if(++frames<(FocusedTactics?FocusedStepFrames:StepFrames)||now-stepAt<StepSeconds)return;frames=0;stepAt=now;
             steps??=BuildSteps();
             if(stage<0)stage=0;
             if(stage>=steps.Count){Finish(failures==0?null:failures+" étape(s) en échec");return;}
