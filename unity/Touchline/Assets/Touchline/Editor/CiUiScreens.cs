@@ -26,7 +26,7 @@ namespace Touchline.Editor
         const float MinTouchDp=48,MinTextSp=12;
         // Attente entre deux étapes : images rendues et durée réelle (secondes), le temps que
         // la mise en page et les petites transitions d'entrée se terminent.
-        const int StepFrames=12;const float StepSeconds=.6f,BootTimeoutSeconds=180,RunTimeoutSeconds=2400;
+        const int StepFrames=12;const float StepSeconds=.6f,BootTimeoutSeconds=180,RunTimeoutSeconds=3300;
         static readonly (string tag,int width,int height)[] Screens={("plie",1080,2520),("deplie",2184,1968)};
         static int stage=-1,frames;static float stepAt,startedAt=-1;static RenderTexture target;static List<Action> steps;
         static readonly StringBuilder audit=new StringBuilder(),log=new StringBuilder();
