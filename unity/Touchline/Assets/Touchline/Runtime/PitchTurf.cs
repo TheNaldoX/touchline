@@ -65,8 +65,8 @@ namespace Touchline
         public const int WearSize=128;                    // pixels de côté
         public const float WearHeight=.012f;              // m au-dessus du gazon, sous les lignes (0,025 m)
         public const float GoalmouthDepth=7f,GoalmouthWidth=11f,CentreWear=7f; // m
-        const float WearStrength=.5f;                     // part maximale de la teinte usée (centre de zone)
-        static readonly Color Worn=new Color(.80f,.74f,.56f); // multiplicateur : herbe jaunie et terre
+        const float WearStrength=.75f;                    // part maximale de la teinte usée (centre de zone)
+        static readonly Color Worn=new Color(.74f,.68f,.48f); // multiplicateur : herbe jaunie et terre
         static Texture2D wear;
         public static Texture2D WearTexture()
         {
@@ -81,7 +81,7 @@ namespace Touchline
         {
             float u=(x+.5f)/WearSize*2-1,v=(y+.5f)/WearSize*2-1;float r=Mathf.Sqrt(u*u+v*v);
             float noise=Octave(x*2,y*2,16,7)*.6f+Octave(x*2,y*2,64,8)*.4f;
-            float shape=1-Smooth(Mathf.Clamp01((r+(noise-.5f)*.45f-.15f)/.85f));
+            float shape=1-Smooth(Mathf.Clamp01((r+(noise-.5f)*.45f-.25f)/.75f));
             float fade=1-Smooth(Mathf.Clamp01((r-.8f)/.2f)); // nul au bord du carré : pas de cadre visible
             return Mathf.Clamp01(shape*fade*WearStrength*Mathf.Lerp(.55f,1.15f,noise));
         }
