@@ -16,9 +16,15 @@ namespace Touchline.Editor
     // ensuite en vidéo par le workflow. Paramètres : -touchlineFilm=nom,
     // -touchlineFilmStart=secondes de jeu avant de filmer, -touchlineFilmSeconds,
     // -touchlineFilmHome / -touchlineFilmAway (identifiants de clubs), -touchlineFilmSeed.
+    // Nom contenant « goal » : le film commence GoalLead s avant le premier but du
+    // club recevant marqué après le départ demandé (graines suivantes essayées si la
+    // première mi-temps n'en a pas), pour voir le filet, le ralenti et les tribunes.
     public static class CiMatchFilm
     {
         const int Fps=30,Width=960,Height=540;
+        const float GoalLead=6f;          // s de jeu filmées avant le but
+        const float GoalFilmSeconds=24f;  // s : but, ralenti (≤ 8 s) et célébration
+        const uint GoalSeedAttempts=24;   // graines essayées pour trouver un but
         static string Arg(string key,string fallback)=>Environment.GetCommandLineArgs().FirstOrDefault(a=>a.StartsWith(key+"="))?.Substring(key.Length+1)??fallback;
 
         public static void Run()
@@ -34,8 +40,20 @@ namespace Touchline.Editor
                 var db=JsonUtility.FromJson<Database>(Resources.Load<TextAsset>("Data/database").text);
                 string home=Arg("-touchlineFilmHome","176"),away=Arg("-touchlineFilmAway","160");
                 if(db.Find(db.Squad(home).FirstOrDefault()?.id??"")==null||!db.Squad(away).Any())throw new Exception("Clubs introuvables : "+home+" / "+away);
-                var career=new Career{club=home};career.lineup=Career.Select(db,home,career.tactic);
-                var sim=MatchSimulation.Create(db,career,away,seed,2700);sim.State.professionalRules=true;sim.State.venueSide=0;
+                MatchSimulation NewMatch(uint matchSeed){var career=new Career{club=home};career.lineup=Career.Select(db,home,career.tactic);
+                    var match=MatchSimulation.Create(db,career,away,matchSeed,2700);match.State.professionalRules=true;match.State.venueSide=0;return match;}
+                string goalNote="";
+                if(name.Contains("goal")){
+                    for(uint attempt=0;attempt<GoalSeedAttempts;attempt++){
+                        var probe=NewMatch(seed+attempt);while(probe.State.clock<start&&!probe.State.halfTime&&!probe.State.finished)probe.Advance(MatchSimulation.Step);
+                        int before=probe.State.score[0]; // buts du club recevant (tribunes les plus grandes)
+                        while(!probe.State.halfTime&&!probe.State.finished&&probe.State.score[0]==before)probe.Advance(MatchSimulation.Step);
+                        if(probe.State.score[0]==before)continue;
+                        goalNote=$" goal_clock={probe.State.clock:0.0} goal_seed={seed+attempt}";seed+=attempt;start=Mathf.Max(0,probe.State.clock-GoalLead);
+                        if(Arg("-touchlineFilmSeconds",null)==null)seconds=GoalFilmSeconds;break;
+                    }
+                }
+                var sim=NewMatch(seed);
                 // Avance la partie jusqu'au moment filmé (pas de rendu pendant ce temps).
                 while(sim.State.clock<start&&!sim.State.halfTime&&!sim.State.finished)sim.Advance(MatchSimulation.Step);
                 var output=Path.GetFullPath(Path.Combine("build","film",name));if(Directory.Exists(output))Directory.Delete(output,true);
@@ -80,7 +98,7 @@ namespace Touchline.Editor
                 }
                 string Stats(List<float> values){if(values.Count==0)return "—";values.Sort();return $"moyenne {values.Average():0.00} · médiane {values[values.Count/2]:0.00} · p95 {values[(int)(values.Count*.95f)]:0.00} · max {values[values.Count-1]:0.00} (n={values.Count})";}
                 File.WriteAllText(Path.Combine(output,"metrics.txt"),"pied posé, glissement (m/s) : "+Stats(slides)+"\nà-coup de trajectoire (m/s³) : "+Stats(jerks)+"\nrotation (°/s) : "+Stats(yawRates)+"\n\nglissement par action :\n"+string.Join("\n",slidesByAction.OrderByDescending(x=>x.Value.Count).Select(x=>"  "+x.Key+" : "+Stats(x.Value)))+"\n\nrotation par action :\n"+string.Join("\n",yawByAction.OrderByDescending(x=>x.Value.Count).Select(x=>"  "+x.Key+" : "+Stats(x.Value)))+"\n");
-                File.WriteAllText(Path.Combine(output,"info.txt"),$"home={home} away={away} seed={seed} start={start} seconds={seconds} fps={Fps} clock_end={sim.State.clock:0.0} score={sim.State.score[0]}-{sim.State.score[1]}\nmecanim={PlayerView.UseMecanim} ready={PlayerView.MecanimReady}\ngraphics={SystemInfo.graphicsDeviceType} {SystemInfo.graphicsDeviceName} {SystemInfo.graphicsDeviceVersion}\n"+diagnostics);
+                File.WriteAllText(Path.Combine(output,"info.txt"),$"home={home} away={away} seed={seed} start={start} seconds={seconds} fps={Fps} clock_end={sim.State.clock:0.0} score={sim.State.score[0]}-{sim.State.score[1]}{goalNote}\nmecanim={PlayerView.UseMecanim} ready={PlayerView.MecanimReady}\ngraphics={SystemInfo.graphicsDeviceType} {SystemInfo.graphicsDeviceName} {SystemInfo.graphicsDeviceVersion}\n"+diagnostics);
                 arena.MatchCamera.targetTexture=null;target.Release();UnityEngine.Object.DestroyImmediate(target);UnityEngine.Object.DestroyImmediate(follow.gameObject);UnityEngine.Object.DestroyImmediate(root);
                 Debug.Log("TOUCHLINE_FILM_OK "+output);File.WriteAllText(logPath,log.ToString());EditorApplication.Exit(0);
             }catch(Exception e){Debug.LogException(e);if(logPath!=null)File.WriteAllText(logPath,log.ToString());EditorApplication.Exit(1);}

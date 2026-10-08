@@ -43,6 +43,12 @@ Jeu de gestion de football type Football Manager, Unity **6000.3.24f1**, URP, An
 - **PR #35 `feat/player-look` → `integ/0.56`** : tenues de club, flocage nom/numéro, cheveux,
   chaussures, étalonnage télé (post-process), usure du gazon, filet réactif. À fusionner après #34
   (rebaser la base sur `main`).
+- **PR #36 `feat/atmosphere` → `feat/player-look`** : tribunes qui réagissent (vague, sauts, bras et
+  écharpes sur un but, demi-levée sur une frappe ; `Runtime/CrowdReaction.cs`), virage populaire
+  (x < 0) aux couleurs du club avec écharpes et drapeaux, drapeaux de coin qui flottent
+  (`Runtime/StadiumFlags.cs`), ombres de contact (`Runtime/ContactShadows.cs`), ralenti des buts en
+  plan bas à côté du but (`Runtime/GoalReplayCamera.cs`), filet rejoué au ralenti. **À fusionner après
+  #35.** Contient aussi `main` (HANDOFF.md) fusionné.
 - Branches `release/0.xx` : uniquement pour construire un APK (voir §4). Ne pas fusionner.
 - APK le plus récent : **0.57** (= `feat/player-look` + numéro de version), code 50.
 
@@ -92,6 +98,8 @@ touches 36,9 · passes 81,8 % · possession favori 56 %. **Hors fourchette** : p
   - autres → `Editor/CiMatchFilm.Run` : 15 s de match, `broadcast.mp4`, `follow.mp4`, planches
     `*-sheet.jpg`, `metrics.txt` (glissement des pieds par action, rotations), `editor-errors.txt`
     (chercher `error CS` = la compilation a échoué). Noms finissant par `-night` : éclairage du soir.
+    Nom contenant `goal` : le film commence 6 s avant le premier but du club recevant (graine 731,
+    puis suivantes) et dure 24 s (but, ralenti, tribunes) ; graine et instant du but dans `info.txt`.
   - Résultats publiés dans la branche `films`, dossier `films/<nom>/` :
     `git fetch origin films:refs/remotes/origin/films && git show origin/films:films/<nom>/metrics.txt`.
   - Statut : `gh api repos/TheNaldoX/touchline/commits/film/<nom>/check-runs`.
@@ -114,8 +122,11 @@ touches 36,9 · passes 81,8 % · possession favori 56 %. **Hors fourchette** : p
 
 ## 6. À faire (par priorité)
 
-1. **Fusionner #34 puis #35**, construire un APK depuis `main`, faire tester Victor (gels, fluidité,
-   rendu). Si ça rame : réduire post-process, flocage, ombres (`RenderBudget`).
+1. **Fusionner #35 puis #36** (#34 est fusionnée), construire un APK depuis `main`, faire tester Victor (gels, fluidité,
+   rendu). Si ça rame : réduire post-process, flocage, ombres (`RenderBudget`). Ambiance (#36) : vérifier
+   sur le Fold qu'un but ne provoque pas d'à-coup (maillage des tribunes réécrit à 20 Hz pendant ~10 s).
+   Ralenti de nuit : le plan bas est à contre-jour (joueurs sombres), à régler (lumière d'appoint ou
+   autre côté du but) si Victor le remarque.
 2. **Tactique** (demande de Victor) : vérifier que chaque consigne (mentalité, pressing, hauteur de
    ligne, largeur, tempo/jeu direct, rôles) a un effet mesurable dans le bon sens avec
    `tools/Calibration` (tableau consigne → effet), compléter les consignes manquantes avec des
@@ -133,6 +144,9 @@ touches 36,9 · passes 81,8 % · possession favori 56 %. **Hors fourchette** : p
 5. **Calibration** : remonter penalties et sorties de but dans leur fourchette, ramener la victoire du
    favori vers 45–55 %.
 
+Idées d'ambiance restantes (priorité basse, animations gelées) : remplaçants et staff sur les bancs,
+léger zoom sur les grosses occasions, tribune haute qui réagit aussi (aujourd'hui fixe).
+
 ## 7. Modèle de fin de session (à recopier ici)
 
 ```
@@ -142,3 +156,16 @@ touches 36,9 · passes 81,8 % · possession favori 56 %. **Hors fourchette** : p
 - Non vérifié : …
 - Prochaine étape : …
 ```
+
+### Session Claude du 8 octobre 2026 (ambiance, PR #36)
+- Fait : réactions du public, virage aux couleurs du club, drapeaux, ombres de contact, ralenti en plan
+  bas, mode `film/…goal…` (PR #36, base `feat/player-look`).
+- Mesures : +3 appels de rendu (drapeaux 3 sous-maillages réutilisant les matières des tribunes,
+  ombres de contact 1, drapeaux de coin fixes supprimés −1), 0 matière nette (+1 ombres, −1 coins),
+  texture 64² ; ~+700 triangles. CPU : rien au repos dans les tribunes ; pendant une réaction,
+  sommets du camp concerné recalculés à 20 Hz (~36 k sommets envoyés par mise à jour) ; drapeaux
+  ~230 sommets à 15 Hz ; ombres 92 sommets par image. Films : atm-goal(-night) (but visiteur),
+  atm-homegoal(-night) (but du club), atm-shadow, atm-a2(-night) (comparables à kit-a1).
+- Non vérifié : téléphone ; tests EditMode Unity (CrowdLifeTests) jamais exécutés, seulement compilés
+  par les films ; ombres de contact peu visibles au premier essai (renforcées, voir atm-a2).
+- Prochaine étape : §6.

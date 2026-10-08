@@ -26,6 +26,7 @@
   <ExcludedTest Include="CareerLongTermTests.cs" />
   <ExcludedTest Include="CareerOperatingCostsTests.cs" />
   <ExcludedTest Include="CarrierMarkingFacingTests.cs" />
+  <ExcludedTest Include="CrowdLifeTests.cs" />
   <ExcludedTest Include="DefensiveFacingTests.cs" />
   <ExcludedTest Include="DirectionalCaptureTests.cs" />
   <ExcludedTest Include="DiscussionPresentationTests.cs" />

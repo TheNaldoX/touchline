@@ -114,14 +114,6 @@ namespace Touchline
             for(int end=-1;end<=1;end+=2)for(int side=-1;side<=1;side+=2)mesh.Beam(new Vector3(end*52.5f,0,side*34),new Vector3(end*52.5f,1.5f,side*34),.035f);
             return mesh.Build("Grouped benches and corner posts");
         }
-        public static Mesh ClubBanners()
-        {
-            var mesh=new Builder();
-            for(int side=-1;side<=1;side+=2){
-                for(int end=-1;end<=1;end+=2)mesh.Box(new Vector3(end*52.5f+.18f,1.34f,side*34),new Vector3(.34f,.26f,.035f));
-            }
-            return mesh.Build("Corner flags");
-        }
         // Pylônes d'éclairage derrière les quatre coins (hors du champ de la caméra
         // télé côté +Z) et rampe sous le bord du toit d'en face.
         public const float MastX=76f,MastZ=44f,MastHeight=34f;   // m

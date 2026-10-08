@@ -88,11 +88,11 @@ namespace Touchline
             if(!ColorUtility.TryParseHtmlString(homeClub?.color,out var homeColor))homeColor=new Color(.2f,.42f,.57f);
             if(!ColorUtility.TryParseHtmlString(awayClub?.color,out var awayColor))awayColor=new Color(.65f,.3f,.2f);
             boardAtlas=StadiumAtmosphere.BoardAtlas(homeColor,awayColor);var boards=StadiumLighting.BoardMaterial(floodlit,boardAtlas);Surface(StadiumGeometry.PerimeterBoards(),boards,false);
-            Surface(StadiumGeometry.TechnicalArea(),concrete,false);Surface(StadiumGeometry.ClubBanners(),PlayerView.Material(Color.Lerp(homeColor,Color.gray,.25f)),false);
-            var crowdMesh=StadiumAtmosphere.Crowd(simulation.State.home,simulation.State.away);stadiumMeshes.Add(crowdMesh);
+            Surface(StadiumGeometry.TechnicalArea(),concrete,false); // drapeaux de coin : StadiumFlags (BuildAtmosphere)
+            var crowdMesh=StadiumAtmosphere.Crowd(simulation.State.home,simulation.State.away,StadiumAtmosphere.DefaultOccupancy,out var crowdRig);stadiumMeshes.Add(crowdMesh);
             var crowd=new GameObject(crowdMesh.name);crowd.transform.SetParent(world,false);crowd.AddComponent<MeshFilter>().sharedMesh=crowdMesh;
             var crowdRenderer=crowd.AddComponent<MeshRenderer>();crowdRenderer.sharedMaterials=Array.ConvertAll(StadiumAtmosphere.Palette(homeColor,awayColor),c=>PlayerView.Material(c*stands));
-            crowdRenderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;crowdRenderer.receiveShadows=false;
+            crowdRenderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;crowdRenderer.receiveShadows=false;BuildAtmosphere(crowdMesh,crowdRig,crowdRenderer.sharedMaterials);
             var upperMesh=StadiumAtmosphere.UpperCrowd(simulation.State.home,simulation.State.away);stadiumMeshes.Add(upperMesh);
             var upper=new GameObject(upperMesh.name);upper.transform.SetParent(world,false);upper.AddComponent<MeshFilter>().sharedMesh=upperMesh;
             var upperRenderer=upper.AddComponent<MeshRenderer>();upperRenderer.sharedMaterials=floodlit?crowdRenderer.sharedMaterials:Array.ConvertAll(StadiumAtmosphere.Palette(homeColor,awayColor),c=>PlayerView.Material(c*far));upperRenderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;upperRenderer.receiveShadows=false;
@@ -104,7 +104,7 @@ namespace Touchline
             for(int i=0;i<22;i++){var p=m.actors[i];var go=new GameObject("Player "+database.Find(p.id).name);go.transform.SetParent(world);players[i]=go.AddComponent<PlayerView>();players[i].Build(database.Find(p.id),p.side,p.slot,kits[p.side]);}
             var football=FootballBallMesh.Create(white,PlayerView.Material(new Color(.025f,.032f,.04f)));football.transform.SetParent(world,false);ball=football.transform;
             tacticalMaterial=PlayerView.Material(new Color(.75f,.9f,.25f));tacticalLines=new LineRenderer[11];for(int i=0;i<11;i++){var marker=new GameObject("Tactical intention "+i);marker.transform.SetParent(world);var line=marker.AddComponent<LineRenderer>();line.sharedMaterial=tacticalMaterial;line.positionCount=2;line.widthMultiplier=.075f;line.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;line.enabled=false;tacticalLines[i]=line;}
-            BuildGoalReplay();
+            BuildContactShadows();BuildGoalReplay();
         }
         void Update()=>RenderFrame(Time.unscaledDeltaTime);
         // Explicit elapsed time also permits deterministic footage and replay
@@ -113,6 +113,7 @@ namespace Touchline
         {
             if(Simulation==null)return;
             if(float.IsNaN(frameDelta)||float.IsInfinity(frameDelta)||frameDelta<=0)return;
+            AdvanceAtmosphere(Mathf.Min(.1f,frameDelta));
             if(GoalReplayActive){if(!Paused)AdvanceGoalReplay(frameDelta);return;}
             if(!Paused&&!QuietPresentation)renderBudget?.RecordMatchFrame(frameDelta,MatchCamera.targetTexture,Speed);
             frameDelta=Mathf.Min(.1f,frameDelta);
@@ -159,7 +160,7 @@ namespace Touchline
             // Fast passes move the action window instead of pulling the camera
             // hundreds of metres away to retain its previous focus.
             if(!tactical){focus.x=Mathf.Clamp(focus.x,ball.position.x-20,ball.position.x+20);focus.z=Mathf.Clamp(focus.z,ball.position.z-13,ball.position.z+13);}
-            ReframeCamera(frameDelta);
+            ReframeCamera(frameDelta);UpdateContactShadows();
             CaptureGoalReplay(m,alpha);
             if((Viewport==null||!Viewport.Bound)&&Input.GetMouseButtonDown(0))pointerStart=Input.mousePosition;
             if((Viewport==null||!Viewport.Bound)&&Input.GetMouseButtonUp(0)&&Vector2.Distance(pointerStart,Input.mousePosition)<8&&!TouchlineApp.Instance.PointerOverInterface(Input.mousePosition)){var ray=MatchCamera.ScreenPointToRay(Input.mousePosition);if(Physics.Raycast(ray,out var hit,250)){var view=hit.collider.GetComponentInParent<PlayerView>();if(view!=null){Paused=true;PlayerSelected?.Invoke(view.PlayerId);}}}
@@ -198,6 +199,6 @@ namespace Touchline
         void Surface(Mesh mesh,Material material,bool shadows,bool receiveShadows=true){stadiumMeshes.Add(mesh);var go=new GameObject(mesh.name);go.transform.SetParent(world,false);go.AddComponent<MeshFilter>().sharedMesh=mesh;var renderer=go.AddComponent<MeshRenderer>();renderer.sharedMaterial=material;renderer.shadowCastingMode=shadows?UnityEngine.Rendering.ShadowCastingMode.On:UnityEngine.Rendering.ShadowCastingMode.Off;renderer.receiveShadows=receiveShadows;}
         void Line(Vector3[] points,float width){var go=new GameObject("Pitch marking");go.transform.SetParent(world);var line=go.AddComponent<LineRenderer>();line.sharedMaterial=white;line.useWorldSpace=true;line.positionCount=points.Length;line.SetPositions(points);line.widthMultiplier=width;line.numCornerVertices=1;line.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;if(Array.TrueForAll(points,p=>p.y<.1f)){line.alignment=LineAlignment.TransformZ;go.transform.rotation=Quaternion.Euler(90,0,0);}}
         static void DisposeArenaObject(UnityEngine.Object item){if(item==null)return;if(Application.isPlaying)Destroy(item);else DestroyImmediate(item);}
-        void OnDestroy(){var materials=new System.Collections.Generic.HashSet<Material>();foreach(var r in GetComponentsInChildren<Renderer>())if(r.GetComponentInParent<PlayerView>()==null)foreach(var material in r.sharedMaterials)if(material!=null)materials.Add(material);foreach(var material in materials)DisposeArenaObject(material);foreach(var mesh in stadiumMeshes)DisposeArenaObject(mesh);DisposeArenaObject(pitchMesh);DisposeArenaObject(turfGrain);DisposeArenaObject(boardAtlas);if(world!=null)DisposeArenaObject(world.gameObject);}
+        void OnDestroy(){var materials=new System.Collections.Generic.HashSet<Material>();foreach(var r in GetComponentsInChildren<Renderer>())if(r.GetComponentInParent<PlayerView>()==null)foreach(var material in r.sharedMaterials)if(material!=null)materials.Add(material);foreach(var material in materials)DisposeArenaObject(material);foreach(var mesh in stadiumMeshes)DisposeArenaObject(mesh);DisposeArenaObject(pitchMesh);DisposeArenaObject(turfGrain);DisposeArenaObject(boardAtlas);DisposeArenaObject(contactTexture);if(world!=null)DisposeArenaObject(world.gameObject);}
     }
 }

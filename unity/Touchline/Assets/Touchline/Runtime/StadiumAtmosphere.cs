@@ -16,18 +16,28 @@ namespace Touchline
                 new Color(.12f,.15f,.19f),new Color(.31f,.34f,.36f),Color.Lerp(away,new Color(.12f,.14f,.17f),.35f),
                 new Color(.58f,.40f,.29f),new Color(.28f,.19f,.15f)};
         }
-        public static Mesh Crowd(string home,string away,float occupancy=.84f)
+        public const float DefaultOccupancy=.84f; // part des sièges occupés
+        public static Mesh Crowd(string home,string away,float occupancy=DefaultOccupancy)=>Crowd(home,away,occupancy,out _);
+        // rig : découpage du maillage par supporter (pour CrowdReaction), sans objet par spectateur.
+        public static Mesh Crowd(string home,string away,float occupancy,out CrowdRig rig)
         {
             occupancy=float.IsNaN(occupancy)||float.IsInfinity(occupancy)?0:Mathf.Clamp01(occupancy);
             uint state=2166136261;foreach(char c in (home??"")+"|"+(away??"")){state^=c;state*=16777619;}
             var builder=new CrowdBuilder();
             uint Next(){state=state*1664525+1013904223;return state;}
-            void Add(Vector3 position,Vector3 towardPitch,bool visiting,bool detailed)
+            void Add(Vector3 position,Vector3 towardPitch,bool visiting,bool detailed,bool homeEnd=false)
             {
                 uint sample=Next();if((sample&65535)/65536f>=occupancy)return;
                 float height=.44f+((sample>>16)&15)*.012f;
                 int clothing=visiting&&sample%4==0?4:(int)((sample>>21)%4);
+                // Bits mélangés : les bits bas d'un générateur congruentiel ont une période courte.
+                uint mix=sample*2654435761u;
+                // Virage populaire : trois habits neutres sur quatre passent aux couleurs du club.
+                if(homeEnd&&clothing>1&&(mix>>30)!=0)clothing=(int)((mix>>29)&1);
+                int first=builder.VertexCount;
                 builder.Person(position,towardPitch,height,clothing,5+(int)((sample>>25)&1),sample,detailed);
+                if(homeEnd&&(mix>>27&3)<HomeEndScarfQuarters)builder.Scarf(position,towardPitch,height,(int)((mix>>26)&1));
+                builder.EndPerson(first,position,visiting);
             }
             for(int side=-1;side<=1;side+=2){
                 for(int row=0;row<9;row++)for(int block=0;block<6;block++)for(int seat=0;seat<14;seat++){
@@ -36,11 +46,15 @@ namespace Touchline
                 }
                 for(int row=0;row<10;row++)for(int block=0;block<4;block++)for(int seat=0;seat<15;seat++){
                     float z=-31.5f+block*21-8.4f+seat*1.2f;
-                    Add(new Vector3(side*(60+row*1.15f),row*.7f+.39f,z),new Vector3(-side,0,0),side==1&&block==3,row<2);
+                    Add(new Vector3(side*(60+row*1.15f),row*.7f+.39f,z),new Vector3(-side,0,0),side==1&&block==3,row<2,side==HomeEndSide);
                 }
             }
-            return builder.Build();
+            rig=builder.Rig();return builder.Build();
         }
+        public const int HomeEndSide=-1;          // virage des supporters du club recevant (x < 0)
+        const uint HomeEndScarfQuarters=1;        // quarts du virage populaire qui portent une écharpe
+        public const float ScarfRaise=.5f;        // m : écharpe tendue au-dessus de la tête (célébration)
+        public const float ElbowRaise=.55f,HandRaise=.9f; // m : bras levés (premiers rangs détaillés)
         // Second anneau de la tribune d'en face : silhouettes simples (cartes), maillage à part.
         public static Mesh UpperCrowd(string home,string away,float occupancy=.84f)
         {
@@ -105,9 +119,27 @@ namespace Touchline
             static readonly int[] TorsoIndices={0,4,5,0,5,1,1,5,6,1,6,2,2,6,7,2,7,3,3,7,4,3,4,0,4,7,6,4,6,5};
             readonly List<Vector3> vertices=new List<Vector3>();
             readonly List<Vector3> cardNormals=new List<Vector3>();
+            readonly List<float> raise=new List<float>(); // m de levée de chaque sommet quand les bras montent
+            readonly List<int> personStart=new List<int>();readonly List<Vector3> personSeat=new List<Vector3>();readonly List<bool> personVisiting=new List<bool>();
             readonly List<int>[] triangles=new List<int>[MaterialCount];
             public CrowdBuilder(){for(int i=0;i<MaterialCount;i++)triangles[i]=new List<int>();}
-            int Vertex(Vector3 point,Vector3 cardNormal=default){int index=vertices.Count;vertices.Add(point);cardNormals.Add(cardNormal);return index;}
+            public int VertexCount=>vertices.Count;
+            int Vertex(Vector3 point,Vector3 cardNormal=default){int index=vertices.Count;vertices.Add(point);cardNormals.Add(cardNormal);raise.Add(0);return index;}
+            public void EndPerson(int first,Vector3 seat,bool visiting){if(vertices.Count==first)return;personStart.Add(first);personSeat.Add(seat);personVisiting.Add(visiting);}
+            public CrowdRig Rig()=>new CrowdRig(personStart.ToArray(),personSeat.ToArray(),personVisiting.ToArray(),raise.ToArray());
+            // Écharpe au cou, une seule face tournée vers le terrain ; levée au-dessus de la tête en célébration.
+            public void Scarf(Vector3 seat,Vector3 facing,float height,int material)
+            {
+                var right=Vector3.Cross(Vector3.up,facing);var centre=seat+Vector3.up*(height-.03f)+facing*.1f;
+                const float halfWidth=.31f,halfHeight=.055f; // m
+                int start=vertices.Count;var normal=(facing+Vector3.up*.12f).normalized;
+                Vertex(centre-right*halfWidth-Vector3.up*halfHeight,normal);Vertex(centre+right*halfWidth-Vector3.up*halfHeight,normal);
+                Vertex(centre+right*halfWidth+Vector3.up*halfHeight,normal);Vertex(centre-right*halfWidth+Vector3.up*halfHeight,normal);
+                for(int i=start;i<start+4;i++)raise[i]=ScarfRaise;
+                // Face avant : sens horaire vu du terrain.
+                if(Vector3.Dot(Vector3.Cross(vertices[start+1]-vertices[start],vertices[start+2]-vertices[start]),normal)>0)Quad(material,start,start+1,start+2,start+3);
+                else Quad(material,start,start+3,start+2,start+1);
+            }
             void Triangle(int material,int a,int b,int c){triangles[material].Add(a);triangles[material].Add(b);triangles[material].Add(c);}
             void Quad(int material,int a,int b,int c,int d){Triangle(material,a,b,c);Triangle(material,a,c,d);}
             void Card(int material,Vector3 normal,params Vector3[] points){
@@ -146,7 +178,9 @@ namespace Touchline
                 // At this distance opaque strips avoid extra spectator rigs.
                 float elbow=.285f+((variation>>20)&1)*.02f,handDepth=.23f+((variation>>22)&1)*.025f;
                 for(int side=-1;side<=1;side+=2){
+                    int arm=vertices.Count;
                     Card(((variation>>26)&1)==0?clothing:skin,normal,At(side*shoulder,height-.035f,lean+.035f),At(side*elbow,height*.37f,.14f),At(side*.14f,.065f,handDepth),At(side*(elbow-.055f),height*.38f,.15f));
+                    raise[arm+1]=raise[arm+3]=ElbowRaise;raise[arm+2]=HandRaise;
                     float x=side*.09f;Card(2,normal,At(x-.043f,.005f,.08f),At(x+.043f,.005f,.08f),At(x+.043f,-.065f,.31f),At(x-.043f,-.065f,.31f));
                 }
             }

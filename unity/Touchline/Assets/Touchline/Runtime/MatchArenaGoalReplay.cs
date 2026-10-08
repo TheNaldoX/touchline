@@ -7,7 +7,7 @@ namespace Touchline
     public sealed partial class MatchArena
     {
         GoalReplayPoses goalReplay;int replayKnownScore;float pendingGoalClock=-1;
-        Vector3 replayCameraPosition;Quaternion replayCameraRotation;
+        readonly GoalReplayCamera replayCamera=new GoalReplayCamera();float liveFieldOfView;
         readonly string[] replayPlayerIds=new string[22];
         public bool GoalReplayActive=>goalReplay!=null&&goalReplay.Active;
         public float GoalReplayProgress=>goalReplay?.Progress??0;
@@ -33,27 +33,20 @@ namespace Touchline
             // Freeze only presentation; the authoritative live match is untouched.
             // Force a final sample so Skip restores the exact latest displayed pose.
             pendingGoalClock=-1;goalReplay.Capture(time,true);
-            if(goalReplay.Begin()){RememberReplayCamera();foreach(var line in tacticalLines)line.enabled=false;}
+            if(goalReplay.Begin()){liveFieldOfView=MatchCamera.fieldOfView;replayCamera.Begin(ball.position.x,ball.position);foreach(var line in tacticalLines)line.enabled=false;}
         }
         void AdvanceGoalReplay(float elapsed)
         {
             goalReplay.Advance(elapsed*GoalReplaySpeed);
             if(!goalReplay.Active){RestoreAfterGoalReplay();return;}
-            RememberReplayCamera();ReframeGoalReplayCamera();
+            // Plan de ralenti (GoalReplayCamera) : suit le ballon rejoué en temps réel,
+            // à la place de la pose enregistrée de la caméra télé. Le direct reste figé.
+            replayCamera.Advance(ball.position,elapsed);ReframeGoalReplayCamera();UpdateContactShadows();
+            foreach(var ripple in netRipples)ripple?.Advance(ball.position,true,elapsed*GoalReplaySpeed); // le filet se creuse aussi au ralenti
         }
-        void RememberReplayCamera(){replayCameraPosition=MatchCamera.transform.position;replayCameraRotation=MatchCamera.transform.rotation;}
-        void ReframeGoalReplayCamera()
-        {
-            // Restore the sampled pose even if the viewport folds back before
-            // playback advances. The live camera focus remains frozen.
-            MatchCamera.transform.SetPositionAndRotation(replayCameraPosition,replayCameraRotation);
-            MatchCamera.farClipPlane=goalReplay.RecordedCameraFarClip;
-            if(Mathf.Abs(MatchCamera.aspect-goalReplay.RecordedCameraAspect)<.002f)return;
-            var point=ball.position;bool portrait=MatchCamera.aspect<.8f;
-            var center=tactical?new Vector3(0,.6f,0):new Vector3(Mathf.Clamp(point.x*.9f,-46,46),.6f,Mathf.Clamp(point.z*(portrait?.72f:.58f),portrait?-25:-19,portrait?25:19));
-            BroadcastFraming.Apply(MatchCamera,center,point,tactical,Mathf.Abs(point.x)>28,point.x>=0?1:-1,zoom);
-        }
-        void RestoreAfterGoalReplay(){MatchCamera.farClipPlane=goalReplay.RecordedCameraFarClip;cameraReset=true;poseCache.Reset();foreach(var line in tacticalLines)line.enabled=showTactics;}
+        // Rappelable sans faire avancer le plan (changement de format en cours de ralenti).
+        void ReframeGoalReplayCamera(){replayCamera.Apply(MatchCamera);MatchCamera.farClipPlane=goalReplay.RecordedCameraFarClip;}
+        void RestoreAfterGoalReplay(){MatchCamera.fieldOfView=liveFieldOfView;MatchCamera.farClipPlane=goalReplay.RecordedCameraFarClip;cameraReset=true;poseCache.Reset();foreach(var line in tacticalLines)line.enabled=showTactics;}
         public void SkipGoalReplay(){if(!GoalReplayActive)return;goalReplay.Skip();RestoreAfterGoalReplay();}
     }
 }
