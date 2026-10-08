@@ -1,0 +1,120 @@
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /home/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+Touchline.Editor.MecanimPrototypeFilm:Run () (at Assets/Touchline/Editor/MecanimPrototypeFilm.cs:165)
+
+[Assets/Touchline/Editor/MecanimPrototypeFilm.cs line 165]
+
+[Physics::Module] Cleanup current backend.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input System polling thread exited.
+Input System module state changed to: Shutdown.
+[Licensing::IpcConnector] LicenseClient-root-notifications channel disconnected successfully.
+[Licensing::IpcConnector] LicenseClient-root channel disconnected successfully.
+AcceleratorClientConnectionCallback - disconnected - :0
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...
+[40m[32minfo[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      ALC ILPP context 1 is unloading
+Cleanup mono
+Caught fatal signal - signo:11 code:128 errno:0 addr:(nil)
+Obtained 37 stack frames.
+#0  0x0055745bb8c3fd in burst_signal_handler(int, siginfo_t*, void*)
+#1  0x007f26ff2d4520 in (Unknown)
+#2  0x0055745e305ef4 in tlsf_free
+#3  0x0055745d82eb26 in DynamicHeapAllocator::Deallocate(void*)
+#4  0x0055745d82c907 in DualThreadAllocator<DynamicHeapAllocator>::TryDeallocate(void*)
+#5  0x0055745d83642c in MemoryManager::TryDeallocateWithLabel(void*, MemLabelId, char const*, int)
+#6  0x0055745d830505 in free_alloc_internal(void*, MemLabelId const&, char const*, int)
+#7  0x0055745bfca517 in core::vector<SerializationCommand, core::allocator<SerializationCommand, 0ul> >::~vector()
+#8  0x0055745c024f18 in SerializationCache::DeleteCachedSerializationData(SerializationCache::CacheEntry&)
+#9  0x0055745c0255d6 in void ConcurrentCache<ScriptingClassPtr, SerializationCache::CacheEntry, SerializationCache::ConcurrentCacheHasher, SerializationCache::ConcurrentCacheHashEquals>::Clear<void (*)(SerializationCache::CacheEntry&)>(void (*)(SerializationCache::CacheEntry&), bool, bool)
+#10 0x0055745b460d59 in CallbackArray::Invoke()
+#11 0x0055745bf92350 in ProfilerCallbackInvoke<CallbackArray, &GlobalCallbacks::domainUnloadComplete>::Invoke(char const*)
+#12 0x0055745bf921a6 in UnloadDomain()
+#13 0x0055745bf92045 in CleanupMono()
+#14 0x0055745cefcf94 in Application::CoreShutdown()
+#15 0x0055745cf05c12 in Application::Terminate(bool)
+#16 0x0055745cef91df in Application::Exit(int)
+#17 0x000000408f5bad in (Unknown)
+#18 0x007ffdd91b0550 in (Unknown)
+#19 0x00000040f10eff in (Unknown)
+#20 0x007f26188463b6 in (Unknown)
+#21 0x007f26189e3d91 in (Unknown)
+#22 0x007f26189e3cf5 in mono_runtime_invoke
+#23 0x0055745c01cec3 in scripting_method_invoke(ScriptingMethodPtr, ScriptingObjectPtr, ScriptingArguments&, ScriptingExceptionPtr*, bool)
+#24 0x0055745bff5d9c in ScriptingInvocation::Invoke(ScriptingExceptionPtr*, bool)
+#25 0x0055745cef9b76 in Application::ParseARGVCommands()
+#26 0x0055745cef8e0e in Application::FinishLoadingProject()
+#27 0x0055745d61408d in InitializeUnity(void*)
+#28 0x007f26ff9772c8 in (Unknown)
+#29 0x007f26ff976c44 in g_main_context_dispatch
+#30 0x007f26ff9cc488 in (Unknown)
+#31 0x007f26ff9762b3 in g_main_loop_run
+#32 0x007f26ffedfd2d in gtk_main
+#33 0x0055745d61398c in main
+#34 0x007f26ff2bbd90 in (Unknown)
+#35 0x007f26ff2bbe40 in __libc_start_main
+#36 0x0055745b3dc021 in _start
+Segmentation fault (core dumped)
+[UnityConnectServicesConfig] Local config successfully read: "/usr/share/unity3d/config/services-config.json"
+[UnityConnectServicesConfig] "clientConnectTimeoutSec" was overridden with "5"
+[UnityConnectServicesConfig] "clientHandshakeTimeoutSec" was overridden with "10"
+[UnityConnectServicesConfig] Service configuration:
+    "servicesConfigBaseUrl": "",
+    "disableServicesWindow": false,
+    "disableUserLogin": false,
+    "entitlementCacheTimeoutInSeconds": 60,
+    "clientConnectTimeoutSec": 5,
+    "clientHandshakeTimeoutSec": 10,
+    "clientResolveEntitlementsTimeoutSec": 30,
+    "clientUpdateLicenseTimeoutSec": 30,
+    "licensingServiceBaseUrl": "",
+    "enableProxyAutoconfig": "false"
+
+[UnityConnectServicesConfig] Local config successfully read: "/usr/share/unity3d/config/services-config.json"
+[UnityConnectServicesConfig] "clientConnectTimeoutSec" was overridden with "5"
+[UnityConnectServicesConfig] "clientHandshakeTimeoutSec" was overridden with "10"
+[UnityConnectServicesConfig] Service configuration:
+    "servicesConfigBaseUrl": "",
+    "disableServicesWindow": false,
+    "disableUserLogin": false,
+    "entitlementCacheTimeoutInSeconds": 60,
+    "clientConnectTimeoutSec": 5,
+    "clientHandshakeTimeoutSec": 10,
+    "clientResolveEntitlementsTimeoutSec": 30,
+    "clientUpdateLicenseTimeoutSec": 30,
+    "licensingServiceBaseUrl": "",
+    "enableProxyAutoconfig": "false"
+
+Unity Editor version:    6000.3.24f1 (4e7b9b5b6244)
+Branch:                  6000.3/staging
+Build type:              Release
+Batch mode:              YES
+System name:             Linux
+Distro version:          #22-Ubuntu SMP Mon Jul 27 17:24:03 UTC 2026
+Kernel version:          6.17.0-1022-azure
+Architecture:            x86_64
+Available memory:        15989 MB
+Date:                    2026-10-08T07:27:02Z
+User audibert.victor13500@gmail.com logged in successfully
+[UnityConnect::TryLogin] Request Succeeded.
+[Licensing::Module] Trying to connect to existing licensing client channel...
+[Licensing::IpcConnector] Channel LicenseClient-root doesn't exist
+[Licensing::Module] Successfully launched the LicensingClient (PId: 5296)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root" at "2026-10-08T07:27:03.08585Z"
+[SignatureVerifier] Application signature verification not supported on this platform.
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.3+d7ffd15
+  Session Id:              001d375fc67b4c318a4fa18595736de3
+  Correlation Id:          6fe1ed38895beaee04b3d400ae91a491
+  External correlation Id: 7845018916795026424
+  Machine Id:              Yq/iTnoWcLGmhJfg4oJ2OkPF4Tw=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-root" (connect: 0.38s, validation: 0.11s, handshake: 0.00s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root-notifications" at "2026-10-08T07:27:03.194827Z"
+[Licensing::Module] Connected to LicensingClient (PId: 5296, launch time: 0.00, total connection time: 0.48s)
+[Licensing::Client] Successfully updated the access token
+[Licensing::Module] Successfully updated the access token JPqQ3LzbmL...
+[Licensing::Client] Successfully processed license management request
+[Licensing::Module] Successfully returned the entitlement license
+[Licensing::Client] Successfully queried for the EntitlementGroupsDetails
+[Licensing::Client] Successfully returned ULF license with serial number : "F4-U776-56HB-EXF8-B6C4-XXXX"
