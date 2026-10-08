@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- IA des clubs : effectifs tenus entre 22 et 30 joueurs (départs remplacés d'abord par des joueurs libres, jusqu'à la taille visée), titulaires conservés face à un club de même taille, propriétaire endetté qui cesse de financer les pertes, vétérans sous le niveau du club non prolongés, rotation en coupe nationale ; `SeasonSim --report`.
 - Animation : pas chassés à gauche et à droite et course arrière choisis selon la direction de course par rapport au regard du joueur.
 - IA de match : un joueur qui s'est orienté pour passer ou frapper va au bout de son geste (préparations avortées en conduite 49 → 18 par match) : tirs 23,2 → 26,0, buts 3,18 → 2,77.
 - Visuel : gazon texturé (grain, tonte plus marquée), ciel, second anneau et toit de la tribune d'en face, caméra télé moins plongeante.
