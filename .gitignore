@@ -33,6 +33,7 @@ crashlytics-build.properties
 /artifacts/
 /output/
 /build/
+unity/Touchline/build/
 
 # --- Secrets de signature : ne JAMAIS les committer ---
 *.keystore
@@ -56,3 +57,6 @@ node_modules/
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# Outils .NET hors Unity : leurs projets sont versionnés
+!tools/**/*.csproj

@@ -56,17 +56,25 @@ namespace Touchline.Core
    
 Actor best=null;float bestScore=-100;string kind="pass";  
  float line=OffsideLine(p.side),preferred=8+t.directness*26;  
- foreach(var mate in m.actors){if(mate.sentOff||GroundedAction(mate)||mate==p||mate.side!=p.side||mate.position.x*dir>line+.1f)continue;float d=Point.Distance(p.position,mate.position);if(d<3||d>22+t.directness*36)continue;  
+ // The passer reads the defensive line from distance and in motion: he
+ // may see a team-mate who has just strayed beyond it as onside (up to
+ // about 1.5 m for a poor reader, under 0.8 m for the best).
+ // Only rolled when such a team-mate exists, so most decisions keep
+ // their usual draw sequence.
+ // Le passeur juge la position d'un coéquipier en mouvement avec un temps de retard
+ // (0,3 s pour une vision de 100, 0,9 s pour 0) : un appel lancé peut déjà être hors-jeu.
+ float readLag=PassReadLagMin+(100-Skill(p,"vision"))*PassReadLagPerPoint; float lineRead=line+.1f;foreach(var mate in m.actors)if(!mate.sentOff&&mate.side==p.side&&mate!=p&&mate.slot>0){float beyond=mate.position.x*dir-line;if(beyond>.1f&&beyond<2f){lineRead+=Random()*Mathx.Clamp(2.0f-Skill(p,"vision")*.013f,.1f,1.8f);break;}}
+ foreach(var mate in m.actors){if(mate.sentOff||GroundedAction(mate)||mate==p||mate.side!=p.side||(mate.position.x-mate.velocity.x*readLag)*dir>lineRead)continue;float d=Point.Distance(p.position,mate.position);if(d<3||d>22+t.directness*36)continue;  
  float forward=(mate.position.x-p.position.x)*dir;float space=Space(mate.position,1-p.side);  
  bool wing=Math.Abs(p.position.z)>19&&p.position.x*dir>27&&mate.position.x*dir>36&&Math.Abs(mate.position.z)<13;  
  bool cutback=wing&&p.position.x*dir>42&&forward< -2;  
  bool runsBehind=mate.velocity.x*dir>1.5f&&(mate.position.x+mate.velocity.x*d/20)*dir>line+1;  
- string candidate=cutback?"cutback":wing&&forward>=-2?"cross":Math.Abs(mate.position.z-p.position.z)>29?"switch":forward>8&&mate.slot>0&&space>4&&runsBehind?"through":"pass";  
- bool aerial=candidate=="cross"?!LowCross(p,mate):candidate=="switch"||d>30;var projected=PassTarget(p,mate,candidate);if(prepared&&FootDeliveryTurn(p,projected)>Math.PI/3)continue;float safety=Math.Min(Safety(p,mate.position,aerial),Safety(p,projected,aerial));if(safety<.24f+(1-t.directness)*.16f)continue;  
+ string candidate=cutback?"cutback":wing&&forward>=-2?"cross":Math.Abs(mate.position.z-p.position.z)>29?"switch":forward>8&&mate.slot>0&&runsBehind&&(space>4||Space(mate.position+new Point(dir*ThroughSpaceAhead,0),1-p.side)>4)?"through":"pass";  
+ bool aerial=candidate=="cross"?!LowCross(p,mate):candidate=="switch"||d>30;var projected=PassTarget(p,mate,candidate);if(prepared&&FootDeliveryTurn(p,projected)>Math.PI/3)continue;float safety=candidate=="cross"?CrossOutlook(p,mate,!aerial):Math.Min(Safety(p,mate.position,aerial),Safety(p,projected,aerial));if(safety<(candidate=="cross"?.12f:candidate=="through"?ThroughMinSafety:.24f+(1-t.directness)*.16f))continue;  
  float score=10*safety+forward*(.10f+t.directness*.28f+(counter?.22f:0))+Math.Min(space,9)*.4f-Math.Abs(d-preferred)*.30f+(pressure<4?4:0)+Math.Min(m.carryTime,5)*.85f;  
  score+=Math.Max(0,ShotQuality(mate)-quality)*28*safety;  
  if(ProtectingLead(p.side)){score+=safety*2;if(forward>12&&safety<.7f)score-=4;}  
- if(candidate=="cross")score+=1.5f+Math.Max(0,ShotQuality(mate,true)-.08f)*14;if(candidate=="cutback")score+=Math.Max(0,ShotQuality(mate)-quality)*20;  
+ if(candidate=="through")score+=ThroughBonus*(.5f+t.directness);if(candidate=="cross")score+=1.5f+Math.Max(0,ShotQuality(mate,true)-.08f)*14;if(candidate=="cutback")score+=Math.Max(0,ShotQuality(mate)-quality)*20;  
  if(forward> -5&&mate.slot>0){  
  float flank=mate.position.z*dir;  
  if(t.attackFocus=="left")score+=flank>10?3*safety:flank< -10?-1.5f:0;  
@@ -85,32 +93,58 @@ Actor best=null;float bestScore=-100;string kind="pass";
  if(forward< -4&&pressure>4&&space<pressure)score-=5;  
  // A weak passer under pressure recognises fewer ambitious options.  
  score-=aerial?(100-Skill(p,"vision"))*.02f:0;score+=(Random()-.5f)*(1.8f-Skill(p,"vision")*.01f);  
+ // Servir un partenaire marqué de près hors de la zone de finition, quand
+ // on pourrait jouer ailleurs, revient souvent à lui faire perdre le ballon.
+ if((candidate=="pass"||candidate=="switch")&&mate.position.x*dir<MarkedReceiverZone)score-=MarkedReceiverCost(space);
  score+=PassPreference(p,candidate,d);if(score>bestScore){bestScore=score;best=mate;kind=candidate;}  
  }  
  float passChance=best==null?0:ShotQuality(best,kind=="cross"&&!LowCross(p,best))*Safety(p,PassTarget(p,best,kind),kind=="cross"?!LowCross(p,best):kind=="switch");  
- float patientValue=.052f-t.mentality*.035f+(counter?-.008f:0);  
+ // Chance (xG) a distant shot must beat to be preferred to keeping the ball.
+ float patientValue=LongShotPatience-t.mentality*LongShotMentalityShift+(counter?-.008f:0);  
  // A chasing defender behind the striker does not close the goal  
  // window. Take a clear central finish unless a genuinely better  
  // passing chance is available. Patient play still allows this shot.  
  bool closeChance=distance<20&&opening>.26f&&(clear||pressure>2.3f||distance<8)&&(!t.workIntoBox||quality>.10f||clear&&distance<18&&opening>.4f||distance<10);  
  bool closeFinish=distance<8&&opening>.6f&&pressure>.65f;  
  if((!prepared||FootDeliveryTurn(p,new Point(dir*52.5f,0))<=Math.PI/3)&&p.slot>0&&closeChance&&quality>passChance*(closeFinish?.72f:.82f)&&(clear||pressure>3.1f||closeFinish)){if(BeginFootDeliveryPreparation(p,new Point(dir*52.5f,0),"shot"))return "prepare";Shoot(p);return "shot";}  
- if((!prepared||FootDeliveryTurn(p,new Point(dir*52.5f,0))<=Math.PI/3)&&p.slot>0&&opening>.19f&&distance<27&&!t.workIntoBox&&(clear||pressure>3.5f)&&pressure>2.5f&&m.carryTime>.6f&&quality*DistantShotPreference(p,distance)>Math.Max(patientValue,passChance*.95f)){if(BeginFootDeliveryPreparation(p,new Point(dir*52.5f,0),"shot"))return "prepare";Shoot(p);return "shot";}  
+ if((!prepared||FootDeliveryTurn(p,new Point(dir*52.5f,0))<=Math.PI/3)&&p.slot>0&&opening>.19f&&distance<27&&!t.workIntoBox&&(clear||pressure>LongShotClearSpace)&&pressure>LongShotMinSpace&&m.carryTime>LongShotSetTime&&quality*DistantShotPreference(p,distance)>Math.Max(patientValue,passChance*.95f)){if(BeginFootDeliveryPreparation(p,new Point(dir*52.5f,0),"shot"))return "prepare";Shoot(p);return "shot";}  
+ // Engagement : un joueur qui a orienté son corps pour frapper (préparation
+ // vers le centre du but, voir ci-dessus) frappe tant que l'angle reste
+ // ouvert, au lieu de repartir en conduite ; le contre fait partie du jeu.
+ bool preparedShot=prepared&&Point.Distance(p.actionTarget,new Point(dir*52.5f,0))<.01f;
+ if(preparedShot&&p.slot>0&&FootDeliveryTurn(p,new Point(dir*52.5f,0))<=Math.PI/3&&opening>PreparedShotMinOpening&&distance<PreparedShotMaxDistance&&passChance<quality*PreparedShotPassMargin){Shoot(p);return "shot";}
  var carry=ChooseCarry(p);p.carryTarget=carry;float progress=(carry.x-p.position.x)*dir;  
  float carryScore=(p.position.x*dir>12?18:7)+Math.Min(Space(carry,1-p.side),8)*.5f+progress*.35f+(Skill(p,"dribbling")-65)*.055f-(pressure<3?5:0)-Math.Min(m.carryTime,6)*1.2f;  
   
  carryScore+=CarryPreference(p);  
+ // Conduire dans plusieurs adversaires coûte le ballon.
+ carryScore-=CarryCrowdCost(p,carry);
+ // Engagement : un joueur qui vient d'orienter son corps pour donner le
+ // ballon joue la passe si elle reste disponible, au lieu de repartir en
+ // conduite (arrêt, pivot, puis départ dans une autre direction).
+ if(prepared&&best!=null)carryScore-=PreparedDeliveryCommitment;
+ // In the crossing zone a wide player delivers rather than dribbling to
+ // the byline every time; good crossers more readily.
+ if(p.slot>0&&Math.Abs(p.position.z)>17&&p.position.x*dir>25&&kind=="cross")carryScore-=3+(Skill(p,"crossing")-60)*.06f;
+ // Safety first: a pressed defender in his own third, or a full-back
+ // pinned on his own touchline, does not gamble on a risky pass.
+ bool pinned=p.slot>0&&pressure<ClearancePressure&&(p.position.x*dir< -26||p.position.x*dir<0&&Math.Abs(p.position.z)>20);
+ if(pinned&&best!=null&&Safety(p,PassTarget(p,best,kind))<PinnedPassSafety)return Clear(p,dir);
  if(best!=null&&(p.slot==0||bestScore>carryScore)){if(BeginFootDeliveryPreparation(p,PassTarget(p,best,kind),kind))return "prepare";Pass(p,best,kind);return kind;}  
-// PATCH 0.42: pressure < 1.2f, cible plus profonde (dir*28) et axe moins excentré (26)
-if(p.slot>0 && p.position.x*dir<-26 && pressure<1.2f && (best==null || Safety(p,PassTarget(p,best,kind))<.6f)){  
-    float touchline = p.position.z >= 0 ? 26 : -26;  
-    Flight(p, null, "clearance", new Point(Mathx.Clamp(p.position.x+dir*28, -48, 48), touchline), .11f, 2.0f, 3.5f);  
-    Emit("clearance", p.side, p.id, Data(p).name+" allonge pour écarter le danger."); 
-    return "clearance";  
-}  
+ if(p.slot>0&&p.position.x*dir<-26&&pressure<ClearancePressure&&(best==null||Safety(p,PassTarget(p,best,kind))<.6f))return Clear(p,dir);
  if(p.slot==0&&(m.carryTime>2||pressure<3)){Flight(p,null,"clearance",new Point(dir*8,Math.Sign(p.position.z+.01f)*27),.11f,2.6f,8);Emit("clearance",p.side,p.id,Data(p).name+" allonge pour sortir du pressing.");return "clearance";}  
  return "carry";  
  }  
+ // A pressed defender clears: long upfield when that channel is open,
+ // otherwise over the nearest touchline.
+ string Clear(Actor p,int dir)
+ {
+ float flank=p.position.z>=0?1:-1;var upfield=new Point(Mathx.Clamp(p.position.x+dir*28,-48,48),flank*26);
+ bool open=Safety(p,upfield,true)>OpenClearanceSafety;var target=open?upfield:new Point(Mathx.Clamp(p.position.x+dir*16,-48,48),flank*36);
+ Flight(p,null,"clearance",target,.11f,2.0f,3.5f);
+ Emit("clearance",p.side,p.id,Data(p).name+(open?" allonge pour écarter le danger.":" dégage en touche."));
+ return "clearance";
+ }
  Point ChooseCarry(Actor p)  
  {  
  var dir=Direction(p.side);var tactic=Tactic(p.side);var slot=tactic.withBall[p.slot];Point best=p.position;float bestScore=-100;  
@@ -123,7 +157,7 @@ if(p.slot>0 && p.position.x*dir<-26 && pressure<1.2f && (best==null || Safety(p,
  if(wideRole&&tactic.workIntoBox&&p.position.x*dir>35)laneWeight*=.5f;  
  for(int i=-5;i<=5;i++){float angle=i*.62f;var end=p.position+new Point(dir*(float)Math.Cos(angle)*6,(float)Math.Sin(angle)*6);end.x=Mathx.Clamp(end.x,-50.5f,50.5f);end.z=Mathx.Clamp(end.z,-32,32);  
  float progress=(end.x-p.position.x)*dir;float space=Space(end,1-p.side);float lane=CarryLaneSafety(p,end);float score=lane*7+Math.Min(space,9)*.6f+progress*(ProtectingLead(p.side)?.12f:.7f)-Math.Abs(end.z-(wideRole?assignedFlank:0))*laneWeight;  
- if(Point.Dot(p.velocity.Normalized,(end-p.position).Normalized)<0)score-=2;if(score>bestScore){bestScore=score;best=end;}}  
+ if(Point.Dot(p.velocity.Normalized,(end-p.position).Normalized)<0)score-=2;score-=CarryCrowdCost(p,end);if(score>bestScore){bestScore=score;best=end;}}  
  return best;  
  }  
  float CarryLaneSafety(Actor carrier,Point end)  
@@ -151,14 +185,35 @@ if(p.slot>0 && p.position.x*dir<-26 && pressure<1.2f && (best==null || Safety(p,
  bool low=kind=="cross"&&LowCross(from,to);var tactic=Tactic(from.side);  
  float d=Point.Distance(from.position,to.position);float duration=Math.Max(.3f,d/DeliverySpeed(from,to,kind));  
  float skill=Skill(from,kind=="cross"?"crossing":d>27?"longPassing":"shortPassing");float pressure=Math.Max(0,3-Space(from.position,1-from.side));  
- float error=(1-skill/105)*(Random()-.5f)*(Math.Min(14,d*.30f)+pressure*2+Tactic(from.side).tempo*2);  
- var end=PassTarget(from,to,kind)+new Point(error,error*(Random()<.5f?-1:1));end.x=Mathx.Clamp(end.x,-54,54);end.z=Mathx.Clamp(end.z,-35,35);  
+ // A long aerial ball is much harder to land on a team-mate than a pass
+ // along the ground: its error is scaled by LongBallError.
+ float error=(1-skill/105)*(Random()-.5f)*(Math.Min(14,d*.30f)+pressure*2+Tactic(from.side).tempo*2)*(kind=="switch"||d>30&&kind!="cross"?LongBallError:1);  
+ var end=PassTarget(from,to,kind)+new Point(error,error*(Random()<.5f?-1:1));
+ // A lofted long ball is judged on its length: weight it wrongly and it
+ // sails long (more often than short) and can carry over the touchline.
+ if(kind=="switch"||d>30&&kind!="cross"){var along=(end-from.position).Normalized;end+=along*((1-skill/105)*(Random()-LongBallOverhitBias)*d*LongBallLengthError);}
+ end.x=Mathx.Clamp(end.x,-54,54);end.z=Mathx.Clamp(end.z,-35,35);  
  Flight(from,to,kind,end,kind=="cross"&&!low?1.6f:.11f,duration,kind=="cross"?(low?.12f:tactic.crossing=="floated"?5:3.5f):kind=="throw"?1.5f:d>30?4:.08f);State.passes[from.side]++;  
  var metrics=State.metrics[from.side];metrics.passDistance+=d;metrics.forwardPassDistance+=(end.x-from.position.x)*Direction(from.side);if(d>27)metrics.longPasses++;if(kind=="cross"||kind=="cutback")metrics.crosses++;if(kind=="through")metrics.throughBalls++;  
  if(kind=="cross"){if(low)metrics.lowCrosses++;else metrics.aerialCrosses++;}  
  if(end.x*Direction(from.side)>20){if(end.z*Direction(from.side)>10)metrics.leftAttackPasses++;else if(end.z*Direction(from.side)<-10)metrics.rightAttackPasses++;}  
  Emit(kind,from.side,from.id,Data(from).name+(kind=="through"?" lance ":kind=="cutback"?" trouve en retrait ":kind=="cross"?(low?" centre à ras de terre vers ":" centre vers "):kind=="switch"?" renverse vers ":" sert ")+Data(to).name+".",to.id);  
  }  
+ // A cross is a contest, not a pass through a free lane: estimate the
+ // share of such deliveries the target wins, from his aerial (or first
+ // touch for a driven low ball) against the best defender and the keeper
+ // near the landing point, and the crosser's delivery.
+ float CrossOutlook(Actor from,Actor mate,bool low)
+ {
+ float threat=0;var land=mate.position;
+ foreach(var o in State.actors){
+ if(o.sentOff||o.side==from.side||GroundedAction(o))continue;float d=Point.Distance(o.position,land);
+ if(o.slot==0){if(!low&&d<7)threat=Math.Max(threat,Skill(o,"gkPositioning")*.85f*(1-d/7));continue;}
+ if(d<3.5f)threat=Math.Max(threat,(low?Skill(o,"interceptions"):(Skill(o,"headingAccuracy")+Skill(o,"jumping"))*.5f)*(1-d/3.5f));
+ }
+ float attack=low?Skill(mate,"ballControl"):(Skill(mate,"headingAccuracy")+Skill(mate,"jumping"))*.5f;
+ return Mathx.Clamp(.30f+(attack-threat)*.006f+(Skill(from,"crossing")-65)*.004f,.05f,.85f);
+ }
  bool LowCross(Actor from,Actor to)  
  {  
  var tactic=Tactic(from.side);if(tactic.crossing=="low")return true;if(tactic.crossing=="floated")return false;  
@@ -175,6 +230,31 @@ if(p.slot>0 && p.position.x*dir<-26 && pressure<1.2f && (best==null || Safety(p,
  var b=State.ball;b.offsidePlayersMask=b.restartExemption?OffsideSnapshotKnown:OffsideSnapshotPending;b.offside=!b.restartExemption&&to!=null&&to.position.x*Direction(from.side)>OffsideLine(from.side)+.1f;b.restartExemption=false;b.penalty=false;b.goalAttempt=false;b.saveCredited=false;b.onTargetCounted=false;b.kind=kind;b.from=from.id;b.to=to?.id;b.side=from.side;b.lastTouch=from.side;b.lastTouchId=from.id;b.directThrow=kind=="throw";b.passEligible=kind!="shot"&&kind!="clearance";b.owner=null;b.setupStart=b.position;b.setupHeight=b.height;b.start=from.position+(end-from.position).Normalized*.42f;b.startHeight=b.height;b.end=end;b.endHeight=endHeight;b.duration=duration;b.releaseDelay=kind=="throw"?.5f:.18f;b.elapsed=-b.releaseDelay;b.loft=loft;  
  from.action=kind=="throw"?"throw":"kick";from.actionTime=kind=="throw"?1.1f:.64f;if(kind=="throw"){var height=Data(from).heightCm;b.startHeight=height>=145&&height<=215?height*.01f:1.8f;}from.angle=(float)Math.Atan2(end.x-from.position.x,end.z-from.position.z);from.actionTarget=b.start;from.actionHeight=b.startHeight;from.actionContactTime=b.releaseDelay;from.actionKind=kind;from.actionSequence++;State.carryTime=0;  
  }  
+ public const float ShotSpreadExponent=1.6f;
+ // Distance (m) of the nearest opponent under which a defender without a
+ // safe pass clears instead of carrying out of his own third.
+ public const float ClearancePressure=3f;
+ // Below this lane safety a pinned defender clears rather than passes.
+ public const float PinnedPassSafety=.7f;
+ // A clearance stays in play only through a clearly open long channel.
+ public const float OpenClearanceSafety=.75f;
+ public const float LongBallError=2.2f;
+ // Points de score retirés à la conduite d'un joueur qui vient d'orienter
+ // son corps pour une passe encore jouable.
+ public const float PreparedDeliveryCommitment=4f;
+ // Engagement dans la frappe préparée : angle d'ouverture minimal (rad),
+ // distance maximale au but (m), et facteur par lequel l'occasion offerte
+ // à un coéquipier doit dépasser la sienne pour qu'il renonce à frapper.
+ public const float PreparedShotMinOpening=.19f,PreparedShotMaxDistance=27f,PreparedShotPassMargin=2f;
+ // Shooting from distance (18–27 m): space (m) to the nearest outfield
+ // opponent needed when the lane is not clear / at all, and time (s) on
+ // the ball to set the body. A shot under a closing defender is often
+ // blocked, which is part of the game.
+ public const float LongShotPatience=.033f,LongShotMentalityShift=.028f;
+ public const float LongShotClearSpace=2.6f,LongShotMinSpace=1.7f,LongShotSetTime=.45f;
+ // Length error of a long aerial ball, as a fraction of its distance for a
+ // 0-rated passer; the bias (0–1) below 0.5 makes overhitting more common.
+ public const float LongBallLengthError=.8f,LongBallOverhitBias=.35f;
  void Shoot(Actor p,bool header=false,bool penalty=false,bool freeKick=false)  
  {  
  float approachFacing=p.angle;  
@@ -185,7 +265,9 @@ if(p.slot>0 && p.position.x*dir<-26 && pressure<1.2f && (best==null || Safety(p,
  // Finishing and room to set the body govern how precisely a player  
  // can place the shot away from the keeper, including headers.  
  float placement=ShotPlacement(p,finishing);  
- float z=onTarget?side*(.2f+Random()*(1.4f+1.5f*placement)):(Random()<.5f?-1:1)*(3.8f+Random()*4);float y=onTarget?.2f+Random()*1.9f:.8f+Random()*3;  
+ // Even accurate shots rarely find the very corner: bias the spread
+ // towards the keeper (exponent > 1), so goals track expected goals.
+ float z=onTarget?side*(.2f+(float)Math.Pow(Random(),ShotSpreadExponent)*(1.4f+1.5f*placement)):(Random()<.5f?-1:1)*(3.8f+Random()*4);float y=onTarget?.2f+Random()*1.9f:.8f+Random()*3;  
  // The goal has width. An accurate, set-foot shot can use the  
  // other post instead of repeatedly hitting a defender on its axis.  
  // Keep the original accuracy roll, keeper preference and finishing  

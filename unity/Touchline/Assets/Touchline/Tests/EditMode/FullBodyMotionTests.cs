@@ -29,7 +29,7 @@ namespace Touchline.Tests
         }
         [Test] public void ViewportDoesNotUseDeviceDpi()
         {
-            var panel=ScriptableObject.CreateInstance<UnityEngine.UIElements.PanelSettings>();try{InterfaceViewport.Apply(panel,1280,966);Assert.That(panel.scaleMode,Is.EqualTo(UnityEngine.UIElements.PanelScaleMode.ConstantPixelSize));Assert.That(1280/panel.scale,Is.EqualTo(1120).Within(.1f));}finally{Object.DestroyImmediate(panel);}
+            var panel=ScriptableObject.CreateInstance<UnityEngine.UIElements.PanelSettings>();try{InterfaceViewport.Apply(panel,1280,966);Assert.That(panel.scaleMode,Is.EqualTo(UnityEngine.UIElements.PanelScaleMode.ConstantPixelSize));Assert.That(1280/panel.scale,Is.EqualTo(InterfaceViewport.SquareLogicalWidth).Within(.1f));}finally{Object.DestroyImmediate(panel);}
         }
         [TestCase(false)] [TestCase(true)] public void RunningIntoKickPreservesContactAndSmoothFirstFrame(bool left)
         {

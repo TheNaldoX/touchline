@@ -19,7 +19,24 @@ namespace Touchline
         void Awake(){var original=GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;if(original==null)return;pipeline=Instantiate(original);GraphicsSettings.defaultRenderPipeline=pipeline;QualitySettings.renderPipeline=pipeline;SetQuality(PlayerPrefs.GetInt("render-quality",1));}
         public static float ResolutionCap(int mode,int width,int height)=>Mathf.Clamp(Mathf.Sqrt((mode==2?2600000f:mode==0?1000000f:1600000f)/Mathf.Max(1,(float)width*height)),.55f,1);
         float Cap(){var camera=Camera.main;var texture=camera==null?null:camera.targetTexture;return ResolutionCap(PlayerPrefs.GetInt("render-quality",1),texture==null?Screen.width:texture.width,texture==null?Screen.height:texture.height);}
-        void Update(){if(pipeline==null)return;var camera=Camera.main;var output=camera==null?null:camera.targetTexture;if(output!=lastTarget){lastTarget=output;pipeline.renderScale=Cap();next=Time.unscaledTime+2;}frame=Mathf.Lerp(frame,Mathf.Min(Time.unscaledDeltaTime,.1f),.04f);if(Time.unscaledTime<next)return;next=Time.unscaledTime+2;var cap=Cap();float target=Application.targetFrameRate==30?1f/30:1f/60;pipeline.renderScale=Mathf.Clamp(pipeline.renderScale+(frame>target*1.3f?-.05f:frame<target*1.08f?.025f:0),.55f,cap);}
+        void Update(){if(pipeline==null)return;var camera=Camera.main;var output=camera==null?null:camera.targetTexture;if(output!=lastTarget){lastTarget=output;pipeline.renderScale=Cap();next=Time.unscaledTime+2;}frame=Mathf.Lerp(frame,Mathf.Min(Time.unscaledDeltaTime,.1f),.04f);if(Time.unscaledTime<next)return;next=Time.unscaledTime+2;var cap=Cap();float target=Application.targetFrameRate==30?1f/30:1f/60;
+            if(frame>=target*FastFrameRatio)fastSince=Time.unscaledTime;
+            // Changer l'échelle réalloue les cibles de rendu (petit gel) : on ne la change que si c'est utile.
+            float scale=NextScale(pipeline.renderScale,frame,target,cap,Time.unscaledTime-fastSince>=RaiseAfterSeconds);
+            if(!Mathf.Approximately(scale,pipeline.renderScale)){pipeline.renderScale=scale;fastSince=Time.unscaledTime;}}
+        const float SlowFrameRatio=1.3f,FastFrameRatio=1.08f; // durée d'image / cible : trop lent, assez rapide
+        const float LowerStep=.05f,RaiseStep=.05f,MinimumScale=.55f;
+        const float RaiseAfterSeconds=12f; // s d'images rapides sans interruption avant de remonter la résolution
+        float fastSince;
+        // Échelle de rendu suivante : baisse dès que les images sont trop lentes, remonte
+        // seulement après une longue période rapide (pas d'oscillation, donc pas de gels répétés).
+        public static float NextScale(float current,float frame,float target,float cap,bool fastLongEnough)
+        {
+            if(current>cap)return cap;
+            if(frame>target*SlowFrameRatio)return Mathf.Max(MinimumScale,current-LowerStep);
+            if(fastLongEnough&&frame<target*FastFrameRatio)return Mathf.Min(cap,current+RaiseStep);
+            return current;
+        }
         void OnDestroy(){if(pipeline!=null)Destroy(pipeline);}
     }
 }

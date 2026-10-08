@@ -142,6 +142,7 @@ namespace Touchline.Core
         public string id; public int side, slot; public Point position, velocity, previous;
         public float angle, stride, actionTime, fitness=100;
         public float duelCooldown, controlTime, diveSide=1;
+        public float runBehind; // secondes restantes d'un appel en profondeur
         public Point carryTarget,actionTarget;public float actionHeight=.11f,actionContactTime;public int actionSequence;
         public string actionKind;
         public string tackleOpponent;
@@ -175,6 +176,8 @@ namespace Touchline.Core
     {
         public string home, away;
         public uint seed=731;
+        public float homeForm,awayForm; // forme du jour de chaque équipe (multiplicateur −/+, 0 = neutre)
+        public int venueSide=-1; // côté qui reçoit (0 = club dirigé, 1 = adversaire, -1 = neutre ; ancienne sauvegarde : neutre)
         public double remainder;
         public float clock, restart=2, decision=.7f, carryTime;
         public int period=1, restartSide;

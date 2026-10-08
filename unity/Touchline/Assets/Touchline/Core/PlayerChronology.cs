@@ -19,9 +19,18 @@ namespace Touchline.Core
         {
             birth=default;return player!=null&&(TryBirth(player.birthDate,at,out birth)||TryBirth(player.evidence?.birthDate,at,out birth));
         }
+        // Ages are re-synchronised for every player every day: cache the
+        // parsed dates (a pure function of the stored text).
+        static readonly System.Collections.Concurrent.ConcurrentDictionary<string,DateTime> parsedBirths=new System.Collections.Concurrent.ConcurrentDictionary<string,DateTime>(StringComparer.Ordinal);
         static bool TryBirth(string raw,DateTime at,out DateTime birth)
-            =>DateTime.TryParseExact(raw,"yyyy-MM-dd",CultureInfo.InvariantCulture,DateTimeStyles.None,out birth)
-                &&birth.Year>=1850&&birth.Date<=at.Date;
+        {
+            birth=default;if(raw==null)return false;
+            if(!parsedBirths.TryGetValue(raw,out birth)){
+                if(!DateTime.TryParseExact(raw,"yyyy-MM-dd",CultureInfo.InvariantCulture,DateTimeStyles.None,out birth))birth=DateTime.MinValue;
+                parsedBirths[raw]=birth;
+            }
+            return birth!=DateTime.MinValue&&birth.Year>=1850&&birth.Date<=at.Date;
+        }
     }
     public partial class Career
     {

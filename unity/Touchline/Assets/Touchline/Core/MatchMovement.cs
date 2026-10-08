@@ -20,6 +20,8 @@ namespace Touchline.Core
                     if(d<first){second=first;coverPress[side]=firstPress[side];first=d;firstPress[side]=i;}else if(d<second){second=d;coverPress[side]=i;}}}
             for(int i=0;i<22;i++){
                 var p=m.actors[i];
+                // A run in behind lasts a fixed time whatever happens to the ball.
+                if(p.runBehind>0)p.runBehind=Math.Max(0,p.runBehind-Step);
                 if(PreparingFootDelivery(p)&&(b.owner!=p.id||p.sentOff)){p.action=p.velocity.Length>.4f?"run":"idle";p.actionTime=0;}
                 if(p.sentOff){targets[i]=p.position;continue;}var dir=Direction(p.side);var has=possession==p.side;var t=Tactic(p.side);var slot=(has?t.withBall:t.withoutBall)[p.slot];var bx=b.position.x*dir;
                 var q=t.Position(p.slot,has,bx);p.intent=has?"support":"shape";
@@ -31,7 +33,7 @@ namespace Touchline.Core
                     if(bx>22&&slot.duty=="attack"){q.x=Math.Min(48,Math.Max(q.x,bx+7));p.intent="run-behind";}
                     if(owner!=null&&p!=owner&&slot.duty=="support"&&Point.Distance(p.position,owner.position)<18&&Safety(owner,p.position)<.45f){float lateral=p.position.z>=owner.position.z?1:-1;q.z+=lateral*3.5f*dir;q.x=Math.Min(q.x,bx+5);p.intent="show-for-pass";}
                     DeliverySupport(p,owner,ref q);
-                    if(owner!=null&&p!=owner)q.x=Math.Min(q.x,OffsideLine(p.side)-.9f);
+                    if(owner!=null&&p!=owner&&!RunBehind(p,owner,slot.duty,ref q))q.x=Math.Min(q.x,OffsideLine(p.side)-.9f);
                 }
                 q=q*dir;
                 if(p.slot==0){p.intent="keeper";q=KeeperTarget(p);}
@@ -41,9 +43,13 @@ namespace Touchline.Core
                     var focus=DefensiveFocus(p.side);float focusX=focus.x*dir;
                     if(slot.y<38&&bx< -24)q.x=dir*Math.Max(-49.2f,Math.Min(q.x*dir,bx-3.2f));
                     bool recovering=transition&&!t.counterPress;
-                    bool trigger=focusX< -28+t.line*55||Space(focus,p.side,true)<4||free;
+                    // Un porteur dans son propre tiers défensif est pressé par le
+                    // joueur le plus proche dès que l'équipe presse un minimum.
+                    bool highPress=focusX>HighPressZone&&t.pressing>=HighPressMinPressing;
+                    bool trigger=focusX< -28+t.line*55||Space(focus,p.side,true)<4||free||highPress;
                     bool closeDelay=recovering&&Point.Distance(p.position,focus)<7;
-                    bool press=trigger&&(!recovering||closeDelay)||transition&&t.counterPress;
+                    // Ballon perdu haut : le plus proche presse aussitôt au lieu de se replier.
+                    bool press=trigger&&(!recovering||closeDelay||highPress)||transition&&t.counterPress;
                     float radius=5+t.pressing*18+(transition&&t.counterPress?7:0);
                     if(firstPress[p.side]==i&&press&&Point.Distance(p.position,focus)<radius){q=focus-new Point(dir*(closeDelay?1.4f:.65f),0);p.intent=closeDelay?"delay":"press";}
                     else if(coverPress[p.side]==i&&press&&t.pressing>.35f&&Point.Distance(p.position,focus)<radius+3){q=focus+(new Point(-dir*52.5f,0)-focus).Normalized*(4.8f-t.pressing*2);p.intent="cover";}
@@ -56,6 +62,10 @@ namespace Touchline.Core
                         if(recovering){q.x-=dir*5;p.intent="recover";}
                     }
                 }
+                // Against a cross the two nearest defenders attack the flight
+                // itself, like the intended receiver does, instead of standing
+                // on the attacker's body while the ball drops over them.
+                if(!has&&p.slot>0&&b.kind=="cross"&&string.IsNullOrEmpty(b.owner)&&b.side!=p.side&&(firstPress[p.side]==i||coverPress[p.side]==i)&&Point.Distance(p.position,b.end)<14){q=ReceptionTarget(p);p.intent="attack-cross";}
                 if(free&&firstPress[p.side]==i){q=b.position+b.velocity*Mathx.Clamp(Point.Distance(p.position,b.position)/9,0,.65f);p.intent="loose-ball";}
                 if(protectedBody!=null&&p.side!=protectedBody.side&&p.slot>0)q=ShieldSafePressTarget(p,protectedBody,q);
                 if(protectedKeeper!=null&&p!=protectedKeeper)q=KeeperBodySafeTarget(p,protectedKeeper,q);

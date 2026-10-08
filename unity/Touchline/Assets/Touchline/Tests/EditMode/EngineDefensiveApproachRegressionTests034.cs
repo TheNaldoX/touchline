@@ -22,7 +22,9 @@ public static class EngineDefensiveApproachScenarios034 {
    for(int tick=0;tick<24;tick++){s.Advance(.1);lateral=Math.Max(lateral,Math.Abs(defender.position.z-owner.position.z));minDistance=Math.Min(minDistance,Point.Distance(defender.position,owner.position));}
    if(lateral<.65f)throw new Exception("Pursuer did not actually take an outside shoulder");
    if(s.State.events.Any(e=>e.kind=="foul"||e.kind=="penalty"))throw new Exception("Controlled pursuit manufactured a violent charge");
-   if(s.State.ball.owner!=owner.id&&s.State.ball.kind!="loose")throw new Exception("Unexpected isolated possession result");
+   // Pressé, le porteur peut désormais jouer le ballon tout de suite ou se le faire chiper.
+   bool released=s.State.ball.from==owner.id,poked=s.State.ball.owner==defender.id&&s.State.events.Any(e=>e.kind=="tackle");
+   if(s.State.ball.owner!=owner.id&&s.State.ball.kind!="loose"&&!released&&!poked)throw new Exception("Unexpected isolated possession result");
    rows.Add(new{side,period,lateral,minDistance,events=s.State.events.Select(e=>e.kind).ToArray()});
    defender.position=new Point(dir*32,0);defender.velocity=new Point(dir,0);defender.angle=dir*(float)Math.PI*.5f;defender.action="run";defender.actionTime=0;
    owner.position=new Point(dir*30,0);owner.velocity=new Point();s.State.ball.owner=owner.id;s.State.ball.position=new Point(dir*30.5f,0);

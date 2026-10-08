@@ -9,7 +9,7 @@ namespace Touchline.Core
     [Serializable] public class PlayoffTie { public string id,a,b,winner;public int stage;public bool rankTie; }
     [Serializable] public class SplitDeduction {public string club;public int points;}
     [Serializable] public class SplitGroup { public string league;public List<string> top=new List<string>(),middle=new List<string>();public List<SplitDeduction> deductions=new List<SplitDeduction>(); }
-    [Serializable] public class RevenueChange { public string club;public long revenue,baseRevenue;public int divisionMoves; }
+    [Serializable] public class RevenueChange { public string club;public long revenue,baseRevenue;public int divisionMoves;public float merit; }
     public partial class Career
     {
         public List<RevenueChange> changedRevenues=new List<RevenueChange>();
@@ -19,10 +19,32 @@ namespace Touchline.Core
             if(change==null){change=new RevenueChange{club=id,baseRevenue=data.annualRevenue};changedRevenues.Add(change);}
             if(change.baseRevenue<=0){change.baseRevenue=data.annualRevenue;change.divisionMoves=0;}
             change.divisionMoves+=promoted?1:-1;
+            if(id==club)change.merit=0; // the managed club has no AI merit coefficient
             // Reversible projection: a promotion/relegation cycle cannot manufacture revenue.
-            data.annualRevenue=(long)(change.baseRevenue*Math.Pow(1.55,change.divisionMoves));change.revenue=data.annualRevenue;
+            data.annualRevenue=ProjectedRevenue(change);change.revenue=data.annualRevenue;
             data.financeSource="Projection de carrière par division, ancrée aux recettes initiales";
             if(id==club){life.revenue=data.annualRevenue;life.financeSource=data.financeSource;Mail("Direction financière","Changement de division","Les recettes prévisionnelles et les plafonds du conseil sont réévalués après "+(promoted?"la montée.":"la descente."));}
+        }
+        // Spread of next-season revenue between the champion and the last club of
+        // a division (TV merit, prize money, gates): +15 % / -15 % around the base.
+        // Applied to computer-run clubs only; the managed club keeps its own ledger.
+        const float MeritRevenueRange=.30f;
+        static long ProjectedRevenue(RevenueChange change)=>(long)(change.baseRevenue*Math.Pow(1.55,change.divisionMoves)*(change.merit>0?change.merit:1));
+        // d.clubs is in final table order when called.
+        void ApplyMeritRevenue(Database db)
+        {
+            foreach(var d in world.divisions){
+                int n=d.clubs.Count;if(n<2)continue;
+                for(int i=0;i<n;i++){
+                    string id=d.clubs[i];if(id==club&&world.managerStatus=="employed")continue;
+                    var data=db.clubs.FirstOrDefault(c=>c.id==id);if(data==null||data.annualRevenue<=0)continue;
+                    var change=changedRevenues.FirstOrDefault(r=>r.club==id);
+                    if(change==null){change=new RevenueChange{club=id,baseRevenue=data.annualRevenue};changedRevenues.Add(change);}
+                    if(change.baseRevenue<=0){change.baseRevenue=data.annualRevenue;change.divisionMoves=0;}
+                    change.merit=1+MeritRevenueRange*(.5f-i/(float)(n-1));
+                    data.annualRevenue=ProjectedRevenue(change);change.revenue=data.annualRevenue;
+                }
+            }
         }
         bool LeagueFinished(string id)=>world.fixtures.Any(f=>f.league==id)&&world.fixtures.Where(f=>f.league==id&&!f.knockout).All(f=>f.played);
         void ProgressPyramid(Database db)

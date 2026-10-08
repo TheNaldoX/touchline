@@ -13,6 +13,8 @@ namespace Touchline.Core
         {
             var b=State.ball;var delta=b.position-defender.position;float distance=delta.Length;
             if(defender.side==owner.side||b.held||defender.slot==0||defender.sentOff||defender.controlTime>0||defender.duelCooldown>0||owner.controlTime>0||GroundedAction(defender)||defender.action=="tackle"||defender.action=="hurt")return false;
+            // A booked player stays on his feet: a mistimed slide would be a second yellow.
+            if(defender.yellows>0)return false;
             if(distance<1.3f||distance>1.9f||b.height>.35f||defender.velocity.Length<3||owner.position.x*Direction(owner.side)<20||defender.fitness<35||Tactic(defender.side).pressing<.35f)return false;
             float bodyProjection=Projection(defender.position,b.position,owner.position);
             if(bodyProjection>.1f&&bodyProjection<.95f&&Point.Distance(owner.position,Point.Lerp(defender.position,b.position,bodyProjection))<.42f)return false;
@@ -61,7 +63,7 @@ namespace Touchline.Core
                 }
                 float chance=Mathx.Clamp(.43f+(Skill(defender,"slidingTackle")-Skill(owner,"dribbling"))*.006f,.12f,.78f);
                 if(Random()>=chance)continue;
-                State.metrics[owner.side].pressuredLosses++;LooseBall(b.position,toward*(3+Random()*2),BallRadius,.35f,defender.side,defender.id);
+                State.metrics[owner.side].pressuredLosses++;LooseBall(b.position,Deflect(toward,PokeSpread)*(4+Random()*4),BallRadius,.35f,defender.side,defender.id);
                 BeginContactFall(owner,defender,false);owner.controlTime=Math.Max(owner.controlTime,.35f);
                 Emit("tackle",defender.side,defender.id,Data(defender).name+" coupe la course du ballon d’un tacle glissé.");return true;
             }

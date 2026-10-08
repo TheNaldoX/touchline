@@ -19,7 +19,7 @@ namespace Touchline.Core
                 leagues=original.leagues,fixtures=original.fixtures,pyramidRules=original.pyramidRules,
                 freeAgents=original.freeAgents,freeAgentCatalogVersion=original.freeAgentCatalogVersion
             };
-            try{state.RestoreWorld(candidate);state.SynchronizePlayerAges(candidate);}catch(ArgumentException){return false;}
+            try{state.ExpandCompactSave(original);state.RestoreWorld(candidate);state.SynchronizePlayerAges(candidate);}catch(ArgumentException){return false;}
             if(!state.lineup.All(id=>candidate.Find(id)?.team==state.club))return false;
             restored=candidate;return true;
         }

@@ -41,6 +41,65 @@ namespace Touchline
             }
             return builder.Build();
         }
+        // Second anneau de la tribune d'en face : silhouettes simples (cartes), maillage à part.
+        public static Mesh UpperCrowd(string home,string away,float occupancy=.84f)
+        {
+            occupancy=float.IsNaN(occupancy)||float.IsInfinity(occupancy)?0:Mathf.Clamp01(occupancy);
+            uint state=2166136261;foreach(char c in "upper|"+(home??"")+"|"+(away??"")){state^=c;state*=16777619;}
+            uint Next(){state=state*1664525+1013904223;return state;}
+            var builder=new CrowdBuilder();
+            for(int row=0;row<StadiumGeometry.UpperTierRows;row++)for(int seat=0;seat<UpperSeatsPerRow;seat++){
+                uint sample=Next();if((sample&65535)/65536f>=occupancy)continue;
+                var position=new Vector3(-57+seat*1.2f,StadiumGeometry.UpperTierBase+row*StadiumGeometry.UpperRowRise,-(StadiumGeometry.UpperTierFront+row*StadiumGeometry.UpperRowDepth));
+                builder.Person(position,Vector3.forward,.44f+((sample>>16)&15)*.012f,(int)((sample>>21)%4),5+(int)((sample>>25)&1),sample,false);
+            }
+            var mesh=builder.Build();mesh.name="Upper tier supporters";return mesh;
+        }
+        const int UpperSeatsPerRow=96; // sièges de 1,2 m sur 115 m
+
+        // Atlas des panneaux publicitaires, généré (aucune image) : une ligne de
+        // BoardRowPixels par motif, quatre motifs par club, formes inventées sans
+        // texte ni marque. Bordure sombre de 2 px par ligne (cadre et marge de mipmap).
+        public const int BoardDesignsPerClub=4,BoardDesigns=2*BoardDesignsPerClub;
+        public const int BoardAtlasWidth=256,BoardRowPixels=32,BoardAtlasHeight=BoardDesigns*BoardRowPixels;
+        const int BoardBorder=2; // px
+        public static readonly Color BoardFrame=new Color(.05f,.055f,.065f),BoardNavy=new Color(.06f,.08f,.13f);
+        static readonly Color LightInk=new Color(.95f,.95f,.92f),DarkInk=new Color(.07f,.08f,.1f);
+        // Encre contrastée avec la couleur du club (claire sur couleur sombre et inversement).
+        public static Color Contrast(Color club)=>club.r*.3f+club.g*.59f+club.b*.11f>.55f?DarkInk:LightInk;
+        public static Vector4 BoardUv(int design)
+        {
+            float v0=(design*BoardRowPixels+BoardBorder)/(float)BoardAtlasHeight,v1=((design+1)*BoardRowPixels-BoardBorder)/(float)BoardAtlasHeight;
+            return new Vector4(0,v0,1,v1);
+        }
+        // Couleur d'un pixel du motif design (x : 0–255, y : 0–31 dans la ligne).
+        public static Color BoardPixel(int design,int x,int y,Color home,Color away)
+        {
+            if(y<BoardBorder||y>=BoardRowPixels-BoardBorder)return BoardFrame;
+            var club=design<BoardDesignsPerClub?home:away;club.a=1;var ink=Contrast(club);
+            float cy=y-BoardRowPixels*.5f+.5f; // px depuis l'axe du panneau
+            switch(design%BoardDesignsPerClub){
+                case 0: // chevrons
+                    return Mathf.Repeat(x+Mathf.Abs(cy)*1.6f,48)<12?ink:club;
+                case 1:{ // pastilles cerclées sur fond nuit
+                    float dx=Mathf.Repeat(x-26,52)-26,r=Mathf.Sqrt(dx*dx+cy*cy);
+                    return r<5?ink:r<10?club:Mathf.Abs(cy)<1.5f?club:BoardNavy;}
+                case 2: // biseau aux couleurs du club et trois carrés
+                    if(x<96+cy*1.2f)return club;
+                    return Mathf.Abs(cy)<6&&x>=132&&x<240&&Mathf.Repeat(x-132,36)<12?club:ink;
+                default: // vague
+                    return Mathf.Abs(cy-7*Mathf.Sin(2*Mathf.PI*x/128f))<3.5f?ink:club;
+            }
+        }
+        public static Texture2D BoardAtlas(Color home,Color away)
+        {
+            var texture=new Texture2D(BoardAtlasWidth,BoardAtlasHeight,TextureFormat.RGB24,true){name="Advertising board atlas",wrapMode=TextureWrapMode.Clamp,filterMode=FilterMode.Trilinear,anisoLevel=4};
+            var pixels=new Color32[BoardAtlasWidth*BoardAtlasHeight];
+            for(int design=0;design<BoardDesigns;design++)for(int y=0;y<BoardRowPixels;y++)for(int x=0;x<BoardAtlasWidth;x++)
+                pixels[(design*BoardRowPixels+y)*BoardAtlasWidth+x]=BoardPixel(design,x,y,home,away);
+            texture.SetPixels32(pixels);texture.Apply(true,true);
+            return texture;
+        }
         sealed class CrowdBuilder
         {
             static readonly int[] TorsoIndices={0,4,5,0,5,1,1,5,6,1,6,2,2,6,7,2,7,3,3,7,4,3,4,0,4,7,6,4,6,5};

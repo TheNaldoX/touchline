@@ -43,11 +43,11 @@ namespace Touchline
             for(int i=0;i<2;i++){capturePendingRelease[i]=false;captureStartingRelease[i]=false;}
             bool kick=actor.action=="kick";if(kick||actor.action!="run"&&actor.action!="idle"&&!MatchSimulation.PreparingFootDelivery(actor)){capturedAnklePitchValid[0]=false;capturedAnklePitchValid[1]=false;}if(!kick&&actor.action!="run"&&actor.action!="idle"&&!MatchSimulation.PreparingFootDelivery(actor))return;
             float elapsed=Mathf.Clamp(.64f-actor.actionTime-(1-alpha)*.1f,0,.64f);
-            float weight=kick?Mathf.SmoothStep(0,1,elapsed/.07f)*(1-Mathf.SmoothStep(0,1,(elapsed-.49f)/.15f)):Mathf.InverseLerp(.15f,1.1f,actor.velocity.Length);
+            float weight=kick?Mathf.SmoothStep(0,1,elapsed/.07f)*(1-Mathf.SmoothStep(0,1,(elapsed-.49f)/.15f)):Mathf.InverseLerp(.15f,1.1f,poseVelocity.Length);
             if(kick&&ShortPass(actor))weight*=.62f;
             if(weight<=0){capturedAnklePitchValid[0]=false;capturedAnklePitchValid[1]=false;return;}
             if(motionIdentity==0){uint hash=2166136261;foreach(char c in PlayerId??"player")hash=unchecked((hash^c)*16777619);motionIdentity=(int)(hash%10000)+1;}
-            var ground=kick?FullBodyMotion.Kick(motionIdentity+actor.actionSequence,elapsed,leftFooted,capturedJoints):DirectionalBodyMotion.Sample(gait,actor.velocity.Length,transform.InverseTransformDirection(new Vector3(actor.velocity.x,0,actor.velocity.z)),motionIdentity,actor.injured,capturedJoints);
+            var ground=kick?FullBodyMotion.Kick(motionIdentity+actor.actionSequence,elapsed,leftFooted,capturedJoints):DirectionalBodyMotion.Sample(gait,poseVelocity.Length,transform.InverseTransformDirection(new Vector3(poseVelocity.x,0,poseVelocity.z)),motionIdentity,actor.injured,capturedJoints);
             body.localPosition=Vector3.Lerp(body.localPosition,new Vector3(0,Mathf.Clamp(ground.bob,-.065f,.065f)-.025f,0),weight);
             Aim("spine05","spine02",capturedJoints[2]-capturedJoints[1],weight);
             Aim("spine02","neck01",capturedJoints[3]-capturedJoints[2],weight);

@@ -3,6 +3,9 @@
 Ce fichier est lu automatiquement par Codex au début de chaque tâche.
 Il s'applique à tout agent qui modifie ce dépôt.
 
+Avant toute tâche, lire aussi `HANDOFF.md` (état du projet, CI, pièges, file de travail)
+et le mettre à jour en fin de session.
+
 ## Le projet
 
 **Touchline** : jeu de gestion de football type Football Manager, Unity, Android
@@ -58,15 +61,19 @@ Il s'applique à tout agent qui modifie ce dépôt.
 ### Définition de « terminé »
 Une PR n'est prête que si :
 1. Le projet compile dans Unity sans erreur ni nouvel avertissement.
-2. Tous les tests EditMode passent.
+2. Tous les tests EditMode passent (au minimum `tools/CoreTests` sans Unity).
 3. Si la PR touche le moteur ou l'IA : le **rapport de calibration** (ci-dessous)
    est joint **avant / après**, sur la même graine et le même nombre de matchs.
 4. Un nouveau test couvre le comportement ajouté ou le bug corrigé.
 5. `CHANGELOG.md` a une ligne (une seule) décrivant le changement.
+6. Une optimisation « sans effet sur le jeu » prouve des résultats identiques
+   (`tools/SeasonSim --dump` avant / après, fichiers identiques).
 
 ## Calibration du moteur
 
-Simuler au moins **200 matchs** entre équipes de niveau proche et comparer les
+Outil : `tools/Calibration` (`dotnet run -c Release -- 200 1`, voir son README).
+Tests rapides sans Unity : `tools/CoreTests`. Gestion sur plusieurs saisons : `tools/SeasonSim`.
+Simuler au moins **200 matchs** entre équipes d'un même championnat et comparer les
 moyennes **par match (deux équipes cumulées)** à ces fourchettes indicatives
 de grands championnats européens. Elles servent de garde-fous ; un écart doit
 être expliqué dans la PR.

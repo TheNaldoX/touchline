@@ -6,10 +6,12 @@ namespace Touchline
     {
         // Fit real world points using the actual viewport aspect ratio.
         // Portrait, unfolded and ultra-wide layouts must retain the ball.
+        // Pente de la caméra télé (descente par mètre d'avancée) : 0,58 ≈ 30°, proche des plans de diffusion.
+        public const float BroadcastPitch=.58f;
         public static void Apply(Camera camera,Vector3 focus,Vector3 ball,bool wide,bool goal,int direction,float zoom)
         {
             bool portrait=camera.aspect<.8f;
-            var forward=portrait?new Vector3(0,-1,-.08f).normalized:new Vector3(-.035f,-.68f,-1).normalized;
+            var forward=portrait?new Vector3(0,-1,-.08f).normalized:new Vector3(-.035f,-BroadcastPitch,-1).normalized;
             var rotation=Quaternion.LookRotation(forward,portrait?Vector3.right:Vector3.up);
             var right=rotation*Vector3.right;var up=rotation*Vector3.up;
             float vertical=Mathf.Tan(camera.fieldOfView*.5f*Mathf.Deg2Rad)*.78f;

@@ -12,7 +12,21 @@ namespace Touchline.Core
     [Serializable] public class PressAppearance { public string fixture,phase,answer;public int day; }
     public partial class Career
     {
-        void SavePlayer(PlayerData p){CloseMedicalResponsibilitiesForPlayer(p);int index=world.rosterChanges.FindIndex(x=>x.id==p.id);if(index<0)world.rosterChanges.Add(p);else world.rosterChanges[index]=p;}
+        void SavePlayer(PlayerData p){CloseMedicalResponsibilitiesForPlayer(p);int index=RosterChangeIndex(p.id);if(index<0){world.rosterChanges.Add(p);rosterIndex[p.id]=world.rosterChanges.Count-1;rosterIndexCount=world.rosterChanges.Count;}else world.rosterChanges[index]=p;}
+        // After the first season every player is in rosterChanges (~20 000):
+        // keep the first index of each id instead of scanning the list on each
+        // save. Rebuilt whenever the list is replaced or changes length elsewhere.
+        [NonSerialized] Dictionary<string,int> rosterIndex;[NonSerialized] List<PlayerData> rosterIndexSource;[NonSerialized] int rosterIndexCount;
+        int RosterChangeIndex(string id)
+        {
+            var list=world.rosterChanges;
+            if(rosterIndex==null||!ReferenceEquals(rosterIndexSource,list)||rosterIndexCount!=list.Count){
+                rosterIndexSource=list;rosterIndexCount=list.Count;rosterIndex=new Dictionary<string,int>(list.Count);
+                for(int i=0;i<list.Count;i++)if(list[i]?.id!=null&&!rosterIndex.ContainsKey(list[i].id))rosterIndex[list[i].id]=i;
+            }
+            if(rosterIndex.TryGetValue(id,out int index)&&index<list.Count&&list[index]?.id==id)return index;
+            index=list.FindIndex(x=>x.id==id);if(index>=0)rosterIndex[id]=index;return index;
+        }
         public Employment Contract(Database db,string id)
         {
             var found=LookupEmployment(id);if(found!=null)return found;
@@ -178,6 +192,7 @@ namespace Touchline.Core
                 if(c.retirement>=0&&c.retirement<=life.day&&p.team!="retired"){RetireEmployment(db,p,c);life.players.RemoveAll(x=>x.id==p.id);SavePlayer(p);Mail("Secrétariat","Retraite effective",p.name+" met un terme à sa carrière.",p.id);}
             }
             AcademyDevelopmentDay(db);
+            WarnThinSquad(db);
             if(life.day%7==0){foreach(var d in world.sponsors.Where(s=>s.status=="signed"&&s.until>life.day))Account(d.annual/52,"Partenariat • "+d.name);if(world.debt>0)Account(-world.debt/1000,"Intérêts de dette estimés");}
             foreach(var d in world.sponsors.Where(d=>d.status=="signed"&&d.until<=life.day)){d.status="expired";Mail("Direction commerciale","Partenariat terminé",d.name+" arrive à échéance. Un emplacement est à nouveau disponible.");}
             if(life.day>=world.reviewDay){world.reviewDay=life.day+30;var division=world.divisions.FirstOrDefault(d=>d.clubs.Contains(club));var table=division==null?new List<Standing>():Table(division.id);var own=table.FirstOrDefault(t=>t.club==club);

@@ -34,10 +34,10 @@ namespace Touchline.Core
             float touch=.30f+.26f*(.5f+.5f*(float)Math.Sin(owner.stride*2.4f));var target=owner.action=="keeper-rise"?owner.actionTarget:owner.position+forward*touch;
             b.controlElapsed+=Step;b.position=Point.Lerp(b.controlOrigin,target,BodyControlProgress(owner,b));b.height=ControlledBallHeight(owner,b);
             if(owner.slot==0&&(owner.action=="dive"||owner.action=="claim")){b.height=.7f;return;}
-            if(ResolveSlidingDuels(owner)||ResolveStandingDuels(owner))return;
+            if(TacticalFoul(owner)||ResolveSlidingDuels(owner)||ResolveStandingDuels(owner)||ResolveCarrierPressure(owner))return;
             foreach(var defender in m.actors){if(defender.sentOff||GroundedAction(defender)||defender.side==owner.side||defender.duelCooldown>0||owner.controlTime>0)continue;
                 if(defender.slot==0){if(InOwnArea(defender,b.position)&&Point.Distance(defender.position,b.position)<1.15f&&b.height<.8f){var claimImpact=b.position;float claimHeight=b.height;Control(defender);b.held=true;BeginRecordedKeeperClaim(defender,claimImpact,claimHeight,1);defender.duelCooldown=1.2f;m.metrics[defender.side].keeperClaims++;Emit("claim",defender.side,defender.id,Data(defender).name+" se couche dans les pieds de l’attaquant.");return;}continue;}
-                if(!BeginSlidingDuel(defender,owner))BeginStandingDuel(defender,owner);
+                if(!BeginSlidingDuel(defender,owner)&&CommitsToChallenge(defender,owner))BeginStandingDuel(defender,owner);
             }
             if(!GoalFrame())BallLeavesPitch();
         }
@@ -139,9 +139,25 @@ namespace Touchline.Core
                 hit.controlTime=.45f;hit.action="block";hit.actionTime=.45f;hit.actionKind="clearance";hit.actionTarget=impact;hit.actionHeight=impactHeight;hit.actionSequence++;
                 Emit("clearance",hit.side,hit.id,Data(hit).name+" écarte le centre sous la pression.");return true;
             }
+            // A defender stretching across a fast pass often only gets a toe or
+            // a shin to it: the ball deflects on, contestable, and may run out.
+            if(intercept&&hit.slot>0&&speed>InterceptDeflectSpeed){float reach=Point.Distance(hit.position,impact);float stretch=Mathx.Clamp((reach-InterceptCleanReach)/InterceptStretchRange,0,1);
+                if(stretch>0&&Random()<stretch*(1.15f-Skill(hit,"interceptions")*.01f)){var direction=Deflect(b.velocity.Normalized,InterceptDeflectSpread);LooseBall(impact,direction*speed*InterceptDeflectKeep,impactHeight,.3f,hit.side,hit.id);hit.controlTime=.35f;hit.action="block";hit.actionTime=.35f;hit.actionKind="clearance";hit.actionTarget=impact;hit.actionHeight=impactHeight;hit.actionSequence++;Emit("interception",hit.side,hit.id,Data(hit).name+" dévie la passe.");return true;}}
             float difficulty=FirstTouchError(hit,speed,Space(hit.position,1-hit.side));
-            if(speed>7&&Random()<difficulty*.36f){var direction=b.velocity.Normalized;LooseBall(impact,direction*(2.3f+difficulty*2.5f),impactHeight,.45f,hit.side,hit.id);hit.controlTime=.4f;hit.actionTarget=impact;hit.actionHeight=impactHeight;hit.actionSequence++;hit.action="miscontrol";hit.actionTime=.4f;State.metrics[hit.side].miscontrols++;Emit("miscontrol",hit.side,hit.id,Data(hit).name+" laisse échapper son contrôle.");return true;}
+            // Calibrated so a match has ~40-50 heavy touches, not one in six receptions.
+            if(speed>7&&Random()<difficulty*MiscontrolRate){var direction=Deflect(b.velocity.Normalized,HeavyTouchSpread);LooseBall(impact,direction*(2.3f+difficulty*2.5f),impactHeight,.45f,hit.side,hit.id);hit.controlTime=.4f;hit.actionTarget=impact;hit.actionHeight=impactHeight;hit.actionSequence++;hit.action="miscontrol";hit.actionTime=.4f;State.metrics[hit.side].miscontrols++;Emit("miscontrol",hit.side,hit.id,Data(hit).name+" laisse échapper son contrôle.");return true;}
             if(!intercept&&pass)State.completedPasses[hit.side]++;b.position=impact;b.height=impactHeight;Control(hit);if(intercept)Emit("interception",hit.side,hit.id,Data(hit).name+" coupe la trajectoire.");return true;
+        }
+        public const float MiscontrolRate=.15f;
+        // An attacker meeting a cross inside the box (within HeaderShotRange m of
+        // goal) goes for goal unless the angle is hopeless; further out only a
+        // genuinely good chance is headed at goal, otherwise he lays it off.
+        public const float HeaderShotRange=14f,HeaderShotMinQuality=.02f;
+        bool HeadsForGoal(Actor aerial)
+        {
+            float quality=ShotQuality(aerial,true),distance=Point.Distance(aerial.position,new Point(Direction(aerial.side)*52.5f,0));
+            if(distance<HeaderShotRange)return quality>HeaderShotMinQuality;
+            return quality>(Tactic(aerial.side).workIntoBox?.12f:.07f);
         }
         bool ResolveAerial(float progress)
         {
@@ -152,7 +168,7 @@ namespace Touchline.Core
             // A short plant before take-off keeps the prepared head contact
             // reachable rather than coasting a full sprint step beyond it.
             aerial.velocity=new Point();
-            if(attack&&ShotQuality(aerial,true)>(Tactic(aerial.side).workIntoBox?.12f:.07f)){var contact=b.position;float height=b.height;Shoot(aerial,true);BeginAerialContest(contestant,aerial,contact,height);return true;}
+            if(attack&&HeadsForGoal(aerial)){var contact=b.position;float height=b.height;Shoot(aerial,true);BeginAerialContest(contestant,aerial,contact,height);return true;}
             DistributeHeader(aerial,contestant);return true;
         }
         bool InOwnArea(Actor keeper,Point point)=>point.x*Direction(keeper.side)< -36&&Math.Abs(point.z)<20.16f;

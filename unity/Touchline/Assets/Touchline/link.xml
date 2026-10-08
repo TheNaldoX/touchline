@@ -1,0 +1,5 @@
+<!-- La sauvegarde compacte (Core/CompactSave.cs) lit les champs des modèles par
+     réflexion : on interdit au linker IL2CPP d'en retirer quoi que ce soit. -->
+<linker>
+  <assembly fullname="Touchline.Core" preserve="all"/>
+</linker>

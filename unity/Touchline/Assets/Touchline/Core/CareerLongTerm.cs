@@ -12,6 +12,34 @@ namespace Touchline.Core
     public partial class Career
     {
         public static int RetirementThreshold(PlayerData player)=>(player.Goalkeeper?40:37)+(player.rating>=80?3:player.rating>=72?1:0);
+        // Chance that an outfield player retires at a given age when his contract
+        // ends (or he is without a club); goalkeepers three years later. Most
+        // professionals stop between 32 and 36; the best play on longer.
+        // Renewal: share of his current wage a player accepts before leaving at expiry;
+        // from VeteranRenewalAge the market offers less, so he accepts a deeper cut.
+        const float AcceptedWageShare=.75f,VeteranAcceptedWageShare=.6f;const int VeteranRenewalAge=30;
+        // From this age an expiring player rated below the club reference leaves.
+        const int VeteranReleaseAge=32;
+        // Youth graduates per computer-run club and summer, extra places they may
+        // take above the reference squad size, and rating below a replacement.
+        const int YouthIntakePerSeason=1,YouthSquadAllowance=2;const float YouthRatingGap=8f;
+        const int YouthMinAge=17,YouthAgeSpread=2;const float YouthPotentialSpread=8f,YouthMinRating=30f,MaxPotential=94f;
+        // Retirement chance multipliers: established (72+) and star (80+) players
+        // play on longer; a player already without a club stops sooner.
+        const float RetireEstablished=.7f,RetireStar=.4f,RetireWithoutClub=1.5f;
+        static readonly float[] RetirementByAge={.04f,.10f,.18f,.28f,.40f,.55f}; // ages 31 to 36
+        public bool ChoosesToRetire(PlayerData p,Employment contract)
+        {
+            int age=p.age-(p.Goalkeeper?3:0);if(age<31||string.IsNullOrEmpty(p.team)||p.team=="retired"||p.team.StartsWith("academy-"))return false;
+            // A player who has agreed a move (pre-contract, scheduled transfer) carries on.
+            if(world.offers.Any(o=>o.player==p.id&&(o.status=="scheduled"||o.status=="accepted")))return false;
+            // Only at the end of a deal: nobody walks away from a running contract.
+            bool free=p.team=="free"||contract==null||contract.club!=p.team;
+            if(!free&&(contract.until>life.day+21||contract.parent!=null))return false;
+            float chance=RetirementByAge[Math.Min(age-31,RetirementByAge.Length-1)]*(p.rating>=80?RetireStar:p.rating>=72?RetireEstablished:1f)*(free&&p.team=="free"?RetireWithoutClub:1f);
+            // Stable per player and season: no draw from the career generator.
+            return StableIdentity("retire:"+p.id+":"+world.year)%1000<chance*1000;
+        }
         void AnnualPlayerDevelopment(Database db)
         {
             ProcessAiEmployment(db);
@@ -45,7 +73,7 @@ namespace Touchline.Core
                     p.rating+=gain;foreach(var a in p.attributes??Array.Empty<AttributeValue>())a.value=Math.Min(99,a.value+gain);
                 }
                 if(p.age>31){p.rating=Math.Max(25,p.rating-(p.Goalkeeper?.5f:1.3f));p.potential=Math.Max(p.rating,p.potential-1);foreach(var a in p.attributes??Array.Empty<AttributeValue>()){bool physical=a.key=="sprintSpeed"||a.key=="acceleration"||a.key=="stamina";a.value=Mathx.Clamp(a.value-(physical?1.8f:p.Goalkeeper?.35f:.6f),10,99);}}
-                if(p.age>=RetirementThreshold(p)||contracts.TryGetValue(p.id,out var retirementContract)&&retirementContract.retirement>=0&&retirementContract.retirement<=life.day){
+                if(p.age>=RetirementThreshold(p)||ChoosesToRetire(p,contracts.TryGetValue(p.id,out var endingContract)?endingContract:null)||contracts.TryGetValue(p.id,out var retirementContract)&&retirementContract.retirement>=0&&retirementContract.retirement<=life.day){
                     bool managed=p.team==club;ArchiveRetiredPlayer(p);p.team="retired";if(contracts.TryGetValue(p.id,out var employment)){employment.club="retired";CloseRetiredLoan(employment);}
                     life.players.RemoveAll(x=>x.id==p.id);
                     if(managed)Mail("Secrétariat","Retraite effective",p.name+" met un terme à sa carrière.",p.id);
@@ -60,19 +88,30 @@ namespace Touchline.Core
             foreach(var team in db.clubs.Where(t=>t.id!=club||world.managerStatus!="employed")){
                 if(!references.TryGetValue(team.id,out var reference)||!squads.TryGetValue(team.id,out var before))continue;
                 var live=before.Where(p=>p.team==team.id).ToList();long wageCeiling=AiGrossWageCeiling(team);
+                int squadSize=Math.Min(reference.squadSize,AiSquadTargetMax);
                 foreach(var retired in before.Where(p=>p.team=="retired")){
-                    if(live.Count>=reference.squadSize)break;
+                    if(live.Count>=squadSize)break;
+                    // A free agent of the role first; his terms are set with the renewals below.
+                    var free=FreeAgentReplacement(db,reference,retired,contracts);if(free!=null){free.team=team.id;live.Add(free);continue;}
                     var newcomer=CreateReplacement(db,team,reference,retired,additions.Count);additions.Add(newcomer);live.Add(newcomer);
                 }
-                while(live.Count<reference.squadSize){
+                while(live.Count<squadSize){
                     var template=before.OrderBy(p=>live.Count(x=>x.Goalkeeper==p.Goalkeeper&&x.position==p.position)).First();
                     var candidate=db.players.Where(p=>p.team=="free"&&p.age>=18&&p.age<32&&p.Goalkeeper==template.Goalkeeper&&p.position==template.position&&p.rating>=reference.rating-9&&p.rating<=reference.rating+5&&(!contracts.TryGetValue(p.id,out var activeLoan)||activeLoan.parent==null)&&!world.offers.Any(o=>o.player==p.id&&o.status=="scheduled")).OrderBy(p=>Math.Abs(p.rating-reference.rating)).FirstOrDefault();
                     if(candidate==null){candidate=CreateReplacement(db,team,reference,template,additions.Count);additions.Add(candidate);}else candidate.team=team.id;
                     live.Add(candidate);
                 }
+                // Academy graduates join every summer, even with a full squad: the
+                // expiring fringe below is then released rather than renewed.
+                for(int k=0;k<YouthIntakePerSeason&&live.Count<squadSize+YouthSquadAllowance;k++){
+                    var youth=CreateReplacement(db,team,reference,live[(int)(Roll()*live.Count)],additions.Count);youth.age=YouthMinAge+(int)(Roll()*YouthAgeSpread);
+                    youth.rating=Math.Max(YouthMinRating,youth.rating-YouthRatingGap);foreach(var a in youth.attributes??Array.Empty<AttributeValue>())a.value=Math.Max(10,a.value-YouthRatingGap);
+                    youth.potential=Math.Min(MaxPotential,Math.Max(youth.potential,youth.rating+YouthRatingGap+Roll()*YouthPotentialSpread));
+                    additions.Add(youth);live.Add(youth);
+                }
                 var surplus=new HashSet<string>();int remaining=live.Count,keepers=live.Count(p=>p.Goalkeeper);
                 foreach(var fringe in live.Where(p=>contracts.TryGetValue(p.id,out var e)&&e.parent==null&&e.until<=life.day+21).OrderBy(p=>p.rating)){
-                    if(remaining<=reference.squadSize)break;if(fringe.Goalkeeper&&keepers<=2)continue;
+                    if(remaining<=squadSize)break;if(fringe.Goalkeeper&&keepers<=2)continue;
                     // Do not empty a role merely to reduce payroll; wait for a different expiry.
                     if(live.Count(p=>p.position==fringe.position&&!surplus.Contains(p.id))<=1)continue;
                     surplus.Add(fringe.id);remaining--;if(fringe.Goalkeeper)keepers--;
@@ -84,21 +123,37 @@ namespace Touchline.Core
                     if(surplus.Contains(p.id)){contract.aiRelease=true;continue;}
                     bool newEmployment=contract==null||contract.club!=team.id;
                     if(newEmployment||contract.until<=life.day+21){
+                        // A declining veteran below the club's level is not offered a new deal.
+                        if(!newEmployment&&p.age>=VeteranReleaseAge&&p.rating<reference.rating){contract.aiRelease=true;departing.Add(p);continue;}
                         float level=(float)Math.Pow(1.075,p.rating-reference.rating),resources=Mathx.Clamp(team.annualRevenue/(float)reference.revenue,.45f,2);
-                        double expected=reference.wage*level*resources;if(!newEmployment)expected=Math.Max(expected,p.wage*(p.age<30?1.02:.95));
+                        double expected=reference.wage*level*resources*(AiWagePremiumMin+AiWagePremiumRange*AiAmbition(team.id));if(!newEmployment)expected=Math.Max(expected,p.wage*(p.age<30?1.02:.95));
                         double share=Math.Max(p.wage,reference.wage*level)/Math.Max(1,weights);long offer=Math.Max(250,(long)Math.Min(expected,wageCeiling*share));
-                        if(!newEmployment&&p.wage>0&&offer<p.wage*.75){contract.aiRelease=true;departing.Add(p);continue;}
+                        if(!newEmployment&&p.wage>0&&offer<p.wage*(p.age>=VeteranRenewalAge?VeteranAcceptedWageShare:AcceptedWageShare)){contract.aiRelease=true;departing.Add(p);continue;}
                         p.value=Math.Max(25000,(long)(reference.value*level*(p.age>30?.55f:1)));
                         p.salarySource="Projection de carrière : contrat estimé, niveau et plafond salarial du club";p.valueSource="Estimation de simulation, hors cotation réelle";
                         if(contract==null){contract=new Employment{player=p.id,club=team.id};world.contracts.Add(contract);contracts.Add(p.id,contract);}
                         if(!newEmployment&&contract.until>life.day){contract.nextWage=offer;contract.wageChangeDay=contract.until+1;}else {p.wage=offer;contract.wage=offer;contract.nextWage=0;contract.wageChangeDay=0;}
-                        contract.club=team.id;contract.until=life.day+365*(p.age>30?2:3);contract.estimated=true;contract.aiRelease=false;
+                        contract.club=team.id;contract.until=life.day+365*(p.age>=31?1:p.age>=29?2:3);contract.estimated=true;contract.aiRelease=false;
                     }
                 }
-                // Announced non-renewals open an academy pathway now; the departing player keeps
-                // his signed wage until expiry. No forced cut and no unplayable squad in August.
+                // Announced non-renewals are replaced only up to the reference squad size:
+                // first by a free agent of the same role and level (an experienced,
+                // affordable player), else by an academy pathway. The departing player
+                // keeps his signed wage until expiry. No unplayable squad in August.
+                int staying=live.Count-surplus.Count-departing.Count;
                 foreach(var leaving in departing){
-                    var p=CreateReplacement(db,team,reference,leaving,additions.Count);p.wage=Math.Max(250,(long)(wageCeiling*.85/Math.Max(22,reference.squadSize)));p.value=Math.Max(25000,reference.value/2);
+                    if(staying>=squadSize)break;staying++;
+                    long replacementWage=Math.Max(250,(long)(wageCeiling*.85/Math.Max(22,reference.squadSize)));
+                    var free=FreeAgentReplacement(db,reference,leaving,contracts);
+                    if(free!=null){
+                        float level=(float)Math.Pow(1.075,free.rating-reference.rating);
+                        free.team=team.id;free.wage=Math.Max(250,(long)Math.Min(reference.wage*level,replacementWage*Math.Max(1,level)));
+                        free.salarySource="Projection de carrière : joueur libre recruté, enveloppe du club";
+                        if(!contracts.TryGetValue(free.id,out var signed)){signed=new Employment{player=free.id};world.contracts.Add(signed);contracts.Add(free.id,signed);}
+                        signed.club=team.id;signed.wage=free.wage;signed.until=life.day+365*FreeAgentContractYears;signed.joined=life.day;signed.estimated=true;signed.aiRelease=false;signed.nextWage=0;signed.wageChangeDay=0;signed.retirement=-1;
+                        continue;
+                    }
+                    var p=CreateReplacement(db,team,reference,leaving,additions.Count);p.wage=replacementWage;p.value=Math.Max(25000,reference.value/2);
                     p.salarySource="Premier contrat simulé, enveloppe du club";additions.Add(p);
                     world.contracts.Add(new Employment{player=p.id,club=team.id,wage=p.wage,until=life.day+365*3,estimated=true});
                 }
@@ -107,6 +162,17 @@ namespace Touchline.Core
             var retiredIds=new HashSet<string>(db.players.Where(p=>p.team=="retired").Select(p=>p.id));world.contracts.RemoveAll(c=>retiredIds.Contains(c.player));
             var saved=world.rosterChanges.ToDictionary(p=>p.id);foreach(var p in db.players)saved[p.id]=p;world.rosterChanges=saved.Values.ToList();
             world.youth.RemoveAll(y=>db.Find(y.player)?.team=="retired");
+        }
+        // A free agent replacing an announced departure signs for two seasons; he must
+        // fit the role and sit within this band of the club's reference level (0–100).
+        const int FreeAgentContractYears=2,FreeAgentMaxAge=29;const float FreeAgentBelowReference=9f,FreeAgentAboveReference=5f;
+        PlayerData FreeAgentReplacement(Database db,ClubDevelopmentReference reference,PlayerData leaving,Dictionary<string,Employment> contracts)
+        {
+            string role=leaving.positions?.FirstOrDefault()??leaving.position;
+            return db.players.Where(p=>p.team=="free"&&p.age>=18&&p.age<=FreeAgentMaxAge&&p.Goalkeeper==leaving.Goalkeeper&&(p.position==leaving.position||p.positions?.FirstOrDefault()==role)
+                    &&p.rating>=reference.rating-FreeAgentBelowReference&&p.rating<=reference.rating+FreeAgentAboveReference
+                    &&(!contracts.TryGetValue(p.id,out var loan)||loan.parent==null)&&!world.offers.Any(o=>o.player==p.id&&o.status=="scheduled"))
+                .OrderByDescending(p=>p.rating).ThenBy(p=>p.id,StringComparer.Ordinal).FirstOrDefault();
         }
         void ProcessAiEmployment(Database db)
         {

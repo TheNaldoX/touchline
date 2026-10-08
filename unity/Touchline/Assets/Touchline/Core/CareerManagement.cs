@@ -161,7 +161,7 @@ namespace Touchline.Core
         public void CancelProject(string kind){OffPitch();var p=life.projects.FirstOrDefault(p=>p.kind==kind&&(p.status=="requested"||p.status=="approved"));if(p==null)throw new InvalidOperationException("Seul un projet non démarré peut être annulé.");p.status="cancelled";}
         public void PrepareLineup(Database db)
         {
-            EnsureLife(db);if(lineup==null||lineup.Any(id=>db.Find(id)?.team!=club||!life.players.Any(p=>p.id==id)))lineup=Select(db,club,tactic);var selected=new HashSet<string>(lineup.Where(Available));
+            EnsureLife(db);EnsureMatchSquad(db);if(lineup==null||lineup.Any(id=>db.Find(id)?.team!=club||!life.players.Any(p=>p.id==id)))lineup=Select(db,club,tactic);var selected=new HashSet<string>(lineup.Where(Available));
             for(int i=0;i<11;i++)if(!Available(lineup[i])){var replacement=db.Squad(club).Where(p=>Available(p.id)&&!selected.Contains(p.id)).OrderByDescending(p=>p.rating*p.Fit(tactic.withoutBall[i].role)*p.fitness).FirstOrDefault();if(replacement==null)throw new InvalidOperationException("Effectif disponible insuffisant.");lineup[i]=replacement.id;selected.Add(replacement.id);}
             ApplyLife(db);
         }
@@ -195,6 +195,8 @@ namespace Touchline.Core
         public void ApplyMatchContext(MatchSimulation simulation)
         {
             simulation.State.professionalRules=world!=null;
+            var fixture=world?.fixtures.FirstOrDefault(f=>f.id==world.activeFixture);
+            simulation.State.venueSide=fixture==null||fixture.home==club?0:fixture.away==club?1:-1;
             life.recordedMatch=false;foreach(var c in life.investigations.Where(c=>c.kind=="fixing"&&c.accepted&&c.status=="pending")){foreach(var p in simulation.State.actors.Where(p=>p.side==1))p.fitness=Math.Max(30,p.fitness-5);c.accepted=false;Mail("Coulisses • fiction","Influence incertaine","Un léger désavantage adverse est simulé pour cette rencontre seulement. Le moteur décide toujours des actions et du résultat.",null,"integrity");}
         }
         public void ProcessMedicalEvents(Database db)

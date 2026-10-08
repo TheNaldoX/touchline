@@ -41,6 +41,7 @@ namespace Touchline.Core
             if(own.Length!=11||own.Distinct().Count()!=11||own.Any(id=>db.Find(id)?.team!=career.club))throw new ArgumentException("Le onze doit contenir onze joueurs distincts du club.");
             var awayTactic=OpponentTactic(db,opponent,own);var other=Career.Select(db,opponent,awayTactic);
             var m=new MatchState{home=career.club,away=opponent,seed=seed,homeTactic=career.tactic,awayTactic=awayTactic,actors=new Actor[22],engineVersion=4,awayBaseLine=awayTactic.line,awayBaseTempo=awayTactic.tempo,awayBaseRisk=awayTactic.mentality};
+            m.homeForm=MatchDayForm(seed,0);m.awayForm=MatchDayForm(seed,1);m.venueSide=0; // le club dirigé reçoit, sauf calendrier contraire (ApplyMatchContext)
             m.periodSeconds=periodSeconds;m.nextMedicalCheck=m.SecondsPerMinute;m.awayReviewAt=60*m.SecondsPerMinute;
             m.awayTacticalReviewAt=15*m.SecondsPerMinute;m.awayBaseDefensiveWidth=awayTactic.defensiveWidth;m.awayBasePress=awayTactic.pressing;
             for(int i=0;i<22;i++){var id=(i<11?own:other)[i%11];m.actors[i]=new Actor{id=id,side=i/11,slot=i%11,fitness=db.Find(id).fitness};m.used.Add(id);}
@@ -56,10 +57,23 @@ namespace Touchline.Core
         public int Direction(int side)=>(side==0?1:-1)*(State.period==2?-1:1);
         public Tactic Tactic(int side)=>side==0?State.homeTactic:State.awayTactic;
         PlayerData Data(Actor p)=>roster[p.id];
+        // A team does not play to the same level every week: a "match-day form"
+        // shifts every attribute of a side by a few percent (about ±2.5 rating
+        // points for one standard deviation). Derived from the seed without
+        // drawing from the match generator, so replays stay identical.
+        public const float MatchFormSpread=.045f;
+        // Playing at home (crowd, familiarity, no travel): attribute bonus.
+        public const float HomeAdvantage=.02f;
+        public static float MatchDayForm(uint seed,int side)
+        {
+            float sum=0;for(int k=0;k<3;k++){uint h=unchecked(seed*2654435761u+(uint)(side*3+k+1)*40503u);h^=h>>15;h=unchecked(h*2246822519u);h^=h>>13;sum+=(h%10000)/10000f;}
+            // Sum of three uniforms: mean 1.5, standard deviation 0.5.
+            return (sum-1.5f)*2*MatchFormSpread;
+        }
         float Skill(Actor p,string key)
         {
             var data=Data(p);var role=Tactic(p.side).withoutBall[p.slot].role;
-            return Mathx.Clamp(MatchAttribute(p,data,key)*(1+data.performanceModifier)*(.86f+data.Fit(role)*.14f)*(.93f+data.morale*.0007f)*(.87f+p.fitness*.0013f),5,99);
+            return Mathx.Clamp(MatchAttribute(p,data,key)*(1+data.performanceModifier)*(1+(p.side==0?State.homeForm:State.awayForm)+(p.side==State.venueSide?HomeAdvantage:0))*(.86f+data.Fit(role)*.14f)*(.93f+data.morale*.0007f)*(.87f+p.fitness*.0013f),5,99);
         }
         float Random(){State.seed=unchecked(State.seed*1664525+1013904223);return (State.seed>>8)/16777216f;}
         Actor Owner=>Find(State.ball.owner);
@@ -96,6 +110,7 @@ namespace Touchline.Core
         void Restart(string kind,int side,Point position,float duration)
         {
             if(State.HalfDuration==2700)duration=kind=="goal"?45:kind=="goal-kick"?28:kind=="throw-in"?18:kind=="free-kick"?27:kind=="corner"?35:kind=="penalty"?45:duration;
+            foreach(var p in State.actors)p.runBehind=0; // a stoppage ends every run in behind
             foreach(var p in State.actors)if(!string.IsNullOrEmpty(p.tackleOpponent)){p.tackleOpponent=null;if(p.action=="tackle"){p.action="idle";p.actionTime=0;}}
             foreach(var actor in State.actors)if(PreparingFootDelivery(actor)){actor.action="idle";actor.actionTime=0;}
             State.phase=kind;State.restartSide=side;State.restart=duration;State.restartTaker=null;State.restartWall=new List<string>();State.indirectRestart=false;State.ball=new BallState{position=position,previous=position,side=side,lastTouch=side};State.carryTime=0;State.turnoverAt=-100;
@@ -104,6 +119,7 @@ namespace Touchline.Core
         }
         void Control(Actor p)
         {
+            p.runBehind=0;
             State.ball.offsidePlayersMask=OffsideSnapshotKnown;
             State.ball.held=false;State.ball.keeperDistribution=false;State.ball.goalAttempt=false;State.ball.saveCredited=false;
             var m=State;var changed=m.possessionSide>=0&&m.possessionSide!=p.side;

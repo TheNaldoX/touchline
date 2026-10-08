@@ -48,6 +48,15 @@ namespace Touchline.Core
             // knock-down is a real pass to an available player, not an
             // uncounted attempt sent blindly through the goal line.
             var end=receiver!=null?receiver.position:new Point(Mathx.Clamp(origin.x+direction*10,-47,47),origin.z>=0?36:-36);
+            // A defender heading a cross under challenge does not always
+            // direct it: a glancing contact loops behind his own goal line,
+            // wide of the posts (corner), rather than finding the touchline.
+            bool defending=origin.x*direction< -30;
+            float control=Mathx.Clamp(.55f+(Skill(player,"headingAccuracy")-60)*.008f-(contestant!=null?.20f:0),.20f,.92f);
+            if(defending&&Random()>control){
+                float lateral=Math.Sign(origin.z+.01f)*Math.Max(Math.Abs(origin.z)+3+Random()*6,7);
+                receiver=null;end=new Point(-direction*54.5f,Mathx.Clamp(lateral,-30,30));
+            }
             float distanceToTarget=Point.Distance(origin,end);
             Flight(player,receiver,receiver!=null?"pass":"clearance",end,.11f,Math.Max(.35f,distanceToTarget/13),receiver!=null?.25f:1.6f);
             b.start=origin;b.startHeight=height;b.releaseDelay=.12f;b.elapsed=-.12f;

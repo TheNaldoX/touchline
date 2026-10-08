@@ -159,7 +159,7 @@ namespace Touchline
             try{
                 if(!validatedPrimary&&File.Exists(SavePath))ValidatePrimaryBeforeReplacement();
                 var db=JsonUtility.FromJson<Database>(Resources.Load<TextAsset>("Data/database").text);
-                var state=new Career{club=launchDraftClub,manager=launchDraftManager.Trim(),revealAttributes=launchDraftReveal};state.lineup=Core.Career.Select(db,state.club,state.tactic);state.EnsureLife(db);if(!VisualValidation)state.EnsureWorld(db);
+                var state=new Career{club=launchDraftClub,manager=launchDraftManager.Trim(),revealAttributes=launchDraftReveal,saveBaseline=SaveBaseline.From(db)};state.lineup=Core.Career.Select(db,state.club,state.tactic);state.EnsureLife(db);if(!VisualValidation)state.EnsureWorld(db);
                 Database=db;Career=state;historyClub=null;careerSelected=true;launchMenuVisible=false;Save();
                 if(!lastCareerSaveSucceeded)throw new IOException("La nouvelle carrière n’a pas pu être enregistrée.");
                 if(arena!=null)Destroy(arena.gameObject);arena=null;launchCatalogue=null;launchBusy=false;page="Club";launchTab="Accueil";Build();
@@ -178,6 +178,7 @@ namespace Touchline
             var pristine=JsonUtility.FromJson<Database>(Resources.Load<TextAsset>("Data/database").text);
             var entry=LaunchCareerStorage.Read(selected.Path,selected.Label,pristine);
             if(!entry.Valid){RefreshLaunchSaves();BuildLaunchMenu();Message(entry.Error??"La sauvegarde n’est plus disponible.");return;}
+            entry.State.saveBaseline=SaveBaseline.From(pristine);
             var oldCareer=Career;var oldDatabase=Database;bool oldSelected=careerSelected;string oldPage=page;
             try{
                 if(selected.Path==SavePath){validatedPrimary=true;primaryValidatedAt=entry.WrittenUtc;}
