@@ -47,16 +47,17 @@ namespace Touchline.Tests
         [Test] public void ShadeTintDarkensAndCoolsTheTurf()
         {
             var tint=StadiumLighting.ShadeTint();
-            foreach(var channel in new[]{tint.r,tint.g,tint.b})Assert.That(channel,Is.InRange(.2f,.75f));
+            foreach(var channel in new[]{tint.r,tint.g,tint.b})Assert.That(channel,Is.InRange(.3f,.8f),"Ombre lisible, ni noire ni plus claire que l'ambiance");
             Assert.Greater(tint.b,tint.r,"L'ombre éclairée par le ciel tire vers le bleu");
         }
         [Test] public void FarStandSitsInTheRoofShadowOnlyByDay()
         {
-            Color day=StadiumLighting.FarStandShade(false),tint=StadiumLighting.ShadeTint();
+            Color day=StadiumLighting.FarStandShade(false);
             Assert.AreEqual(Color.white,StadiumLighting.FarStandShade(true),"Le soir, pas d'ombre du toit");
             Assert.AreEqual(1f,day.a);
-            // Plus sombre qu'au soleil, mais moins que la pelouse : les contremarches vues de la caméra sont déjà à contre-jour.
-            foreach(var (shade,turf) in new[]{(day.r,tint.r),(day.g,tint.g),(day.b,tint.b)})Assert.That(shade,Is.InRange(turf,.85f));
+            // Plus sombre qu'au soleil, modérément : les contremarches vues de la caméra sont déjà à contre-jour.
+            foreach(var channel in new[]{day.r,day.g,day.b})Assert.That(channel,Is.InRange(.4f,.85f));
+            Assert.Greater(day.b,day.r,"Ombre éclairée par le ciel : teinte froide");
         }
         [Test] public void ShadedSurfacesUseAnUnlitMaterialIncludedInTheBuild()
         {

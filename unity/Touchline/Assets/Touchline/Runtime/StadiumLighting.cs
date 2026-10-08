@@ -64,12 +64,14 @@ namespace Touchline
         // ≈ 60/66/55 au lieu d'un vert sombre) ; Unlit est aussi moins coûteux.
         // Le matériau de Resources garantit que le shader Unlit est inclus dans l'APK.
         public const string ShadeMaterialPath="Rendering/ShadeUnlit";
-        // Lumière reçue à l'ombre (couleur à multiplier, sRGB) : l'ambiance du ciel seule,
-        // dont la tribune et le toit cachent une partie. Calcul en linéaire (projet linéaire).
-        const float ShadeSkyView=.6f; // part du ciel visible depuis la pelouse à l'ombre (0–1)
+        // Lumière reçue à l'ombre (couleur à multiplier, sRGB) : l'ambiance du ciel, plus la
+        // lumière renvoyée par la pelouse au soleil et les tribunes. Calcul en linéaire.
+        // Réglé sur les films : avec l'ambiance seule (× 0,6) l'ombre était presque noire
+        // (vert 33 contre 115 au soleil) ; × 1,3 donne ≈ 50, lisible comme à la télévision.
+        const float ShadeFill=1.3f; // lumière à l'ombre / ambiance de la scène (linéaire)
         public static Color ShadeTint()
         {
-            float Channel(float ambient)=>Mathf.LinearToGammaSpace(Mathf.GammaToLinearSpace(ambient)*ShadeSkyView);
+            float Channel(float ambient)=>Mathf.LinearToGammaSpace(Mathf.GammaToLinearSpace(ambient)*ShadeFill);
             return new Color(Channel(DayAmbient.r),Channel(DayAmbient.g),Channel(DayAmbient.b),1);
         }
         // Matière d'une surface à l'ombre : Unlit (repli Lit si le matériau manque).
@@ -83,8 +85,9 @@ namespace Touchline
             return m;
         }
         // Tribune d'en face (gradins, second anneau, toit, public du second anneau) l'après-midi :
-        // entièrement sous l'ombre du toit. Multiplicateur de couleur (sRGB) entre celui des
-        // faces horizontales (ShadeTint) et celui des contremarches déjà à contre-jour (≈ 0,8).
+        // entièrement sous l'ombre du toit. Multiplicateur de couleur (sRGB, matières Lit) :
+        // les contremarches vues de la caméra sont déjà à contre-jour, seul le dessus des
+        // gradins perd le soleil, d'où un assombrissement modéré.
         static readonly Color FarStandDayShade=new Color(.6f,.62f,.68f,1);
         public static Color FarStandShade(bool night)=>night?Color.white:FarStandDayShade;
 
