@@ -50,12 +50,12 @@ AcceleratorClientConnectionCallback - disconnected - :0
 [40m[32minfo[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
       ALC ILPP context 1 is unloading
 Cleanup mono
-debugger-agent: Unable to listen on 35
+debugger-agent: Unable to listen on 44
 [Package Manager] Server process was shutdown
 Some stopped graphs remaining at DirectorManager destruction. These graphs should have been destroyed before
 Checking for leaked weakptr:
   Found no leaked weakptrs.
-##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1791441522966,"processId":1735,"allocatedMemory":16144246,"memoryLabels":[{"Default":24121},{"Permanent":15960},{"Thread":1085296},{"Manager":804394},{"VertexData":8},{"Geometry":408},{"Texture":160},{"Shader":129420},{"Material":24},{"GfxDevice":36472},{"Animation":3360},{"Audio":3032},{"Font":1782565},{"FreeType":63508},{"FontEngine":736},{"Physics":1970},{"Physics2D":16},{"Serialization":360},{"Input":26888},{"JobScheduler":33024},{"TextLib":280},{"Mono":32},{"MonoCode":96},{"ScriptingNativeRuntime":155096},{"BaseObject":1631144},{"Resource":1064},{"Renderer":3000},{"Transform":4717},{"File":15457},{"WebCam":80},{"Culling":32},{"Terrain":11298},{"Wind":24},{"String":1373167},{"DynamicArray":120114},{"HashMap":90483},{"Utility":2658752},{"Curl":2511},{"PoolAlloc":2048},{"AI":80},{"TypeTree":14981},{"ScriptManager":512},{"RuntimeInitializeOnLoadManager":64},{"SpriteAtlas":112},{"GI":7384},{"Director":167152},{"CloudService":468552},{"WebRequest":1229},{"VR":47754},{"SceneManager":536},{"Video":64},{"LazyScriptCache":32},{"Camera":17},{"Secure":12449},{"Image":16384},{"SerializationCache":1576},{"APIUpdating":10320},{"Subsystems":336},{"VirtualTexturing":57552},{"StaticSafetyDebugInfo":278528},{"Analytics":464},{"Hierarchy":1416},{"CoreStats":13112},{"Identifiers":6480},{"Gui":128},{"EditorUtility":353366},{"VersionControl":4},{"Undo":979},{"AssetDatabase":4556592},{"EditorGi":328},{"UnityConnect":29408},{"Upm":1744},{"AssetCompliance":64},{"DrivenProperties":72},{"LocalIPC":147},{"ProfilerEditor":9746},{"CoreBusinessMetrics":2377},{"Licensing":1128},{"AssetReference":32},{"IPCStream":32}]}
+##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1791442636604,"processId":1745,"allocatedMemory":12119110,"memoryLabels":[{"Default":24121},{"Permanent":15960},{"Thread":1084976},{"Manager":804394},{"VertexData":8},{"Geometry":408},{"Texture":160},{"Shader":79820},{"Material":24},{"GfxDevice":36400},{"Animation":3360},{"Audio":3032},{"FreeType":8},{"FontEngine":736},{"Physics":1970},{"Physics2D":16},{"Serialization":360},{"Input":26888},{"JobScheduler":33024},{"TextLib":280},{"Mono":32},{"MonoCode":96},{"ScriptingNativeRuntime":155096},{"BaseObject":1622952},{"Resource":1064},{"Renderer":3000},{"Transform":4717},{"File":832},{"WebCam":80},{"Culling":32},{"Terrain":11298},{"Wind":24},{"String":16751},{"DynamicArray":120114},{"HashMap":85730},{"Utility":2658752},{"Curl":2511},{"PoolAlloc":2048},{"AI":80},{"TypeTree":14981},{"ScriptManager":512},{"RuntimeInitializeOnLoadManager":64},{"SpriteAtlas":112},{"GI":7384},{"Director":167152},{"CloudService":7320},{"WebRequest":17777},{"VR":47754},{"SceneManager":536},{"Video":64},{"LazyScriptCache":32},{"Camera":17},{"Secure":12449},{"SerializationCache":1576},{"APIUpdating":10320},{"Subsystems":336},{"VirtualTexturing":57552},{"StaticSafetyDebugInfo":278528},{"Analytics":464},{"Hierarchy":1416},{"CoreStats":13112},{"Identifiers":6480},{"Gui":128},{"EditorUtility":76517},{"VersionControl":4},{"Undo":979},{"AssetDatabase":4549416},{"EditorGi":328},{"UnityConnect":29408},{"Upm":1744},{"AssetCompliance":64},{"DrivenProperties":72},{"LocalIPC":147},{"ProfilerEditor":9746},{"CoreBusinessMetrics":2377},{"Licensing":1128},{"AssetReference":32},{"IPCStream":32}]}
 [UnityConnectServicesConfig] Local config successfully read: "/usr/share/unity3d/config/services-config.json"
 [UnityConnectServicesConfig] "clientConnectTimeoutSec" was overridden with "5"
 [UnityConnectServicesConfig] "clientHandshakeTimeoutSec" was overridden with "10"
@@ -95,25 +95,25 @@ Distro version:          #22-Ubuntu SMP Mon Jul 27 17:24:03 UTC 2026
 Kernel version:          6.17.0-1022-azure
 Architecture:            x86_64
 Available memory:        15989 MB
-Date:                    2026-10-08T06:38:43Z
+Date:                    2026-10-08T06:57:17Z
 User audibert.victor13500@gmail.com logged in successfully
 [UnityConnect::TryLogin] Request Succeeded.
 [Licensing::Module] Trying to connect to existing licensing client channel...
 [Licensing::IpcConnector] Channel LicenseClient-root doesn't exist
-[Licensing::Module] Successfully launched the LicensingClient (PId: 5294)
-[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root" at "2026-10-08T06:38:45.124333Z"
+[Licensing::Module] Successfully launched the LicensingClient (PId: 2211)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root" at "2026-10-08T06:57:18.738388Z"
 [SignatureVerifier] Application signature verification not supported on this platform.
 [Licensing::Client] Handshaking with LicensingClient:
   Version:                 1.18.3+d7ffd15
-  Session Id:              d1db395be0e8471980dca77f3261397c
-  Correlation Id:          c7a81d67d24f481766324a50dc0b5d60
-  External correlation Id: 4694517176906409062
-  Machine Id:              HJBsL+gyx8IKp3y6z82oeiDjeH8=
-[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-root" (connect: 0.25s, validation: 0.06s, handshake: 0.00s)
-[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root-notifications" at "2026-10-08T06:38:45.186318Z"
-[Licensing::Module] Connected to LicensingClient (PId: 5294, launch time: 0.00, total connection time: 0.31s)
+  Session Id:              9173f1677328429d8ab1595df3f978cc
+  Correlation Id:          bea871dc8b92c3b669d087ce1ec708ff
+  External correlation Id: 2945824408789731658
+  Machine Id:              upQx/aJw1UeqOQ2KcfNcdumPGe4=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-root" (connect: 0.38s, validation: 0.09s, handshake: 0.00s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root-notifications" at "2026-10-08T06:57:18.824375Z"
+[Licensing::Module] Connected to LicensingClient (PId: 2211, launch time: 0.00, total connection time: 0.46s)
 [Licensing::Client] Successfully updated the access token
-[Licensing::Module] Successfully updated the access token lZgtTl1Wzf...
+[Licensing::Module] Successfully updated the access token EKI6EdpnMa...
 [Licensing::Client] Successfully processed license management request
 [Licensing::Module] Successfully returned the entitlement license
 [Licensing::Client] Successfully queried for the EntitlementGroupsDetails
