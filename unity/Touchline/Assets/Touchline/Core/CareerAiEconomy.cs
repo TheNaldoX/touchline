@@ -134,6 +134,7 @@ namespace Touchline.Core
         const float AiOwnerStanceShare=.30f,AiOwnerStanceNeutral=.35f;   // owner stance: -10,5 % to +19,5 % of revenue (most clubs accept a small loss)
         const float AiAmbitiousThreshold=.75f;                           // above: up to 3 signings per summer
         const int AiStarters=11,AiDefaultSquadTarget=32,AiListedMinAge=21;           // starters a seller keeps; squad target without reference; youth never listed
+        const int AiSquadTargetMax=28;                                                // squad size a computer-run club aims for at most (players)
         const float AiStepUpRevenueRatio=1.5f,AiListedFeeShare=.8f;                   // buyer revenue ratio for a step-up move; fee of a listed player (× value)
         public static float AiAmbition(string clubId)=>StableIdentity("ambition:"+clubId)%1001/1000f;
         // Debt (share of annual revenue) from which an owner stops funding planned
@@ -212,7 +213,7 @@ namespace Touchline.Core
             var listed=new HashSet<string>();
             bool Releases(PlayerData p,List<PlayerData> seller,ClubData buyer)
             {
-                if(listed.Contains(p.id)||!starters.Contains(p.id)||seller.Count>(targets.TryGetValue(p.team,out var size)?size:AiDefaultSquadTarget))return true;
+                if(listed.Contains(p.id)||!starters.Contains(p.id)||seller.Count>Math.Min(AiSquadTargetMax,targets.TryGetValue(p.team,out var size)?size:AiDefaultSquadTarget))return true;
                 if(!teams.TryGetValue(p.team,out var owner))return true;
                 if(accounts.TryGetValue(p.team,out var books)&&books.operatingDebt>owner.annualRevenue*AiOwnerDebtTolerance)return true;
                 return buyer.annualRevenue>=owner.annualRevenue*AiStepUpRevenueRatio;
@@ -220,7 +221,7 @@ namespace Touchline.Core
             foreach(var team in db.clubs.OrderByDescending(t=>t.annualRevenue).ThenBy(t=>t.id,StringComparer.Ordinal)){
                 if(!eligible.Contains(team.id)||team.id==club&&world.managerStatus=="employed"||!squads.TryGetValue(team.id,out var squad))continue;
                 var account=accounts[team.id];float ambition=AiAmbition(team.id);long budget=Math.Max(0,Math.Min((long)(team.annualRevenue*(AiTransferShareMin+AiTransferShareRange*ambition)),account.cash-(long)(team.annualRevenue*(AiCashReserveMax-AiCashReserveRange*ambition))-committed[team.id]));
-                int target=targets.TryGetValue(team.id,out var reference)?reference:AiDefaultSquadTarget;
+                int target=Math.Min(AiSquadTargetMax,targets.TryGetValue(team.id,out var reference)?reference:AiDefaultSquadTarget);
                 for(int signing=0;signing<(ambition>AiAmbitiousThreshold?3:2)&&budget>0&&squad.Count<target+2;signing++){
                     PlayerData candidate=null;long wageCeiling=AiGrossWageCeiling(team);long squadWages=squad.Sum(x=>x.wage);
                     foreach(var weak in squad.Where(p=>p.age>22).OrderBy(p=>p.rating).GroupBy(p=>p.positions?.FirstOrDefault()??p.position).Select(g=>g.First())){

@@ -51,6 +51,20 @@ namespace Touchline.Tests
             Assert.That(staying.Where(p=>p.id.StartsWith("free")).All(p=>contracts[p.id].club=="c1"&&p.wage<100000));
         }
 
+        [Test] public void DecliningVeteranBelowClubLevelIsNotRenewed()
+        {
+            c.EnsureAiClubAccounts(db);
+            c.world.developmentReferences=new List<ClubDevelopmentReference>{new ClubDevelopmentReference{club="c2",rating=65,wage=500,value=100000,revenue=22000000,squadSize=24}};
+            var keepers=db.Squad("c2").Where(p=>p.Goalkeeper).OrderBy(p=>p.id,System.StringComparer.Ordinal).ToArray();
+            keepers[0].rating=60;keepers[1].rating=72;
+            foreach(var k in keepers){k.age=32;c.world.contracts.Single(x=>x.player==k.id).until=c.life.day+10;}
+            typeof(Career).GetMethod("AnnualPlayerDevelopment",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(c,new object[]{db});
+            var contracts=c.world.contracts.GroupBy(x=>x.player).ToDictionary(g=>g.Key,g=>g.Last());
+            Assert.IsTrue(contracts[keepers[0].id].aiRelease,"Vétéran sous le niveau du club : pas de nouveau contrat");
+            Assert.IsFalse(contracts[keepers[1].id].aiRelease,"Vétéran au-dessus du niveau : prolongé");
+            Assert.That(contracts[keepers[1].id].until,Is.GreaterThan(c.life.day+10));
+        }
+
         [Test] public void DomesticCupRotationOnlyForAClearlyStrongerSide()
         {
             var cup=new Fixture{league="cup-fra",home="c1",away="c5"};
