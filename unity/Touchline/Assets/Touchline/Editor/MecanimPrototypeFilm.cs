@@ -73,7 +73,7 @@ namespace Touchline.Editor
                 }else{
                     // Pose neutre d'abord (contrôle de l'avatar), puis une sélection jouée à la suite.
                     {var handler=new HumanPoseHandler(avatar,view.RigRoot);var pose=new HumanPose();handler.GetHumanPose(ref pose);pose.muscles=new float[HumanTrait.MuscleCount];pose.bodyPosition=new Vector3(0,1,0);pose.bodyRotation=Quaternion.identity;handler.SetHumanPose(ref pose);for(int k=0;k<10;k++)Shoot();info.AppendLine("pose neutre frames 0-9");}
-                    string[] wanted=Arg("-touchlineClips","Stall Soccerball;Stall Soccerball (1);Stall Soccerball (2);Stall Soccerball (3);Kneeing Soccerball;Kneeing Soccerball (1);Kick Up Soccerball;Header Soccerball (1);Receive Soccerball;Soccer Tackle (1);Soccer Tackle (2);Goalkeeper Body Block;Sprint Turn;Soccer Spin;Transition").Split(';');
+                    string[] wanted=Arg("-touchlineClips","Header Soccerball (1);Kneeing Soccerball;Kneeing Soccerball (1);Soccer Pass;Soccer Pass (miroir);Sprint Turn;Sprint Turn (miroir)").Split(';');
                     var selection=wanted.Select(w=>clips.FirstOrDefault(c=>string.Equals(c.name,w,StringComparison.OrdinalIgnoreCase))).Where(c=>c!=null).ToList();
                     if(selection.Count==0)selection=clips.OrderBy(c=>c.name).Take(8).ToList();
                     // Analyse de chaque clip (60 Hz) : instant de vitesse maximale de chaque
