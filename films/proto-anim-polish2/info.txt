@@ -1,0 +1,16 @@
+avatar valid=True human=True sidesSwapped=True
+clips=71 : Baseball Pitching 5.20s human=True, Chip 1.67s human=True, Dribble 1.73s human=True, Fallen Idle 1.50s human=True, Goalkeeper Body Block (1) 2.47s human=True, Goalkeeper Body Block (2) 3.43s human=True, Goalkeeper Body Block 2.63s human=True, Goalkeeper Catch (1) 2.73s human=True, Goalkeeper Catch (2) 2.70s human=True, Goalkeeper Catch (3) 2.10s human=True, Goalkeeper Catch 1.27s human=True, Goalkeeper Directing (1) 7.70s human=True, Goalkeeper Directing 7.17s human=True, Goalkeeper Diving Save (1) 3.40s human=True, Goalkeeper Diving Save (1) (miroir) 3.40s human=True, Goalkeeper Diving Save 3.23s human=True, Goalkeeper Diving Save (miroir) 3.23s human=True, Goalkeeper Drop Kick 3.90s human=True, Goalkeeper Idle (1) 4.63s human=True, Goalkeeper Idle 3.33s human=True, Goalkeeper Miss 2.93s human=True, Goalkeeper Overhand Throw 2.83s human=True, Goalkeeper Pass 3.13s human=True, Goalkeeper Placing Ball (1) 7.97s human=True, Goalkeeper Placing Ball 3.53s human=True, Goalkeeper Scoop 2.60s human=True, Goalkeeper Sidestep (1) 0.50s human=True, Goalkeeper Sidestep 0.53s human=True, Header Soccerball (1) 1.90s human=True, Header Soccerball 4.20s human=True, Header 1.43s human=True, Jog Backward Diagonal (1) 0.83s human=True, Jog Backward Diagonal 0.73s human=True, Jog Backward 0.80s human=True, Jog Forward Diagonal (1) 0.83s human=True, Jog Forward Diagonal 0.80s human=True, Jog Forward 0.83s human=True, Jog Strafe Left 0.70s human=True, Jog Strafe Right 0.73s human=True, Kick Soccerball (1) 0.50s human=True, Kick Soccerball 0.57s human=True, Kick Up Soccerball 1.33s human=True, Kneeing Soccerball (1) 0.90s human=True, Kneeing Soccerball 0.63s human=True, Offensive Idle 10.57s human=True, Receive Soccerball 5.13s human=True, Run Backward 0.63s human=True, Scissor Kick 2.77s human=True, Soccer Header 2.37s human=True, Soccer Idle 6.20s human=True, Soccer Pass 1.60s human=True, Soccer Pass (miroir) 1.60s human=True, Soccer Penalty Kick 1.50s human=True, Soccer Spin 1.27s human=True, Soccer Tackle (1) 2.73s human=True, Soccer Tackle (2) 2.30s human=True, Soccer Tackle 1.77s human=True, Soccer Trip 1.60s human=True, Sprint Turn 1.00s human=True, Sprint Turn (miroir) 1.00s human=True, Stall Soccerball (1) 1.83s human=True, Stall Soccerball (2) 2.30s human=True, Stall Soccerball (3) 3.27s human=True, Stall Soccerball 2.13s human=True, Standard Run 0.73s human=True, Standing Up 1.67s human=True, Strike Forward Jog 1.30s human=True, Throw In 2.77s human=True, Transition 0.77s human=True, Two Cycle Sprint 1.07s human=True, Victory 4.50s human=True
+pose neutre frames 0-9
+clip Header Soccerball (1) 1.90s loop=False frames 10-66
+clip Kneeing Soccerball 0.63s loop=False frames 67-85
+clip Kneeing Soccerball (1) 0.90s loop=False frames 86-112
+clip Soccer Pass 1.60s loop=False frames 113-160
+clip Soccer Pass (miroir) 1.60s loop=False frames 161-208
+clip Sprint Turn 1.00s loop=False frames 209-238
+clip Sprint Turn (miroir) 1.00s loop=False frames 239-268
+scénario virage-droite frames 269-340
+scénario virage-gauche frames 341-412
+scénario amorti-poitrine frames 413-472
+scénario amorti-cuisse frames 473-532
+scénario tacle-debout frames 533-592
+scénario controle-pivot frames 593-658

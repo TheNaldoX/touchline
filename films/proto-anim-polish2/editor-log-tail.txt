@@ -1,0 +1,120 @@
+(Filename: Assets/Touchline/Editor/MecanimPrototypeFilm.cs Line: 165)
+
+[Licensing::Client] Successfully resolved entitlement details
+[UnityConnectServicesConfig] Service configuration:
+    "servicesConfigBaseUrl": "",
+    "disableServicesWindow": false,
+    "disableUserLogin": false,
+    "entitlementCacheTimeoutInSeconds": 60,
+    "clientConnectTimeoutSec": 5,
+    "clientHandshakeTimeoutSec": 10,
+    "clientResolveEntitlementsTimeoutSec": 30,
+    "clientUpdateLicenseTimeoutSec": 30,
+    "licensingServiceBaseUrl": "",
+    "enableProxyAutoconfig": "false"
+
+Killing ADB server in 0.087187 seconds.
+The command could not be loaded, possibly because:
+  * You intended to execute a .NET application:
+      The application 'build-server' does not exist.
+  * You intended to execute a .NET SDK command:
+      No .NET SDKs were found.
+
+Download a .NET SDK:
+https://aka.ms/dotnet-download
+
+Learn about SDK resolution:
+https://aka.ms/dotnet/sdk-not-found
+Assets/Touchline/Runtime/PlayerMecanimMotion.cs(75): PlayableGraph was not destroyed.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /home/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+Touchline.Editor.MecanimPrototypeFilm:Run () (at Assets/Touchline/Editor/MecanimPrototypeFilm.cs:165)
+
+[Assets/Touchline/Editor/MecanimPrototypeFilm.cs line 165]
+
+Cannot create web request without initializing the system
+Caught fatal signal - signo:11 code:2 errno:0 addr:0x7ff990e1a180
+Obtained 18 stack frames.
+#0  0x005612e9f963fd in burst_signal_handler(int, siginfo_t*, void*)
+#1  0x007ff9b83d7520 in (Unknown)
+#2  0x005612ea05fa41 in MemoryProfiler::UnregisterAllocation(void*, unsigned long, MemLabelId const&)
+#3  0x005612ebc403e2 in MemoryManager::TryDeallocateWithLabel(void*, MemLabelId, char const*, int)
+#4  0x005612ebc3a505 in free_alloc_internal(void*, MemLabelId const&, char const*, int)
+#5  0x005612e984aaa7 in core::vector<unsigned char, core::allocator<unsigned char, 0ul> >::~vector()
+#6  0x005612ebd4d97e in AssetDatabasePropertyV2::~AssetDatabasePropertyV2()
+#7  0x007ff8b0a37fe5 in (Unknown)
+#8  0x007ff8b0a72e81 in GC_invoke_finalizers
+#9  0x007ff8b0a39acd in (Unknown)
+#10 0x007ff8b0a02fd7 in (Unknown)
+#11 0x007ff8b0a02e99 in (Unknown)
+#12 0x007ff8b0a7c134 in GC_inner_start_routine
+#13 0x007ff8b0a7bdc5 in GC_start_routine
+#14 0x007ff9b8429ac3 in (Unknown)
+#15 0x007ff9b84baa84 in clone
+Segmentation fault (core dumped)
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...
+[40m[32minfo[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      ALC ILPP context 1 is unloading
+[UnityConnectServicesConfig] Local config successfully read: "/usr/share/unity3d/config/services-config.json"
+[UnityConnectServicesConfig] "clientConnectTimeoutSec" was overridden with "5"
+[UnityConnectServicesConfig] "clientHandshakeTimeoutSec" was overridden with "10"
+[UnityConnectServicesConfig] Service configuration:
+    "servicesConfigBaseUrl": "",
+    "disableServicesWindow": false,
+    "disableUserLogin": false,
+    "entitlementCacheTimeoutInSeconds": 60,
+    "clientConnectTimeoutSec": 5,
+    "clientHandshakeTimeoutSec": 10,
+    "clientResolveEntitlementsTimeoutSec": 30,
+    "clientUpdateLicenseTimeoutSec": 30,
+    "licensingServiceBaseUrl": "",
+    "enableProxyAutoconfig": "false"
+
+[UnityConnectServicesConfig] Local config successfully read: "/usr/share/unity3d/config/services-config.json"
+[UnityConnectServicesConfig] "clientConnectTimeoutSec" was overridden with "5"
+[UnityConnectServicesConfig] "clientHandshakeTimeoutSec" was overridden with "10"
+[UnityConnectServicesConfig] Service configuration:
+    "servicesConfigBaseUrl": "",
+    "disableServicesWindow": false,
+    "disableUserLogin": false,
+    "entitlementCacheTimeoutInSeconds": 60,
+    "clientConnectTimeoutSec": 5,
+    "clientHandshakeTimeoutSec": 10,
+    "clientResolveEntitlementsTimeoutSec": 30,
+    "clientUpdateLicenseTimeoutSec": 30,
+    "licensingServiceBaseUrl": "",
+    "enableProxyAutoconfig": "false"
+
+Unity Editor version:    6000.3.24f1 (4e7b9b5b6244)
+Branch:                  6000.3/staging
+Build type:              Release
+Batch mode:              YES
+System name:             Linux
+Distro version:          #22-Ubuntu SMP Mon Jul 27 17:24:03 UTC 2026
+Kernel version:          6.17.0-1022-azure
+Architecture:            x86_64
+Available memory:        15988 MB
+Date:                    2026-10-08T07:07:28Z
+User audibert.victor13500@gmail.com logged in successfully
+[UnityConnect::TryLogin] Request Succeeded.
+[Licensing::Module] Trying to connect to existing licensing client channel...
+[Licensing::IpcConnector] Channel LicenseClient-root doesn't exist
+[Licensing::Module] Successfully launched the LicensingClient (PId: 5264)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root" at "2026-10-08T07:07:29.281179Z"
+[SignatureVerifier] Application signature verification not supported on this platform.
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.3+d7ffd15
+  Session Id:              e6056d8f71ec4af3b6693ffc14a15086
+  Correlation Id:          140db2fef4c4011077828cc99f136d9c
+  External correlation Id: 5216345045501529457
+  Machine Id:              jpq3p7PRcpvszwj5R4u5IJaEin4=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-root" (connect: 0.25s, validation: 0.08s, handshake: 0.00s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root-notifications" at "2026-10-08T07:07:29.362522Z"
+[Licensing::Module] Connected to LicensingClient (PId: 5264, launch time: 0.00, total connection time: 0.33s)
+[Licensing::Client] Successfully updated the access token
+[Licensing::Module] Successfully updated the access token tYOL8MCksB...
+[Licensing::Client] Successfully processed license management request
+[Licensing::Module] Successfully returned the entitlement license
+[Licensing::Client] Successfully queried for the EntitlementGroupsDetails
+[Licensing::Client] Successfully returned ULF license with serial number : "F4-U776-56HB-EXF8-B6C4-XXXX"
