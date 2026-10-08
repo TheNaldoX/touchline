@@ -61,7 +61,7 @@ static class P{
   return 0;
  }
  class Snapshot{public int year,day;public long cash;public int squad;public float top14,ageAvg;public Dictionary<string,long> aiCash=new();public Dictionary<string,long> aiDebt=new();public Dictionary<string,double> wageRatio=new();public Dictionary<string,long> revenue=new();public double worldAge,worldRating,worldTop;public int worldCount,worldOld,worldYoung;public Dictionary<string,int> aiSquad=new();public Dictionary<string,float> aiStrength=new();public float wageMedian;public int free;public int transfers;
-  public Dictionary<string,string> league=new();public Dictionary<string,(int age,float rating,string team)> people=new();}
+  public Dictionary<string,string> league=new();public Dictionary<string,int> staying=new(),leaving=new();public int generated,freeAgents;public List<AiTransferRecord> yearTransfers=new();public Dictionary<string,(int age,float rating,string team)> people=new();}
  static Snapshot Snap(Database db,Career c){
   var s=new Snapshot{year=c.world.year,day=c.life.day,cash=c.life.cash};
   var sq=db.Squad(c.club).ToArray();s.squad=sq.Length;s.top14=sq.Length==0?0:(float)sq.OrderByDescending(p=>p.rating+p.development).Take(14).Average(p=>p.rating+p.development);s.ageAvg=sq.Length==0?0:(float)sq.Average(p=>p.age);
@@ -70,6 +70,10 @@ static class P{
   foreach(var cl in db.clubs.Where(x=>x.playable)){var q=db.Squad(cl.id).ToArray();s.aiSquad[cl.id]=q.Length;s.aiStrength[cl.id]=q.Length==0?0:(float)q.OrderByDescending(p=>p.rating+p.development).Take(14).Average(p=>p.rating+p.development);}
   var wages=db.players.Where(p=>p.team!=null&&p.wage>0).Select(p=>p.wage).OrderBy(x=>x).ToArray();s.wageMedian=wages.Length>0?wages[wages.Length/2]:0;
   {var ids=new HashSet<string>(db.clubs.Where(x=>x.playable).Select(x=>x.id));var ws=db.players.Where(p=>p.team!=null&&ids.Contains(p.team)).ToArray();s.worldCount=ws.Length;s.worldAge=ws.Average(p=>p.age);s.worldRating=ws.Average(p=>p.rating);s.worldTop=ws.Count(p=>p.rating>=80);s.worldOld=ws.Count(p=>p.age>=32);s.worldYoung=ws.Count(p=>p.age<=21);}
+  // Partants annoncés : contrat non renouvelé (ou surplus) qui expire dans la fenêtre d'été.
+  {var cons=c.world.contracts.GroupBy(x=>x.player).ToDictionary(g=>g.Key,g=>g.Last());foreach(var cl in db.clubs.Where(x=>x.playable)){var q=db.Squad(cl.id);int out_=q.Count(p=>cons.TryGetValue(p.id,out var e)&&e.club==cl.id&&e.aiRelease&&e.until<=c.life.day+21);s.leaving[cl.id]=out_;s.staying[cl.id]=q.Count-out_;}}
+  s.generated=db.players.Count(p=>p.id.StartsWith("regen-")&&p.id.Contains("-"+s.year+"-"));s.freeAgents=db.players.Count(p=>p.team=="free");
+  s.yearTransfers=(c.world.aiTransfers??new List<AiTransferRecord>()).Where(t=>t.year==s.year).ToList();
   foreach(var cl in db.clubs.Where(x=>x.playable))s.league[cl.id]=cl.league;foreach(var p in db.players)if(p.team!=null&&p.team!="retired")s.people[p.id]=(p.age,p.rating,p.team);
   s.free=db.players.Count(p=>string.IsNullOrEmpty(p.team));s.transfers=c.world.aiTransfers?.Count??0;return s;
  }
@@ -128,11 +132,17 @@ static class P{
    var ids=s.aiSquad.Keys.ToArray();var sizes=ids.Select(k=>s.aiSquad[k]).OrderBy(x=>x).ToArray();
    var ppl=s.people.Values.Where(p=>s.league.ContainsKey(p.team)).ToArray();
    var accounts=ids.Where(k=>s.aiDebt.ContainsKey(k)&&s.revenue.GetValueOrDefault(k)>0).ToArray();
-   var tr=(c.world.aiTransfers??new List<AiTransferRecord>()).Where(t=>t.year==s.year).ToArray();
+   var tr=s.yearTransfers.ToArray();
    var ages=tr.Select(t=>s.people.TryGetValue(t.player,out var q)?q.age:0).Where(x=>x>0).ToArray();
    int maxPerClub=tr.Length==0?0:tr.GroupBy(t=>t.buyer).Max(g=>g.Count());
    Console.WriteLine($"| {s.year} | {sizes.First()} / {sizes[sizes.Length/2]} / {sizes.Last()} | {F(100.0*sizes.Count(x=>x>=22&&x<=30)/sizes.Length,"0")} % | {F(ppl.Average(p=>p.age))} | {F(100.0*ppl.Count(p=>p.age<=21)/ppl.Length,"0")} % | {F(100.0*ppl.Count(p=>p.age>=32)/ppl.Length,"0")} % | {F(ppl.Average(p=>p.rating))} | {ppl.Count(p=>p.rating>=80)} | {F(100*Med(s.wageRatio.Values),"0")} % | {s.wageRatio.Values.Count(x=>x>.8)} | {accounts.Count(k=>s.aiDebt[k]>0)} | {accounts.Count(k=>s.aiDebt[k]>s.revenue[k])} | {F(100*Med(accounts.Select(k=>(double)s.aiCash[k]/s.revenue[k])),"0")} % | {tr.Length} | {(ages.Length>0?F(ages.Average()):"—")} | {maxPerClub} |");
   }
+  Console.WriteLine("\n| Saison | Effectif hors partants min / méd. / max | Clubs 22–30 hors partants | Partants annoncés (total / max club) | Joueurs générés | Joueurs libres | Recrues : vendeur sous sa cible |");
+  Console.WriteLine("|---|---|---|---|---|---|---|");
+  var targets=(c.world.developmentReferences??new List<ClubDevelopmentReference>()).ToDictionary(r=>r.club,r=>r.squadSize);
+  foreach(var s in snaps){var st=s.staying.Values.OrderBy(x=>x).ToArray();if(st.Length==0)continue;
+   int weakened=s.yearTransfers.Count(t=>s.staying.TryGetValue(t.seller,out var n)&&targets.TryGetValue(t.seller,out var target)&&n<target);
+   Console.WriteLine($"| {s.year} | {st.First()} / {st[st.Length/2]} / {st.Last()} | {F(100.0*st.Count(x=>x>=22&&x<=30)/st.Length,"0")} % | {s.leaving.Values.Sum()} / {s.leaving.Values.DefaultIfEmpty(0).Max()} | {s.generated} | {s.freeAgents} | {weakened} / {s.yearTransfers.Count} |");}
   // Champions des premières divisions et survie des promus.
   var tops=snaps.First().league.Values.Where(l=>Tier(l)==1).Distinct().OrderBy(x=>x,StringComparer.Ordinal).ToArray();
   var honours=c.world.honours??new List<Honour>();int seasons=0,titles=0;var lines=new List<string>();
@@ -150,6 +160,13 @@ static class P{
   var buckets=new SortedDictionary<string,List<double>>(StringComparer.Ordinal);
   for(int i=1;i<snaps.Count;i++)foreach(var kv in snaps[i].people){if(!snaps[i-1].people.TryGetValue(kv.Key,out var b)||!snaps[i-1].league.ContainsKey(b.team))continue;string k=b.age<=20?"a ≤20":b.age<=23?"b 21–23":b.age<=26?"c 24–26":b.age<=29?"d 27–29":b.age<=32?"e 30–32":"f ≥33";if(!buckets.TryGetValue(k,out var list))buckets[k]=list=new List<double>();list.Add(kv.Value.rating-b.rating);}
   Console.WriteLine("Progression annuelle moyenne de la note par âge : "+string.Join(", ",buckets.Select(kv=>kv.Key.Substring(2)+" "+kv.Value.Average().ToString("+0.00;-0.00",FR))));
+  // Plus gros effectifs en fin : composition (prêtés entrants, ≤21 ans, contrats échus ou sans contrat au club).
+  {var refs=(c.world.developmentReferences??new List<ClubDevelopmentReference>()).ToDictionary(r=>r.club);var cons=c.world.contracts.GroupBy(x=>x.player).ToDictionary(g=>g.Key,g=>g.Last());
+   var big=last.aiSquad.OrderByDescending(kv=>kv.Value).Take(5).Select(kv=>{var q=db.Squad(kv.Key).ToArray();int loans=q.Count(p=>cons.TryGetValue(p.id,out var e)&&e.parent!=null&&e.parent!=kv.Key),young=q.Count(p=>p.age<=21),none=q.Count(p=>!cons.TryGetValue(p.id,out var e)||e.club!=kv.Key),regen=q.Count(p=>p.id.StartsWith("regen-"));
+    return (db.clubs.FirstOrDefault(x=>x.id==kv.Key)?.name??kv.Key)+" "+kv.Value+" (réf. "+(refs.TryGetValue(kv.Key,out var r)?r.squadSize:0)+", prêtés "+loans+", ≤21 ans "+young+", sans contrat au club "+none+", générés "+regen+")";});
+   Console.WriteLine("Plus gros effectifs : "+string.Join(" ; ",big));
+   if(Environment.GetEnvironmentVariable("SEASONSIM_DIAG")!=null)foreach(var kv in last.aiSquad.OrderByDescending(kv=>kv.Value).Take(2)){Console.WriteLine("DIAG "+kv.Key+" ligue "+db.clubs.First(x=>x.id==kv.Key).league);foreach(var p in db.Squad(kv.Key).OrderBy(p=>p.id))Console.WriteLine($"  {p.id} {p.position} âge {p.age} note {p.rating:0.0} salaire {p.wage} contrat {(cons.TryGetValue(p.id,out var e)?e.club+" jusqu'à "+(e.until-c.life.day)+" j, rel "+e.aiRelease+" joined "+e.joined:"aucun")}");}
+  }
   // Trésorerie nette (trésorerie - dette) rapportée aux recettes en fin de simulation.
   var net=last.aiCash.Keys.Where(k=>last.revenue.GetValueOrDefault(k)>0).Select(k=>(last.aiCash[k]-last.aiDebt.GetValueOrDefault(k))/(double)last.revenue[k]).OrderBy(x=>x).ToArray();
   if(net.Length>0)Console.WriteLine($"Trésorerie nette / recettes en fin : 5 % {F(100*net[net.Length/20],"0")} %, médiane {F(100*net[net.Length/2],"0")} %, 95 % {F(100*net[net.Length*19/20],"0")} % ; au-dessus de 200 % : {net.Count(x=>x>2)}, sous -100 % : {net.Count(x=>x<-1)} / {net.Length}.");

@@ -176,11 +176,20 @@ namespace Touchline.Core
         // Set only while a day's fixtures are simulated: one grouping of the
         // ~20 000 players instead of one full scan per club and fixture.
         [NonSerialized] Dictionary<string,List<PlayerData>> fixtureDaySquads;
-        float Strength(Database db,string id){var players=(fixtureDaySquads!=null?(fixtureDaySquads.TryGetValue(id,out var squad)?squad:new List<PlayerData>()):db.Squad(id)).Where(p=>p.unavailableDays<=0).OrderByDescending(p=>p.rating+p.development).Take(11).ToArray();return players.Length==0?30:(float)players.Average(p=>(p.rating+p.development)*(.85f+p.fitness*.0015f));}
+        float Strength(Database db,string id,int rested=0){var players=(fixtureDaySquads!=null?(fixtureDaySquads.TryGetValue(id,out var squad)?squad:new List<PlayerData>()):db.Squad(id)).Where(p=>p.unavailableDays<=0).OrderByDescending(p=>p.rating+p.development).Skip(rested).Take(11).ToArray();return players.Length==0?30:(float)players.Average(p=>(p.rating+p.development)*(.85f+p.fitness*.0015f));}
         int Poisson(float mean){float limit=(float)Math.Exp(-mean),p=1;int n=0;do{n++;p*=Roll();}while(p>limit&&n<12);return n-1;}
+        // A computer-run side at least this much stronger (average rating of the
+        // XI, 0–100) rests this many of its best players in a domestic cup tie,
+        // except in the final (neutral venue).
+        const float CupRotationMargin=4f;const int CupRestedStarters=3;
+        public static int CupRestedPlayers(Fixture f,float own,float opponent)=>f!=null&&f.league!=null&&f.league.StartsWith("cup-")&&!f.neutral&&own-opponent>=CupRotationMargin?CupRestedStarters:0;
         public void SimulateFixture(Database db,Fixture f)
         {
-            if(f.played)return;float diff=(Strength(db,f.home)-Strength(db,f.away))/22;
+            if(f.played)return;float home=Strength(db,f.home),away=Strength(db,f.away);
+            // Domestic cup rotation: the clearly stronger side rests its best players.
+            int homeRested=CupRestedPlayers(f,home,away),awayRested=CupRestedPlayers(f,away,home);
+            if(homeRested>0)home=Strength(db,f.home,homeRested);if(awayRested>0)away=Strength(db,f.away,awayRested);
+            float diff=(home-away)/22;
             CommitFixture(f,Poisson(Mathx.Clamp(1.45f+diff,.25f,3.4f)),Poisson(Mathx.Clamp(1.1f-diff,.25f,3.1f)));
         }
         public void CommitFixture(Fixture f,int home,int away)

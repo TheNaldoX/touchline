@@ -15,6 +15,9 @@ namespace Touchline.Core
         // Chance that an outfield player retires at a given age when his contract
         // ends (or he is without a club); goalkeepers three years later. Most
         // professionals stop between 32 and 36; the best play on longer.
+        // Renewal: share of his current wage a player accepts before leaving at expiry;
+        // from VeteranRenewalAge the market offers less, so he accepts a deeper cut.
+        const float AcceptedWageShare=.75f,VeteranAcceptedWageShare=.6f;const int VeteranRenewalAge=30;
         // Youth graduates per computer-run club and summer, extra places they may
         // take above the reference squad size, and rating below a replacement.
         const int YouthIntakePerSeason=1,YouthSquadAllowance=2;const float YouthRatingGap=8f;
@@ -118,7 +121,7 @@ namespace Touchline.Core
                         float level=(float)Math.Pow(1.075,p.rating-reference.rating),resources=Mathx.Clamp(team.annualRevenue/(float)reference.revenue,.45f,2);
                         double expected=reference.wage*level*resources*(AiWagePremiumMin+AiWagePremiumRange*AiAmbition(team.id));if(!newEmployment)expected=Math.Max(expected,p.wage*(p.age<30?1.02:.95));
                         double share=Math.Max(p.wage,reference.wage*level)/Math.Max(1,weights);long offer=Math.Max(250,(long)Math.Min(expected,wageCeiling*share));
-                        if(!newEmployment&&p.wage>0&&offer<p.wage*.75){contract.aiRelease=true;departing.Add(p);continue;}
+                        if(!newEmployment&&p.wage>0&&offer<p.wage*(p.age>=VeteranRenewalAge?VeteranAcceptedWageShare:AcceptedWageShare)){contract.aiRelease=true;departing.Add(p);continue;}
                         p.value=Math.Max(25000,(long)(reference.value*level*(p.age>30?.55f:1)));
                         p.salarySource="Projection de carrière : contrat estimé, niveau et plafond salarial du club";p.valueSource="Estimation de simulation, hors cotation réelle";
                         if(contract==null){contract=new Employment{player=p.id,club=team.id};world.contracts.Add(contract);contracts.Add(p.id,contract);}
@@ -126,10 +129,24 @@ namespace Touchline.Core
                         contract.club=team.id;contract.until=life.day+365*(p.age>=31?1:p.age>=29?2:3);contract.estimated=true;contract.aiRelease=false;
                     }
                 }
-                // Announced non-renewals open an academy pathway now; the departing player keeps
-                // his signed wage until expiry. No forced cut and no unplayable squad in August.
+                // Announced non-renewals are replaced only up to the reference squad size:
+                // first by a free agent of the same role and level (an experienced,
+                // affordable player), else by an academy pathway. The departing player
+                // keeps his signed wage until expiry. No unplayable squad in August.
+                int staying=live.Count-surplus.Count-departing.Count;
                 foreach(var leaving in departing){
-                    var p=CreateReplacement(db,team,reference,leaving,additions.Count);p.wage=Math.Max(250,(long)(wageCeiling*.85/Math.Max(22,reference.squadSize)));p.value=Math.Max(25000,reference.value/2);
+                    if(staying>=reference.squadSize)break;staying++;
+                    long replacementWage=Math.Max(250,(long)(wageCeiling*.85/Math.Max(22,reference.squadSize)));
+                    var free=FreeAgentReplacement(db,reference,leaving,contracts);
+                    if(free!=null){
+                        float level=(float)Math.Pow(1.075,free.rating-reference.rating);
+                        free.team=team.id;free.wage=Math.Max(250,(long)Math.Min(reference.wage*level,replacementWage*Math.Max(1,level)));
+                        free.salarySource="Projection de carrière : joueur libre recruté, enveloppe du club";
+                        if(!contracts.TryGetValue(free.id,out var signed)){signed=new Employment{player=free.id};world.contracts.Add(signed);contracts.Add(free.id,signed);}
+                        signed.club=team.id;signed.wage=free.wage;signed.until=life.day+365*FreeAgentContractYears;signed.joined=life.day;signed.estimated=true;signed.aiRelease=false;signed.nextWage=0;signed.wageChangeDay=0;signed.retirement=-1;
+                        continue;
+                    }
+                    var p=CreateReplacement(db,team,reference,leaving,additions.Count);p.wage=replacementWage;p.value=Math.Max(25000,reference.value/2);
                     p.salarySource="Premier contrat simulé, enveloppe du club";additions.Add(p);
                     world.contracts.Add(new Employment{player=p.id,club=team.id,wage=p.wage,until=life.day+365*3,estimated=true});
                 }
@@ -138,6 +155,17 @@ namespace Touchline.Core
             var retiredIds=new HashSet<string>(db.players.Where(p=>p.team=="retired").Select(p=>p.id));world.contracts.RemoveAll(c=>retiredIds.Contains(c.player));
             var saved=world.rosterChanges.ToDictionary(p=>p.id);foreach(var p in db.players)saved[p.id]=p;world.rosterChanges=saved.Values.ToList();
             world.youth.RemoveAll(y=>db.Find(y.player)?.team=="retired");
+        }
+        // A free agent replacing an announced departure signs for two seasons; he must
+        // fit the role and sit within this band of the club's reference level (0–100).
+        const int FreeAgentContractYears=2,FreeAgentMaxAge=31;const float FreeAgentBelowReference=9f,FreeAgentAboveReference=5f;
+        PlayerData FreeAgentReplacement(Database db,ClubDevelopmentReference reference,PlayerData leaving,Dictionary<string,Employment> contracts)
+        {
+            string role=leaving.positions?.FirstOrDefault()??leaving.position;
+            return db.players.Where(p=>p.team=="free"&&p.age>=18&&p.age<=FreeAgentMaxAge&&p.Goalkeeper==leaving.Goalkeeper&&(p.position==leaving.position||p.positions?.FirstOrDefault()==role)
+                    &&p.rating>=reference.rating-FreeAgentBelowReference&&p.rating<=reference.rating+FreeAgentAboveReference
+                    &&(!contracts.TryGetValue(p.id,out var loan)||loan.parent==null)&&!world.offers.Any(o=>o.player==p.id&&o.status=="scheduled"))
+                .OrderByDescending(p=>p.rating).ThenBy(p=>p.id,StringComparer.Ordinal).FirstOrDefault();
         }
         void ProcessAiEmployment(Database db)
         {
