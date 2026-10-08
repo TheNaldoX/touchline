@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Visuel joueurs : tenues générées aux couleurs du club (uni, rayures, cerceaux, manches, écharpe, bande ; gardiens distincts), nom et numéro au dos, coupes et couleurs de cheveux, chaussures variées ; étalonnage télé léger (bloom des projecteurs le soir, coupé en qualité basse), usure du gazon, filet qui se creuse sur les buts.
 - Visuel : ombre du toit sur la pelouse l'après-midi, panneaux publicitaires aux couleurs des deux clubs (motifs générés), éclairage de soirée avec projecteurs selon l'horaire du match (préférence match-lighting).
 - Fluidité : plus de petits gels en match (sauvegarde aux arrêts de jeu au lieu de toutes les 12 s, résolution dynamique sans oscillation).
 - Moteur de match : un porteur serré de près peut se faire chiper le ballon (tacle/placement contre dribble/contrôle, nombre de presseurs, vitesse), et l'IA en tient compte (conduites dans 2+ défenseurs 17,7 → 7,6, porteur non pressé dans son tiers 73 → 28 s par match) : fautes 19,9 → 22,5, touches 34,1 → 36,9, corners 8,1 → 8,9.

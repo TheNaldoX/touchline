@@ -202,15 +202,21 @@ namespace Touchline
             public void GroundPath(Vector3[] points)
             {
                 for(int i=1;i<points.Length;i++){
-                    var a=points[i-1];var b=points[i];a.y=b.y=.025f;var width=Vector3.Cross((b-a).normalized,Vector3.up)*.05f;
-                    if(Keep==null){Quad(a-width,a+width,b+width,b-width);continue;}
+                    var a=points[i-1];var b=points[i];a.y=b.y=.025f;var side=Vector3.Cross((b-a).normalized,Vector3.up);
+                    if(Keep==null){Quad(a-side*HalfLine(a),a+side*HalfLine(a),b+side*HalfLine(b),b-side*HalfLine(b));continue;}
                     var cuts=new List<float>{0,1};
                     if((a.x-SplitX)*(b.x-SplitX)<0)cuts.Add((SplitX-a.x)/(b.x-a.x));
                     if((a.z-SplitZ)*(b.z-SplitZ)<0)cuts.Add((SplitZ-a.z)/(b.z-a.z));
                     cuts.Sort();
-                    for(int c=1;c<cuts.Count;c++){var p=Vector3.Lerp(a,b,cuts[c-1]);var q=Vector3.Lerp(a,b,cuts[c]);if(cuts[c]-cuts[c-1]>1e-5f&&Keep((p+q)*.5f))Quad(p-width,p+width,q+width,q-width);}
+                    for(int c=1;c<cuts.Count;c++){var p=Vector3.Lerp(a,b,cuts[c-1]);var q=Vector3.Lerp(a,b,cuts[c]);if(cuts[c]-cuts[c-1]>1e-5f&&Keep((p+q)*.5f))Quad(p-side*HalfLine(p),p+side*HalfLine(p),q+side*HalfLine(q),q-side*HalfLine(q));}
                 }
             }
+            // Demi-largeur d'un trait (m) : 10 cm sur la touche côté caméra principale, élargie
+            // linéairement jusqu'à 12 cm (maximum réglementaire) sur la touche opposée, vue à
+            // plus de 60 m, pour qu'elle reste continue à l'écran au lieu de se morceler.
+            // Linéaire en z : un trait coupé à l'ombre du toit garde exactement la même surface.
+            const float LineHalfWidth=.05f,FarLineExtra=.01f,TouchlineZ=34f;
+            static float HalfLine(Vector3 p)=>LineHalfWidth+FarLineExtra*Mathf.Clamp01((TouchlineZ-p.z)/(2*TouchlineZ));
             public void Arc(Vector3 center,float radius,float start,float end,int segments){var path=new Vector3[segments+1];for(int i=0;i<=segments;i++){float angle=Mathf.Lerp(start,end,i/(float)segments);path[i]=center+new Vector3(Mathf.Cos(angle)*radius,0,Mathf.Sin(angle)*radius);}GroundPath(path);}
             public void Spot(Vector3 center){center.y=.025f;if(Keep!=null&&!Keep(center))return;for(int i=0;i<16;i++){float a=i*Mathf.PI/8,b=(i+1)*Mathf.PI/8;int index=vertices.Count;vertices.Add(center);vertices.Add(center+new Vector3(Mathf.Cos(b)*.11f,0,Mathf.Sin(b)*.11f));vertices.Add(center+new Vector3(Mathf.Cos(a)*.11f,0,Mathf.Sin(a)*.11f));triangles.AddRange(new[]{index,index+1,index+2});uvs.Add(default);uvs.Add(default);uvs.Add(default);}}
             public void Beam(Vector3 start,Vector3 end,float width)

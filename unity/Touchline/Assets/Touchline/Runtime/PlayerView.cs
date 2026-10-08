@@ -35,42 +35,49 @@ namespace Touchline
         Quaternion[] transitionPose;Vector3 transitionBodyPosition;Quaternion transitionBodyRotation;
         int poseSequence;string poseAction;float transitionRemaining,transitionDuration;bool receivingLeft;
         public static Vector3 Vector(float[] a)=>new Vector3(a[0],a[1],a[2]);
-        public void Build(PlayerData player,int side,int slot,Color team)
+        public void Build(PlayerData player,int side,int slot,Color team)=>Build(player,side,slot,MatchKit.Plain(team));
+        public void Build(PlayerData player,int side,int slot,MatchKit matchKit)
         {
+            kit=matchKit??MatchKit.Plain(Color.white);var team=kit.shirt;
             PlayerId=player.id;leftFooted=player.preferredFoot=="Left"||player.preferredFoot=="Gauche";if(source==null)source=JsonUtility.FromJson<HumanSource>(Resources.Load<TextAsset>("Models/footballer").text);
             body=new GameObject("Rig").transform;body.SetParent(transform,false);skeleton=new Transform[source.bones.Length];
             for(int i=0;i<skeleton.Length;i++){var b=source.bones[i];var bone=new GameObject(b.name).transform;bone.SetParent(body,false);bone.localPosition=Vector(b.head);skeleton[i]=bone;bones[b.name]=bone;if(b.name=="wrist.L"||b.name=="wrist.R")handAxes[b.name=="wrist.L"?0:1]=Vector(b.tail)-Vector(b.head);}
             for(int i=0;i<skeleton.Length;i++){var parent=source.bones[i].parent;if(parent>=0)skeleton[i].SetParent(skeleton[parent],true);}
             uint identity=AppearanceIdentity(player.id);motionIdentity=(int)(identity%10000)+1;var skin=Color.Lerp(new Color(.35f,.23f,.17f),new Color(.85f,.68f,.54f),(identity%101)/100f);previousPose=new Quaternion[skeleton.Length];transitionPose=new Quaternion[skeleton.Length];
-            shirt=Material(slot==0?new Color(.85f,.65f,.12f):team);var mats=new[]{Material(skin),shirt,Material(team*.58f),Material(team*.8f),Material(new Color(.075f,.055f,.04f)),Material(new Color(.045f,.055f,.065f)),Material(Color.white),Material(Color.white)};
+            shirt=Material(slot==0?new Color(.85f,.65f,.12f):team);var mats=new[]{Material(skin),shirt,Material(team*.58f),Material(team*.8f),Material(new Color(.075f,.055f,.04f)),Material(new Color(.045f,.055f,.065f)),Material(Color.white),Material(Color.white),PrintMaterial()};
             ApplyAppearance(mats,identity);
             ownedMaterials=mats;
             if(geometry==null)geometry=BuildGeometry();
-            var anatomy=new GameObject("Skinned anatomy");anatomy.transform.SetParent(body,false);var renderer=anatomy.AddComponent<SkinnedMeshRenderer>();renderer.sharedMesh=geometry;renderer.bones=skeleton;renderer.rootBone=body;
-            var sections=new Material[source.parts.Length];for(int i=0;i<sections.Length;i++)sections[i]=mats[Mathf.Clamp(source.parts[i].material,0,mats.Length-1)];renderer.sharedMaterials=sections;
+            var anatomy=new GameObject("Skinned anatomy");anatomy.transform.SetParent(body,false);var renderer=anatomy.AddComponent<SkinnedMeshRenderer>();bodyRenderer=renderer;renderer.sharedMesh=AnatomyMesh(identity);renderer.bones=skeleton;renderer.rootBone=body;
+            var sections=new Material[source.parts.Length+1];for(int i=0;i<source.parts.Length;i++)sections[i]=mats[Mathf.Clamp(source.parts[i].material,0,mats.Length-1)];sections[source.parts.Length]=mats[PrintSlot];renderer.sharedMaterials=sections;
             renderer.localBounds=new Bounds(new Vector3(0,.9f,0),new Vector3(4.6f,3.8f,3.6f));renderer.updateWhenOffscreen=false;
             foreach(var sideName in Sides)if(bones.TryGetValue("foot."+sideName,out var foot)){var boot=new GameObject("Football boot");boot.transform.SetParent(foot,false);boot.AddComponent<MeshFilter>().sharedMesh=FootballBootMesh.Shared;boot.AddComponent<MeshRenderer>().sharedMaterial=mats[5];}
             var pick=gameObject.AddComponent<CapsuleCollider>();pick.height=1.85f;pick.radius=.36f;pick.center=new Vector3(0,.92f,0);
-            PrepareLimbs();PrepareHands();ApplyPhysique(player);teamShirt=team;SetKeeperAppearance(slot==0);
+            PrepareLimbs();PrepareHands();ApplyPhysique(player);SetPrintIdentity(player);SetKeeperAppearance(slot==0);
         }
         Mesh BuildGeometry()
         {
             int count=0;foreach(var part in source.parts)count+=part.position.Length/3;
+            ShirtPrint.Patch(ShirtPart,out var printPositions,out var printNormals,out var printUv,out var printWeights,out var printTriangles);int printStart=count;count+=printPositions.Length;
             var mesh=new Mesh{name="Footballer anatomy",indexFormat=count<65536?UnityEngine.Rendering.IndexFormat.UInt16:UnityEngine.Rendering.IndexFormat.UInt32};
-            var vertices=new Vector3[count];var normals=new Vector3[count];var uv=new Vector2[count];bool hasNormals=true;var weights=new BoneWeight[count];var indices=new int[source.parts.Length][];int offset=0;
+            var vertices=new Vector3[count];var normals=new Vector3[count];var uv=new Vector2[count];bool hasNormals=true;var weights=new BoneWeight[count];var indices=new int[source.parts.Length+1][];int offset=0;
             for(int i=0;i<source.parts.Length;i++){
                 var p=source.parts[i];int length=p.position.Length/3;
                 for(int v=0;v<length;v++){vertices[offset+v]=new Vector3(p.position[v*3],p.position[v*3+1],p.position[v*3+2]);weights[offset+v]=new BoneWeight{boneIndex0=p.skinIndex[v*4],boneIndex1=p.skinIndex[v*4+1],boneIndex2=p.skinIndex[v*4+2],boneIndex3=p.skinIndex[v*4+3],weight0=p.skinWeight[v*4],weight1=p.skinWeight[v*4+1],weight2=p.skinWeight[v*4+2],weight3=p.skinWeight[v*4+3]};}
                 hasNormals&=p.normal?.Length==length*3;
                 for(int v=0;v<length;v++){if(p.normal?.Length==length*3)normals[offset+v]=new Vector3(p.normal[v*3],p.normal[v*3+1],p.normal[v*3+2]);if(p.uv?.Length==length*2)uv[offset+v]=new Vector2(p.uv[v*2],p.uv[v*2+1]);}
+                if(p.material==HairMaterialIndex){hairStart=offset;hairCount=length;}
                 indices[i]=new int[p.index.Length];for(int j=0;j<p.index.Length;j++)indices[i][j]=p.index[j]+offset;offset+=length;
             }
+            // Dernier sous-maillage : flocage du dos (voir ShirtPrint).
+            for(int v=0;v<printPositions.Length;v++){vertices[printStart+v]=printPositions[v];normals[printStart+v]=printNormals[v];uv[printStart+v]=printUv[v];weights[printStart+v]=printWeights[v];}
+            indices[source.parts.Length]=new int[printTriangles.Length];for(int j=0;j<printTriangles.Length;j++)indices[source.parts.Length][j]=printTriangles[j]+printStart;
             var bind=new Matrix4x4[skeleton.Length];for(int i=0;i<bind.Length;i++)bind[i]=skeleton[i].worldToLocalMatrix*body.localToWorldMatrix;
             mesh.vertices=vertices;mesh.boneWeights=weights;mesh.bindposes=bind;mesh.subMeshCount=indices.Length;for(int i=0;i<indices.Length;i++)mesh.SetTriangles(indices[i],i);
             mesh.uv=uv;if(hasNormals)mesh.normals=normals;else mesh.RecalculateNormals();mesh.RecalculateBounds();return mesh;
         }
         void ApplyPhysique(PlayerData data){MotionStature=data.heightCm>=145&&data.heightCm<=215?data.heightCm*.01f:1.8f;float scale=data.heightCm>=145&&data.heightCm<=215?(data.heightCm*.01f)/source.height:1;transform.localScale=Vector3.one*scale;}
-        public void ChangeIdentity(PlayerData data){PlayerId=data.id;leftFooted=data.preferredFoot=="Left"||data.preferredFoot=="Gauche";ApplyPhysique(data);uint identity=AppearanceIdentity(data.id);motionIdentity=(int)(identity%10000)+1;ApplyAppearance(ownedMaterials,identity);initialized=false;}
+        public void ChangeIdentity(PlayerData data){PlayerId=data.id;leftFooted=data.preferredFoot=="Left"||data.preferredFoot=="Gauche";ApplyPhysique(data);uint identity=AppearanceIdentity(data.id);motionIdentity=(int)(identity%10000)+1;ApplyAppearance(ownedMaterials,identity);if(bodyRenderer!=null)bodyRenderer.sharedMesh=AnatomyMesh(identity);SetPrintIdentity(data);initialized=false;}
         public Vector3 FootPosition(bool left)=>Limb((left?"L":"R")).foot.position;
         public void ResetPresentation(){initialized=false;}
         public Vector3 BootContactPosition(bool left){var foot=Limb(left?"L":"R").foot;return foot.TransformPoint(new Vector3(0,0,.22f))+foot.forward*.11f;}
@@ -80,6 +87,7 @@ namespace Touchline
         public void Render(Actor actor,float alpha,float dt,Vector3 ballPosition=default,PlayerMotionContext context=default)
         {
             if(keeperAppearance!=(actor.slot==0))SetKeeperAppearance(actor.slot==0);
+            ShirtPrint.Flush();
             // Interpolate action progress on the same fixed-step timeline as
             // positions. Otherwise procedural contacts update only at 10 Hz.
             float actionTime=actor.actionTime+Mathf.Clamp01(1-alpha)*MatchSimulation.Step;
@@ -251,7 +259,7 @@ namespace Touchline
         void Rotate(string name,float x,float y,float z){if(bones.TryGetValue(name,out var b))b.localRotation=Quaternion.Euler(x,y,z);}
         public static Material Material(Color color){var m=new Material(Shader.Find("Universal Render Pipeline/Lit"));m.color=color;m.SetFloat("_Smoothness",.16f);return m;}
         static void Dispose(UnityEngine.Object item){if(Application.isPlaying)Destroy(item);else DestroyImmediate(item);}
-        void OnDestroy(){DisposeMecanim();if(ownedMaterials!=null)foreach(var material in ownedMaterials)Dispose(material);if(glovePalm!=null)Dispose(glovePalm);if(gloveBack!=null)Dispose(gloveBack);}
+        void OnDestroy(){DisposeMecanim();ReleasePrint();if(ownedMaterials!=null)foreach(var material in ownedMaterials)Dispose(material);if(glovePalm!=null)Dispose(glovePalm);if(gloveBack!=null)Dispose(gloveBack);}
     }
 }
 

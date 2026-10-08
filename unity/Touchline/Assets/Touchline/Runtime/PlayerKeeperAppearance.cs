@@ -4,11 +4,11 @@ namespace Touchline
 {
     public sealed partial class PlayerView
     {
-        bool keeperAppearance;Color teamShirt;
+        bool keeperAppearance;
         SkinnedMeshRenderer keeperGloves;Material glovePalm,gloveBack;
         void SetKeeperAppearance(bool keeper)
         {
-            keeperAppearance=keeper;shirt.color=keeper?new Color(.85f,.65f,.12f):teamShirt;
+            keeperAppearance=keeper;ApplyKit();
             if(keeper&&keeperGloves==null){
                 var go=new GameObject("Keeper gloves");go.transform.SetParent(body,false);keeperGloves=go.AddComponent<SkinnedMeshRenderer>();
                 keeperGloves.sharedMesh=KeeperGloveMesh.Get(source,geometry.bindposes);keeperGloves.bones=skeleton;keeperGloves.rootBone=body;

@@ -31,7 +31,7 @@ namespace Touchline
         public int PoseEvaluations {get;private set;}
         Transform ball,world;
         readonly BallVisualRotation ballRotation=new BallVisualRotation();
-        readonly GoalNetPresentation goalNet=new GoalNetPresentation();
+        readonly GoalNetPresentation goalNet=new GoalNetPresentation();readonly GoalNetRipple[] netRipples=new GoalNetRipple[2];
         readonly ExitRestartPresentation exitRestart=new ExitRestartPresentation();
         ExitRestartSample exitSample;bool showingExit,exitWasRepositioned;
         public float RestartCutOpacity=>showingExit?exitSample.opacity:0;
@@ -68,13 +68,14 @@ namespace Touchline
             float shadeEdge=floodlit?float.NegativeInfinity:StadiumLighting.RoofShadowEdge(),shadeEndX=floodlit?float.NegativeInfinity:StadiumLighting.RoofShadowEndX();
             CreatePitchSurface(false,shadeEdge,shadeEndX);
             Surface(StadiumGeometry.Surround(false,shadeEdge,shadeEndX),PlayerView.Material(SurroundGreen),false);
+            var wear=PitchTurf.WearMaterial();if(wear!=null)Surface(PitchTurf.WearPatches(),wear,false,false); // usure : multipliée sur le gazon, sous les lignes
             Surface(StadiumGeometry.PitchMarkings(false,shadeEdge,shadeEndX),white,false);
             if(!floodlit){CreatePitchSurface(true,shadeEdge,shadeEndX);
                 Surface(StadiumGeometry.Surround(true,shadeEdge,shadeEndX),StadiumLighting.ShadedMaterial(SurroundGreen),false,false);
                 Surface(StadiumGeometry.PitchMarkings(true,shadeEdge,shadeEndX),StadiumLighting.ShadedMaterial(MarkingWhite),false,false);}
             for(int sign=-1;sign<=1;sign+=2){var x=52.5f*sign;
                 Line(new[]{new Vector3(x,0,-3.66f),new Vector3(x,2.44f,-3.66f),new Vector3(x,2.44f,3.66f),new Vector3(x,0,3.66f)},.12f);
-                Surface(StadiumGeometry.GoalNet(sign),white,false);
+                var net=StadiumGeometry.GoalNet(sign);Surface(net,white,false);netRipples[(sign+1)/2]=new GoalNetRipple(net,sign);
             }
             var stands=StadiumLighting.StandLight(floodlit);var concrete=PlayerView.Material(new Color(.18f,.23f,.28f)*stands);var seats=PlayerView.Material(new Color(.23f,.31f,.36f)*stands);
             // Tribune d'en face : à l'ombre du toit l'après-midi (couleurs assombries).
@@ -97,8 +98,10 @@ namespace Touchline
             var upperRenderer=upper.AddComponent<MeshRenderer>();upperRenderer.sharedMaterials=floodlit?crowdRenderer.sharedMaterials:Array.ConvertAll(StadiumAtmosphere.Palette(homeColor,awayColor),c=>PlayerView.Material(c*far));upperRenderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;upperRenderer.receiveShadows=false;
             var sky=StadiumLighting.Apply(world,floodlit);RenderSettings.fogStartDistance=110;RenderSettings.fogEndDistance=240;
             MatchCamera=new GameObject("Broadcast camera").AddComponent<Camera>();MatchCamera.transform.SetParent(world);MatchCamera.fieldOfView=46;MatchCamera.nearClipPlane=.15f;MatchCamera.farClipPlane=270;MatchCamera.clearFlags=CameraClearFlags.SolidColor;MatchCamera.backgroundColor=sky;MatchCamera.tag="MainCamera";MatchCamera.gameObject.AddComponent<AudioListener>();MatchCamera.transform.position=new Vector3(0,19,29);
+            BroadcastGrade.Attach(world,MatchCamera,floodlit);
             players=new PlayerView[22];var m=simulation.State;var homeStrip=MatchKitPalette.Home(homeColor);var awayStrip=MatchKitPalette.Away(homeStrip,awayColor);
-            for(int i=0;i<22;i++){var p=m.actors[i];var color=p.side==0?homeStrip:awayStrip;var go=new GameObject("Player "+database.Find(p.id).name);go.transform.SetParent(world);players[i]=go.AddComponent<PlayerView>();players[i].Build(database.Find(p.id),p.side,p.slot,color);}
+            var kits=MatchKit.ForMatch(simulation.State.home,homeStrip,simulation.State.away,awayStrip,awayColor);
+            for(int i=0;i<22;i++){var p=m.actors[i];var go=new GameObject("Player "+database.Find(p.id).name);go.transform.SetParent(world);players[i]=go.AddComponent<PlayerView>();players[i].Build(database.Find(p.id),p.side,p.slot,kits[p.side]);}
             var football=FootballBallMesh.Create(white,PlayerView.Material(new Color(.025f,.032f,.04f)));football.transform.SetParent(world,false);ball=football.transform;
             tacticalMaterial=PlayerView.Material(new Color(.75f,.9f,.25f));tacticalLines=new LineRenderer[11];for(int i=0;i<11;i++){var marker=new GameObject("Tactical intention "+i);marker.transform.SetParent(world);var line=marker.AddComponent<LineRenderer>();line.sharedMaterial=tacticalMaterial;line.positionCount=2;line.widthMultiplier=.075f;line.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;line.enabled=false;tacticalLines[i]=line;}
             BuildGoalReplay();
@@ -140,6 +143,7 @@ namespace Touchline
             Vector3? heldPosition=null;
             for(int i=0;i<22;i++)if(m.actors[i].id==m.ball.owner&&m.ball.held&&m.actors[i].action!="place-ball")heldPosition=players[i].HeldBallPosition;
             ball.position=showingGoal?goalPosition:showingExit?exitPosition:KeeperBallPresentation.Position(Simulation.KeeperContact,m,alpha,heldPosition,Simulation.ReleaseContact,Simulation.ImpactContact);
+            foreach(var ripple in netRipples)ripple?.Advance(ball.position,showingGoal,Paused?0:frameDelta*Speed);
             bool ballVisible=!showingExit||exitSample.ballVisible;if(ball.gameObject.activeSelf!=ballVisible)ball.gameObject.SetActive(ballVisible);
             bool visuallyHeld=!ExitBallIsOutgoing&&m.ball.held&&(!KeeperBallPresentation.Current(Simulation.KeeperContact,m)||alpha>=Simulation.KeeperContact.fraction);
             ballRotation.Advance(ball.position,visuallyHeld,Paused?0:frameDelta*Speed);ball.rotation=ballRotation.Rotation;

@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 using Touchline.Core;
 
 namespace Touchline.Editor
@@ -52,6 +53,8 @@ namespace Touchline.Editor
                 // Caméra « télé » rapprochée : basse, sur le côté, qui suit l'action en douceur.
                 var follow=new GameObject("Follow camera").AddComponent<Camera>();follow.enabled=false;follow.fieldOfView=32;follow.nearClipPlane=.15f;follow.farClipPlane=270;
                 follow.clearFlags=CameraClearFlags.SolidColor;follow.backgroundColor=RenderSettings.fogColor;follow.targetTexture=target;follow.aspect=(float)Width/Height;
+                // Même post-traitement que la caméra de diffusion (étalonnage BroadcastGrade).
+                follow.GetUniversalAdditionalCameraData().renderPostProcessing=arena.MatchCamera.GetUniversalAdditionalCameraData().renderPostProcessing;
                 Vector3 focus=Vector3.zero,focusVelocity=Vector3.zero;int count=Mathf.RoundToInt(seconds*Fps);
                 // Mesures de fluidité sur les 22 joueurs (rendu à 30 i/s) :
                 // glissement d'un pied posé (m/s), à-coup de trajectoire (variation

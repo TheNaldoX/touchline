@@ -58,6 +58,56 @@ namespace Touchline
             return mesh;
         }
 
+        // Usure du gazon : zones piétinées devant les buts et au rond central, posées en
+        // multiplication sur la pelouse (matière Rendering/WearMultiply, un seul appel de
+        // rendu pour les trois zones). Blanc = gazon intact, beige = terre et herbe couchée.
+        public const string WearMaterialPath="Rendering/WearMultiply";
+        public const int WearSize=128;                    // pixels de côté
+        public const float WearHeight=.012f;              // m au-dessus du gazon, sous les lignes (0,025 m)
+        public const float GoalmouthDepth=7f,GoalmouthWidth=11f,CentreWear=7f; // m
+        const float WearStrength=.75f;                    // part maximale de la teinte usée (centre de zone)
+        static readonly Color Worn=new Color(.74f,.68f,.48f); // multiplicateur : herbe jaunie et terre
+        static Texture2D wear;
+        public static Texture2D WearTexture()
+        {
+            if(wear!=null)return wear;
+            wear=new Texture2D(WearSize,WearSize,TextureFormat.RGB24,true){name="Pitch wear",wrapMode=TextureWrapMode.Clamp,filterMode=FilterMode.Trilinear,anisoLevel=4};
+            var pixels=new Color32[WearSize*WearSize];
+            for(int y=0;y<WearSize;y++)for(int x=0;x<WearSize;x++)pixels[y*WearSize+x]=Color.Lerp(Color.white,Worn,WearAmount(x,y));
+            wear.SetPixels32(pixels);wear.Apply(true,true);return wear;
+        }
+        // Part d'usure (0–1) : forte au centre de la zone, bords irréguliers par le bruit.
+        public static float WearAmount(int x,int y)
+        {
+            float u=(x+.5f)/WearSize*2-1,v=(y+.5f)/WearSize*2-1;float r=Mathf.Sqrt(u*u+v*v);
+            float noise=Octave(x*2,y*2,16,7)*.6f+Octave(x*2,y*2,64,8)*.4f;
+            float shape=1-Smooth(Mathf.Clamp01((r+(noise-.5f)*.45f-.25f)/.75f));
+            float fade=1-Smooth(Mathf.Clamp01((r-.8f)/.2f)); // nul au bord du carré : pas de cadre visible
+            return Mathf.Clamp01(shape*fade*WearStrength*Mathf.Lerp(.55f,1.15f,noise));
+        }
+        public static Mesh WearPatches()
+        {
+            var vertices=new System.Collections.Generic.List<Vector3>();var uv=new System.Collections.Generic.List<Vector2>();var triangles=new System.Collections.Generic.List<int>();
+            void Patch(float x0,float x1,float z0,float z1,bool flip)
+            {
+                int v=vertices.Count;
+                vertices.Add(new Vector3(x0,WearHeight,z0));vertices.Add(new Vector3(x0,WearHeight,z1));vertices.Add(new Vector3(x1,WearHeight,z1));vertices.Add(new Vector3(x1,WearHeight,z0));
+                // Même texture, orientée autrement d'une zone à l'autre (taches différentes).
+                uv.Add(flip?new Vector2(1,0):Vector2.zero);uv.Add(flip?new Vector2(1,1):Vector2.up);uv.Add(flip?new Vector2(0,1):Vector2.one);uv.Add(flip?Vector2.zero:Vector2.right);
+                triangles.AddRange(new[]{v,v+1,v+2,v,v+2,v+3});
+            }
+            // Le centre de la zone devant le but est décalé vers le point de penalty (piétinement du gardien et des duels).
+            Patch(-HalfLength,-HalfLength+GoalmouthDepth,-GoalmouthWidth*.5f,GoalmouthWidth*.5f,false);
+            Patch(HalfLength-GoalmouthDepth,HalfLength,-GoalmouthWidth*.5f,GoalmouthWidth*.5f,true);
+            Patch(-CentreWear*.5f,CentreWear*.5f,-CentreWear*.5f,CentreWear*.5f,true);
+            var mesh=new Mesh{name="Pitch wear patches"};mesh.SetVertices(vertices);mesh.SetUVs(0,uv);mesh.SetTriangles(triangles,0);mesh.RecalculateNormals();mesh.RecalculateBounds();return mesh;
+        }
+        public static Material WearMaterial()
+        {
+            var template=Resources.Load<Material>(WearMaterialPath);if(template==null)return null;
+            var m=new Material(template){name="Pitch wear"};m.mainTexture=WearTexture();m.color=Color.white;return m;
+        }
+
         // Bruit de valeur lissé, période = Size pixels (cells cellules sur la largeur).
         static float Octave(int x,int y,int cells,uint seed)
         {

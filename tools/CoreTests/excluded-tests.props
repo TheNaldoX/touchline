@@ -90,6 +90,7 @@
   <ExcludedTest Include="PlayerAppearanceTests.cs" />
   <ExcludedTest Include="PlayerChronologyTests.cs" />
   <ExcludedTest Include="PlayerCommunicationTests.cs" />
+  <ExcludedTest Include="PlayerKitTests.cs" />
   <ExcludedTest Include="PlayerPositionPresentationTests.cs" />
   <ExcludedTest Include="PlayingTimeRoleTests.cs" />
   <ExcludedTest Include="PortraitLoadingTests.cs" />
