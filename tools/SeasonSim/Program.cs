@@ -61,7 +61,7 @@ static class P{
   return 0;
  }
  class Snapshot{public int year,day;public long cash;public int squad;public float top14,ageAvg;public Dictionary<string,long> aiCash=new();public Dictionary<string,long> aiDebt=new();public Dictionary<string,double> wageRatio=new();public Dictionary<string,long> revenue=new();public double worldAge,worldRating,worldTop;public int worldCount,worldOld,worldYoung;public Dictionary<string,int> aiSquad=new();public Dictionary<string,float> aiStrength=new();public float wageMedian;public int free;public int transfers;
-  public Dictionary<string,string> league=new();public Dictionary<string,int> staying=new(),leaving=new();public int generated,freeAgents;public List<AiTransferRecord> yearTransfers=new();public Dictionary<string,(int age,float rating,string team)> people=new();}
+  public Dictionary<string,string> league=new();public Dictionary<string,int> staying=new(),leaving=new();public HashSet<string> leavingIds=new();public int generated,freeAgents;public List<AiTransferRecord> yearTransfers=new();public Dictionary<string,(int age,float rating,string team)> people=new();}
  static Snapshot Snap(Database db,Career c){
   var s=new Snapshot{year=c.world.year,day=c.life.day,cash=c.life.cash};
   var sq=db.Squad(c.club).ToArray();s.squad=sq.Length;s.top14=sq.Length==0?0:(float)sq.OrderByDescending(p=>p.rating+p.development).Take(14).Average(p=>p.rating+p.development);s.ageAvg=sq.Length==0?0:(float)sq.Average(p=>p.age);
@@ -71,7 +71,7 @@ static class P{
   var wages=db.players.Where(p=>p.team!=null&&p.wage>0).Select(p=>p.wage).OrderBy(x=>x).ToArray();s.wageMedian=wages.Length>0?wages[wages.Length/2]:0;
   {var ids=new HashSet<string>(db.clubs.Where(x=>x.playable).Select(x=>x.id));var ws=db.players.Where(p=>p.team!=null&&ids.Contains(p.team)).ToArray();s.worldCount=ws.Length;s.worldAge=ws.Average(p=>p.age);s.worldRating=ws.Average(p=>p.rating);s.worldTop=ws.Count(p=>p.rating>=80);s.worldOld=ws.Count(p=>p.age>=32);s.worldYoung=ws.Count(p=>p.age<=21);}
   // Partants annoncés : contrat non renouvelé (ou surplus) qui expire dans la fenêtre d'été.
-  {var cons=c.world.contracts.GroupBy(x=>x.player).ToDictionary(g=>g.Key,g=>g.Last());foreach(var cl in db.clubs.Where(x=>x.playable)){var q=db.Squad(cl.id);int out_=q.Count(p=>cons.TryGetValue(p.id,out var e)&&e.club==cl.id&&e.aiRelease&&e.until<=c.life.day+21);s.leaving[cl.id]=out_;s.staying[cl.id]=q.Count-out_;}}
+  {var cons=c.world.contracts.GroupBy(x=>x.player).ToDictionary(g=>g.Key,g=>g.Last());foreach(var cl in db.clubs.Where(x=>x.playable)){var q=db.Squad(cl.id);var gone=q.Where(p=>cons.TryGetValue(p.id,out var e)&&e.club==cl.id&&e.aiRelease&&e.until<=c.life.day+21).Select(p=>p.id).ToArray();s.leavingIds.UnionWith(gone);int out_=gone.Length;s.leaving[cl.id]=out_;s.staying[cl.id]=q.Count-out_;}}
   s.generated=db.players.Count(p=>p.id.StartsWith("regen-")&&p.id.Contains("-"+s.year+"-"));s.freeAgents=db.players.Count(p=>p.team=="free");
   s.yearTransfers=(c.world.aiTransfers??new List<AiTransferRecord>()).Where(t=>t.year==s.year).ToList();
   foreach(var cl in db.clubs.Where(x=>x.playable))s.league[cl.id]=cl.league;foreach(var p in db.players)if(p.team!=null&&p.team!="retired")s.people[p.id]=(p.age,p.rating,p.team);
@@ -130,7 +130,8 @@ static class P{
   Console.WriteLine("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|");
   foreach(var s in snaps){
    var ids=s.aiSquad.Keys.ToArray();var sizes=ids.Select(k=>s.aiSquad[k]).OrderBy(x=>x).ToArray();
-   var ppl=s.people.Values.Where(p=>s.league.ContainsKey(p.team)).ToArray();
+   // Effectifs de la saison : les partants annoncés (fin de contrat dans la fenêtre d'été) sont exclus.
+   var ppl=s.people.Where(kv=>s.league.ContainsKey(kv.Value.team)&&!s.leavingIds.Contains(kv.Key)).Select(kv=>kv.Value).ToArray();
    var accounts=ids.Where(k=>s.aiDebt.ContainsKey(k)&&s.revenue.GetValueOrDefault(k)>0).ToArray();
    var tr=s.yearTransfers.ToArray();
    var ages=tr.Select(t=>s.people.TryGetValue(t.player,out var q)?q.age:0).Where(x=>x>0).ToArray();
