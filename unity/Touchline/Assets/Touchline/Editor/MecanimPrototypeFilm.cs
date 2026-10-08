@@ -162,6 +162,8 @@ namespace Touchline.Editor
                 }
                 File.WriteAllText(Path.Combine(output,"info.txt"),info.ToString());
                 File.WriteAllText(Path.Combine(output,"metrics.txt"),"prototype Mecanim\n");
+                // Graphes Playables du joueur détruits avant de quitter (sinon plantage à la fermeture d'Unity).
+                UnityEngine.Object.DestroyImmediate(root);target.Release();UnityEngine.Object.DestroyImmediate(target);
                 Debug.Log("TOUCHLINE_PROTO_OK");File.WriteAllText(Path.Combine(output,"unity-messages.txt"),log.ToString());EditorApplication.Exit(0);
             }catch(Exception e){Debug.LogException(e);if(output!=null){Directory.CreateDirectory(output);File.WriteAllText(Path.Combine(output,"unity-messages.txt"),log.ToString());}EditorApplication.Exit(1);}
         }
