@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Touchline.Tests
 {
-    // Tribunes vivantes (CrowdReaction, StadiumFlags) et plan du ralenti de but (GoalReplayCamera).
+    // Tribunes vivantes (CrowdReaction, StadiumFlags), ombres de contact et plan du ralenti de but (GoalReplayCamera).
     public sealed class CrowdLifeTests
     {
         [Test] public void GoalLiftsOnlyTheScoringSideAndEveryoneSitsBackDown()
@@ -68,6 +68,19 @@ namespace Touchline.Tests
                 Assert.Greater(calmMove,.01f,"Les drapeaux flottent même au calme");Assert.Greater(cheerMove,calmMove*1.5f);
                 Assert.LessOrEqual(cheerMove,StadiumFlags.CheerWave+.001f);Assert.AreEqual(StadiumFlags.SubmeshCount,calm.Mesh.subMeshCount);
             }finally{Object.DestroyImmediate(calm.Mesh);Object.DestroyImmediate(cheer.Mesh);}
+        }
+        [Test] public void ContactShadowsSitUnderCastersAndShrinkInTheAir()
+        {
+            Assert.AreEqual(1-ContactShadows.Darkness,ContactShadows.Shade(0),1e-5f);Assert.AreEqual(1,ContactShadows.Shade(1),1e-5f);
+            var shadows=new ContactShadows(3);
+            try{
+                shadows.Set(0,new Vector3(10,0,-5),ContactShadows.PlayerRadius,1);shadows.SetBall(1,new Vector3(0,.11f,0));shadows.SetBall(2,new Vector3(0,1.2f,0));
+                var v=shadows.Vertices;foreach(var p in v)Assert.AreEqual(ContactShadows.Height,p.y,1e-6f);
+                Assert.AreEqual(10-ContactShadows.PlayerRadius,v[0].x,1e-5f);Assert.AreEqual(-5+ContactShadows.PlayerRadius,v[1].z,1e-5f);
+                Assert.AreEqual(ContactShadows.BallRadius,v[6].x,1e-5f,"Ballon au sol : tache pleine");
+                Assert.Less(v[10].x,ContactShadows.BallRadius,"Ballon en l'air : tache réduite");
+                shadows.Set(0,new Vector3(10,0,-5),ContactShadows.PlayerRadius,0);Assert.AreEqual(v[0],v[2],"Masquée : quad réduit à un point");
+            }finally{Object.DestroyImmediate(shadows.Mesh);}
         }
         [TestCase(1.8f,1)] [TestCase(.43f,1)] [TestCase(1.8f,-1)]
         public void ReplayCameraStaysLowBesideTheGoalAndKeepsTheBallInFrame(float aspect,int side)

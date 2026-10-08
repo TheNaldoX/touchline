@@ -104,7 +104,7 @@ namespace Touchline
             for(int i=0;i<22;i++){var p=m.actors[i];var go=new GameObject("Player "+database.Find(p.id).name);go.transform.SetParent(world);players[i]=go.AddComponent<PlayerView>();players[i].Build(database.Find(p.id),p.side,p.slot,kits[p.side]);}
             var football=FootballBallMesh.Create(white,PlayerView.Material(new Color(.025f,.032f,.04f)));football.transform.SetParent(world,false);ball=football.transform;
             tacticalMaterial=PlayerView.Material(new Color(.75f,.9f,.25f));tacticalLines=new LineRenderer[11];for(int i=0;i<11;i++){var marker=new GameObject("Tactical intention "+i);marker.transform.SetParent(world);var line=marker.AddComponent<LineRenderer>();line.sharedMaterial=tacticalMaterial;line.positionCount=2;line.widthMultiplier=.075f;line.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;line.enabled=false;tacticalLines[i]=line;}
-            BuildGoalReplay();
+            BuildContactShadows();BuildGoalReplay();
         }
         void Update()=>RenderFrame(Time.unscaledDeltaTime);
         // Explicit elapsed time also permits deterministic footage and replay
@@ -160,7 +160,7 @@ namespace Touchline
             // Fast passes move the action window instead of pulling the camera
             // hundreds of metres away to retain its previous focus.
             if(!tactical){focus.x=Mathf.Clamp(focus.x,ball.position.x-20,ball.position.x+20);focus.z=Mathf.Clamp(focus.z,ball.position.z-13,ball.position.z+13);}
-            ReframeCamera(frameDelta);
+            ReframeCamera(frameDelta);UpdateContactShadows();
             CaptureGoalReplay(m,alpha);
             if((Viewport==null||!Viewport.Bound)&&Input.GetMouseButtonDown(0))pointerStart=Input.mousePosition;
             if((Viewport==null||!Viewport.Bound)&&Input.GetMouseButtonUp(0)&&Vector2.Distance(pointerStart,Input.mousePosition)<8&&!TouchlineApp.Instance.PointerOverInterface(Input.mousePosition)){var ray=MatchCamera.ScreenPointToRay(Input.mousePosition);if(Physics.Raycast(ray,out var hit,250)){var view=hit.collider.GetComponentInParent<PlayerView>();if(view!=null){Paused=true;PlayerSelected?.Invoke(view.PlayerId);}}}
@@ -199,6 +199,6 @@ namespace Touchline
         void Surface(Mesh mesh,Material material,bool shadows,bool receiveShadows=true){stadiumMeshes.Add(mesh);var go=new GameObject(mesh.name);go.transform.SetParent(world,false);go.AddComponent<MeshFilter>().sharedMesh=mesh;var renderer=go.AddComponent<MeshRenderer>();renderer.sharedMaterial=material;renderer.shadowCastingMode=shadows?UnityEngine.Rendering.ShadowCastingMode.On:UnityEngine.Rendering.ShadowCastingMode.Off;renderer.receiveShadows=receiveShadows;}
         void Line(Vector3[] points,float width){var go=new GameObject("Pitch marking");go.transform.SetParent(world);var line=go.AddComponent<LineRenderer>();line.sharedMaterial=white;line.useWorldSpace=true;line.positionCount=points.Length;line.SetPositions(points);line.widthMultiplier=width;line.numCornerVertices=1;line.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;if(Array.TrueForAll(points,p=>p.y<.1f)){line.alignment=LineAlignment.TransformZ;go.transform.rotation=Quaternion.Euler(90,0,0);}}
         static void DisposeArenaObject(UnityEngine.Object item){if(item==null)return;if(Application.isPlaying)Destroy(item);else DestroyImmediate(item);}
-        void OnDestroy(){var materials=new System.Collections.Generic.HashSet<Material>();foreach(var r in GetComponentsInChildren<Renderer>())if(r.GetComponentInParent<PlayerView>()==null)foreach(var material in r.sharedMaterials)if(material!=null)materials.Add(material);foreach(var material in materials)DisposeArenaObject(material);foreach(var mesh in stadiumMeshes)DisposeArenaObject(mesh);DisposeArenaObject(pitchMesh);DisposeArenaObject(turfGrain);DisposeArenaObject(boardAtlas);if(world!=null)DisposeArenaObject(world.gameObject);}
+        void OnDestroy(){var materials=new System.Collections.Generic.HashSet<Material>();foreach(var r in GetComponentsInChildren<Renderer>())if(r.GetComponentInParent<PlayerView>()==null)foreach(var material in r.sharedMaterials)if(material!=null)materials.Add(material);foreach(var material in materials)DisposeArenaObject(material);foreach(var mesh in stadiumMeshes)DisposeArenaObject(mesh);DisposeArenaObject(pitchMesh);DisposeArenaObject(turfGrain);DisposeArenaObject(boardAtlas);DisposeArenaObject(contactTexture);if(world!=null)DisposeArenaObject(world.gameObject);}
     }
 }

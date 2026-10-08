@@ -41,7 +41,7 @@ namespace Touchline
             if(!goalReplay.Active){RestoreAfterGoalReplay();return;}
             // Plan de ralenti (GoalReplayCamera) : suit le ballon rejoué en temps réel,
             // à la place de la pose enregistrée de la caméra télé. Le direct reste figé.
-            replayCamera.Advance(ball.position,elapsed);ReframeGoalReplayCamera();
+            replayCamera.Advance(ball.position,elapsed);ReframeGoalReplayCamera();UpdateContactShadows();
             foreach(var ripple in netRipples)ripple?.Advance(ball.position,true,elapsed*GoalReplaySpeed); // le filet se creuse aussi au ralenti
         }
         // Rappelable sans faire avancer le plan (changement de format en cours de ralenti).
