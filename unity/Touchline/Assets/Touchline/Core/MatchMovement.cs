@@ -43,7 +43,9 @@ namespace Touchline.Core
                     var focus=DefensiveFocus(p.side);float focusX=focus.x*dir;
                     if(slot.y<38&&bx< -24)q.x=dir*Math.Max(-49.2f,Math.Min(q.x*dir,bx-3.2f));
                     bool recovering=transition&&!t.counterPress;
-                    bool trigger=focusX< -28+t.line*55||Space(focus,p.side,true)<4||free;
+                    // Un porteur dans son propre tiers défensif est pressé par le
+                    // joueur le plus proche dès que l'équipe presse un minimum.
+                    bool trigger=focusX< -28+t.line*55||Space(focus,p.side,true)<4||free||focusX>HighPressZone&&t.pressing>=HighPressMinPressing;
                     bool closeDelay=recovering&&Point.Distance(p.position,focus)<7;
                     bool press=trigger&&(!recovering||closeDelay)||transition&&t.counterPress;
                     float radius=5+t.pressing*18+(transition&&t.counterPress?7:0);
