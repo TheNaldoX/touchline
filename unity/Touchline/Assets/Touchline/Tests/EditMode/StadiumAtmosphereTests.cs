@@ -46,12 +46,12 @@ namespace Touchline.Tests
         }
         [Test] public void TechnicalEquipmentAndColourBoardsHaveBoundedGeometry()
         {
-            var equipment=StadiumGeometry.TechnicalArea();var banners=StadiumGeometry.ClubBanners();
+            var equipment=StadiumGeometry.TechnicalArea();
             try{
-                Assert.Less(equipment.vertexCount+banners.vertexCount,1500);
-                foreach(var v in equipment.vertices.Concat(banners.vertices))Assert.IsTrue(Mathf.Abs(v.z)>=33.97f,"Equipment must not intrude onto playable turf");
-                Assert.Less(equipment.bounds.max.y,1.53f);Assert.Less(banners.bounds.max.y,1.53f);
-            }finally{Object.DestroyImmediate(equipment);Object.DestroyImmediate(banners);}
+                Assert.Less(equipment.vertexCount,1500);
+                foreach(var v in equipment.vertices)Assert.IsTrue(Mathf.Abs(v.z)>=33.97f,"Equipment must not intrude onto playable turf");
+                Assert.Less(equipment.bounds.max.y,1.53f);
+            }finally{Object.DestroyImmediate(equipment);}
         }
     }
 }

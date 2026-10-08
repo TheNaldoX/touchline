@@ -88,11 +88,11 @@ namespace Touchline
             if(!ColorUtility.TryParseHtmlString(homeClub?.color,out var homeColor))homeColor=new Color(.2f,.42f,.57f);
             if(!ColorUtility.TryParseHtmlString(awayClub?.color,out var awayColor))awayColor=new Color(.65f,.3f,.2f);
             boardAtlas=StadiumAtmosphere.BoardAtlas(homeColor,awayColor);var boards=StadiumLighting.BoardMaterial(floodlit,boardAtlas);Surface(StadiumGeometry.PerimeterBoards(),boards,false);
-            Surface(StadiumGeometry.TechnicalArea(),concrete,false);Surface(StadiumGeometry.ClubBanners(),PlayerView.Material(Color.Lerp(homeColor,Color.gray,.25f)),false);
-            var crowdMesh=StadiumAtmosphere.Crowd(simulation.State.home,simulation.State.away);stadiumMeshes.Add(crowdMesh);
+            Surface(StadiumGeometry.TechnicalArea(),concrete,false); // drapeaux de coin : StadiumFlags (BuildAtmosphere)
+            var crowdMesh=StadiumAtmosphere.Crowd(simulation.State.home,simulation.State.away,StadiumAtmosphere.DefaultOccupancy,out var crowdRig);stadiumMeshes.Add(crowdMesh);
             var crowd=new GameObject(crowdMesh.name);crowd.transform.SetParent(world,false);crowd.AddComponent<MeshFilter>().sharedMesh=crowdMesh;
             var crowdRenderer=crowd.AddComponent<MeshRenderer>();crowdRenderer.sharedMaterials=Array.ConvertAll(StadiumAtmosphere.Palette(homeColor,awayColor),c=>PlayerView.Material(c*stands));
-            crowdRenderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;crowdRenderer.receiveShadows=false;
+            crowdRenderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;crowdRenderer.receiveShadows=false;BuildAtmosphere(crowdMesh,crowdRig,crowdRenderer.sharedMaterials);
             var upperMesh=StadiumAtmosphere.UpperCrowd(simulation.State.home,simulation.State.away);stadiumMeshes.Add(upperMesh);
             var upper=new GameObject(upperMesh.name);upper.transform.SetParent(world,false);upper.AddComponent<MeshFilter>().sharedMesh=upperMesh;
             var upperRenderer=upper.AddComponent<MeshRenderer>();upperRenderer.sharedMaterials=floodlit?crowdRenderer.sharedMaterials:Array.ConvertAll(StadiumAtmosphere.Palette(homeColor,awayColor),c=>PlayerView.Material(c*far));upperRenderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;upperRenderer.receiveShadows=false;
@@ -113,6 +113,7 @@ namespace Touchline
         {
             if(Simulation==null)return;
             if(float.IsNaN(frameDelta)||float.IsInfinity(frameDelta)||frameDelta<=0)return;
+            AdvanceAtmosphere(Mathf.Min(.1f,frameDelta));
             if(GoalReplayActive){if(!Paused)AdvanceGoalReplay(frameDelta);return;}
             if(!Paused&&!QuietPresentation)renderBudget?.RecordMatchFrame(frameDelta,MatchCamera.targetTexture,Speed);
             frameDelta=Mathf.Min(.1f,frameDelta);
