@@ -51,6 +51,21 @@ namespace Touchline.Tests
             Assert.That(staying.Where(p=>p.id.StartsWith("free")).All(p=>contracts[p.id].club=="c1"&&p.wage<100000));
         }
 
+        [Test] public void AnnouncedDeparturesDoNotFillTheBuyersSquad()
+        {
+            c.EnsureAiClubAccounts(db);
+            c.world.developmentReferences=db.clubs.Select(t=>new ClubDevelopmentReference{club=t.id,rating=65,wage=500,value=100000,revenue=t.annualRevenue,squadSize=24}).ToList();
+            // c3 : 24 joueurs sous contrat et 6 partants annoncés (30 au total, au-dessus de la cible + 2).
+            var extra=Enumerable.Range(0,6).Select(i=>new PlayerData{id="out"+i,name="Partant "+i,team="c3",age=27,position="MIL",positions=new[]{"CM"},rating=60,potential=60,value=50000,wage=500,fitness=100,morale=75}).ToArray();
+            db.players=db.players.Concat(extra).ToArray();
+            foreach(var p in extra)c.world.contracts.Add(new Employment{player=p.id,club="c3",wage=500,until=c.life.day+10,aiRelease=true,estimated=true});
+            foreach(var p in db.Squad("c3"))p.rating=60;
+            foreach(var p in db.Squad("c1").Where(p=>!p.Goalkeeper))p.rating=70;
+            c.world.aiAccounts.Single(a=>a.club=="c3").cash=20_000_000;
+            c.world.year++;c.life.day=365;AiSummer();
+            Assert.That(c.world.aiTransfers.Any(t=>t.buyer=="c3"),"Les partants ne bloquent pas le recrutement");
+        }
+
         [Test] public void DecliningVeteranBelowClubLevelIsNotRenewed()
         {
             c.EnsureAiClubAccounts(db);
