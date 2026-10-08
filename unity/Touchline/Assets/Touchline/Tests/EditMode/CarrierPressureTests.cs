@@ -88,11 +88,12 @@ namespace Touchline.Tests
             Assert.AreEqual(0f,(float)marked.Invoke(sim,new object[]{5f}));
         }
 
-        [TestCase(0)][TestCase(1)]
-        public void NearestDefenderPressesCarrierInHisOwnThird(int side)
+        // Aussi juste après la perte du ballon : on ne se replie pas quand il est perdu haut.
+        [TestCase(0,false)][TestCase(1,false)][TestCase(0,true)][TestCase(1,true)]
+        public void NearestDefenderPressesCarrierInHisOwnThird(int side,bool justLost)
         {
             var sim=Setup(side,70,70,out var carrier,out var first,out var second);int dir=sim.Direction(side);
-            sim.Tactic(1-side).pressing=.5f;sim.Tactic(1-side).line=.4f;sim.State.turnoverAt=-100;
+            sim.Tactic(1-side).pressing=.5f;sim.Tactic(1-side).line=.4f;sim.Tactic(1-side).counterPress=false;sim.State.turnoverAt=justLost?sim.State.clock-1:-100;
             carrier.position=carrier.previous=new Point(-dir*30,10);sim.State.ball.position=carrier.position+new Point(dir*.4f,0);
             first.position=first.previous=new Point(-dir*22,8);second.position=second.previous=new Point(-dir*15,-5);
             typeof(MatchSimulation).GetMethod("Move",Private).Invoke(sim,null);

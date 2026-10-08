@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Moteur de match : un porteur serré de près peut se faire chiper le ballon (tacle/placement contre dribble/contrôle, nombre de presseurs, vitesse), et l'IA en tient compte (conduites dans 2+ défenseurs 17,7 → 7,6, porteur non pressé dans son tiers 73 → 28 s par match) : fautes 19,9 → 22,5, touches 34,1 → 36,9, corners 8,1 → 8,9.
 - Animation : pas chassés à gauche et à droite et course arrière choisis selon la direction de course par rapport au regard du joueur.
 - IA de match : un joueur qui s'est orienté pour passer ou frapper va au bout de son geste (préparations avortées en conduite 49 → 18 par match) : tirs 23,2 → 26,0, buts 3,18 → 2,77.
 - Visuel : gazon texturé (grain, tonte plus marquée), ciel, second anneau et toit de la tribune d'en face, caméra télé moins plongeante.
