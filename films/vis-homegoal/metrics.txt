@@ -1,0 +1,21 @@
+pied posé, glissement (m/s) : moyenne 0.14 · médiane 0.00 · p95 0.10 · max 321.77 (n=8898)
+à-coup de trajectoire (m/s³) : moyenne 1184.11 · médiane 45.10 · p95 482.23 · max 1315519.00 (n=15730)
+rotation (°/s) : moyenne 42.60 · médiane 0.00 · p95 269.91 · max 501.18 (n=15730)
+
+glissement par action :
+  run : moyenne 0.23 · médiane 0.00 · p95 0.38 · max 321.77 (n=4470)
+  idle : moyenne 0.01 · médiane 0.00 · p95 0.01 · max 2.23 (n=4093)
+  dive : moyenne 0.45 · médiane 0.00 · p95 0.61 · max 110.92 (n=283)
+  kick : moyenne 0.33 · médiane 0.00 · p95 1.35 · max 8.95 (n=34)
+  control : moyenne 0.18 · médiane 0.00 · p95 1.24 · max 1.24 (n=8)
+  block : moyenne 0.07 · médiane 0.00 · p95 0.22 · max 0.22 (n=6)
+  tackle : moyenne 0.39 · médiane 0.10 · p95 1.45 · max 1.45 (n=4)
+
+rotation par action :
+  run : moyenne 53.99 · médiane 4.23 · p95 281.08 · max 501.18 (n=11473)
+  idle : moyenne 11.02 · médiane 0.00 · p95 78.98 · max 342.75 (n=3915)
+  dive : moyenne 12.56 · médiane 0.01 · p95 79.63 · max 128.13 (n=233)
+  kick : moyenne 32.85 · médiane 0.00 · p95 199.94 · max 501.18 (n=63)
+  control : moyenne 15.06 · médiane 12.18 · p95 41.89 · max 43.75 (n=24)
+  block : moyenne 117.21 · médiane 100.24 · p95 349.66 · max 349.66 (n=15)
+  tackle : moyenne 52.06 · médiane 42.62 · p95 107.65 · max 107.65 (n=7)
