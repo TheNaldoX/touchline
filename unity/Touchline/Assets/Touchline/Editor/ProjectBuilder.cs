@@ -39,8 +39,8 @@ namespace Touchline.Editor
             var panel=AssetDatabase.LoadAssetAtPath<PanelSettings>(Root+"/Resources/TouchlinePanel.asset");if(panel==null){panel=ScriptableObject.CreateInstance<PanelSettings>();AssetDatabase.CreateAsset(panel,Root+"/Resources/TouchlinePanel.asset");}
             panel.scaleMode=PanelScaleMode.ScaleWithScreenSize;panel.referenceResolution=new Vector2Int(1280,900);panel.screenMatchMode=PanelScreenMatchMode.MatchWidthOrHeight;panel.match=.5f;panel.themeStyleSheet=AssetDatabase.LoadAssetAtPath<ThemeStyleSheet>(Root+"/Resources/UI/RuntimeTheme.tss");
             panel.scaleMode=PanelScaleMode.ConstantPixelSize;panel.scale=1;EditorUtility.SetDirty(panel);
-            PlayerSettings.companyName="Touchline Personal";PlayerSettings.productName="Touchline Unity";PlayerSettings.bundleVersion="0.42.0-preview.1";PlayerSettings.SetApplicationIdentifier(UnityEditor.Build.NamedBuildTarget.Android,"fr.personal.touchline.unity");
-            PlayerSettings.Android.bundleVersionCode=35;PlayerSettings.Android.minSdkVersion=AndroidSdkVersions.AndroidApiLevel26;PlayerSettings.Android.targetSdkVersion=AndroidSdkVersions.AndroidApiLevelAuto;PlayerSettings.Android.targetArchitectures=AndroidArchitecture.ARM64;
+            PlayerSettings.companyName="Touchline Personal";PlayerSettings.productName="Touchline Unity";PlayerSettings.bundleVersion="0.57.0-preview.1";PlayerSettings.SetApplicationIdentifier(UnityEditor.Build.NamedBuildTarget.Android,"fr.personal.touchline.unity");
+            PlayerSettings.Android.bundleVersionCode=50;PlayerSettings.Android.minSdkVersion=AndroidSdkVersions.AndroidApiLevel26;PlayerSettings.Android.targetSdkVersion=AndroidSdkVersions.AndroidApiLevelAuto;PlayerSettings.Android.targetArchitectures=AndroidArchitecture.ARM64;
             PlayerSettings.SetScriptingBackend(UnityEditor.Build.NamedBuildTarget.Android,ScriptingImplementation.IL2CPP);PlayerSettings.defaultInterfaceOrientation=UIOrientation.AutoRotation;PlayerSettings.allowedAutorotateToPortrait=true;PlayerSettings.allowedAutorotateToPortraitUpsideDown=false;PlayerSettings.allowedAutorotateToLandscapeLeft=true;PlayerSettings.allowedAutorotateToLandscapeRight=true;
             PlayerSettings.colorSpace=ColorSpace.Linear;PlayerSettings.runInBackground=false;PlayerSettings.Android.forceInternetPermission=false;PlayerSettings.Android.forceSDCardPermission=false;
             var scene=EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);var app=new GameObject("Touchline Native Application");app.AddComponent<UIDocument>().panelSettings=panel;app.AddComponent<TouchlineApp>();EditorSceneManager.SaveScene(scene,Root+"/Scenes/Touchline.unity");EditorBuildSettings.scenes=new[]{new EditorBuildSettingsScene(Root+"/Scenes/Touchline.unity",true)};
@@ -48,7 +48,7 @@ namespace Touchline.Editor
         }
         public static void Android()
         {
-            Configure();UnityEditor.Android.AndroidExternalToolsSettings.jdkRootPath=Path.Combine(EditorApplication.applicationContentsPath,"PlaybackEngines/AndroidPlayer/OpenJDK");var output=Path.GetFullPath("../../artifacts/Touchline-Unity-0.42-preview.apk");if(File.Exists(output))throw new IOException("APK already exists; choose a new version.");Directory.CreateDirectory(Path.GetDirectoryName(output));
+            Configure();UnityEditor.Android.AndroidExternalToolsSettings.jdkRootPath=Path.Combine(EditorApplication.applicationContentsPath,"PlaybackEngines/AndroidPlayer/OpenJDK");var output=Path.GetFullPath("../../artifacts/Touchline-Unity-0.57-preview.apk");if(File.Exists(output))throw new IOException("APK already exists; choose a new version.");Directory.CreateDirectory(Path.GetDirectoryName(output));
             var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{Root+"/Scenes/Touchline.unity"},locationPathName=output,target=BuildTarget.Android,options=BuildOptions.None});
             if(report.summary.result!=BuildResult.Succeeded)throw new Exception("Ã‰chec du build Android : "+report.summary.result);Debug.Log("TOUCHLINE_ANDROID_OK "+output);
         }
@@ -56,7 +56,7 @@ namespace Touchline.Editor
         // la sortie va dans build/Android/ (dossier récupéré par le workflow).
         public static void AndroidCI()
         {
-            Configure();ApplyCiKeystore();var output=Path.GetFullPath("build/Android/Touchline-Unity-0.42-preview.apk");Directory.CreateDirectory(Path.GetDirectoryName(output));
+            Configure();ApplyCiKeystore();var output=Path.GetFullPath("build/Android/Touchline-Unity-0.57-preview.apk");Directory.CreateDirectory(Path.GetDirectoryName(output));
             var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{Root+"/Scenes/Touchline.unity"},locationPathName=output,target=BuildTarget.Android,options=BuildOptions.None});
             if(report.summary.result!=BuildResult.Succeeded){Debug.LogError("Echec du build Android : "+report.summary.result);EditorApplication.Exit(1);}
             Debug.Log("TOUCHLINE_ANDROID_OK "+output);
