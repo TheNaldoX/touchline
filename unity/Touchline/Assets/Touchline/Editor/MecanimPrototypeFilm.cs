@@ -158,7 +158,7 @@ namespace Touchline.Editor
                         if(t<.5f){a.action="run";a.velocity=Dir(0)*1.5f;}
                         else if(t<.8f-.001f){Begin(a,"control","control-foot",.3f,0,a.position,.11f);a.actionTime=.3f-(t-.5f);a.angle=150*Mathf.Deg2Rad;a.velocity=Dir(0)*.3f;}
                         else{a.action="run";a.actionKind=null;a.actionTime=0;a.angle=150*Mathf.Deg2Rad;a.velocity=Dir(150)*2f;}});
-                    File.WriteAllText(Path.Combine(output,"lab.txt"),lab.ToString());
+                    File.WriteAllText(Path.Combine(output,"lab.txt"),lab.ToString());info.AppendLine().Append(lab); // lab.txt n'est pas publié par le workflow ; info.txt l'est
                 }
                 File.WriteAllText(Path.Combine(output,"info.txt"),info.ToString());
                 File.WriteAllText(Path.Combine(output,"metrics.txt"),"prototype Mecanim\n");
