@@ -1,0 +1,120 @@
+Touchline.Editor.CiMatchFilm:Run () (at Assets/Touchline/Editor/CiMatchFilm.cs:82)
+
+[Assets/Touchline/Editor/CiMatchFilm.cs line 82]
+
+Assets/Touchline/Runtime/PlayerMecanimMotion.cs(69): PlayableGraph was not destroyed.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /home/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+Touchline.Editor.CiMatchFilm:Run () (at Assets/Touchline/Editor/CiMatchFilm.cs:82)
+
+[Assets/Touchline/Editor/CiMatchFilm.cs line 82]
+
+Assets/Touchline/Runtime/PlayerMecanimMotion.cs(69): PlayableGraph was not destroyed.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /home/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+Touchline.Editor.CiMatchFilm:Run () (at Assets/Touchline/Editor/CiMatchFilm.cs:82)
+
+[Assets/Touchline/Editor/CiMatchFilm.cs line 82]
+
+Assets/Touchline/Runtime/PlayerMecanimMotion.cs(69): PlayableGraph was not destroyed.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /home/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+Touchline.Editor.CiMatchFilm:Run () (at Assets/Touchline/Editor/CiMatchFilm.cs:82)
+
+[Assets/Touchline/Editor/CiMatchFilm.cs line 82]
+
+Assets/Touchline/Runtime/PlayerMecanimMotion.cs(69): PlayableGraph was not destroyed.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /home/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+Touchline.Editor.CiMatchFilm:Run () (at Assets/Touchline/Editor/CiMatchFilm.cs:82)
+
+[Assets/Touchline/Editor/CiMatchFilm.cs line 82]
+
+Assets/Touchline/Runtime/PlayerMecanimMotion.cs(69): PlayableGraph was not destroyed.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /home/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+Touchline.Editor.CiMatchFilm:Run () (at Assets/Touchline/Editor/CiMatchFilm.cs:82)
+
+[Assets/Touchline/Editor/CiMatchFilm.cs line 82]
+
+[Physics::Module] Cleanup current backend.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input System polling thread exited.
+Input System module state changed to: Shutdown.
+[Licensing::IpcConnector] LicenseClient-root-notifications channel disconnected successfully.
+[Licensing::IpcConnector] LicenseClient-root channel disconnected successfully.
+AcceleratorClientConnectionCallback - disconnected - :0
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...
+[40m[32minfo[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      ALC ILPP context 1 is unloading
+Cleanup mono
+debugger-agent: Unable to listen on 35
+[Package Manager] Server process was shutdown
+Some stopped graphs remaining at DirectorManager destruction. These graphs should have been destroyed before
+Checking for leaked weakptr:
+  Found no leaked weakptrs.
+##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1791441788739,"processId":1743,"allocatedMemory":16145413,"memoryLabels":[{"Default":24121},{"Permanent":15960},{"Thread":1085456},{"Manager":804394},{"VertexData":8},{"Geometry":408},{"Texture":160},{"Shader":129420},{"Material":24},{"GfxDevice":36472},{"Animation":3360},{"Audio":3032},{"Font":1782565},{"FreeType":63508},{"FontEngine":736},{"Physics":1970},{"Physics2D":16},{"Serialization":360},{"Input":26888},{"JobScheduler":33024},{"TextLib":280},{"Mono":32},{"MonoCode":96},{"ScriptingNativeRuntime":155096},{"BaseObject":1631144},{"Resource":1064},{"Renderer":3000},{"Transform":4717},{"File":15457},{"WebCam":80},{"Culling":32},{"Terrain":11298},{"Wind":24},{"String":1374014},{"DynamicArray":120114},{"HashMap":90483},{"Utility":2658752},{"Curl":2511},{"PoolAlloc":2048},{"AI":80},{"TypeTree":14981},{"ScriptManager":512},{"RuntimeInitializeOnLoadManager":64},{"SpriteAtlas":112},{"GI":7384},{"Director":167152},{"CloudService":468552},{"WebRequest":1389},{"VR":47754},{"SceneManager":536},{"Video":64},{"LazyScriptCache":32},{"Camera":17},{"Secure":12449},{"Image":16384},{"SerializationCache":1576},{"APIUpdating":10320},{"Subsystems":336},{"VirtualTexturing":57552},{"StaticSafetyDebugInfo":278528},{"Analytics":464},{"Hierarchy":1416},{"CoreStats":13112},{"Identifiers":6480},{"Gui":128},{"EditorUtility":353366},{"VersionControl":4},{"Undo":979},{"AssetDatabase":4556592},{"EditorGi":328},{"UnityConnect":29408},{"Upm":1744},{"AssetCompliance":64},{"DrivenProperties":72},{"LocalIPC":147},{"ProfilerEditor":9746},{"CoreBusinessMetrics":2377},{"Licensing":1128},{"AssetReference":32},{"IPCStream":32}]}
+[UnityConnectServicesConfig] Local config successfully read: "/usr/share/unity3d/config/services-config.json"
+[UnityConnectServicesConfig] "clientConnectTimeoutSec" was overridden with "5"
+[UnityConnectServicesConfig] "clientHandshakeTimeoutSec" was overridden with "10"
+[UnityConnectServicesConfig] Service configuration:
+    "servicesConfigBaseUrl": "",
+    "disableServicesWindow": false,
+    "disableUserLogin": false,
+    "entitlementCacheTimeoutInSeconds": 60,
+    "clientConnectTimeoutSec": 5,
+    "clientHandshakeTimeoutSec": 10,
+    "clientResolveEntitlementsTimeoutSec": 30,
+    "clientUpdateLicenseTimeoutSec": 30,
+    "licensingServiceBaseUrl": "",
+    "enableProxyAutoconfig": "false"
+
+[UnityConnectServicesConfig] Local config successfully read: "/usr/share/unity3d/config/services-config.json"
+[UnityConnectServicesConfig] "clientConnectTimeoutSec" was overridden with "5"
+[UnityConnectServicesConfig] "clientHandshakeTimeoutSec" was overridden with "10"
+[UnityConnectServicesConfig] Service configuration:
+    "servicesConfigBaseUrl": "",
+    "disableServicesWindow": false,
+    "disableUserLogin": false,
+    "entitlementCacheTimeoutInSeconds": 60,
+    "clientConnectTimeoutSec": 5,
+    "clientHandshakeTimeoutSec": 10,
+    "clientResolveEntitlementsTimeoutSec": 30,
+    "clientUpdateLicenseTimeoutSec": 30,
+    "licensingServiceBaseUrl": "",
+    "enableProxyAutoconfig": "false"
+
+Unity Editor version:    6000.3.24f1 (4e7b9b5b6244)
+Branch:                  6000.3/staging
+Build type:              Release
+Batch mode:              YES
+System name:             Linux
+Distro version:          #22-Ubuntu SMP Mon Jul 27 17:24:03 UTC 2026
+Kernel version:          6.17.0-1022-azure
+Architecture:            x86_64
+Available memory:        15988 MB
+Date:                    2026-10-08T06:43:09Z
+User audibert.victor13500@gmail.com logged in successfully
+[UnityConnect::TryLogin] Request Succeeded.
+[Licensing::Module] Trying to connect to existing licensing client channel...
+[Licensing::IpcConnector] Channel LicenseClient-root doesn't exist
+[Licensing::Module] Successfully launched the LicensingClient (PId: 5334)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root" at "2026-10-08T06:43:10.485789Z"
+[SignatureVerifier] Application signature verification not supported on this platform.
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.3+d7ffd15
+  Session Id:              f68905e99b5d458dbbce59d50e80cec3
+  Correlation Id:          025bf7df65f7753c64ad1c8204dbf299
+  External correlation Id: 3935225747574068122
+  Machine Id:              ihCIFypvanHcUO+WafhZrvv+QXQ=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-root" (connect: 0.38s, validation: 0.07s, handshake: 0.00s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root-notifications" at "2026-10-08T06:43:10.560873Z"
+[Licensing::Module] Connected to LicensingClient (PId: 5334, launch time: 0.00, total connection time: 0.45s)
+[Licensing::Client] Successfully updated the access token
+[Licensing::Module] Successfully updated the access token PwJ7pFRDt0...
+[Licensing::Client] Successfully processed license management request
+[Licensing::Module] Successfully returned the entitlement license
+[Licensing::Client] Successfully queried for the EntitlementGroupsDetails
+[Licensing::Client] Successfully returned ULF license with serial number : "F4-U776-56HB-EXF8-B6C4-XXXX"
