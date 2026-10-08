@@ -1,0 +1,93 @@
+Audit d'interface Touchline · 1 dp = 2.625 px physiques · seuils : cible tactile 48 dp, texte 12 sp
+
+Parcours ciblé : interface du match, deux résolutions natives. Les autres écrans ne sont pas revalidés par ce parcours.
+## plie-match-pause · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 11 · < 48 dp : 1 · textes 19 · < 12 sp : 3 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit bouton ×1 « ×1 » 38×48 dp
+   petit texte ×3 [unity-text-element.unity-label 11.0 sp] ex. « EN PAUSE · Engagement »
+
+## plie-consignes-rapides · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 25 · < 48 dp : 1 · textes 43 · < 12 sp : 3 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit bouton ×1 « ×1 » 38×48 dp
+   petit texte ×3 [unity-text-element.unity-label 11.0 sp] ex. « EN PAUSE · Engagement »
+
+Consigne en deux touches validée : pressing 0.8, pause True, vitesse 1, retour au match.
+Consigne en deux touches validée : pressing 0.5, pause False, vitesse 2, retour au match.
+## plie-consignes-fin · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 28 · < 48 dp : 1 · textes 48 · < 12 sp : 3 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit bouton ×1 « ×2 » 40×48 dp
+   petit texte ×3 [unity-text-element.unity-label 11.0 sp] ex. « EN PAUSE · Engagement »
+
+Passes directes après défilement : tactique liée, pause/vitesse conservées, retour au match.
+## plie-match-retour · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 11 · < 48 dp : 1 · textes 19 · < 12 sp : 3 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit bouton ×1 « ×2 » 40×48 dp
+   petit texte ×3 [unity-text-element.unity-label 11.0 sp] ex. « EN DIRECT · Engagement · ×2 »
+
+## deplie-match-pause · 2184×1968 px · échelle 2.54 · 1 unité UI = 0.97 dp · largeur logique 860 · hauteur 775
+   boutons visibles 11 · < 48 dp : 11 · textes 19 · < 12 sp : 3 · plus petit texte 10.6 sp · coupés au bord : 0
+   petit bouton ×1 « Vue : Temps forts » 136×46 dp
+   petit bouton ×1 « ×2 » 39×46 dp
+   petit bouton ×1 « Prudente » 243×46 dp
+   petit bouton ×1 « Équilibrée » 243×46 dp
+   petit bouton ×1 « Offensive » 243×46 dp
+   petit bouton ×1 « Reprendre » 141×46 dp
+   petit bouton ×1 « Consignes » 136×46 dp
+   petit bouton ×1 « Banc » 98×46 dp
+   petit bouton ×1 « Analyse » 118×46 dp
+   petit bouton ×1 « Options du match » 185×46 dp
+   petit bouton ×1 « Bureau » 112×46 dp
+   petit texte ×2 [unity-text-element.unity-label 10.6 sp] ex. « Gouiri »
+   petit texte ×1 [unity-text-element.unity-label 11.6 sp] ex. « EN PAUSE · Engagement »
+
+## deplie-consignes-rapides · 2184×1968 px · échelle 2.54 · 1 unité UI = 0.97 dp · largeur logique 860 · hauteur 775
+   boutons visibles 25 · < 48 dp : 11 · textes 42 · < 12 sp : 3 · plus petit texte 10.6 sp · coupés au bord : 0
+   petit bouton ×1 « Vue : Temps forts » 136×46 dp
+   petit bouton ×1 « ×2 » 39×46 dp
+   petit bouton ×1 « Prudente » 243×46 dp
+   petit bouton ×1 « Équilibrée » 243×46 dp
+   petit bouton ×1 « Offensive » 243×46 dp
+   petit bouton ×1 « Reprendre » 141×46 dp
+   petit bouton ×1 « Consignes » 136×46 dp
+   petit bouton ×1 « Banc » 98×46 dp
+   petit bouton ×1 « Analyse » 118×46 dp
+   petit bouton ×1 « Options du match » 185×46 dp
+   petit bouton ×1 « Bureau » 112×46 dp
+   petit texte ×2 [unity-text-element.unity-label 10.6 sp] ex. « Gouiri »
+   petit texte ×1 [unity-text-element.unity-label 11.6 sp] ex. « EN PAUSE · Engagement »
+
+Consigne en deux touches validée : pressing 0.8, pause True, vitesse 2, retour au match.
+Consigne en deux touches validée : pressing 0.5, pause False, vitesse 2, retour au match.
+## deplie-consignes-fin · 2184×1968 px · échelle 2.54 · 1 unité UI = 0.97 dp · largeur logique 860 · hauteur 775
+   boutons visibles 28 · < 48 dp : 11 · textes 46 · < 12 sp : 2 · plus petit texte 10.6 sp · coupés au bord : 0
+   petit bouton ×1 « Vue : Temps forts » 136×46 dp
+   petit bouton ×1 « ×2 » 39×46 dp
+   petit bouton ×1 « Prudente » 243×46 dp
+   petit bouton ×1 « Équilibrée » 243×46 dp
+   petit bouton ×1 « Offensive » 243×46 dp
+   petit bouton ×1 « Reprendre » 141×46 dp
+   petit bouton ×1 « Consignes » 136×46 dp
+   petit bouton ×1 « Banc » 98×46 dp
+   petit bouton ×1 « Analyse » 118×46 dp
+   petit bouton ×1 « Options du match » 185×46 dp
+   petit bouton ×1 « Bureau » 112×46 dp
+   petit texte ×1 [unity-text-element.unity-label 10.6 sp] ex. « Kondogbia »
+   petit texte ×1 [unity-text-element.unity-label 11.6 sp] ex. « EN PAUSE · Engagement »
+
+Passes directes après défilement : tactique liée, pause/vitesse conservées, retour au match.
+## deplie-match-retour · 2184×1968 px · échelle 2.54 · 1 unité UI = 0.97 dp · largeur logique 860 · hauteur 775
+   boutons visibles 11 · < 48 dp : 11 · textes 19 · < 12 sp : 3 · plus petit texte 10.6 sp · coupés au bord : 0
+   petit bouton ×1 « Vue : Temps forts » 136×46 dp
+   petit bouton ×1 « ×2 » 39×46 dp
+   petit bouton ×1 « Prudente » 243×46 dp
+   petit bouton ×1 « Équilibrée » 243×46 dp
+   petit bouton ×1 « Offensive » 243×46 dp
+   petit bouton ×1 « Pause » 113×46 dp
+   petit bouton ×1 « Consignes » 141×46 dp
+   petit bouton ×1 « Banc » 104×46 dp
+   petit bouton ×1 « Analyse » 123×46 dp
+   petit bouton ×1 « Options du match » 191×46 dp
+   petit bouton ×1 « Bureau » 117×46 dp
+   petit texte ×2 [unity-text-element.unity-label 10.6 sp] ex. « Kondogbia »
+   petit texte ×1 [unity-text-element.unity-label 11.6 sp] ex. « EN DIRECT · Engagement · ×2 »
+
