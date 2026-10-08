@@ -1,0 +1,52 @@
+213:			LogAssemblyErrors (0ms)
+256:[ScriptCompilation] Requested script compilation because: Assembly Definition File(s) changed
+257:[ScriptCompilation] Requested script compilation because: Assetdatabase observed changes in script compilation related files
+279:Starting: /opt/unity/Editor/Data/netcorerun/netcorerun "/opt/unity/Editor/Data/Tools/BuildPipeline/ScriptCompilationBuildProgram.exe" "Library/Bee/2400b0aE.dag.json" "Library/Bee/2400b0aE-inputdata.json" "Library/Bee/buildprogram0.traceevents"
+350:[ 65/194    0s] MovedFromExtractor Library/Bee/artifacts/mvdfrm/UnityEditor.ShaderCompilationModule.dll_DF5B79229DBB99F4.mvfrm
+556:Start importing Packages/com.unity.modules.ui/package.ModuleCompilationTrigger using Guid(51fa60bb2bd1e5bc74e8cc95a7bfd5b7) (DefaultImporter) -> (artifact id: '237e32f9541121b786ca4b06eace0dfe') in 0.000567981 seconds
+557:Start importing Packages/com.unity.modules.hierarchycore/package.ModuleCompilationTrigger using Guid(d104359075a97392b803d3d5aebc77f7) (DefaultImporter) -> (artifact id: '5f087c93c58d9b1c35f89c539ed3a98d') in 0.000571537 seconds
+558:Start importing Packages/com.unity.modules.ai/package.ModuleCompilationTrigger using Guid(e2d09a26ce46dc617b54e49a534ace20) (DefaultImporter) -> (artifact id: 'a71f1fd08e4e9bf1ecd2d64209645034') in 0.000515423 seconds
+559:Start importing Packages/com.unity.modules.imageconversion/package.ModuleCompilationTrigger using Guid(830a36a23cf3ab1e61fa47940a6dc35e) (DefaultImporter) -> (artifact id: 'ee0f0c801f95c19382d8b454dc7586e1') in 0.000543355 seconds
+560:Start importing Packages/com.unity.modules.jsonserialize/package.ModuleCompilationTrigger using Guid(e6a135e3ea9cb46795d1b0e05ac3e1e5) (DefaultImporter) -> (artifact id: '8d26f1c211bce77f7cf17eccccd57b0d') in 0.000563012 seconds
+561:Start importing Packages/com.unity.modules.accessibility/package.ModuleCompilationTrigger using Guid(4745d06d5a7ca576dcf9e5e67b417652) (DefaultImporter) -> (artifact id: 'ae9e01646ac31a09b3de296582cd6de0') in 0.000547252 seconds
+562:Start importing Packages/com.unity.modules.adaptiveperformance/package.ModuleCompilationTrigger using Guid(1af35a910338381f753e8a985eb5daab) (DefaultImporter) -> (artifact id: '867fce9a42b816ffb5ac55f16cf2007e') in 0.000553744 seconds
+563:Start importing Packages/com.unity.modules.uielements/package.ModuleCompilationTrigger using Guid(8a752aaaadd2410dd9a84e01c1bace9f) (DefaultImporter) -> (artifact id: 'ae37e7f0f1483578fc0d8d28fd17e0e2') in 0.000542463 seconds
+564:Start importing Packages/com.unity.modules.vectorgraphics/package.ModuleCompilationTrigger using Guid(3cc1ebf2abb7fef6871ad48f499b6e21) (DefaultImporter) -> (artifact id: '51ba5d987381c742b47376b47674c513') in 0.000554997 seconds
+565:Start importing Packages/com.unity.modules.physics/package.ModuleCompilationTrigger using Guid(5c1ee4056d0ac7ad3c5a16597fcaa38a) (DefaultImporter) -> (artifact id: '288b7a03d6481d4e92cee0ae908758ad') in 0.000525451 seconds
+566:Start importing Packages/com.unity.modules.subsystems/package.ModuleCompilationTrigger using Guid(8d4bc6bfa28760b29f13174d6b6ea710) (DefaultImporter) -> (artifact id: '86683c86d6892e456463f75256ee724d') in 0.000579102 seconds
+567:Start importing Packages/com.unity.modules.imgui/package.ModuleCompilationTrigger using Guid(be13c398521e3c1ad21fb9da30ab2ab6) (DefaultImporter) -> (artifact id: 'ea0574aa05344c7e80357502346d73fc') in 0.000534198 seconds
+596:			LogAssemblyErrors (0ms)
+680:Start importing Packages/com.unity.ai.navigation/ValidationExceptions.json using Guid(203bedb65db239c4aa5d9cf073cd3b73) (TextScriptImporter) -> (artifact id: 'b0adf71f88467c8339d665a36ccdf3e8') in 0.001519769 seconds
+869:-executeMethod
+1041:			LogAssemblyErrors (0ms)
+1087:[ScriptCompilation] Requested script compilation because: InitialRefresh: Force Refresh Recompile flag enabled
+1090:[ScriptCompilation] Requested script compilation because: Assembly Definition File(s) changed
+1091:[ScriptCompilation] Requested script compilation because: Assetdatabase observed changes in script compilation related files
+1113:Starting: /opt/unity/Editor/Data/netcorerun/netcorerun "/opt/unity/Editor/Data/Tools/BuildPipeline/ScriptCompilationBuildProgram.exe" "Library/Bee/1300b0aE.dag.json" "Library/Bee/1300b0aE-inputdata.json" "Library/Bee/buildprogram0.traceevents"
+1853:[100/550    0s] MovedFromExtractor Library/Bee/artifacts/mvdfrm/UnityEditor.ShaderCompilationModule.dll_DF5B79229DBB99F4.mvfrm
+1952:[197/550    0s] MovedFromExtractor Library/Bee/artifacts/mvdfrm/Unity.CompilationPipeline.Common.dll_5C4868E2B701CBCB.mvfrm
+3088:Start importing Packages/com.unity.modules.ui/package.ModuleCompilationTrigger using Guid(51fa60bb2bd1e5bc74e8cc95a7bfd5b7) (DefaultImporter) -> (artifact id: '237e32f9541121b786ca4b06eace0dfe') in 0.000724243 seconds
+3089:Start importing Packages/com.unity.modules.hierarchycore/package.ModuleCompilationTrigger using Guid(d104359075a97392b803d3d5aebc77f7) (DefaultImporter) -> (artifact id: '5f087c93c58d9b1c35f89c539ed3a98d') in 0.001178731 seconds
+3090:Start importing Packages/com.unity.modules.unitywebrequest/package.ModuleCompilationTrigger using Guid(d2ec2d1228c8e67cdd913cb5609176a2) (DefaultImporter) -> (artifact id: '8af4f3e306c0241d03204a437a8fc5e0') in 0.001355121 seconds
+3091:Start importing Packages/com.unity.modules.terrain/package.ModuleCompilationTrigger using Guid(23032f4383e95e772bce465c5896d0fd) (DefaultImporter) -> (artifact id: '491a7f75d3e9187fba07a3d515b1da29') in 0.001234495 seconds
+3092:Start importing Packages/com.unity.modules.imageconversion/package.ModuleCompilationTrigger using Guid(830a36a23cf3ab1e61fa47940a6dc35e) (DefaultImporter) -> (artifact id: 'ee0f0c801f95c19382d8b454dc7586e1') in 0.001229697 seconds
+3093:Start importing Packages/com.unity.modules.unitywebrequesttexture/package.ModuleCompilationTrigger using Guid(a31a332ce3485f00f7df8d987302a29c) (DefaultImporter) -> (artifact id: '5b56561b2c8cae5c48817dca1565364f') in 0.001118499 seconds
+3094:Start importing Packages/com.unity.modules.audio/package.ModuleCompilationTrigger using Guid(042dc296246916648e55a43d0eeb2036) (DefaultImporter) -> (artifact id: '93cfeb7be8bf6df4dc4fc167223dc2d5') in 0.001218256 seconds
+3095:Start importing Packages/com.unity.modules.jsonserialize/package.ModuleCompilationTrigger using Guid(e6a135e3ea9cb46795d1b0e05ac3e1e5) (DefaultImporter) -> (artifact id: '8d26f1c211bce77f7cf17eccccd57b0d') in 0.001394655 seconds
+3096:Start importing Packages/com.unity.modules.uielements/package.ModuleCompilationTrigger using Guid(8a752aaaadd2410dd9a84e01c1bace9f) (DefaultImporter) -> (artifact id: 'ae37e7f0f1483578fc0d8d28fd17e0e2') in 0.001077612 seconds
+3097:Start importing Packages/com.unity.modules.animation/package.ModuleCompilationTrigger using Guid(db8e609a39b9b231fccc54e5fa4cbd1b) (DefaultImporter) -> (artifact id: '76194af19b6b83e46d258b902c79f26f') in 0.001204499 seconds
+3098:Start importing Packages/com.unity.modules.physics/package.ModuleCompilationTrigger using Guid(5c1ee4056d0ac7ad3c5a16597fcaa38a) (DefaultImporter) -> (artifact id: '288b7a03d6481d4e92cee0ae908758ad') in 0.001147413 seconds
+3099:Start importing Packages/com.unity.modules.imgui/package.ModuleCompilationTrigger using Guid(be13c398521e3c1ad21fb9da30ab2ab6) (DefaultImporter) -> (artifact id: 'ea0574aa05344c7e80357502346d73fc') in 0.001323341 seconds
+3128:			LogAssemblyErrors (0ms)
+4881:Start importing Packages/com.unity.render-pipelines.universal/Shaders/Utils/FallbackError.shader using Guid(e6e9a19c3678ded42a3bc431ebef7dbd) (ShaderImporter) -> (artifact id: '3278156903eb0a4df0633c91e23ebe4b') in 0.006161335 seconds
+4947:Start importing Packages/com.unity.shadergraph/Editor/Resources/Shaders/FallbackError.shader using Guid(da07703fcc09f8d4799221050659bd55) (ShaderImporter) -> (artifact id: '25a231f4748abcbf3dae4f4ea27facf9') in 0.003434347 seconds
+4992:Start importing Packages/com.unity.render-pipelines.universal/Shaders/Utils/MaterialError.shader using Guid(5fd9a8feb75a4b5894c241777f519d4e) (ShaderImporter) -> (artifact id: '1e3737d074b0b1e0a366ad29988211dd') in 0.005387683 seconds
+5330:Start importing Packages/com.unity.test-framework.performance/ValidationExceptions.json using Guid(a23a55c69f9544b56a85639e7258ea1d) (TextScriptImporter) -> (artifact id: '0de6bb025ea649b84fc90771cdd733ed') in 0.001329263 seconds
+5336:Start importing Packages/com.unity.burst/ValidationExceptions.json using Guid(f383c015504b380698ba4a8681b1223e) (TextScriptImporter) -> (artifact id: 'd7164317e9bba999a6db22150e9b8517') in 0.003135516 seconds
+5388:Start importing Packages/com.unity.render-pipelines.universal/ValidationExceptions.json using Guid(3afe581e949e3cc489c978bd8e000c4b) (TextScriptImporter) -> (artifact id: '8676c928f375d84056c4d7aea32a74f8') in 0.001360772 seconds
+5393:Start importing Packages/com.unity.searcher/ValidationExceptions.json using Guid(8a0fd4a8e3885488e9afc7e5e7ead9c6) (TextScriptImporter) -> (artifact id: '217c3114d5f41579590338b584649c06') in 0.001451952 seconds
+5429:Start importing Packages/com.unity.mathematics/ValidationExceptions.json using Guid(5ed727127196a4ecc90e24e2cd7af338) (TextScriptImporter) -> (artifact id: '4cc76c19a2de3daa0998756408ae203b') in 0.001625346 seconds
+5437:Start importing Packages/com.unity.collections/pvpExceptions.json using Guid(fee59c2b2318a7e4fa7a2c2af28d9553) (TextScriptImporter) -> (artifact id: 'b3fc5991a944805a1264cd70468482ad') in 0.0015688 seconds
+5445:Start importing Packages/com.unity.collections/ValidationExceptions.json using Guid(6fe576033d6a2424c888d599967457a2) (TextScriptImporter) -> (artifact id: 'b8a1a3c61391e93450a34b7ee0eb7ab9') in 0.002017568 seconds
+5641:UnityEngine.Rendering.RenderPipelineGlobalSettingsUtils:TryEnsure<UnityEngine.Rendering.Universal.UniversalRenderPipelineGlobalSettings, UnityEngine.Rendering.Universal.UniversalRenderPipeline> (UnityEngine.Rendering.Universal.UniversalRenderPipelineGlobalSettings&,string,bool,System.Exception&) (at ./Library/PackageCache/com.unity.render-pipelines.core@21d6c4fca829/Runtime/RenderPipeline/RenderPipelineGlobalSettingsUtils.cs:126)
+5720:TOUCHLINE_FILM_OK /github/workspace/unity/Touchline/build/film/atm-homegoal-night
