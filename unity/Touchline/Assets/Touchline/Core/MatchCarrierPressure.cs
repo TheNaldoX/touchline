@@ -47,11 +47,10 @@ namespace Touchline.Core
         // atteint le ballon, plus un retard par point de sang-froid manquant.
         public const float PressedDecisionDelay=.25f,PressedDecisionPerPoint=.004f;
         // IA : points de score retirés à une conduite par adversaire au-delà
-        // du premier dans le couloir de conduite (rayon en m), à une conduite
-        // par unité de risque de perte immédiat (pertes/s), et à une passe
+        // du premier dans le couloir de conduite (rayon en m), et à une passe
         // vers un receveur dont l'adversaire le plus proche est sous MarkedReceiverDistance (m),
         // hors de la zone de finition (au-delà de MarkedReceiverZone m de la médiane).
-        public const float CarryCrowdRadius=2.2f,CarryCrowdPenalty=0f,PressedCarryPenalty=0f;
+        public const float CarryCrowdRadius=2.2f,CarryCrowdPenalty=4f;
         public const float MarkedReceiverZone=36f,MarkedReceiverDistance=2f,MarkedReceiverPenalty=8f;
         // Pressing haut : distance (m) à la ligne médiane, dans le camp adverse,
         // au-delà de laquelle le porteur est dans son tiers défensif, et
@@ -67,7 +66,16 @@ namespace Touchline.Core
             }
             return count;
         }
-        float CarryCrowdCost(Actor carrier,Point end)=>Math.Max(0,OpponentsOnCarry(carrier,end)-1)*CarryCrowdPenalty;
+        // Dans le dernier quart (au-delà de CarryCrowdZone m de la médiane),
+        // provoquer la défense reste un choix d'attaquant : pénalité réduite,
+        // et nulle à hauteur de la surface (au-delà de CarryCrowdBoxZone m).
+        public const float CarryCrowdZone=25f,CarryCrowdBoxZone=36f,CarryCrowdFinalPenalty=1.5f;
+        float CarryCrowdCost(Actor carrier,Point end)
+        {
+            float x=carrier.position.x*Direction(carrier.side);
+            if(x>CarryCrowdBoxZone)return 0;
+            return Math.Max(0,OpponentsOnCarry(carrier,end)-1)*(x>CarryCrowdZone?CarryCrowdFinalPenalty:CarryCrowdPenalty);
+        }
         float MarkedReceiverCost(float space)=>space<MarkedReceiverDistance?MarkedReceiverPenalty*(1-space/MarkedReceiverDistance):0;
         float CarrierControl(Actor carrier)=>Skill(carrier,"dribbling")*.5f+Skill(carrier,"ballControl")*.3f+Skill(carrier,"strength")*.2f;
 

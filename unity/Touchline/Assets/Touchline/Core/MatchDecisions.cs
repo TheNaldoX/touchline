@@ -117,8 +117,8 @@ Actor best=null;float bestScore=-100;string kind="pass";
  float carryScore=(p.position.x*dir>12?18:7)+Math.Min(Space(carry,1-p.side),8)*.5f+progress*.35f+(Skill(p,"dribbling")-65)*.055f-(pressure<3?5:0)-Math.Min(m.carryTime,6)*1.2f;  
   
  carryScore+=CarryPreference(p);  
- // Conduire sous la pression ou dans plusieurs adversaires coûte le ballon.
- carryScore-=CarrierPressureHazard(p,out _)*PressedCarryPenalty+CarryCrowdCost(p,carry);
+ // Conduire dans plusieurs adversaires coûte le ballon.
+ carryScore-=CarryCrowdCost(p,carry);
  // Engagement : un joueur qui vient d'orienter son corps pour donner le
  // ballon joue la passe si elle reste disponible, au lieu de repartir en
  // conduite (arrêt, pivot, puis départ dans une autre direction).
