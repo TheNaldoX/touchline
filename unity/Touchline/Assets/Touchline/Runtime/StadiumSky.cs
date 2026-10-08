@@ -72,7 +72,7 @@ namespace Touchline
         // d'encre, halo des lumières de la ville sur l'horizon.
         static readonly Color DayZenith=new Color(.27f,.44f,.70f),DayHorizon=new Color(.64f,.73f,.83f);
         static readonly Color DayFarHills=new Color(.52f,.61f,.70f),DayNearHills=new Color(.36f,.45f,.47f),DayCity=new Color(.42f,.48f,.54f);
-        static readonly Color NightZenith=new Color(.008f,.012f,.03f),NightHorizon=new Color(.11f,.095f,.10f);
+        static readonly Color NightZenith=new Color(.008f,.012f,.03f),NightHorizon=new Color(.055f,.07f,.105f); // bleu nuit : un horizon chaud virait au bordeaux avec l'étalonnage du soir
         static readonly Color NightFarHills=new Color(.045f,.045f,.06f),NightNearHills=new Color(.02f,.024f,.032f),NightCity=new Color(.026f,.028f,.04f);
         static readonly Color Window=new Color(.62f,.48f,.28f),Cloud=new Color(.95f,.96f,.98f);
         const float GradientElevation=35f;      // ° : au-delà, couleur du zénith
