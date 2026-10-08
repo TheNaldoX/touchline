@@ -42,6 +42,8 @@ namespace Touchline.Editor
                 var diagnostics=new System.Text.StringBuilder();
                 diagnostics.AppendLine("pipeline="+(UnityEngine.Rendering.GraphicsSettings.defaultRenderPipeline!=null?UnityEngine.Rendering.GraphicsSettings.defaultRenderPipeline.name:"none")+" quality="+(QualitySettings.renderPipeline!=null?QualitySettings.renderPipeline.name:"none"));
                 var broadcastDir=Path.Combine(output,"broadcast");var followDir=Path.Combine(output,"follow");Directory.CreateDirectory(broadcastDir);Directory.CreateDirectory(followDir);
+                // -touchlineLighting=night : éclairage de soirée (projecteurs) ; sinon après-midi.
+                PlayerPrefs.SetInt(StadiumLighting.PreferenceKey,Arg("-touchlineLighting","day")=="night"?StadiumLighting.Night:StadiumLighting.Day);
                 var root=new GameObject("CI match film");var arena=root.AddComponent<MatchArena>();arena.Initialize(db,sim);PlayerView.UseMecanim=Arg("-touchlineMecanim","1")=="1";arena.Speed=1;arena.Paused=false;arena.Broadcast.SetMode(MatchViewingMode.Full);
                 var target=new RenderTexture(Width,Height,24){antiAliasing=4};target.Create(); // même MSAA que TouchlineURP (4×)
                 arena.MatchCamera.targetTexture=target;arena.MatchCamera.aspect=(float)Width/Height;

@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Visuel : ombre du toit sur la pelouse l'après-midi, panneaux publicitaires aux couleurs des deux clubs (motifs générés), éclairage de soirée avec projecteurs selon l'horaire du match (préférence match-lighting).
 - Animation : pas chassés à gauche et à droite et course arrière choisis selon la direction de course par rapport au regard du joueur.
 - IA de match : un joueur qui s'est orienté pour passer ou frapper va au bout de son geste (préparations avortées en conduite 49 → 18 par match) : tirs 23,2 → 26,0, buts 3,18 → 2,77.
 - Visuel : gazon texturé (grain, tonte plus marquée), ciel, second anneau et toit de la tribune d'en face, caméra télé moins plongeante.
