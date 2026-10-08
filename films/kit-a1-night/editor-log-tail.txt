@@ -1,0 +1,120 @@
+Cannot create web request without initializing the system
+Cannot create web request without initializing the system
+Caught fatal signal - signo:11 code:128 errno:0 addr:(nil)
+Obtained 50 stack frames.
+#0  0x005607856453fd in burst_signal_handler(int, siginfo_t*, void*)
+#1  0x007f00a82d4520 in (Unknown)
+#2  0x00560787dbea77 in block_locate_free
+#3  0x00560787dbeced in tlsf_memalign
+#4  0x005607872e465a in DynamicHeapAllocator::Allocate(unsigned long, int)
+#5  0x005607872e9d6c in MemoryManager::Allocate(unsigned long, unsigned long, MemLabelId, AllocateOptions, char const*, int)
+#6  0x005607872e9125 in malloc_internal(unsigned long, unsigned long, MemLabelId const&, AllocateOptions, char const*, int)
+#7  0x00560784f188bb in core::StringStorageDefault<char>::grow(unsigned long)
+#8  0x0056078527d770 in core::basic_string<char, core::StringStorageDefault<char> >& core::vector<core::basic_string<char, core::StringStorageDefault<char> >, core::allocator<core::basic_string<char, core::StringStorageDefault<char> >, 0ul> >::emplace_back<core::basic_string_ref<char>&>(core::basic_string_ref<char>&)
+#9  0x0056078661f1be in UnityEngine::Analytics::SessionEventQueue::ParseEventData(core::basic_string<char, core::StringStorageDefault<char> > const&)
+#10 0x0056078661f5e1 in UnityEngine::Analytics::SessionEventQueue::ExtractEventData(char const*, unsigned long, core::basic_string<char, core::StringStorageDefault<char> >&)
+#11 0x0056078661e380 in UnityEngine::Analytics::SessionEventQueue::RestoreFromFile(FileAccessor&, void*, unsigned long)
+#12 0x0056078661e226 in UnityEngine::Analytics::SessionContainer::RestoreEventQueue(core::basic_string<char, core::StringStorageDefault<char> > const&, core::basic_string<char, core::StringStorageDefault<char> > const&, void*, unsigned long)
+#13 0x0056078661ecef in UnityEngine::Analytics::SessionContainer::Restore(core::basic_string<char, core::StringStorageDefault<char> > const&, void*, unsigned long)
+#14 0x00560786615da2 in UnityEngine::Analytics::DataDispatcher::FindSessionContainerToDispatch()
+#15 0x00560786615fa3 in UnityEngine::Analytics::DataDispatcher::PrepareDataBlockToDispatch(unsigned int, unsigned int, core::StringBuilder&, core::StringBuilder&, core::basic_string<char, core::StringStorageDefault<char> >*)
+#16 0x0056078661397f in UnityEngine::Analytics::DataDispatcher::SetupDataBlockToDispatch(unsigned int)
+#17 0x00560786613706 in UnityEngine::Analytics::DataDispatcher::HandleDispatcherProcessingStep()
+#18 0x00560786617488 in UnityEngine::Analytics::DataDispatcher::HandlePostRequestDone(bool)
+#19 0x00560786256a45 in UnityWebRequestProto<UnityWebRequestTransport, AtomicRefCounter, RedirectHelper, ResponseHelper, DownloadHandler, UploadHandler, CertificateHandler, HeaderHelper, AsyncOperation>::Finalize()
+#20 0x0056078624d790 in UnityWebRequestProto<UnityWebRequestTransport, AtomicRefCounter, RedirectHelper, ResponseHelper, DownloadHandler, UploadHandler, CertificateHandler, HeaderHelper, AsyncOperation>::Job_ExecuteUnityWebRequest(UnityWebRequestProto<UnityWebRequestTransport, AtomicRefCounter, RedirectHelper, ResponseHelper, DownloadHandler, UploadHandler, CertificateHandler, HeaderHelper, AsyncOperation>*)
+#21 0x0056078564085a in ujob_execute_job(ujob_control_t*, ujob_lane_t*, ujob_job_t*, ujob_handle_t, unsigned int)
+#22 0x005607856415d2 in lane_guts(ujob_control_t*, ujob_lane_t*, int, int, ujob_dependency_chain const*)
+#23 0x0056078564221d in ujob_wait_all(ujob_control_t*, int)
+#24 0x00560785642d33 in ujob_shutdown(ujob_control_t*, int, int)
+#25 0x0056078563b412 in JobSystem::ShutdownJobThreads()
+#26 0x005607869b5e31 in Application::CoreShutdown()
+#27 0x005607869bec12 in Application::Terminate(bool)
+#28 0x005607869b21df in Application::Exit(int)
+#29 0x0000004267de9c in (wrapper managed-to-native) UnityEditor.EditorApplication:Exit (int)
+#30 0x000000424cd317 in Touchline.Editor.CiMatchFilm:Run ()
+#31 0x0000004181687e in (wrapper runtime-invoke) object:runtime_invoke_void (object,intptr,intptr,intptr)
+#32 0x007effa08463b6 in (Unknown)
+#33 0x007effa09e3d91 in (Unknown)
+#34 0x007effa09e3cf5 in mono_runtime_invoke
+#35 0x00560785ad5ec3 in scripting_method_invoke(ScriptingMethodPtr, ScriptingObjectPtr, ScriptingArguments&, ScriptingExceptionPtr*, bool)
+#36 0x00560785aaed9c in ScriptingInvocation::Invoke(ScriptingExceptionPtr*, bool)
+#37 0x005607869b2b76 in Application::ParseARGVCommands()
+#38 0x005607869b1e0e in Application::FinishLoadingProject()
+#39 0x005607870cd08d in InitializeUnity(void*)
+#40 0x007f00a89772c8 in (Unknown)
+#41 0x007f00a8976c44 in g_main_context_dispatch
+#42 0x007f00a89cc488 in (Unknown)
+#43 0x007f00a89762b3 in g_main_loop_run
+#44 0x007f00a8edfd2d in gtk_main
+#45 0x005607870cc98c in main
+#46 0x007f00a82bbd90 in (Unknown)
+#47 0x007f00a82bbe40 in __libc_start_main
+#48 0x00560784e95021 in _start
+Segmentation fault (core dumped)
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...
+[40m[32minfo[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      ALC ILPP context 1 is unloading
+[UnityConnectServicesConfig] Local config successfully read: "/usr/share/unity3d/config/services-config.json"
+[UnityConnectServicesConfig] "clientConnectTimeoutSec" was overridden with "5"
+[UnityConnectServicesConfig] "clientHandshakeTimeoutSec" was overridden with "10"
+[UnityConnectServicesConfig] Service configuration:
+    "servicesConfigBaseUrl": "",
+    "disableServicesWindow": false,
+    "disableUserLogin": false,
+    "entitlementCacheTimeoutInSeconds": 60,
+    "clientConnectTimeoutSec": 5,
+    "clientHandshakeTimeoutSec": 10,
+    "clientResolveEntitlementsTimeoutSec": 30,
+    "clientUpdateLicenseTimeoutSec": 30,
+    "licensingServiceBaseUrl": "",
+    "enableProxyAutoconfig": "false"
+
+[UnityConnectServicesConfig] Local config successfully read: "/usr/share/unity3d/config/services-config.json"
+[UnityConnectServicesConfig] "clientConnectTimeoutSec" was overridden with "5"
+[UnityConnectServicesConfig] "clientHandshakeTimeoutSec" was overridden with "10"
+[UnityConnectServicesConfig] Service configuration:
+    "servicesConfigBaseUrl": "",
+    "disableServicesWindow": false,
+    "disableUserLogin": false,
+    "entitlementCacheTimeoutInSeconds": 60,
+    "clientConnectTimeoutSec": 5,
+    "clientHandshakeTimeoutSec": 10,
+    "clientResolveEntitlementsTimeoutSec": 30,
+    "clientUpdateLicenseTimeoutSec": 30,
+    "licensingServiceBaseUrl": "",
+    "enableProxyAutoconfig": "false"
+
+Unity Editor version:    6000.3.24f1 (4e7b9b5b6244)
+Branch:                  6000.3/staging
+Build type:              Release
+Batch mode:              YES
+System name:             Linux
+Distro version:          #22-Ubuntu SMP Mon Jul 27 17:24:03 UTC 2026
+Kernel version:          6.17.0-1022-azure
+Architecture:            x86_64
+Available memory:        15989 MB
+Date:                    2026-10-08T13:39:48Z
+User audibert.victor13500@gmail.com logged in successfully
+[UnityConnect::TryLogin] Request Succeeded.
+[Licensing::Module] Trying to connect to existing licensing client channel...
+[Licensing::IpcConnector] Channel LicenseClient-root doesn't exist
+[Licensing::Module] Successfully launched the LicensingClient (PId: 5346)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root" at "2026-10-08T13:39:49.449728Z"
+[SignatureVerifier] Application signature verification not supported on this platform.
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.3+d7ffd15
+  Session Id:              e2104564ad2b4a409a0ce439a0d74fd9
+  Correlation Id:          0ed86b9e8fc8fb7a305f0fab1fd4e181
+  External correlation Id: 3860244934339632663
+  Machine Id:              O64L2JL1BsOtuSo7T6PEJQcoLe4=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-root" (connect: 0.38s, validation: 0.07s, handshake: 0.00s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root-notifications" at "2026-10-08T13:39:49.520264Z"
+[Licensing::Module] Connected to LicensingClient (PId: 5346, launch time: 0.00, total connection time: 0.45s)
+[Licensing::Client] Successfully updated the access token
+[Licensing::Module] Successfully updated the access token 3VCO2GlPVC...
+[Licensing::Client] Successfully processed license management request
+[Licensing::Module] Successfully returned the entitlement license
+[Licensing::Client] Successfully queried for the EntitlementGroupsDetails
+[Licensing::Client] Successfully returned ULF license with serial number : "F4-U776-56HB-EXF8-B6C4-XXXX"
