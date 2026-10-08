@@ -59,13 +59,13 @@ namespace Touchline
         public static float RoofShadowEndX()=>SunShadowOnGround(new Vector3(StadiumGeometry.RoofWidth*.5f,RoofTop,-StadiumGeometry.RoofFront)).x;
 
         // Facteur (couleur à multiplier, espace sRGB) qui donne à une surface horizontale
-        // la luminosité qu'elle aurait sans le soleil direct (lumière ambiante seule) :
-        // l'ombre simulée de la pelouse a donc la même teinte que l'ombre réelle du toit
-        // sur les joueurs. Calcul en linéaire (projet en espace linéaire).
+        // la luminosité qu'elle aurait sans le soleil direct, avec la part du ciel que
+        // la tribune et le toit lui cachent encore. Calcul en linéaire (projet linéaire).
+        const float ShadeSkyView=.6f; // part du ciel visible depuis la pelouse à l'ombre (0–1)
         public static Color ShadeTint()
         {
             float sun=SunIntensity*Mathf.Sin(SunElevation*Mathf.Deg2Rad);
-            float Channel(float ambient,float light){float a=Mathf.GammaToLinearSpace(ambient);return Mathf.LinearToGammaSpace(a/(a+Mathf.GammaToLinearSpace(light)*sun));}
+            float Channel(float ambient,float light){float a=Mathf.GammaToLinearSpace(ambient)*ShadeSkyView;return Mathf.LinearToGammaSpace(a/(a+Mathf.GammaToLinearSpace(light)*sun));}
             return new Color(Channel(DayAmbient.r,SunColor.r),Channel(DayAmbient.g,SunColor.g),Channel(DayAmbient.b,SunColor.b),1);
         }
 
@@ -84,7 +84,10 @@ namespace Touchline
         // donc aucune variante de shader supplémentaire).
         public static Color LampColor(bool night)=>night?new Color(7f,7f,6.4f):new Color(.62f,.64f,.66f);
         // Panneaux à LED : couleur au-delà de 1 = lumineux même à l'ombre du toit ou de nuit.
-        public static Color BoardGlow(bool night)=>night?new Color(1.25f,1.25f,1.25f):new Color(1.6f,1.6f,1.6f);
+        public static Color BoardGlow(bool night)=>night?new Color(1.8f,1.8f,1.8f):new Color(1.6f,1.6f,1.6f);
+        // Tribunes et public : les projecteurs visent la pelouse, les gradins restent
+        // dans la pénombre (multiplicateur de couleur, alpha conservé).
+        public static Color StandLight(bool night)=>night?new Color(.5f,.5f,.55f,1):Color.white;
         static void Directional(Transform parent,string name,Quaternion rotation,float intensity,Color color)
         {
             var light=new GameObject(name).AddComponent<Light>();light.transform.SetParent(parent,false);light.type=LightType.Directional;

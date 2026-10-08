@@ -47,7 +47,7 @@ namespace Touchline.Tests
         [Test] public void ShadeTintDarkensAndCoolsTheTurf()
         {
             var tint=StadiumLighting.ShadeTint();
-            foreach(var channel in new[]{tint.r,tint.g,tint.b})Assert.That(channel,Is.InRange(.3f,.8f));
+            foreach(var channel in new[]{tint.r,tint.g,tint.b})Assert.That(channel,Is.InRange(.2f,.75f));
             Assert.Greater(tint.b,tint.r,"L'ombre éclairée par le ciel tire vers le bleu");
         }
         [Test] public void LitAndShadedTurfTileThePitchExactly()

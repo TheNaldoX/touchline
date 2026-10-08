@@ -73,10 +73,10 @@ namespace Touchline
                 Line(new[]{new Vector3(x,0,-3.66f),new Vector3(x,2.44f,-3.66f),new Vector3(x,2.44f,3.66f),new Vector3(x,0,3.66f)},.12f);
                 Surface(StadiumGeometry.GoalNet(sign),white,false);
             }
-            var concrete=PlayerView.Material(new Color(.18f,.23f,.28f));var seats=PlayerView.Material(new Color(.23f,.31f,.36f));
+            var stands=StadiumLighting.StandLight(floodlit);var concrete=PlayerView.Material(new Color(.18f,.23f,.28f)*stands);var seats=PlayerView.Material(new Color(.23f,.31f,.36f)*stands);
             for(int side=-1;side<=1;side+=2){Surface(StadiumGeometry.Stand(side,false),concrete,true);Surface(StadiumGeometry.Stand(side,true),seats,true);Surface(StadiumGeometry.EndStand(side),seats,true);}
             // Le toit, le second anneau et le mur du fond projettent aussi une ombre réelle (joueurs proches de la caméra).
-            Surface(StadiumGeometry.UpperStand(),seats,true);Surface(StadiumGeometry.StadiumShell(),PlayerView.Material(new Color(.26f,.29f,.33f)),true);
+            Surface(StadiumGeometry.UpperStand(),seats,true);Surface(StadiumGeometry.StadiumShell(),PlayerView.Material(new Color(.26f,.29f,.33f)*stands),true);
             Surface(StadiumGeometry.FloodlightMasts(),concrete,false);Surface(StadiumGeometry.FloodlightLamps(),PlayerView.Material(StadiumLighting.LampColor(floodlit)),false);
             var homeClub=Array.Find(database.clubs,c=>c.id==simulation.State.home);var awayClub=Array.Find(database.clubs,c=>c.id==simulation.State.away);
             if(!ColorUtility.TryParseHtmlString(homeClub?.color,out var homeColor))homeColor=new Color(.2f,.42f,.57f);
@@ -85,7 +85,7 @@ namespace Touchline
             Surface(StadiumGeometry.TechnicalArea(),concrete,false);Surface(StadiumGeometry.ClubBanners(),PlayerView.Material(Color.Lerp(homeColor,Color.gray,.25f)),false);
             var crowdMesh=StadiumAtmosphere.Crowd(simulation.State.home,simulation.State.away);stadiumMeshes.Add(crowdMesh);
             var crowd=new GameObject(crowdMesh.name);crowd.transform.SetParent(world,false);crowd.AddComponent<MeshFilter>().sharedMesh=crowdMesh;
-            var crowdRenderer=crowd.AddComponent<MeshRenderer>();crowdRenderer.sharedMaterials=Array.ConvertAll(StadiumAtmosphere.Palette(homeColor,awayColor),PlayerView.Material);
+            var crowdRenderer=crowd.AddComponent<MeshRenderer>();crowdRenderer.sharedMaterials=Array.ConvertAll(StadiumAtmosphere.Palette(homeColor,awayColor),c=>PlayerView.Material(c*stands));
             crowdRenderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;crowdRenderer.receiveShadows=false;
             var upperMesh=StadiumAtmosphere.UpperCrowd(simulation.State.home,simulation.State.away);stadiumMeshes.Add(upperMesh);
             var upper=new GameObject(upperMesh.name);upper.transform.SetParent(world,false);upper.AddComponent<MeshFilter>().sharedMesh=upperMesh;
