@@ -94,7 +94,10 @@ namespace Touchline
             string venue=fixture?.venue;
             if(string.IsNullOrWhiteSpace(venue))venue=homeClub?.stadium;
             Text(card,(fixture?.neutral==true?"Terrain neutre":home==Career.club?"À domicile":"À l’extérieur")+(string.IsNullOrWhiteSpace(venue)?"":" · "+venue),"muted");
-            var actions=Row(card,"manager-card-actions");var prepare=Button(actions,active?"Reprendre la rencontre":"Préparer la rencontre",()=>Navigate("Match"));prepare.AddToClassList("primary");prepare.name="manager-prepare-match";
+            var actions=Row(card,"manager-card-actions");
+            // Match à venir : une touche avance les jours jusqu’au match (arrêt si une décision arrive) au lieu d’une touche par jour.
+            if(!active&&day>life.day){var advance=Button(actions,"Jusqu’au match",AdvanceToMatch);advance.AddToClassList("primary");advance.name="manager-advance-to-match";advance.tooltip="Avancer jour après jour jusqu’au match ; s’arrête si une décision vous attend.";}
+            var prepare=Button(actions,active?"Reprendre la rencontre":"Préparer la rencontre",()=>Navigate("Match"));if(active||day<=life.day)prepare.AddToClassList("primary");prepare.name="manager-prepare-match";
             Button(actions,"Calendrier",()=>Navigate("Calendrier"));
             Text(card,"Dernier résultat : "+life.lastResult,"manager-last-result");
         }

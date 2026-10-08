@@ -26,7 +26,7 @@ namespace Touchline.Editor
         const float MinTouchDp=48,MinTextSp=12;
         // Attente entre deux étapes : images rendues et durée réelle (secondes), le temps que
         // la mise en page et les petites transitions d'entrée se terminent.
-        const int StepFrames=12;const float StepSeconds=.6f,BootTimeoutSeconds=180,RunTimeoutSeconds=900;
+        const int StepFrames=12;const float StepSeconds=.6f,BootTimeoutSeconds=180,RunTimeoutSeconds=2400;
         static readonly (string tag,int width,int height)[] Screens={("plie",1080,2520),("deplie",2184,1968)};
         static int stage=-1,frames;static float stepAt,startedAt=-1;static RenderTexture target;static List<Action> steps;
         static readonly StringBuilder audit=new StringBuilder(),log=new StringBuilder();
@@ -82,8 +82,10 @@ namespace Touchline.Editor
             }
             // Jour de match : lobby, présentation, puis la rencontre elle-même.
             var first=Screens[0];
-            list.Add(()=>{Resize(first.width,first.height);App.Career.life.day=App.Career.life.nextFixture;Call("Navigate","Club");});
-            list.Add(()=>{Capture(first.tag+"-bureau-jour-de-match");Call("Navigate","Match");});
+            list.Add(()=>{Resize(first.width,first.height);Call("Navigate","Club");});
+            // « Jusqu’au match » s’il existe (une touche), sinon saut direct au jour du match.
+            list.Add(()=>{if(Root.Q<Button>("manager-advance-to-match")!=null){audit.AppendLine("Jusqu’au match : "+(App.Career.life.nextFixture-App.Career.life.day)+" jour(s) en une touche");Click("manager-advance-to-match");}else{App.Career.life.day=App.Career.life.nextFixture;Call("Navigate","Club");}});
+            list.Add(()=>{Capture(first.tag+"-jour-de-match");if(App.Career.life.day<App.Career.life.nextFixture){audit.AppendLine("Arrêt avant le match (décision à prendre) au jour "+App.Career.life.day);App.Career.life.day=App.Career.life.nextFixture;}Call("Navigate","Match");});
             list.Add(()=>{Capture(first.tag+"-avant-match");Click("Entrer sur le terrain");});
             list.Add(()=>{Capture(first.tag+"-presentation");if(Root.Q<Button>("prematch-kickoff")!=null)Click("prematch-kickoff");});
             foreach(var s in Screens){
@@ -92,7 +94,7 @@ namespace Touchline.Editor
                 list.Add(()=>{var arena=Arena;if(arena!=null)arena.Paused=true;});
                 list.Add(()=>{Capture(screen.tag+"-match-pause");var arena=Arena;if(arena!=null)arena.Paused=false;});
                 for(int i=0;i<4;i++)list.Add(()=>{}); // quelques secondes de jeu
-                list.Add(()=>{Capture(screen.tag+"-match-direct");Call("MatchBench");});
+                list.Add(()=>{Capture(screen.tag+"-match-direct");if(Root.Q<Button>("match-mentality-2")!=null){Click("match-mentality-2");audit.AppendLine("Mentalité offensive en une touche : "+App.Career.tactic.mentality.ToString(CultureInfo.InvariantCulture)+" · pause "+(Arena!=null&&Arena.Paused));}Call("MatchBench");});
                 list.Add(()=>{Capture(screen.tag+"-banc");Call("CloseModal");Call("MatchOptions");});
                 list.Add(()=>{Capture(screen.tag+"-regie");Call("CloseModal");SetField("tacticalTab","Composition");Call("Navigate","Tactique");});
                 list.Add(()=>{Capture(screen.tag+"-match-tactique");Click("Avec ballon");});

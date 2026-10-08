@@ -23,7 +23,7 @@ namespace Touchline
             Database=JsonUtility.FromJson<Database>(Resources.Load<TextAsset>("Data/database").text);
             Career=new Career();
             document=GetComponent<UIDocument>()??gameObject.AddComponent<UIDocument>();document.panelSettings=Instantiate(Resources.Load<PanelSettings>("TouchlinePanel"));ApplyViewport();root=document.rootVisualElement;
-            root.styleSheets.Add(Resources.Load<StyleSheet>("UI/Touchline"));root.AddToClassList("app");root.RegisterCallback<GeometryChangedEvent>(e=>{bool small=e.newRect.width<1000||e.newRect.height<680;bool narrow=e.newRect.width<600;bool shortWide=e.newRect.width>=1000&&e.newRect.height<680;bool changed=small!=compact||narrow!=root.ClassListContains("narrow")||shortWide!=root.ClassListContains("short-wide");compact=small;root.EnableInClassList("narrow",narrow);root.EnableInClassList("short-wide",shortWide);if(changed)root.schedule.Execute(ReflowInterface);});InitializeLaunchExperience();
+            root.styleSheets.Add(Resources.Load<StyleSheet>("UI/Touchline"));root.AddToClassList("app");root.RegisterCallback<GeometryChangedEvent>(e=>{bool small=!InterfaceViewport.WideLayout(e.newRect.width,e.newRect.height);bool narrow=e.newRect.width<600;bool shortWide=e.newRect.width>=InterfaceViewport.WideLayoutMinWidth&&e.newRect.height<InterfaceViewport.WideLayoutMinHeight;bool changed=small!=compact||narrow!=root.ClassListContains("narrow")||shortWide!=root.ClassListContains("short-wide");compact=small;root.EnableInClassList("narrow",narrow);root.EnableInClassList("short-wide",shortWide);if(changed)root.schedule.Execute(ReflowInterface);});InitializeLaunchExperience();
         }
         void Update()
         {
@@ -105,9 +105,18 @@ namespace Touchline
             BuildMatchScoreboard();
             var space=new Image{name="match-viewport",scaleMode=ScaleMode.StretchToFill};space.AddToClassList("match-viewport");content.Add(space);arena.BindViewport(space);BuildBroadcastUI(space);comment=new Label();comment.AddToClassList("commentary");content.Add(comment);
             matchPending=Button(content,"",()=>Navigate("Tactique"));matchPending.name="match-pending-substitutions";matchPending.AddToClassList("pending-match-banner");UpdatePendingBanner();
+            MatchMentalityShortcut();
             var controls=Row(content,"match-controls");playback=Button(controls,"Reprendre",()=>{if(Career.match.finished){Navigate("Club");return;}if(Career.match.halfTime){arena.Simulation.ResumeHalf();arena.Paused=false;}else arena.Paused=!arena.Paused;});playback.name="match-playback";playback.AddToClassList("primary");Button(controls,"Tactique",()=>Navigate("Tactique"));Button(controls,"Banc",MatchBench).name="match-bench-open";Button(controls,"Analyse",MatchAnalysis);Button(controls,"Options du match",MatchOptions);Button(controls,"Bureau",()=>Navigate("Club"));
             if(Career.match.clock==0){var intro=Button(controls,"Avant-match",()=>{presentationPending=true;ShowPresentation();});intro.name="prematch-replay";}
             if(presentationPending)ShowPresentation();
+        }
+        // Mentalité en une touche, sans quitter le direct ni mettre la rencontre en pause.
+        void MatchMentalityShortcut()
+        {
+            var row=Row(content,"match-mentality");row.name="match-mentality";Text(row,"Mentalité","match-mentality-label");var buttons=new Button[PhoneShortcuts.MentalityLabels.Length];
+            void Mark(){int current=PhoneShortcuts.NearestMentality(Career.tactic.mentality);for(int i=0;i<buttons.Length;i++)buttons[i].EnableInClassList("active",i==current);}
+            for(int i=0;i<buttons.Length;i++){int level=i;buttons[i]=Button(row,PhoneShortcuts.MentalityLabels[i],()=>{Career.tactic.mentality=PhoneShortcuts.MentalityLevels[level];QueuePreferenceSave();Mark();});buttons[i].name="match-mentality-"+i;}
+            Mark();
         }
         void UpdatePendingBanner(){if(matchPending==null)return;int count=Career.match?.pendingSubstitutions?.Count(p=>p.side==0)??0;matchPending.style.display=count>0?DisplayStyle.Flex:DisplayStyle.None;matchPending.text=count+" changement(s) préparé(s) · prochain arrêt de jeu · Modifier";}
         void CreateArena(MatchSimulation sim){matchAnalysisTab="Statistiques";allMatchEvents=false;if(arena!=null)Destroy(arena.gameObject);arena=new GameObject("Native Unity match").AddComponent<MatchArena>();arena.Initialize(Database,sim);arena.Broadcast.SetMode(MatchBroadcast.ResolveMode(PlayerPrefs.GetInt("match-view-mode",-1),PlayerPrefs.GetInt("match-highlights",1)));arena.Broadcast.QuietSpeed=PlayerPrefs.GetInt(sim.State.HalfDuration==2700?"match-quiet-speed-full":"match-quiet-speed",sim.State.HalfDuration==2700?60:12);arena.PlayerSelected=PlayerProfile;arena.SaveRequested=Save;arena.gameObject.SetActive(page=="Match");}
