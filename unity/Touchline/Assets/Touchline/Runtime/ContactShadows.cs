@@ -11,9 +11,10 @@ namespace Touchline
     {
         public const int TextureSize=64;            // pixels
         public const float Height=.03f;             // m au-dessus du gazon (au-dessus des lignes à 0,025 m)
-        public const float PlayerRadius=.62f;       // m, demi-largeur de la tache sous un joueur
+        public const float PlayerRadius=.7f;        // m, demi-largeur de la tache sous un joueur
         public const float BallRadius=.2f;          // m, sous le ballon posé
-        public const float Darkness=.42f;           // assombrissement au centre de la tache (0–1)
+        public const float Darkness=.55f;           // assombrissement au centre de la tache (0–1)
+        public const float Core=.3f;                // part du rayon pleinement sombre (tache lisible de loin)
         public const float FadeHeight=1.6f;         // m : au-delà, plus de tache sous un objet en l'air
         const float BallSpread=1.5f;                // élargissement de la tache par mètre de hauteur du ballon
         const float BallRest=.11f;                  // m : hauteur du centre du ballon posé (son rayon)
@@ -33,8 +34,8 @@ namespace Touchline
             mesh=new Mesh{name="Contact shadows"};mesh.MarkDynamic();mesh.vertices=vertices;mesh.uv=uv;mesh.triangles=triangles;
             mesh.bounds=new Bounds(Vector3.zero,new Vector3(140,4,100)); // tout le terrain et ses abords
         }
-        // Tache radiale : 1 (aucun effet en multiplication) au bord, 1 − Darkness au centre.
-        public static float Shade(float distanceFromCentre)=>1-Darkness*Mathf.SmoothStep(1,0,Mathf.Clamp01(distanceFromCentre));
+        // Tache radiale : 1 (aucun effet en multiplication) au bord, 1 − Darkness dans le cœur.
+        public static float Shade(float distanceFromCentre)=>1-Darkness*Mathf.SmoothStep(1,0,Mathf.InverseLerp(Core,1,distanceFromCentre));
         public static Texture2D Texture()
         {
             var texture=new Texture2D(TextureSize,TextureSize,TextureFormat.RGB24,true){name="Contact shadow",wrapMode=TextureWrapMode.Clamp,filterMode=FilterMode.Bilinear};

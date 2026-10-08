@@ -13,7 +13,7 @@ namespace Touchline
         public const int SubmeshCount=3;                    // 0 club, 1 club clair, 2 hampes (= matières 0, 1, 2 des tribunes)
         public const int HomeFlags=7;                       // grands drapeaux du virage
         const int Columns=6;                                // segments le long d'un drapeau
-        public const float FlagLength=1.7f,FlagHeight=1.1f; // m
+        public const float FlagLength=2.4f,FlagHeight=1.5f; // m (grand drapeau de tribune)
         public const float PoleHeight=2.6f,PoleGrip=.6f;    // m : hampe, hauteur des mains au-dessus du siège
         const float PoleWidth=.04f;                         // m
         public const float CornerLength=.45f,CornerHeight=.3f,CornerPost=1.5f; // m (drapeau de coin)
