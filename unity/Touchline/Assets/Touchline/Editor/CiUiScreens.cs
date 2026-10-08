@@ -28,7 +28,7 @@ namespace Touchline.Editor
         // la mise en page et les petites transitions d'entrée se terminent.
         const int StepFrames=12;const float StepSeconds=.6f,BootTimeoutSeconds=180,RunTimeoutSeconds=3300;
         static readonly (string tag,int width,int height)[] Screens={("plie",1080,2520),("deplie",2184,1968)};
-        static int stage=-1,frames;static float stepAt,startedAt=-1;static RenderTexture target;static List<Action> steps;
+        static int stage=-1,frames,failures;static float stepAt,startedAt=-1;static RenderTexture target;static List<Action> steps;
         static readonly StringBuilder audit=new StringBuilder(),log=new StringBuilder();
         static CiUiScreens(){EditorApplication.update+=Tick;}
 
@@ -93,6 +93,8 @@ namespace Touchline.Editor
                 list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Match");});
                 list.Add(()=>{var arena=Arena;if(arena!=null)arena.Paused=true;});
                 list.Add(()=>{Capture(screen.tag+"-match-pause");var arena=Arena;if(arena!=null)arena.Paused=false;});
+                list.Add(()=>{Click("match-instructions-open");});
+                list.Add(()=>{Capture(screen.tag+"-consignes-rapides");bool paused=Arena.Paused;float speed=Arena.Speed;Click("quick-tactic-Pressing-2");if(App.Career.tactic.pressing!=.8f||App.Career.match.homeTactic.pressing!=.8f||Arena.Paused!=paused||Arena.Speed!=speed||Root.Q("match-instructions")!=null)throw new Exception("Consigne en deux touches : application/retour/pause incorrects");audit.AppendLine("Pressing intense en deux touches : tactique liée, retour au direct, pause et vitesse préservées.");});
                 for(int i=0;i<4;i++)list.Add(()=>{}); // quelques secondes de jeu
                 list.Add(()=>{Capture(screen.tag+"-match-direct");if(Root.Q<Button>("match-mentality-2")!=null){Click("match-mentality-2");audit.AppendLine("Mentalité offensive en une touche : "+App.Career.tactic.mentality.ToString(CultureInfo.InvariantCulture)+" · pause "+(Arena!=null&&Arena.Paused));}Call("MatchBench");});
                 list.Add(()=>{Capture(screen.tag+"-banc");Call("CloseModal");Call("MatchOptions");});
@@ -112,9 +114,9 @@ namespace Touchline.Editor
             if(++frames<StepFrames||now-stepAt<StepSeconds)return;frames=0;stepAt=now;
             steps??=BuildSteps();
             if(stage<0)stage=0;
-            if(stage>=steps.Count){Finish(null);return;}
+            if(stage>=steps.Count){Finish(failures==0?null:failures+" étape(s) en échec");return;}
             try{steps[stage]();}
-            catch(Exception e){var inner=e is TargetInvocationException t&&t.InnerException!=null?t.InnerException:e;audit.AppendLine("ERREUR étape "+stage+" : "+inner.Message);Debug.LogException(inner);}
+            catch(Exception e){failures++;var inner=e is TargetInvocationException t&&t.InnerException!=null?t.InnerException:e;audit.AppendLine("ERREUR étape "+stage+" : "+inner.Message);Debug.LogException(inner);}
             stage++;
         }
 

@@ -35,7 +35,7 @@ Jeu de gestion de football type Football Manager, Unity **6000.3.24f1**, URP, An
   `tools/Calibration` (`dotnet run -c Release -- 200 1` = 200 matchs, graine 1),
   `tools/SeasonSim` (plusieurs saisons, `--report`, `--dump`).
 
-## 3. État au 8 octobre 2026 (dernière session Claude)
+## 3. État au 8 octobre 2026
 
 ### Branches et PR
 - **PR #34 `integ/0.56` → `main`** : fusion de toute la pile (PR #21 à #33). **À fusionner en premier**,
@@ -122,7 +122,7 @@ touches 36,9 · passes 81,8 % · possession favori 56 %. **Hors fourchette** : p
 
 ## 6. À faire (par priorité)
 
-1. **Fusionner #35 puis #36** (#34 est fusionnée), construire un APK depuis `main`, faire tester Victor (gels, fluidité,
+1. **#34, #35 et #36 sont fusionnées** (main ae2df218). Reprendre `feat/tactical-audit` : tests Core et audit terminés, publication/CI en attente des droits GitHub. La branche release/0.58 existe (code 51) : réserver 0.59/code 52 après vérification des branches distantes. Faire tester Victor (gels, fluidité,
    rendu). Si ça rame : réduire post-process, flocage, ombres (`RenderBudget`). Ambiance (#36) : vérifier
    sur le Fold qu'un but ne provoque pas d'à-coup (maillage des tribunes réécrit à 20 Hz pendant ~10 s).
    Ralenti de nuit : le plan bas est à contre-jour (joueurs sombres), à régler (lumière d'appoint ou
@@ -169,3 +169,12 @@ léger zoom sur les grosses occasions, tribune haute qui réagit aussi (aujourd'
 - Non vérifié : téléphone ; tests EditMode Unity (CrowdLifeTests) jamais exécutés, seulement compilés
   par les films ; ombres de contact peu visibles au premier essai (renforcées, voir atm-a2).
 - Prochaine étape : §6.
+
+### Session Codex du 8 octobre 2026 — audit tactique et raccourcis (branche locale feat/tactical-audit)
+- Fait : clone propre de main ae2df218 (#34–#36 fusionnées), SDK .NET 8 local non versionné ; audit de sept consignes avec CSV par affiche et différences appariées ; accès « Consignes » puis choix du niveau en match, sans changer pause/vitesse, retour automatique au direct et lien vers la composition ; nouveaux tests Core et scénarios CiUiScreens. Les erreurs d'étape des captures ne sont plus annoncées comme une réussite.
+- Mesures : 699/699 tests Core (689 référence + 10 nouveaux), 200 matchs graine 1 avant/après identiques (SHA256 commun 01E719A69FA3914D9E0689832FFAF9FA7B80FFCE00DDB651818D86E70F74624C). Aucune règle des décisions/mouvements n'est modifiée. Audit 2 800 matchs, sept consignes × 200 affiches × deux variantes. Rapports et données dans tools/Calibration/Reports/.
+- Tableau consigne → effet : mentalité prudente/offensive, tirs 10,64→19,05 et précision 83,53→81,20 % ; pressing mesuré/intense, temps de pressing 787,40→924,35 joueur·s (fatigue finale non concluante) ; ligne basse/haute, ligne moyenne −33,89→−19,62 m ; largeur étroite/large, étalement 34,30→54,31 m ; rythme patient/rapide, précision 82,75→81,49 %, volume de passes non concluant ; passes courtes/directes, longueur 15,79→25,18 m et précision 86,31→75,44 % ; milieux défense/attaque, tirs 9,93→17,55 et précision 82,36→79,16 %. Mesures du club à domicile, 4-3-3, IA adverse active ; pas une preuve d'équilibre universel.
+- Non vérifié : compilation/rendu Unity des changements, captures après, téléphone et APK. Le connecteur GitHub refuse la création de branche (403 Resource not accessible by integration), même après confirmation de l'utilisateur ; Git local n'a pas de connexion authentifiée. Aucun push, PR, film ou APK annoncé comme réalisé. Une tentative de connexion par code n'a pas fourni de code et a été arrêtée. Captures historiques ui-after2 consultées pour référence, pas présentées comme captures des changements.
+- Réserves : ligne haute très avantageuse dans cet échantillon (buts pour 1,68→2,42 et contre 2,19→1,05), missions offensives des milieux très fortes ; tempo rapide n'augmente pas significativement le nombre de passes. Penalties 0,17, sorties de but 13,14, favori 67,68 % : non corrigés dans ce lot. IA adverse déjà présente (score/minute/formes observées, effectif et niveau initial), pas refaite ni prétendue nouvelle. Les lots management, identité UI complète et calibration restent à réaliser.
+- Prochaine étape : débloquer l'écriture GitHub, publier cette branche et sa PR (modèle du dépôt), lancer film/ui-tactical-before sur ae2df218 puis film/ui-tactical-after sur le commit candidat, vérifier les captures et erreurs, préparer release/0.59/code52 avec déclencheur release/** (absent de main), livrer le lien Actions après succès. Ne pas fusionner main/release automatiquement. Puis corriger les compromis de la ligne haute et les consignes non concluantes avec calibration avant/après, poursuivre les lots B/C/D.
+- Diagnostic carrière lancé séparément : tools/SeasonSim 10 176 --world --report --worldseed 77, sortie locale .validation/seasons-baseline.txt ; tant que le bilan final n'est pas obtenu, ne pas annoncer dix saisons validées.
