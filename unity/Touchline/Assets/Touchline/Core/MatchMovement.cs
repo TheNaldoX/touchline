@@ -45,9 +45,11 @@ namespace Touchline.Core
                     bool recovering=transition&&!t.counterPress;
                     // Un porteur dans son propre tiers défensif est pressé par le
                     // joueur le plus proche dès que l'équipe presse un minimum.
-                    bool trigger=focusX< -28+t.line*55||Space(focus,p.side,true)<4||free||focusX>HighPressZone&&t.pressing>=HighPressMinPressing;
+                    bool highPress=focusX>HighPressZone&&t.pressing>=HighPressMinPressing;
+                    bool trigger=focusX< -28+t.line*55||Space(focus,p.side,true)<4||free||highPress;
                     bool closeDelay=recovering&&Point.Distance(p.position,focus)<7;
-                    bool press=trigger&&(!recovering||closeDelay)||transition&&t.counterPress;
+                    // Ballon perdu haut : le plus proche presse aussitôt au lieu de se replier.
+                    bool press=trigger&&(!recovering||closeDelay||highPress)||transition&&t.counterPress;
                     float radius=5+t.pressing*18+(transition&&t.counterPress?7:0);
                     if(firstPress[p.side]==i&&press&&Point.Distance(p.position,focus)<radius){q=focus-new Point(dir*(closeDelay?1.4f:.65f),0);p.intent=closeDelay?"delay":"press";}
                     else if(coverPress[p.side]==i&&press&&t.pressing>.35f&&Point.Distance(p.position,focus)<radius+3){q=focus+(new Point(-dir*52.5f,0)-focus).Normalized*(4.8f-t.pressing*2);p.intent="cover";}
