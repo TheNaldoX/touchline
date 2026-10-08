@@ -4,6 +4,9 @@
 //   --world  : aucun club dirigé, l'IA gère tout (dérive du monde sur longue durée)
 //   --engine : les matchs du club géré passent par le vrai moteur (≈1,3 s/match) ;
 //              sinon ils sont tirés comme ceux des autres clubs (instantané).
+//   --report : tableau par saison des indicateurs de l'IA des clubs (effectifs, âges,
+//              économie, transferts, champions, survie des promus, progression par âge).
+//   --worldseed N : graine du générateur de la carrière (tirages du monde) ; 825671 par défaut.
 using System;using System.Collections.Generic;using System.Globalization;using System.IO;using System.Linq;using System.Reflection;using System.Text.Json;using Touchline.Core;
 static class P{
  static string FindDatabase(){foreach(var start in new[]{Environment.CurrentDirectory,AppContext.BaseDirectory}){var d=new DirectoryInfo(start);while(d!=null){var f=Path.Combine(d.FullName,"unity","Touchline","Assets","Touchline","Resources","Data","database.json");if(File.Exists(f))return f;d=d.Parent;}}throw new FileNotFoundException("database.json introuvable");}
@@ -17,7 +20,8 @@ static class P{
   var db=saveCheck?UnityEngine.JsonUtility.FromJson<Database>(dbText):JsonSerializer.Deserialize<Database>(dbText,new JsonSerializerOptions{IncludeFields=true});
   // Comme le jeu : empreinte prise sur la base elle-même, avant que la carrière la modifie.
   SaveBaseline baseline=saveCheck?SaveBaseline.From(db):null;
-  var c=new Career{club=club,saveBaseline=baseline};c.lineup=Career.Select(db,club,c.tactic);c.EnsureLife(db);c.EnsureWorld(db);
+  var c=new Career{club=club,saveBaseline=baseline};c.lineup=Career.Select(db,club,c.tactic);c.EnsureLife(db);
+  int wsi=Array.IndexOf(a,"--worldseed");if(wsi>=0)c.life.seed=uint.Parse(a[wsi+1]);c.EnsureWorld(db);
   // --world : personne ne dirige le club, l'IA gère tous les effectifs (observation du monde seul).
   if(worldOnly){c.world.managerStatus="unemployed";c.life.nextFixture=int.MaxValue;}
   var simFixture=typeof(Career).GetMethod("SimulateFixture",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic);
@@ -50,12 +54,14 @@ static class P{
   if(snapshots.Last().day!=c.life.day)snapshots.Add(Snap(db,c));
   Console.WriteLine($"{matches} matchs joués par le club, {sw.Elapsed.TotalSeconds:0} s\n");
   Report(db,c,snapshots);
+  if(a.Contains("--report"))ClubAiReport(db,c,snapshots);
   if(saveCheck)return SaveCheck(c,dbText);
   if(a.Contains("--savesize")){var t=System.Diagnostics.Stopwatch.StartNew();var json=UnityEngine.JsonUtility.ToJson(c);{var f1=Environment.GetEnvironmentVariable("CALIB_SAVEFILE");if(f1!=null)File.WriteAllText(f1+".end.json",json);}Console.WriteLine($"\nTaille de sauvegarde (format Unity) : {json.Length/1e6:0.0} Mo, sérialisée en {t.ElapsedMilliseconds} ms ; rosterChanges : {c.world.rosterChanges.Count} joueurs, contrats : {c.world.contracts.Count}, messages : {c.life.messages.Count}");}
   int di=Array.IndexOf(a,"--dump");if(di>=0)File.WriteAllLines(a[di+1],c.world.aiTransfers.Select(t=>t.year+" "+t.player+" "+t.seller+">"+t.buyer+" "+t.fee+" "+t.wage).Concat(db.players.OrderBy(p=>p.id,StringComparer.Ordinal).Select(p=>p.id+" "+p.team+" "+p.rating.ToString("R",CultureInfo.InvariantCulture)+" "+p.wage)));
   return 0;
  }
- class Snapshot{public int year,day;public long cash;public int squad;public float top14,ageAvg;public Dictionary<string,long> aiCash=new();public Dictionary<string,long> aiDebt=new();public Dictionary<string,double> wageRatio=new();public Dictionary<string,long> revenue=new();public double worldAge,worldRating,worldTop;public int worldCount,worldOld,worldYoung;public Dictionary<string,int> aiSquad=new();public Dictionary<string,float> aiStrength=new();public float wageMedian;public int free;public int transfers;}
+ class Snapshot{public int year,day;public long cash;public int squad;public float top14,ageAvg;public Dictionary<string,long> aiCash=new();public Dictionary<string,long> aiDebt=new();public Dictionary<string,double> wageRatio=new();public Dictionary<string,long> revenue=new();public double worldAge,worldRating,worldTop;public int worldCount,worldOld,worldYoung;public Dictionary<string,int> aiSquad=new();public Dictionary<string,float> aiStrength=new();public float wageMedian;public int free;public int transfers;
+  public Dictionary<string,string> league=new();public Dictionary<string,(int age,float rating,string team)> people=new();}
  static Snapshot Snap(Database db,Career c){
   var s=new Snapshot{year=c.world.year,day=c.life.day,cash=c.life.cash};
   var sq=db.Squad(c.club).ToArray();s.squad=sq.Length;s.top14=sq.Length==0?0:(float)sq.OrderByDescending(p=>p.rating+p.development).Take(14).Average(p=>p.rating+p.development);s.ageAvg=sq.Length==0?0:(float)sq.Average(p=>p.age);
@@ -64,6 +70,7 @@ static class P{
   foreach(var cl in db.clubs.Where(x=>x.playable)){var q=db.Squad(cl.id).ToArray();s.aiSquad[cl.id]=q.Length;s.aiStrength[cl.id]=q.Length==0?0:(float)q.OrderByDescending(p=>p.rating+p.development).Take(14).Average(p=>p.rating+p.development);}
   var wages=db.players.Where(p=>p.team!=null&&p.wage>0).Select(p=>p.wage).OrderBy(x=>x).ToArray();s.wageMedian=wages.Length>0?wages[wages.Length/2]:0;
   {var ids=new HashSet<string>(db.clubs.Where(x=>x.playable).Select(x=>x.id));var ws=db.players.Where(p=>p.team!=null&&ids.Contains(p.team)).ToArray();s.worldCount=ws.Length;s.worldAge=ws.Average(p=>p.age);s.worldRating=ws.Average(p=>p.rating);s.worldTop=ws.Count(p=>p.rating>=80);s.worldOld=ws.Count(p=>p.age>=32);s.worldYoung=ws.Count(p=>p.age<=21);}
+  foreach(var cl in db.clubs.Where(x=>x.playable))s.league[cl.id]=cl.league;foreach(var p in db.players)if(p.team!=null&&p.team!="retired")s.people[p.id]=(p.age,p.rating,p.team);
   s.free=db.players.Count(p=>string.IsNullOrEmpty(p.team));s.transfers=c.world.aiTransfers?.Count??0;return s;
  }
  static int SaveCheck(Career c,string dbText){
@@ -108,5 +115,43 @@ static class P{
   Console.WriteLine("Plus forte progression : "+string.Join(", ",top)+"\nPlus forte baisse : "+string.Join(", ",bottom));
   var champs=c.world.honours?.Select(h=>h.GetType().GetFields().Select(f=>f.Name+"="+f.GetValue(h)).Aggregate((x,y)=>x+" "+y)).Take(8);
   if(champs!=null&&champs.Any())Console.WriteLine("\nPalmarès enregistré (extrait) :\n- "+string.Join("\n- ",champs));
+ }
+ // --report : crédibilité de l'IA des clubs, saison par saison (clubs jouables uniquement).
+ static void ClubAiReport(Database db,Career c,List<Snapshot> snaps){
+  double Med(IEnumerable<double> v){var x=v.OrderBy(y=>y).ToArray();return x.Length==0?0:x[x.Length/2];}
+  string F(double v,string f="0.0")=>v.ToString(f,FR);
+  int Tier(string league)=>league!=null&&league.Contains('.')&&int.TryParse(league.Split('.')[1],out int t)?t:0;
+  Console.WriteLine("\n## Indicateurs IA des clubs\n");
+  Console.WriteLine("| Saison | Effectif min / méd. / max | Clubs 22–30 | Âge moyen | ≤21 ans | ≥32 ans | Note moy. | ≥80 | Salaires/recettes méd. | > 80 % | Endettés | Dette > recettes | Tréso/recettes méd. | Transferts | Âge recrues | Max recrues/club |");
+  Console.WriteLine("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|");
+  foreach(var s in snaps){
+   var ids=s.aiSquad.Keys.ToArray();var sizes=ids.Select(k=>s.aiSquad[k]).OrderBy(x=>x).ToArray();
+   var ppl=s.people.Values.Where(p=>s.league.ContainsKey(p.team)).ToArray();
+   var accounts=ids.Where(k=>s.aiDebt.ContainsKey(k)&&s.revenue.GetValueOrDefault(k)>0).ToArray();
+   var tr=(c.world.aiTransfers??new List<AiTransferRecord>()).Where(t=>t.year==s.year).ToArray();
+   var ages=tr.Select(t=>s.people.TryGetValue(t.player,out var q)?q.age:0).Where(x=>x>0).ToArray();
+   int maxPerClub=tr.Length==0?0:tr.GroupBy(t=>t.buyer).Max(g=>g.Count());
+   Console.WriteLine($"| {s.year} | {sizes.First()} / {sizes[sizes.Length/2]} / {sizes.Last()} | {F(100.0*sizes.Count(x=>x>=22&&x<=30)/sizes.Length,"0")} % | {F(ppl.Average(p=>p.age))} | {F(100.0*ppl.Count(p=>p.age<=21)/ppl.Length,"0")} % | {F(100.0*ppl.Count(p=>p.age>=32)/ppl.Length,"0")} % | {F(ppl.Average(p=>p.rating))} | {ppl.Count(p=>p.rating>=80)} | {F(100*Med(s.wageRatio.Values),"0")} % | {s.wageRatio.Values.Count(x=>x>.8)} | {accounts.Count(k=>s.aiDebt[k]>0)} | {accounts.Count(k=>s.aiDebt[k]>s.revenue[k])} | {F(100*Med(accounts.Select(k=>(double)s.aiCash[k]/s.revenue[k])),"0")} % | {tr.Length} | {(ages.Length>0?F(ages.Average()):"—")} | {maxPerClub} |");
+  }
+  // Champions des premières divisions et survie des promus.
+  var tops=snaps.First().league.Values.Where(l=>Tier(l)==1).Distinct().OrderBy(x=>x,StringComparer.Ordinal).ToArray();
+  var honours=c.world.honours??new List<Honour>();int seasons=0,titles=0;var lines=new List<string>();
+  foreach(var l in tops){var champs=honours.Where(h=>h.competition==l).OrderBy(h=>h.year).Select(h=>h.club).ToArray();if(champs.Length==0)continue;seasons+=champs.Length;titles+=champs.Distinct().Count();lines.Add(l+" "+champs.Distinct().Count()+"/"+champs.Length+" : "+string.Join(", ",champs.Select(x=>db.clubs.FirstOrDefault(y=>y.id==x)?.name??x)));}
+  Console.WriteLine($"\nChampions distincts en première division : {titles} pour {seasons} titres.");foreach(var l in lines)Console.WriteLine("- "+l);
+  int promoted=0,survived=0;for(int i=1;i+1<snaps.Count;i++)foreach(var kv in snaps[i].league){if(Tier(kv.Value)!=1||!snaps[i-1].league.TryGetValue(kv.Key,out var before)||Tier(before)!=2)continue;promoted++;if(snaps[i+1].league.TryGetValue(kv.Key,out var after)&&Tier(after)==1)survived++;}
+  Console.WriteLine($"Promus en première division maintenus la saison suivante : {survived} / {promoted}{(promoted>0?" ("+F(100.0*survived/promoted,"0")+" %)":"")}.");
+  // Rang de force (top 14) au début et à la fin, clubs de chaque première division d'origine (Spearman).
+  var first=snaps.First();var last=snaps.Last();var corr=new List<double>();
+  foreach(var l in tops){var clubs=first.league.Where(kv=>kv.Value==l).Select(kv=>kv.Key).ToArray();if(clubs.Length<4)continue;var r0=clubs.OrderByDescending(k=>first.aiStrength[k]).ToList();var r1=clubs.OrderByDescending(k=>last.aiStrength.GetValueOrDefault(k)).ToList();double n=clubs.Length,d2=clubs.Sum(k=>Math.Pow(r0.IndexOf(k)-r1.IndexOf(k),2));corr.Add(1-6*d2/(n*(n*n-1)));}
+  if(corr.Count>0)Console.WriteLine($"Corrélation de rang de force début → fin (premières divisions) : médiane {F(Med(corr),"0.00")}, min {F(corr.Min(),"0.00")}.");
+  double Spread(Snapshot s,string l){var v=s.league.Where(kv=>kv.Value==l).Select(kv=>(double)s.aiStrength.GetValueOrDefault(kv.Key)).ToArray();return v.Length<2?0:v.Max()-v.Min();}
+  Console.WriteLine($"Écart de force (top 14) entre le plus fort et le plus faible d'une première division : médiane {F(Med(tops.Select(l=>Spread(first,l))))} → {F(Med(tops.Select(l=>Spread(last,l))))}.");
+  // Progression annuelle moyenne de la note selon l'âge (joueurs de clubs jouables présents deux saisons de suite).
+  var buckets=new SortedDictionary<string,List<double>>(StringComparer.Ordinal);
+  for(int i=1;i<snaps.Count;i++)foreach(var kv in snaps[i].people){if(!snaps[i-1].people.TryGetValue(kv.Key,out var b)||!snaps[i-1].league.ContainsKey(b.team))continue;string k=b.age<=20?"a ≤20":b.age<=23?"b 21–23":b.age<=26?"c 24–26":b.age<=29?"d 27–29":b.age<=32?"e 30–32":"f ≥33";if(!buckets.TryGetValue(k,out var list))buckets[k]=list=new List<double>();list.Add(kv.Value.rating-b.rating);}
+  Console.WriteLine("Progression annuelle moyenne de la note par âge : "+string.Join(", ",buckets.Select(kv=>kv.Key.Substring(2)+" "+kv.Value.Average().ToString("+0.00;-0.00",FR))));
+  // Trésorerie nette (trésorerie - dette) rapportée aux recettes en fin de simulation.
+  var net=last.aiCash.Keys.Where(k=>last.revenue.GetValueOrDefault(k)>0).Select(k=>(last.aiCash[k]-last.aiDebt.GetValueOrDefault(k))/(double)last.revenue[k]).OrderBy(x=>x).ToArray();
+  if(net.Length>0)Console.WriteLine($"Trésorerie nette / recettes en fin : 5 % {F(100*net[net.Length/20],"0")} %, médiane {F(100*net[net.Length/2],"0")} %, 95 % {F(100*net[net.Length*19/20],"0")} % ; au-dessus de 200 % : {net.Count(x=>x>2)}, sous -100 % : {net.Count(x=>x<-1)} / {net.Length}.");
  }
 }
