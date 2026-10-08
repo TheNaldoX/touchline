@@ -10,14 +10,17 @@ namespace Touchline
         void MatchInstructionPanel()
         {
             if(arena==null||Career.match==null)return;
-            var panel=Modal("Consignes depuis le banc");panel.name="match-instructions";
+            var panel=Modal("Consignes");panel.name="match-instructions";
             Button(panel,"Composition et rôles",()=>{CloseModal();Navigate("Tactique");}).name="quick-tactic-full-board";
-            var body=Scroll(panel);Text(body,"Choisissez une consigne : application immédiate, puis retour au match. La pause et la vitesse sont conservées.","muted");
+            var body=Scroll(panel);Text(body,"Choisissez un niveau : il s’applique immédiatement, puis vous revenez au match.","muted");
             QuickInstruction(body,MatchInstruction.Pressing,"Pressing",new[]{"Mesuré","Normal","Intense"},"Plus de pression sur le porteur, mais davantage d’efforts et d’espaces à couvrir.");
             QuickInstruction(body,MatchInstruction.Line,"Ligne défensive",new[]{"Basse","Médiane","Haute"},"Un bloc haut réduit les distances ; les appels dans son dos deviennent plus dangereux.");
             QuickInstruction(body,MatchInstruction.Width,"Largeur offensive",new[]{"Étroite","Normale","Large"},"Écarter le jeu ouvre les couloirs et éloigne les soutiens.");
             QuickInstruction(body,MatchInstruction.Tempo,"Rythme",new[]{"Patient","Normal","Rapide"},"Décider plus vite exige davantage de précision technique.");
             QuickInstruction(body,MatchInstruction.Directness,"Passes",new[]{"Courtes","Mixtes","Directes"},"Jouer plus long accélère la progression mais expose aux interceptions.");
+            // The unfolded layout scales one UI unit to about .97 dp: 50 units
+            // retain the 48 dp touch target in both native Fold layouts.
+            panel.Query<UnityEngine.UIElements.Button>().ForEach(button=>button.style.minHeight=50);
         }
         void QuickInstruction(VisualElement body,MatchInstruction instruction,string title,string[] labels,string tradeoff)
         {
@@ -28,7 +31,7 @@ namespace Touchline
                 int level=i;var button=Button(row,labels[i],()=>{MatchInstructionShortcuts.Apply(Career,instruction,level);QueuePreferenceSave();CloseModal();});
                 button.name="quick-tactic-"+instruction+"-"+i;
                 // Android touch target, in UI units (approximately dp on Fold).
-                button.style.minHeight=48;button.style.flexGrow=1;
+                button.style.minHeight=50;button.style.fontSize=13;button.style.flexGrow=1;
                 button.EnableInClassList("active",Mathf.Abs(value-MatchInstructionShortcuts.Value(i))<HalfPresetStep);
             }
             Text(card,tradeoff,"muted");

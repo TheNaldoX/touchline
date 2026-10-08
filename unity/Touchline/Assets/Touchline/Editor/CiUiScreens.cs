@@ -127,6 +127,15 @@ namespace Touchline.Editor
                     list.Add(()=>{Capture(screen.tag+"-consignes-rapides");AssertQuickPressing(2,true);});
                     list.Add(()=>{Arena.Paused=false;Arena.Speed=2;Click("match-instructions-open");});
                     list.Add(()=>AssertQuickPressing(1,false));
+                    list.Add(()=>{Arena.Paused=true;Click("match-instructions-open");});
+                    list.Add(()=>Root.Q("match-instructions").Q<ScrollView>().ScrollTo(Root.Q<Button>("quick-tactic-Directness-2")));
+                    list.Add(()=>{
+                        Capture(screen.tag+"-consignes-fin");float speed=Arena.Speed;Click("quick-tactic-Directness-2");
+                        if(App.Career.tactic.directness!=.8f||App.Career.match.homeTactic.directness!=.8f||!Arena.Paused||Arena.Speed!=speed||Root.Q("match-instructions")!=null)
+                            throw new Exception("Dernière consigne après défilement : application/pause/vitesse incorrects");
+                        audit.AppendLine("Passes directes après défilement : tactique liée, pause/vitesse conservées, retour au match.");
+                        Arena.Paused=false;
+                    });
                     list.Add(()=>{Capture(screen.tag+"-match-retour");Arena.Paused=true;});
                 }
             }
