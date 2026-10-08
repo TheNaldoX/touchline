@@ -112,6 +112,53 @@ namespace Touchline.Editor
                         playable.Destroy();
                     }
                     graph.Destroy();
+                    // Scénarios de match simulés (pas de 0,1 s du moteur, rendu à 30 i/s) joués par
+                    // PlayerView comme en match : virages serrés, amortis, tacle debout, contrôle en
+                    // pivotant. Glissement des pieds posés mesuré comme dans CiMatchFilm.
+                    var lab=new System.Text.StringBuilder("scénario;images;geste(s);glissement médiane (m/s);p95;max;n\n");
+                    Point Dir(float degrees)=>new Point(Mathf.Sin(degrees*Mathf.Deg2Rad),Mathf.Cos(degrees*Mathf.Deg2Rad));
+                    void Begin(Actor a,string action,string kind,float duration,float contact,Point aim,float height){if(a.action==action&&a.actionKind==kind)return;a.action=action;a.actionKind=kind;a.actionSequence++;a.actionTime=duration;a.actionContactTime=contact;a.actionTarget=aim;a.actionHeight=height;}
+                    void Scenario(string label,float seconds,Action<Actor,float> script){
+                        var actor=new Actor{id=player.id,slot=5,action="idle",angle=0,position=new Point(0,-4),previous=new Point(0,-4)};
+                        script(actor,0);view.ResetPresentation();float clock=0;int start=frame;var slides=new List<float>();var lastFeet=new Vector3[2];var seen=new List<string>();
+                        int frames=Mathf.RoundToInt(seconds*Fps);
+                        for(int f=0;f<frames;f++){
+                            float t=f/(float)Fps;
+                            while(clock+MatchSimulation.Step<=t+1e-4f){clock+=MatchSimulation.Step;actor.previous=actor.position;script(actor,clock);actor.position=actor.previous+actor.velocity*MatchSimulation.Step;}
+                            var forward=new Vector3(Mathf.Sin(actor.angle),0,Mathf.Cos(actor.angle));var ball=new Vector3(actor.position.x,.11f,actor.position.z)+forward*.6f;
+                            view.Render(actor,Mathf.Clamp01((t-clock)/MatchSimulation.Step),f==0?0:1f/Fps,ball,default);
+                            if(view.MecanimGestureClip!=null&&!seen.Contains(view.MecanimGestureClip))seen.Add(view.MecanimGestureClip);
+                            for(int s=0;s<2;s++){var foot=view.FootPosition(s==0);if(f>1&&foot.y<.12f&&lastFeet[s].y<.12f){var d=foot-lastFeet[s];d.y=0;slides.Add(d.magnitude*Fps);}lastFeet[s]=foot;}
+                            var hips=animator.GetBoneTransform(HumanBodyBones.Hips);var focus=hips.position+Vector3.up*.05f;
+                            camFront.transform.position=focus+new Vector3(0,.8f,6f);camFront.transform.LookAt(focus);camSide.transform.position=focus+new Vector3(6f,.8f,0);camSide.transform.LookAt(focus);
+                            Capture(camFront,target,root,Path.Combine(front,"frame-"+frame.ToString("D4")+".jpg"));Capture(camSide,target,root,Path.Combine(side,"frame-"+frame.ToString("D4")+".jpg"));frame++;
+                        }
+                        slides.Sort();string Q(float q)=>slides.Count>0?slides[Mathf.Min(slides.Count-1,(int)(slides.Count*q))].ToString("0.00"):"—";
+                        lab.AppendLine($"{label};{start}-{frame-1};{(seen.Count>0?string.Join(" + ",seen):"aucun")};{Q(.5f)};{Q(.95f)};{(slides.Count>0?slides[slides.Count-1].ToString("0.00"):"—")};{slides.Count}");
+                        info.AppendLine($"scénario {label} frames {start}-{frame-1}");
+                    }
+                    const float RunSpeed=4.5f,CutAngle=80f; // m/s, ° : virage serré en pleine course
+                    Scenario("virage-droite",2.4f,(a,t)=>{float heading=t<1f?0:CutAngle;a.action="run";a.angle=heading*Mathf.Deg2Rad;a.velocity=Dir(heading)*RunSpeed;});
+                    Scenario("virage-gauche",2.4f,(a,t)=>{float heading=t<1f?0:-CutAngle;a.action="run";a.angle=heading*Mathf.Deg2Rad;a.velocity=Dir(heading)*RunSpeed;});
+                    Scenario("amorti-poitrine",2f,(a,t)=>{
+                        if(t<.5f){a.action="run";a.velocity=Dir(0)*1.2f;}
+                        else if(t<1.1f-.001f){Begin(a,"control",MatchSimulation.ChestControl,MatchSimulation.BodyControlDuration(MatchSimulation.ChestControl),MatchSimulation.BodyControlContactTime,a.position+Dir(0)*.3f,1.3f);a.actionTime=MatchSimulation.BodyControlDuration(MatchSimulation.ChestControl)-(t-.5f);a.velocity=Dir(0)*.3f;}
+                        else{a.action="idle";a.actionKind=null;a.actionTime=0;a.velocity=new Point();}});
+                    Scenario("amorti-cuisse",2f,(a,t)=>{
+                        if(t<.5f){a.action="run";a.velocity=Dir(0)*1.2f;}
+                        else if(t<.98f-.001f){Begin(a,"control",MatchSimulation.ThighControl,MatchSimulation.BodyControlDuration(MatchSimulation.ThighControl),MatchSimulation.BodyControlContactTime,a.position+Dir(0)*.3f+Dir(90)*.12f,.8f);a.actionTime=MatchSimulation.BodyControlDuration(MatchSimulation.ThighControl)-(t-.5f);a.velocity=Dir(0)*.3f;}
+                        else{a.action="idle";a.actionKind=null;a.actionTime=0;a.velocity=new Point();}});
+                    Scenario("tacle-debout",2f,(a,t)=>{
+                        float duration=MatchSimulation.TacklePreparation+MatchSimulation.TackleRecovery;
+                        if(t<.5f){a.action="run";a.velocity=Dir(0)*2f;}
+                        else if(t<.5f+duration-.001f){Begin(a,"tackle",MatchSimulation.StandingDuel,duration,MatchSimulation.TacklePreparation,a.position+Dir(0)*.7f+Dir(90)*.15f,.11f);a.actionTime=duration-(t-.5f);a.velocity=a.velocity*.5f;}
+                        else{a.action="idle";a.actionKind=null;a.actionTime=0;a.velocity=new Point();}});
+                    Scenario("controle-pivot",2.2f,(a,t)=>{
+                        // Contrôle du pied en se retournant (150°) puis départ dans la nouvelle direction.
+                        if(t<.5f){a.action="run";a.velocity=Dir(0)*1.5f;}
+                        else if(t<.8f-.001f){Begin(a,"control","control-foot",.3f,0,a.position,.11f);a.actionTime=.3f-(t-.5f);a.angle=150*Mathf.Deg2Rad;a.velocity=Dir(0)*.3f;}
+                        else{a.action="run";a.actionKind=null;a.actionTime=0;a.angle=150*Mathf.Deg2Rad;a.velocity=Dir(150)*2f;}});
+                    File.WriteAllText(Path.Combine(output,"lab.txt"),lab.ToString());
                 }
                 File.WriteAllText(Path.Combine(output,"info.txt"),info.ToString());
                 File.WriteAllText(Path.Combine(output,"metrics.txt"),"prototype Mecanim\n");

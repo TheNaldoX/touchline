@@ -234,6 +234,8 @@ namespace Touchline
         static readonly Dictionary<string,float[]> clipYawCurves=new Dictionary<string,float[]>();
         float mecanimFacingTarget;                  // ° : orientation de présentation visée (PlayerView)
         bool turning;float turnFrom;int turnSlot=-1;
+        // Clip du geste capturé en cours (null : déplacement seul) ; pour les films de contrôle.
+        public string MecanimGestureClip=>mecanimActionKey;
 
         bool MecanimSharpTurn(Actor actor,float poseSpeed,bool carrying,out string clip)
         {
