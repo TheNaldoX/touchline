@@ -103,11 +103,12 @@ namespace Touchline
         }
         // Lampes des projecteurs : éteintes le jour (gris, éclairées par le soleil) ;
         // allumées le soir (blanc sans éclairage, pas d'émission ni de variante de shader).
-        static readonly Color LampOff=new Color(.62f,.64f,.66f),LampOn=new Color(1,1,.94f);
+        static readonly Color LampOff=new Color(.62f,.64f,.66f),LampOn=new Color(1,1,.94f)*LampGlow;
+        const float LampGlow=3; // lampes allumées au-delà du blanc (HDR) : seul le bloom du soir les fait rayonner (BroadcastGrade)
         public static Material LampMaterial(bool night)=>night?UnlitMaterial(LampOn):PlayerView.Material(LampOff);
         // Panneaux à LED : lumière propre (Unlit), même éclat à l'ombre du toit, au soleil
         // ou de nuit ; un peu moins vifs en plein jour (contraste réduit par le soleil).
-        public const float BoardLedDay=.9f,BoardLedNight=1f; // multiplicateur de l'atlas (0–1)
+        public const float BoardLedDay=.9f,BoardLedNight=1.2f; // multiplicateur de l'atlas ; > 1 le soir : halo léger des LED par le bloom (HDR)
         public static Material BoardMaterial(bool night,Texture atlas){float led=night?BoardLedNight:BoardLedDay;return UnlitMaterial(new Color(led,led,led),atlas);}
         // Tribunes et public : les projecteurs visent la pelouse, les gradins restent
         // dans la pénombre (multiplicateur de couleur, alpha conservé).
