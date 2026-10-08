@@ -82,11 +82,11 @@ namespace Touchline
             for(int side=-1;side<=1;side+=2){Surface(StadiumGeometry.Stand(side,false),side<0?farConcrete:concrete,true);Surface(StadiumGeometry.Stand(side,true),side<0?farSeats:seats,true);Surface(StadiumGeometry.EndStand(side),seats,true);}
             // Le toit, le second anneau et le mur du fond projettent aussi une ombre réelle (joueurs proches de la caméra).
             Surface(StadiumGeometry.UpperStand(),farSeats,true);Surface(StadiumGeometry.StadiumShell(),PlayerView.Material(new Color(.26f,.29f,.33f)*far),true);
-            Surface(StadiumGeometry.FloodlightMasts(),concrete,false);Surface(StadiumGeometry.FloodlightLamps(),PlayerView.Material(StadiumLighting.LampColor(floodlit)),false);
+            Surface(StadiumGeometry.FloodlightMasts(),concrete,false);Surface(StadiumGeometry.FloodlightLamps(),StadiumLighting.LampMaterial(floodlit),false);
             var homeClub=Array.Find(database.clubs,c=>c.id==simulation.State.home);var awayClub=Array.Find(database.clubs,c=>c.id==simulation.State.away);
             if(!ColorUtility.TryParseHtmlString(homeClub?.color,out var homeColor))homeColor=new Color(.2f,.42f,.57f);
             if(!ColorUtility.TryParseHtmlString(awayClub?.color,out var awayColor))awayColor=new Color(.65f,.3f,.2f);
-            boardAtlas=StadiumAtmosphere.BoardAtlas(homeColor,awayColor);var boards=PlayerView.Material(StadiumLighting.BoardGlow(floodlit));boards.mainTexture=boardAtlas;Surface(StadiumGeometry.PerimeterBoards(),boards,false);
+            boardAtlas=StadiumAtmosphere.BoardAtlas(homeColor,awayColor);var boards=StadiumLighting.BoardMaterial(floodlit,boardAtlas);Surface(StadiumGeometry.PerimeterBoards(),boards,false);
             Surface(StadiumGeometry.TechnicalArea(),concrete,false);Surface(StadiumGeometry.ClubBanners(),PlayerView.Material(Color.Lerp(homeColor,Color.gray,.25f)),false);
             var crowdMesh=StadiumAtmosphere.Crowd(simulation.State.home,simulation.State.away);stadiumMeshes.Add(crowdMesh);
             var crowd=new GameObject(crowdMesh.name);crowd.transform.SetParent(world,false);crowd.AddComponent<MeshFilter>().sharedMesh=crowdMesh;

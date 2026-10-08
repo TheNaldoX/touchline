@@ -70,6 +70,16 @@ namespace Touchline.Tests
                 Assert.AreEqual(turf.g*tint.g,material.color.g,1e-4f);Assert.AreEqual(1f,material.color.a);
             }finally{Object.DestroyImmediate(material);}
         }
+        [Test] public void LedBoardsAndLitLampsDoNotDependOnTheLight()
+        {
+            var unlit=Resources.Load<Material>(StadiumLighting.ShadeMaterialPath).shader;var atlas=new Texture2D(4,4);
+            Material day=StadiumLighting.BoardMaterial(false,atlas),night=StadiumLighting.BoardMaterial(true,atlas),off=StadiumLighting.LampMaterial(false),on=StadiumLighting.LampMaterial(true);
+            try{
+                Assert.AreEqual(unlit,day.shader);Assert.AreEqual(unlit,night.shader);Assert.AreSame(atlas,day.mainTexture);
+                Assert.LessOrEqual(day.color.r,night.color.r,"Panneaux un peu moins vifs en plein jour");
+                Assert.AreEqual(unlit,on.shader,"Lampes allumées le soir");Assert.AreNotEqual(unlit,off.shader,"Lampes éteintes éclairées par le soleil");
+            }finally{foreach(var m in new[]{day,night,off,on})Object.DestroyImmediate(m);Object.DestroyImmediate(atlas);}
+        }
         [Test] public void LitAndShadedTurfTileThePitchExactly()
         {
             float edge=StadiumLighting.RoofShadowEdge(),endX=StadiumLighting.RoofShadowEndX();

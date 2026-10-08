@@ -73,11 +73,13 @@ namespace Touchline
             return new Color(Channel(DayAmbient.r),Channel(DayAmbient.g),Channel(DayAmbient.b),1);
         }
         // Matière d'une surface à l'ombre : Unlit (repli Lit si le matériau manque).
-        public static Material ShadedMaterial(Color baseColor,Texture texture=null)
+        public static Material ShadedMaterial(Color baseColor,Texture texture=null)=>UnlitMaterial(baseColor*ShadeTint(),texture);
+        // Matière sans éclairage (couleur affichée telle quelle, brouillard compris).
+        public static Material UnlitMaterial(Color color,Texture texture=null)
         {
             var template=Resources.Load<Material>(ShadeMaterialPath);
             var m=template!=null?new Material(template):PlayerView.Material(Color.white);
-            var c=baseColor*ShadeTint();c.a=1;m.color=c;if(texture!=null)m.mainTexture=texture;
+            color.a=1;m.color=color;if(texture!=null)m.mainTexture=texture;
             return m;
         }
         // Tribune d'en face (gradins, second anneau, toit, public du second anneau) l'après-midi :
@@ -96,12 +98,14 @@ namespace Touchline
             else Directional(parent,"Afternoon sun",SunRotation,SunIntensity,SunColor);
             return sky;
         }
-        // Lampes des projecteurs : grises le jour ; la nuit, couleur bien au-delà de 1
-        // pour qu'elles saturent en blanc avec la seule lumière ambiante (pas d'émission,
-        // donc aucune variante de shader supplémentaire).
-        public static Color LampColor(bool night)=>night?new Color(7f,7f,6.4f):new Color(.62f,.64f,.66f);
-        // Panneaux à LED : couleur au-delà de 1 = lumineux même à l'ombre du toit ou de nuit.
-        public static Color BoardGlow(bool night)=>night?new Color(1.8f,1.8f,1.8f):new Color(1.6f,1.6f,1.6f);
+        // Lampes des projecteurs : éteintes le jour (gris, éclairées par le soleil) ;
+        // allumées le soir (blanc sans éclairage, pas d'émission ni de variante de shader).
+        static readonly Color LampOff=new Color(.62f,.64f,.66f),LampOn=new Color(1,1,.94f);
+        public static Material LampMaterial(bool night)=>night?UnlitMaterial(LampOn):PlayerView.Material(LampOff);
+        // Panneaux à LED : lumière propre (Unlit), même éclat à l'ombre du toit, au soleil
+        // ou de nuit ; un peu moins vifs en plein jour (contraste réduit par le soleil).
+        public const float BoardLedDay=.9f,BoardLedNight=1f; // multiplicateur de l'atlas (0–1)
+        public static Material BoardMaterial(bool night,Texture atlas){float led=night?BoardLedNight:BoardLedDay;return UnlitMaterial(new Color(led,led,led),atlas);}
         // Tribunes et public : les projecteurs visent la pelouse, les gradins restent
         // dans la pénombre (multiplicateur de couleur, alpha conservé).
         public static Color StandLight(bool night)=>night?new Color(.5f,.5f,.55f,1):Color.white;
