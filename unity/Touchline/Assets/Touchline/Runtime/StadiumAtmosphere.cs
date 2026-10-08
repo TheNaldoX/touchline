@@ -56,7 +56,9 @@ namespace Touchline
         public const float ScarfRaise=.5f;        // m : écharpe tendue au-dessus de la tête (célébration)
         public const float ElbowRaise=.55f,HandRaise=.9f; // m : bras levés (premiers rangs détaillés)
         // Second anneau de la tribune d'en face : silhouettes simples (cartes), maillage à part.
-        public static Mesh UpperCrowd(string home,string away,float occupancy=.84f)
+        public static Mesh UpperCrowd(string home,string away,float occupancy=.84f)=>UpperCrowd(home,away,occupancy,out _);
+        // rig : tous rattachés au club recevant (CrowdReaction : debout et sauts sur ses buts ; cartes sans bras).
+        public static Mesh UpperCrowd(string home,string away,float occupancy,out CrowdRig rig)
         {
             occupancy=float.IsNaN(occupancy)||float.IsInfinity(occupancy)?0:Mathf.Clamp01(occupancy);
             uint state=2166136261;foreach(char c in "upper|"+(home??"")+"|"+(away??"")){state^=c;state*=16777619;}
@@ -65,9 +67,11 @@ namespace Touchline
             for(int row=0;row<StadiumGeometry.UpperTierRows;row++)for(int seat=0;seat<UpperSeatsPerRow;seat++){
                 uint sample=Next();if((sample&65535)/65536f>=occupancy)continue;
                 var position=new Vector3(-57+seat*1.2f,StadiumGeometry.UpperTierBase+row*StadiumGeometry.UpperRowRise,-(StadiumGeometry.UpperTierFront+row*StadiumGeometry.UpperRowDepth));
+                int first=builder.VertexCount;
                 builder.Person(position,Vector3.forward,.44f+((sample>>16)&15)*.012f,(int)((sample>>21)%4),5+(int)((sample>>25)&1),sample,false);
+                builder.EndPerson(first,position,false);
             }
-            var mesh=builder.Build();mesh.name="Upper tier supporters";return mesh;
+            rig=builder.Rig();var mesh=builder.Build();mesh.name="Upper tier supporters";return mesh;
         }
         const int UpperSeatsPerRow=96; // sièges de 1,2 m sur 115 m
 
