@@ -3,6 +3,9 @@
 Ce fichier est lu automatiquement par Codex au début de chaque tâche.
 Il s'applique à tout agent qui modifie ce dépôt.
 
+Avant toute tâche, lire aussi `HANDOFF.md` (état du projet, CI, pièges, file de travail)
+et le mettre à jour en fin de session.
+
 ## Le projet
 
 **Touchline** : jeu de gestion de football type Football Manager, Unity, Android
