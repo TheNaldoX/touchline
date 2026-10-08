@@ -42,6 +42,27 @@ namespace Touchline
         static readonly Color[] BootShades={
             new Color(.045f,.055f,.065f),new Color(.045f,.055f,.065f),new Color(.045f,.055f,.065f),new Color(.92f,.93f,.94f),new Color(.92f,.93f,.94f),
             new Color(.98f,.42f,.08f),new Color(.80f,.95f,.15f),new Color(.10f,.40f,.95f),new Color(.88f,.10f,.14f),new Color(.95f,.40f,.65f),new Color(.80f,.68f,.30f),new Color(.12f,.85f,.80f)};
+        // Coupes : la coque de cheveux MakeHuman est déformée dans deux copies partagées du
+        // maillage (volume sur le dessus, ou houppe à l'avant) ; aucun coût de rendu en plus.
+        const int HairMaterialIndex=7,FullHair=1,Quiff=2;
+        static int hairStart,hairCount;static Mesh[] hairStyles;SkinnedMeshRenderer bodyRenderer;
+        static readonly Vector3 HairCentre=new Vector3(0,1.70f,.03f); // m, centre approximatif du crâne (pose de repos)
+        const float FullHairSwell=.16f;  // agrandissement relatif de la coque sur le dessus (≈ 1,6 cm)
+        const float QuiffLift=.025f,QuiffForward=.012f; // m
+        public static int HairStyle(uint identity){uint style=(identity>>21)%8;return style==7?Quiff:style>=5?FullHair:0;}
+        Mesh AnatomyMesh(uint identity)
+        {
+            if(hairStyles==null||hairStyles[0]!=geometry)hairStyles=new[]{geometry,Restyle(geometry,FullHair),Restyle(geometry,Quiff)};
+            return hairStyles[HairStyle(identity)];
+        }
+        static Mesh Restyle(Mesh source,int style)
+        {
+            var mesh=Object.Instantiate(source);mesh.name=source.name+(style==FullHair?" · full hair":" · quiff");var vertices=mesh.vertices;
+            for(int i=hairStart;i<hairStart+hairCount;i++){var p=vertices[i];
+                if(style==FullHair)vertices[i]=HairCentre+(p-HairCentre)*(1+FullHairSwell*Mathf.SmoothStep(0,1,(p.y-1.66f)/.14f));
+                else{float w=Mathf.SmoothStep(0,1,(p.y-1.76f)/.06f)*Mathf.SmoothStep(0,1,p.z/.12f);vertices[i]=p+new Vector3(0,QuiffLift,QuiffForward)*w;}}
+            mesh.vertices=vertices;mesh.RecalculateBounds();return mesh;
+        }
         public static Color BootColour(uint identity)=>BootShades[(int)((identity>>17)%(uint)BootShades.Length)];
     }
 }

@@ -53,8 +53,33 @@ namespace Touchline.Tests
         {
             var hair=new HashSet<Color>();var boots=new HashSet<Color>();
             for(uint id=0;id<400;id++){hair.Add(PlayerView.HairColour(id*2654435761u));boots.Add(PlayerView.BootColour(id*2654435761u));}
-            Assert.GreaterOrEqual(hair.Count,6);Assert.GreaterOrEqual(boots.Count,6);
+            var styles=new HashSet<int>();for(uint id=0;id<400;id++)styles.Add(PlayerView.HairStyle(id*2654435761u));
+            Assert.GreaterOrEqual(hair.Count,6);Assert.GreaterOrEqual(boots.Count,6);Assert.AreEqual(3,styles.Count,"Trois coupes");
             Assert.AreEqual(PlayerView.HairColour(12345u),PlayerView.HairColour(12345u));
+        }
+        [Test] public void GoalNetBulgesUnderTheBallThenSettles()
+        {
+            var mesh=StadiumGeometry.GoalNet(1);try{
+                var rest=mesh.vertices;var ripple=new GoalNetRipple(mesh,1);
+                ripple.Advance(new Vector3(52.9f,1,0),true,1f/30);ripple.Advance(new Vector3(53.6f,1,0),true,1f/30); // 21 m/s dans le filet
+                for(int i=0;i<4;i++)ripple.Advance(new Vector3(54f,1,0),true,1f/30);
+                float near=0,far=0;var moved=mesh.vertices;
+                for(int i=0;i<rest.Length;i++){float d=(moved[i]-rest[i]).magnitude;if((rest[i]-new Vector3(54f,1,0)).magnitude<.5f)near=Mathf.Max(near,d);if(Mathf.Abs(rest[i].z)>3f)far=Mathf.Max(far,d);}
+                Assert.Greater(near,.02f,"Le filet se creuse sous le ballon");Assert.AreEqual(0,far,1e-5f,"Le reste du filet ne bouge pas");
+                for(int i=0;i<150;i++)ripple.Advance(new Vector3(54f,1,0),false,1f/30);
+                moved=mesh.vertices;for(int i=0;i<rest.Length;i++)Assert.AreEqual(0,(moved[i]-rest[i]).magnitude,1e-4f);
+            }finally{Object.DestroyImmediate(mesh);}
+        }
+        [Test] public void PitchWearSitsBetweenTurfAndLinesAndFadesOut()
+        {
+            var mesh=PitchTurf.WearPatches();try{
+                Assert.AreEqual(12,mesh.vertexCount);
+                foreach(var v in mesh.vertices){Assert.That(v.y,Is.InRange(.001f,.02f),"Sous les lignes, au-dessus du gazon");Assert.LessOrEqual(Mathf.Abs(v.x),PitchTurf.HalfLength);Assert.LessOrEqual(Mathf.Abs(v.z),PitchTurf.HalfWidth);}
+                foreach(var n in mesh.normals)Assert.Greater(n.y,.99f);
+            }finally{Object.DestroyImmediate(mesh);}
+            int c=PitchTurf.WearSize/2,edge=PitchTurf.WearSize-1;
+            Assert.Greater(PitchTurf.WearAmount(c,c),.2f,"Usure marquée au centre");
+            Assert.AreEqual(0,PitchTurf.WearAmount(0,0),.02f);Assert.AreEqual(0,PitchTurf.WearAmount(edge,c),.05f,"Bord fondu (pas de cadre visible)");
         }
         [Test] public void GradeIsSkippedInTheLowestQuality()
         {

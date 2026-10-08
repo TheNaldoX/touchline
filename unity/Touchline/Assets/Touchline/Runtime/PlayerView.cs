@@ -48,7 +48,7 @@ namespace Touchline
             ApplyAppearance(mats,identity);
             ownedMaterials=mats;
             if(geometry==null)geometry=BuildGeometry();
-            var anatomy=new GameObject("Skinned anatomy");anatomy.transform.SetParent(body,false);var renderer=anatomy.AddComponent<SkinnedMeshRenderer>();renderer.sharedMesh=geometry;renderer.bones=skeleton;renderer.rootBone=body;
+            var anatomy=new GameObject("Skinned anatomy");anatomy.transform.SetParent(body,false);var renderer=anatomy.AddComponent<SkinnedMeshRenderer>();bodyRenderer=renderer;renderer.sharedMesh=AnatomyMesh(identity);renderer.bones=skeleton;renderer.rootBone=body;
             var sections=new Material[source.parts.Length+1];for(int i=0;i<source.parts.Length;i++)sections[i]=mats[Mathf.Clamp(source.parts[i].material,0,mats.Length-1)];sections[source.parts.Length]=mats[PrintSlot];renderer.sharedMaterials=sections;
             renderer.localBounds=new Bounds(new Vector3(0,.9f,0),new Vector3(4.6f,3.8f,3.6f));renderer.updateWhenOffscreen=false;
             foreach(var sideName in Sides)if(bones.TryGetValue("foot."+sideName,out var foot)){var boot=new GameObject("Football boot");boot.transform.SetParent(foot,false);boot.AddComponent<MeshFilter>().sharedMesh=FootballBootMesh.Shared;boot.AddComponent<MeshRenderer>().sharedMaterial=mats[5];}
@@ -66,6 +66,7 @@ namespace Touchline
                 for(int v=0;v<length;v++){vertices[offset+v]=new Vector3(p.position[v*3],p.position[v*3+1],p.position[v*3+2]);weights[offset+v]=new BoneWeight{boneIndex0=p.skinIndex[v*4],boneIndex1=p.skinIndex[v*4+1],boneIndex2=p.skinIndex[v*4+2],boneIndex3=p.skinIndex[v*4+3],weight0=p.skinWeight[v*4],weight1=p.skinWeight[v*4+1],weight2=p.skinWeight[v*4+2],weight3=p.skinWeight[v*4+3]};}
                 hasNormals&=p.normal?.Length==length*3;
                 for(int v=0;v<length;v++){if(p.normal?.Length==length*3)normals[offset+v]=new Vector3(p.normal[v*3],p.normal[v*3+1],p.normal[v*3+2]);if(p.uv?.Length==length*2)uv[offset+v]=new Vector2(p.uv[v*2],p.uv[v*2+1]);}
+                if(p.material==HairMaterialIndex){hairStart=offset;hairCount=length;}
                 indices[i]=new int[p.index.Length];for(int j=0;j<p.index.Length;j++)indices[i][j]=p.index[j]+offset;offset+=length;
             }
             // Dernier sous-maillage : flocage du dos (voir ShirtPrint).
@@ -76,7 +77,7 @@ namespace Touchline
             mesh.uv=uv;if(hasNormals)mesh.normals=normals;else mesh.RecalculateNormals();mesh.RecalculateBounds();return mesh;
         }
         void ApplyPhysique(PlayerData data){MotionStature=data.heightCm>=145&&data.heightCm<=215?data.heightCm*.01f:1.8f;float scale=data.heightCm>=145&&data.heightCm<=215?(data.heightCm*.01f)/source.height:1;transform.localScale=Vector3.one*scale;}
-        public void ChangeIdentity(PlayerData data){PlayerId=data.id;leftFooted=data.preferredFoot=="Left"||data.preferredFoot=="Gauche";ApplyPhysique(data);uint identity=AppearanceIdentity(data.id);motionIdentity=(int)(identity%10000)+1;ApplyAppearance(ownedMaterials,identity);SetPrintIdentity(data);initialized=false;}
+        public void ChangeIdentity(PlayerData data){PlayerId=data.id;leftFooted=data.preferredFoot=="Left"||data.preferredFoot=="Gauche";ApplyPhysique(data);uint identity=AppearanceIdentity(data.id);motionIdentity=(int)(identity%10000)+1;ApplyAppearance(ownedMaterials,identity);if(bodyRenderer!=null)bodyRenderer.sharedMesh=AnatomyMesh(identity);SetPrintIdentity(data);initialized=false;}
         public Vector3 FootPosition(bool left)=>Limb((left?"L":"R")).foot.position;
         public void ResetPresentation(){initialized=false;}
         public Vector3 BootContactPosition(bool left){var foot=Limb(left?"L":"R").foot;return foot.TransformPoint(new Vector3(0,0,.22f))+foot.forward*.11f;}
