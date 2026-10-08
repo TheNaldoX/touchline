@@ -1,0 +1,7 @@
+home=176 away=160 seed=731 start=95 seconds=15 fps=30 clock_end=110.0 score=0-0
+mecanim=True ready=True
+graphics=OpenGLCore llvmpipe (LLVM 15.0.7, 256 bits) OpenGL 4.5 (Core Profile) Mesa 23.2.1-1ubuntu3.1~22.04.4
+pipeline=TouchlineURP quality=TouchlineURP
+probe-red mean=255/0/0
+frame 0 broadcast mean=60/86/68 camera=(-41.12, 20.21, 33.81) enabled=True
+frame 449 broadcast mean=64/91/65 camera=(-7.15, 20.21, 49.53) enabled=True
