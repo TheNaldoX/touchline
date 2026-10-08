@@ -20,6 +20,7 @@ Options de diagnostic :
   libres, champions, survie des promus, progression de la note par âge, plus gros effectifs.
   Exemple : `dotnet run -c Release -- 10 176 --world --report --worldseed 77` (~5 min).
 - `--worldseed N` change la graine des tirages du monde (résultats, jeunes générés).
+- Avec `--report`, la variable d'environnement `SEASONSIM_DIAG=1` liste joueur par joueur les deux plus gros effectifs.
 - `--dump fichier` écrit transferts IA et état de chaque joueur : deux versions du Core doivent
   produire des fichiers identiques après une optimisation « sans effet » (`cmp`).
 - `--savesize` mesure la sauvegarde au format `JsonUtility` (via `tools/CoreTests/UnityShim.cs`).
