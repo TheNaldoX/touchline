@@ -15,6 +15,10 @@ le blocage corrigé par `SquadSafetyNet` (contrats tous expirés → plus de onz
 jouer ou d'avancer). Compter ~1 minute par saison.
 
 Options de diagnostic :
+
+- `pwsh -File tools/SeasonSim/Test-FreeAgentReport.ps1` (depuis la racine) vérifie,
+  sans simuler de saison, que le résumé des joueurs libres correspond au tableau
+  détaillé du monde initialisé. `-Dotnet chemin/vers/dotnet` permet un SDK local.
 - `--report` ajoute les indicateurs de l'IA des clubs, saison par saison : tailles d'effectif (avec et
   sans les partants annoncés), âges, notes, salaires/recettes, dettes, transferts, joueurs générés et
   libres, champions, survie des promus, progression de la note par âge, plus gros effectifs.
