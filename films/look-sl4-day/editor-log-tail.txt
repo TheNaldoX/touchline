@@ -1,0 +1,120 @@
+[Assets/Touchline/Editor/CiMatchFilm.cs line 82]
+
+Assets/Touchline/Runtime/PlayerMecanimMotion.cs(69): PlayableGraph was not destroyed.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /home/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+Touchline.Editor.CiMatchFilm:Run () (at Assets/Touchline/Editor/CiMatchFilm.cs:82)
+
+[Assets/Touchline/Editor/CiMatchFilm.cs line 82]
+
+[Physics::Module] Cleanup current backend.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input System polling thread exited.
+Input System module state changed to: Shutdown.
+[Licensing::IpcConnector] LicenseClient-root-notifications channel disconnected successfully.
+[Licensing::IpcConnector] LicenseClient-root channel disconnected successfully.
+AcceleratorClientConnectionCallback - disconnected - :0
+Unaligned memory is passed to ValidateIntegrity!
+Invalid memory pointer was detected!
+Caught fatal signal - signo:11 code:2 errno:0 addr:0x7fa1b024c028
+Obtained 33 stack frames.
+#0  0x005565bc0733fd in burst_signal_handler(int, siginfo_t*, void*)
+#1  0x007fa1d60b4520 in (Unknown)
+#2  0x005565bc13ca41 in MemoryProfiler::UnregisterAllocation(void*, unsigned long, MemLabelId const&)
+#3  0x005565bdd1d3e2 in MemoryManager::TryDeallocateWithLabel(void*, MemLabelId, char const*, int)
+#4  0x005565bdd17505 in free_alloc_internal(void*, MemLabelId const&, char const*, int)
+#5  0x005565bb927aa7 in core::vector<unsigned char, core::allocator<unsigned char, 0ul> >::~vector()
+#6  0x005565bde312e9 in LocalResolverCache::~LocalResolverCache()
+#7  0x005565bde962b5 in CleanUpAssetDatabaseV2()
+#8  0x005565bddfded6 in AssetDatabase::CleanupAssetDatabase()
+#9  0x005565bd3e3e63 in Application::CoreShutdown()
+#10 0x005565bd3ecc12 in Application::Terminate(bool)
+#11 0x005565bd3e01df in Application::Exit(int)
+#12 0x000000423738fc in (wrapper managed-to-native) UnityEditor.EditorApplication:Exit (int)
+#13 0x00000041bf263f in Touchline.Editor.CiMatchFilm:Run ()
+#14 0x000000419faefe in (wrapper runtime-invoke) object:runtime_invoke_void (object,intptr,intptr,intptr)
+#15 0x007fa0c08463b6 in (Unknown)
+#16 0x007fa0c09e3d91 in (Unknown)
+#17 0x007fa0c09e3cf5 in mono_runtime_invoke
+#18 0x005565bc503ec3 in scripting_method_invoke(ScriptingMethodPtr, ScriptingObjectPtr, ScriptingArguments&, ScriptingExceptionPtr*, bool)
+#19 0x005565bc4dcd9c in ScriptingInvocation::Invoke(ScriptingExceptionPtr*, bool)
+#20 0x005565bd3e0b76 in Application::ParseARGVCommands()
+#21 0x005565bd3dfe0e in Application::FinishLoadingProject()
+#22 0x005565bdafb08d in InitializeUnity(void*)
+#23 0x007fa1d66d02c8 in (Unknown)
+#24 0x007fa1d66cfc44 in g_main_context_dispatch
+#25 0x007fa1d6725488 in (Unknown)
+#26 0x007fa1d66cf2b3 in g_main_loop_run
+#27 0x007fa1d6cdfd2d in gtk_main
+#28 0x005565bdafa98c in main
+#29 0x007fa1d609bd90 in (Unknown)
+#30 0x007fa1d609be40 in __libc_start_main
+#31 0x005565bb8c3021 in _start
+Segmentation fault (core dumped)
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...
+[40m[32minfo[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      ALC ILPP context 1 is unloading
+[UnityConnectServicesConfig] Local config successfully read: "/usr/share/unity3d/config/services-config.json"
+[UnityConnectServicesConfig] "clientConnectTimeoutSec" was overridden with "5"
+[UnityConnectServicesConfig] "clientHandshakeTimeoutSec" was overridden with "10"
+[UnityConnectServicesConfig] Service configuration:
+    "servicesConfigBaseUrl": "",
+    "disableServicesWindow": false,
+    "disableUserLogin": false,
+    "entitlementCacheTimeoutInSeconds": 60,
+    "clientConnectTimeoutSec": 5,
+    "clientHandshakeTimeoutSec": 10,
+    "clientResolveEntitlementsTimeoutSec": 30,
+    "clientUpdateLicenseTimeoutSec": 30,
+    "licensingServiceBaseUrl": "",
+    "enableProxyAutoconfig": "false"
+
+[UnityConnectServicesConfig] Local config successfully read: "/usr/share/unity3d/config/services-config.json"
+[UnityConnectServicesConfig] "clientConnectTimeoutSec" was overridden with "5"
+[UnityConnectServicesConfig] "clientHandshakeTimeoutSec" was overridden with "10"
+[UnityConnectServicesConfig] Service configuration:
+    "servicesConfigBaseUrl": "",
+    "disableServicesWindow": false,
+    "disableUserLogin": false,
+    "entitlementCacheTimeoutInSeconds": 60,
+    "clientConnectTimeoutSec": 5,
+    "clientHandshakeTimeoutSec": 10,
+    "clientResolveEntitlementsTimeoutSec": 30,
+    "clientUpdateLicenseTimeoutSec": 30,
+    "licensingServiceBaseUrl": "",
+    "enableProxyAutoconfig": "false"
+
+Unity Editor version:    6000.3.24f1 (4e7b9b5b6244)
+Branch:                  6000.3/staging
+Build type:              Release
+Batch mode:              YES
+System name:             Linux
+Distro version:          #22-Ubuntu SMP Mon Jul 27 17:24:03 UTC 2026
+Kernel version:          6.17.0-1022-azure
+Architecture:            x86_64
+Available memory:        15989 MB
+Date:                    2026-10-08T11:32:01Z
+User audibert.victor13500@gmail.com logged in successfully
+[UnityConnect::TryLogin] Request Succeeded.
+[Licensing::Module] Trying to connect to existing licensing client channel...
+[Licensing::IpcConnector] Channel LicenseClient-root doesn't exist
+[Licensing::Module] Successfully launched the LicensingClient (PId: 5350)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root" at "2026-10-08T11:32:01.997796Z"
+[SignatureVerifier] Application signature verification not supported on this platform.
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.3+d7ffd15
+  Session Id:              3e0fa5018be14e6abd2e3706bcbdc372
+  Correlation Id:          7f33e84325eea82657a1ad96515d9f63
+  External correlation Id: 8267440454037983527
+  Machine Id:              ohjTDF4Rg8t49/slUpKf5sEoCig=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-root" (connect: 0.38s, validation: 0.12s, handshake: 0.00s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root-notifications" at "2026-10-08T11:32:02.120301Z"
+[Licensing::Module] Connected to LicensingClient (PId: 5350, launch time: 0.00, total connection time: 0.50s)
+[Licensing::Client] Successfully updated the access token
+[Licensing::Module] Successfully updated the access token psmJvWkoNX...
+[Licensing::Client] Successfully processed license management request
+[Licensing::Module] Successfully returned the entitlement license
+[Licensing::Client] Successfully queried for the EntitlementGroupsDetails
+[Licensing::Client] Successfully returned ULF license with serial number : "F4-U776-56HB-EXF8-B6C4-XXXX"
