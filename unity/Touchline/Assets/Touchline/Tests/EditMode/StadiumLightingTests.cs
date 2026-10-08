@@ -50,6 +50,15 @@ namespace Touchline.Tests
             foreach(var channel in new[]{tint.r,tint.g,tint.b})Assert.That(channel,Is.InRange(.2f,.75f));
             Assert.Greater(tint.b,tint.r,"L'ombre éclairée par le ciel tire vers le bleu");
         }
+        [Test] public void FarStandSitsInTheRoofShadowOnlyByDay()
+        {
+            Color day=StadiumLighting.FarStandShade(false),tint=StadiumLighting.ShadeTint();
+            Assert.AreEqual(Color.white,StadiumLighting.FarStandShade(true),"Le soir, pas d'ombre du toit");
+            Assert.AreEqual(1f,day.a);
+            // Plus sombre qu'au soleil, mais moins que la pelouse : les contremarches vues de la caméra sont déjà à contre-jour.
+            foreach(var (shade,turf) in new[]{(day.r,tint.r),(day.g,tint.g),(day.b,tint.b)})Assert.That(shade,Is.InRange(turf,.85f));
+            Assert.Less(StadiumLighting.ShadeSmoothness,.16f,"Pas de reflet du ciel sur la pelouse à l'ombre");
+        }
         [Test] public void LitAndShadedTurfTileThePitchExactly()
         {
             float edge=StadiumLighting.RoofShadowEdge(),endX=StadiumLighting.RoofShadowEndX();

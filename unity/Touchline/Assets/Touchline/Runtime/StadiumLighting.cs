@@ -68,6 +68,15 @@ namespace Touchline
             float Channel(float ambient,float light){float a=Mathf.GammaToLinearSpace(ambient)*ShadeSkyView;return Mathf.LinearToGammaSpace(a/(a+Mathf.GammaToLinearSpace(light)*sun));}
             return new Color(Channel(DayAmbient.r,SunColor.r),Channel(DayAmbient.g,SunColor.g),Channel(DayAmbient.b,SunColor.b),1);
         }
+        // Lissé (0–1) des surfaces à l'ombre du toit : vu de la caméra, leur reflet est
+        // celui de la tribune sombre, pas du ciel. Avec le lissé courant (0,16), le reflet
+        // rasant du ciel par défaut grisait la pelouse à l'ombre (≈ 71/77/71 au lieu d'un vert).
+        public const float ShadeSmoothness=0f;
+        // Tribune d'en face (gradins, second anneau, toit, public du second anneau) l'après-midi :
+        // entièrement sous l'ombre du toit. Multiplicateur de couleur (sRGB) entre celui des
+        // faces horizontales (ShadeTint) et celui des contremarches déjà à contre-jour (≈ 0,8).
+        static readonly Color FarStandDayShade=new Color(.6f,.62f,.68f,1);
+        public static Color FarStandShade(bool night)=>night?Color.white:FarStandDayShade;
 
         // Crée la lumière sous parent, règle ambiance et brouillard ; renvoie la couleur du ciel.
         public static Color Apply(Transform parent,bool night)
