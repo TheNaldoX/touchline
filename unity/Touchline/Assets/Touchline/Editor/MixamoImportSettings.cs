@@ -13,11 +13,11 @@ namespace Touchline.Editor
         const string Folder="Assets/Touchline/Resources/Animations/Mixamo/";
         static readonly string[] LoopKeywords={"idle","walk","jog","run","strafe","backward","sidestep","dribble","sprint"};
         // Clips doublés en version miroir (gauche/droite) : « <nom> (miroir) ».
-        static readonly string[] MirroredClips={"Goalkeeper Diving Save","Goalkeeper Diving Save (1)"};
+        static readonly string[] MirroredClips={"Goalkeeper Diving Save","Goalkeeper Diving Save (1)","Sprint Turn","Soccer Pass"};
         static readonly string[] OneShotKeywords={"stop","turn","strike","kick","pass","shot","chip","header","tackle","trip","catch","save","throw","scoop","place","receive","victory","celebrat","defeat","pump"};
 
         // À incrémenter quand les réglages changent : Unity réimporte alors les clips.
-        public override uint GetVersion()=>4;
+        public override uint GetVersion()=>5;
 
         static bool Mixamo(string path)=>path.Replace('\\','/').StartsWith(Folder)&&path.EndsWith(".fbx",System.StringComparison.OrdinalIgnoreCase);
 

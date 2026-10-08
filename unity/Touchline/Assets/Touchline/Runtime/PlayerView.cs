@@ -98,6 +98,7 @@ namespace Touchline
                 float watch=(1-Mathf.SmoothStep(0,1,(actor.velocity.Length-3.2f)/2.6f))*(1-Mathf.SmoothStep(0,1,(ballOffset.magnitude-14)/6));
                 facing=Mathf.LerpAngle(actor.angle*Mathf.Rad2Deg,Mathf.Atan2(ballOffset.x,ballOffset.y)*Mathf.Rad2Deg,watch)*Mathf.Deg2Rad;
             }
+            mecanimFacingTarget=facing*Mathf.Rad2Deg;
             if(actor.action=="run"||actor.action=="idle"||MatchSimulation.PreparingFootDelivery(actor)||(actor.action=="keeper-hold"&&actor.actionKind==MatchSimulation.KeeperDistributionTurn)||ContinueHeaderFacing(actor,actionTime,dt,reset,facing))
                 transform.rotation=Quaternion.Euler(0,locomotionFacing.Sample(facing*Mathf.Rad2Deg,actor.velocity.Length,dt,reset),0);
             else {
