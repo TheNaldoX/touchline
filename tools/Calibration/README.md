@@ -14,3 +14,17 @@ Les affiches sont tirées au hasard entre clubs jouables d'un même championnat 
 Même graine = mêmes matchs : comparer toujours avant/après avec la même graine.
 
 Prérequis : SDK .NET 8. Environ 1,3 s par match et par cœur.
+
+## Audit des consignes
+
+`dotnet run -c Release -- --tactics 200 1 tactical-audit.csv`
+
+Compare sept consignes sur les mêmes 200 affiches et graines, soit 2 800 matchs.
+Une seule consigne change à la fois (0,2 contre 0,8 ; missions des milieux défense/attaque).
+Formation, onze et adversaire sont identiques ; l'IA adverse reste active. Mesures du club
+dirigé à domicile : largeur, ligne, pressing, passes, précision, tirs, xG, condition et buts.
+Le CSV conserve chaque résultat, sans écraser un fichier existant. La sortie console donne
+la moyenne des différences appariées et un intervalle approximatif à 95 %. « Non concluant »
+ne signifie pas absence d'effet. Intervalles exploratoires, sans correction des comparaisons
+multiples ; ce n'est ni une promesse de victoire ni une validation sur toutes les formations.
+Une erreur de simulation interrompt l'audit au lieu d'exclure silencieusement un match.

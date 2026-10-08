@@ -2,9 +2,10 @@ using System;using System.Collections.Generic;using System.IO;using System.Linq;
 // Calibration du moteur de match Touchline hors d'Unity.
 // Usage : dotnet run -c Release -- [matchs=200] [graine=1] [chemin database.json]
 // Compile directement les sources de Assets/Touchline/Core : toute modification du moteur est mesurée.
-static class P{
+static partial class P{
  static string FindDatabase(){foreach(var start in new[]{Environment.CurrentDirectory,AppContext.BaseDirectory}){var d=new DirectoryInfo(start);while(d!=null){var f=Path.Combine(d.FullName,"unity","Touchline","Assets","Touchline","Resources","Data","database.json");if(File.Exists(f))return f;d=d.Parent;}}throw new FileNotFoundException("database.json introuvable : passez son chemin en 3e argument.");}
  static void Main(string[] a){
+  if(a.Length>0&&a[0]=="--tactics"){AuditTactics(a.Skip(1).ToArray());return;}
   int n=a.Length>0?int.Parse(a[0]):200;uint seed0=a.Length>1?uint.Parse(a[1]):1;string dbPath=a.Length>2?a[2]:FindDatabase();
   var db=JsonSerializer.Deserialize<Database>(File.ReadAllText(dbPath),new JsonSerializerOptions{IncludeFields=true});
   db.Find(db.players[0].id); // construit l'index joueur une fois : Database.Find n'est pas thread-safe
@@ -19,14 +20,15 @@ static class P{
   Report(res);
  }
  class MatchStats{public int goals,shots,onTarget,corners,fouls,yellows,reds,pens,offsides,throws,passes,completed,goalKicks,freeKicks,homeGoals,awayGoals;public float possHome,diff,xg;public bool error;public Dictionary<string,int> ph=new Dictionary<string,int>(),ev=new Dictionary<string,int>();public string err;}
- static MatchStats Play(Database db,string home,string away,uint seed){
+ static MatchStats Play(Database db,string home,string away,uint seed,Action<Tactic> configure=null,Action<MatchState> observe=null){
   var st=new MatchStats();
   try{
-   var c=new Career{club=home};c.lineup=Career.Select(db,home,c.tactic);
+   var c=new Career{club=home};configure?.Invoke(c.tactic);c.lineup=Career.Select(db,home,c.tactic);
    var sim=MatchSimulation.Create(db,c,away,seed,2700);sim.State.professionalRules=true;
    string prev=sim.State.phase;var m=sim.State;
    void Run(){while(!m.halfTime&&!m.finished){sim.Advance(.1);if(m.phase!=prev){st.ph[m.phase]=st.ph.GetValueOrDefault(m.phase)+1;if(m.phase=="penalty")st.pens++;if(m.phase=="goal-kick")st.goalKicks++;if(m.phase=="free-kick")st.freeKicks++;prev=m.phase;}}}
    Run();sim.ResumeHalf();Run();
+   observe?.Invoke(m);
    st.homeGoals=m.score[0];st.awayGoals=m.score[1];st.goals=m.score[0]+m.score[1];st.shots=m.shots[0]+m.shots[1];st.passes=m.passes[0]+m.passes[1];st.completed=m.completedPasses[0]+m.completedPasses[1];
    foreach(var t in m.metrics){st.onTarget+=t.shotsOnTarget;st.corners+=t.corners;st.fouls+=t.fouls;st.offsides+=t.offsides;st.throws+=t.throwIns;st.xg+=t.xg;}
    foreach(var e in m.events)st.ev[e.kind]=st.ev.GetValueOrDefault(e.kind)+1;

@@ -75,7 +75,7 @@ static class P{
   s.generated=db.players.Count(p=>p.id.StartsWith("regen-")&&p.id.Contains("-"+s.year+"-"));s.freeAgents=db.players.Count(p=>p.team=="free");
   s.yearTransfers=(c.world.aiTransfers??new List<AiTransferRecord>()).Where(t=>t.year==s.year).ToList();
   foreach(var cl in db.clubs.Where(x=>x.playable))s.league[cl.id]=cl.league;foreach(var p in db.players)if(p.team!=null&&p.team!="retired")s.people[p.id]=(p.age,p.rating,p.team);
-  s.free=db.players.Count(p=>string.IsNullOrEmpty(p.team));s.transfers=c.world.aiTransfers?.Count??0;return s;
+  s.free=s.freeAgents;s.transfers=c.world.aiTransfers?.Count??0;return s;
  }
  static int SaveCheck(Career c,string dbText){
   var J=(Func<object,string>)(o=>UnityEngine.JsonUtility.ToJson(o));var sw=System.Diagnostics.Stopwatch.StartNew();
