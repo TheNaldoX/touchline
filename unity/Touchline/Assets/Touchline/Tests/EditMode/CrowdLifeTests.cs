@@ -91,7 +91,7 @@ namespace Touchline.Tests
                 for(int i=0;i<=240;i++){
                     float t=i/240f;ball=Vector3.Lerp(new Vector3(side*10,.11f,-12),new Vector3(side*53.4f,.8f,1.5f),t*t);
                     shot.Advance(ball,1/30f);shot.Apply(camera);var p=camera.transform.position;
-                    Assert.Greater(p.x*side,52.5f+1.8f-.01f,"Derrière la ligne, hors du filet");Assert.Greater(Mathf.Abs(p.z),3.66f+1);Assert.Less(p.y,2);
+                    Assert.Greater(p.x*side,52.5f+1.8f-.01f,"Derrière la ligne, hors du filet");Assert.Greater(Mathf.Abs(p.z),3.66f+1);Assert.LessOrEqual(p.y,GoalReplayCamera.Height,"Plan bas");
                     Assert.That(camera.fieldOfView,Is.InRange(GoalReplayCamera.MinFov,GoalReplayCamera.PortraitMaxFov));
                     if(i>0)Assert.Less((p-previous).magnitude,.05f,"Mouvement continu, sans saut");previous=p;
                     if(i>10){var view=camera.WorldToViewportPoint(ball);Assert.Greater(view.z,0);Assert.That(view.x,Is.InRange(.05f,.95f));Assert.That(view.y,Is.InRange(.05f,.95f));}

@@ -12,8 +12,8 @@ namespace Touchline
         public const float BehindLine=2.8f;         // m derrière la ligne de but au départ (filet jusqu'à 1,8 m, panneaux à 3,5 m)
         public const float PushIn=1f;               // m d'avancée lente vers le terrain pendant le ralenti
         public const float PushDuration=6f;         // s pour cette avancée
-        public const float BesidePost=6.5f;         // m du centre du but, côté caméra principale (hors du filet)
-        public const float Height=1.6f;             // m, plan à hauteur d'homme
+        public const float BesidePost=10f;          // m du centre du but, côté caméra principale (filet et poteau pas trop près)
+        public const float Height=2f;               // m, plan bas (un peu au-dessus des joueurs)
         public const float LookAbove=.6f;           // m au-dessus du ballon : corps du buteur dans le cadre
         public const float FrameWidth=13f;          // m de scène gardés autour du ballon
         public const float MinFov=14f,MaxFov=50f;   // ° de champ vertical (paysage)

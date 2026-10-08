@@ -16,9 +16,9 @@ namespace Touchline.Editor
     // ensuite en vidéo par le workflow. Paramètres : -touchlineFilm=nom,
     // -touchlineFilmStart=secondes de jeu avant de filmer, -touchlineFilmSeconds,
     // -touchlineFilmHome / -touchlineFilmAway (identifiants de clubs), -touchlineFilmSeed.
-    // Nom contenant « goal » : le film commence GoalLead s avant le premier but
-    // marqué après le départ demandé (graines suivantes essayées si la première
-    // mi-temps n'en a pas), pour voir le filet, le ralenti et la tribune.
+    // Nom contenant « goal » : le film commence GoalLead s avant le premier but du
+    // club recevant marqué après le départ demandé (graines suivantes essayées si la
+    // première mi-temps n'en a pas), pour voir le filet, le ralenti et les tribunes.
     public static class CiMatchFilm
     {
         const int Fps=30,Width=960,Height=540;
@@ -46,9 +46,9 @@ namespace Touchline.Editor
                 if(name.Contains("goal")){
                     for(uint attempt=0;attempt<GoalSeedAttempts;attempt++){
                         var probe=NewMatch(seed+attempt);while(probe.State.clock<start&&!probe.State.halfTime&&!probe.State.finished)probe.Advance(MatchSimulation.Step);
-                        int before=probe.State.score[0]+probe.State.score[1];
-                        while(!probe.State.halfTime&&!probe.State.finished&&probe.State.score[0]+probe.State.score[1]==before)probe.Advance(MatchSimulation.Step);
-                        if(probe.State.score[0]+probe.State.score[1]==before)continue;
+                        int before=probe.State.score[0]; // buts du club recevant (tribunes les plus grandes)
+                        while(!probe.State.halfTime&&!probe.State.finished&&probe.State.score[0]==before)probe.Advance(MatchSimulation.Step);
+                        if(probe.State.score[0]==before)continue;
                         goalNote=$" goal_clock={probe.State.clock:0.0} goal_seed={seed+attempt}";seed+=attempt;start=Mathf.Max(0,probe.State.clock-GoalLead);
                         if(Arg("-touchlineFilmSeconds",null)==null)seconds=GoalFilmSeconds;break;
                     }
