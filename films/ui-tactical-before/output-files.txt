@@ -1,0 +1,11 @@
+total 2280
+drwxr-xr-x 2 root root   4096 Oct  8 22:16 .
+drwxr-xr-x 3 root root   4096 Oct  8 22:11 ..
+-rw-r--r-- 1 root root 315788 Oct  8 22:16 plie-accueil.png
+-rw-r--r-- 1 root root 292104 Oct  8 22:12 plie-bureau.png
+-rw-r--r-- 1 root root 223402 Oct  8 22:14 plie-calendrier.png
+-rw-r--r-- 1 root root 289631 Oct  8 22:13 plie-effectif.png
+-rw-r--r-- 1 root root 336969 Oct  8 22:14 plie-messages.png
+-rw-r--r-- 1 root root 221025 Oct  8 22:15 plie-plus.png
+-rw-r--r-- 1 root root 349521 Oct  8 22:13 plie-tactique-avec-ballon.png
+-rw-r--r-- 1 root root 281152 Oct  8 22:13 plie-tactique.png
