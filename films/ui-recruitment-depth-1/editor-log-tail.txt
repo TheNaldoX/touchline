@@ -1,0 +1,120 @@
+[454/550    0s] CopyFiles Library/ScriptAssemblies/UnityEditor.UI.pdb
+[455/550    0s] CopyFiles Library/ScriptAssemblies/Unity.Collections.Editor.pdb
+[456/550    0s] CopyFiles Library/ScriptAssemblies/Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.pdb
+[457/550    0s] CopyFiles Library/ScriptAssemblies/Unity.InternalAPIEngineBridge.004.pdb
+[458/550    0s] CopyFiles Library/ScriptAssemblies/Unity.RenderPipelines.Core.Runtime.pdb
+[459/550    0s] CopyFiles Library/ScriptAssemblies/Unity.Rendering.LightTransport.Editor.pdb
+[460/550    0s] CopyFiles Library/ScriptAssemblies/Unity.PerformanceTesting.Editor.pdb
+[461/550    0s] CopyFiles Library/ScriptAssemblies/Unity.Collections.CodeGen.dll
+[462/550    0s] CopyFiles Library/ScriptAssemblies/Unity.RenderPipelines.Universal.Config.Runtime.pdb
+[463/550    0s] CopyFiles Library/ScriptAssemblies/Unity.UnifiedRayTracing.Runtime.pdb
+[464/550    0s] CopyFiles Library/ScriptAssemblies/Touchline.Core.pdb
+[465/550    0s] CopyFiles Library/ScriptAssemblies/Unity.RenderPipelines.Universal.Shaders.pdb
+[466/550    0s] CopyFiles Library/ScriptAssemblies/Unity.PerformanceTesting.pdb
+[467/550    0s] CopyFiles Library/ScriptAssemblies/Unity.Burst.Editor.dll
+[468/550    0s] CopyFiles Library/ScriptAssemblies/Unity.Collections.Editor.dll
+[469/550    0s] CopyFiles Library/ScriptAssemblies/UnityEditor.UI.Analytics.dll
+[470/550    0s] CopyFiles Library/ScriptAssemblies/Unity.Searcher.Editor.dll
+[471/550    0s] CopyFiles Library/ScriptAssemblies/Unity.Searcher.Editor.pdb
+[472/550    0s] CopyFiles Library/ScriptAssemblies/Unity.Mathematics.Editor.dll
+[473/550    0s] CopyFiles Library/ScriptAssemblies/Unity.Collections.CodeGen.pdb
+[474/550    0s] CopyFiles Library/ScriptAssemblies/Unity.TextMeshPro.pdb
+[475/550    0s] CopyFiles Library/ScriptAssemblies/UnityEngine.UI.pdb
+[476/550    0s] CopyFiles Library/ScriptAssemblies/Unity.Mathematics.pdb
+[477/550    0s] CopyFiles Library/ScriptAssemblies/Unity.RenderPipeline.Universal.ShaderLibrary.pdb
+[478/550    0s] CopyFiles Library/ScriptAssemblies/Unity.PerformanceTesting.Editor.dll
+[479/550    0s] CopyFiles Library/ScriptAssemblies/Unity.Burst.Editor.pdb
+[480/550    0s] CopyFiles Library/ScriptAssemblies/Unity.RenderPipelines.Core.ShaderLibrary.pdb
+[481/550    0s] CopyFiles Library/ScriptAssemblies/Unity.Burst.pdb
+[482/550    0s] CopyFiles Library/ScriptAssemblies/Unity.RenderPipelines.Core.Runtime.Shared.pdb
+[483/550    0s] CopyFiles Library/ScriptAssemblies/Unity.Collections.pdb
+[484/550    0s] CopyFiles Library/ScriptAssemblies/Unity.Mathematics.Editor.pdb
+[485/550    0s] CopyFiles Library/ScriptAssemblies/UnityEditor.UI.dll
+[486/550    0s] CopyFiles Library/ScriptAssemblies/Unity.RenderPipelines.GPUDriven.Runtime.pdb
+[487/550    0s] CopyFiles Library/ScriptAssemblies/Unity.Rendering.LightTransport.Editor.dll
+[488/550    0s] CopyFiles Library/ScriptAssemblies/Unity.ShaderGraph.Utilities.dll
+[489/550    0s] ILPostProcess Library/Bee/artifacts/1300b0aE.dag/post-processed/Unity.TextMeshPro.Editor.dll (+pdb)
+Processin## Script Compilation Error for: Csc Library/Bee/artifacts/1300b0aE.dag/Touchline.Runtime.dll (+2 others)
+## CmdLine: "/opt/unity/Editor/Data/NetCoreRuntime/dotnet" exec "/opt/unity/Editor/Data/DotNetSdkRoslyn/csc.dll" /nostdlib /noconfig /shared "@Library/Bee/artifacts/1300b0aE.dag/Touchline.Runtime.rsp" "@Library/Bee/artifacts/1300b0aE.dag/Touchline.Runtime.rsp2"
+## Output:
+Assets/Touchline/Runtime/ScoutingWorkspaceUI.cs(117,78): error CS0119: 'TouchlineApp.Position(VisualElement, Slot)' is a method, which is not valid in the given context
+Assets/Touchline/Runtime/ScoutingWorkspaceUI.cs(118,78): error CS0119: 'TouchlineApp.Position(VisualElement, Slot)' is a method, which is not valid in the given context
+essor
+Total cache size 19160788
+Total cache size after purge 19160788, took 00:00:00.0250905
+Assets/Touchline/Runtime/ScoutingWorkspaceUI.cs(117,78): error CS0119: 'TouchlineApp.Position(VisualElement, Slot)' is a method, which is not valid in the given context
+Assets/Touchline/Runtime/ScoutingWorkspaceUI.cs(118,78): error CS0119: 'TouchlineApp.Position(VisualElement, Slot)' is a method, which is not valid in the given context
+AssetDatabase: script compilation time: 25.607124s
+Scripts have compiler errors.
+
+Aborting batchmode due to failure:
+Scripts have compiler errors.
+
+
+SDL leaked 2 allocations
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...
+[40m[32minfo[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      ALC ILPP context 1 is unloading
+[UnityConnectServicesConfig] Local config successfully read: "/usr/share/unity3d/config/services-config.json"
+[UnityConnectServicesConfig] "clientConnectTimeoutSec" was overridden with "5"
+[UnityConnectServicesConfig] "clientHandshakeTimeoutSec" was overridden with "10"
+[UnityConnectServicesConfig] Service configuration:
+    "servicesConfigBaseUrl": "",
+    "disableServicesWindow": false,
+    "disableUserLogin": false,
+    "entitlementCacheTimeoutInSeconds": 60,
+    "clientConnectTimeoutSec": 5,
+    "clientHandshakeTimeoutSec": 10,
+    "clientResolveEntitlementsTimeoutSec": 30,
+    "clientUpdateLicenseTimeoutSec": 30,
+    "licensingServiceBaseUrl": "",
+    "enableProxyAutoconfig": "false"
+
+[UnityConnectServicesConfig] Local config successfully read: "/usr/share/unity3d/config/services-config.json"
+[UnityConnectServicesConfig] "clientConnectTimeoutSec" was overridden with "5"
+[UnityConnectServicesConfig] "clientHandshakeTimeoutSec" was overridden with "10"
+[UnityConnectServicesConfig] Service configuration:
+    "servicesConfigBaseUrl": "",
+    "disableServicesWindow": false,
+    "disableUserLogin": false,
+    "entitlementCacheTimeoutInSeconds": 60,
+    "clientConnectTimeoutSec": 5,
+    "clientHandshakeTimeoutSec": 10,
+    "clientResolveEntitlementsTimeoutSec": 30,
+    "clientUpdateLicenseTimeoutSec": 30,
+    "licensingServiceBaseUrl": "",
+    "enableProxyAutoconfig": "false"
+
+Unity Editor version:    6000.3.24f1 (4e7b9b5b6244)
+Branch:                  6000.3/staging
+Build type:              Release
+Batch mode:              YES
+System name:             Linux
+Distro version:          #22-Ubuntu SMP Mon Jul 27 17:24:03 UTC 2026
+Kernel version:          6.17.0-1022-azure
+Architecture:            x86_64
+Available memory:        15989 MB
+Date:                    2026-10-09T07:40:59Z
+User audibert.victor13500@gmail.com logged in successfully
+[UnityConnect::TryLogin] Request Succeeded.
+[Licensing::Module] Trying to connect to existing licensing client channel...
+[Licensing::IpcConnector] Channel LicenseClient-root doesn't exist
+[Licensing::Module] Successfully launched the LicensingClient (PId: 5061)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root" at "2026-10-09T07:41:00.103625Z"
+[SignatureVerifier] Application signature verification not supported on this platform.
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.3+d7ffd15
+  Session Id:              cf5816e2ab6242a79990724dcdc5c4b0
+  Correlation Id:          554f9c87e1b8df43fb4808d1426146c9
+  External correlation Id: 5834986926333985649
+  Machine Id:              rW2aLBEAzkiBSeL4Xp04U36oWiQ=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-root" (connect: 0.25s, validation: 0.05s, handshake: 0.00s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-root-notifications" at "2026-10-09T07:41:00.151498Z"
+[Licensing::Module] Connected to LicensingClient (PId: 5061, launch time: 0.00, total connection time: 0.29s)
+[Licensing::Client] Successfully updated the access token
+[Licensing::Module] Successfully updated the access token 6bv9N4w52d...
+[Licensing::Client] Successfully processed license management request
+[Licensing::Module] Successfully returned the entitlement license
+[Licensing::Client] Successfully queried for the EntitlementGroupsDetails
+[Licensing::Client] Successfully returned ULF license with serial number : "F4-U776-56HB-EXF8-B6C4-XXXX"
