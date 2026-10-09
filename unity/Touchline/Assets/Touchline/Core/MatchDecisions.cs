@@ -92,7 +92,7 @@ Actor best=null;float bestScore=-100;string kind="pass";
  if(mate.slot==0&&p.position.x*dir>0)score-=7;  
  if(forward< -4&&pressure>4&&space<pressure)score-=5;  
  // A weak passer under pressure recognises fewer ambitious options.  
- score-=aerial?(100-Skill(p,"vision"))*.02f:0;score+=(Random()-.5f)*(1.8f-Skill(p,"vision")*.01f);  
+ score-=aerial?(100-Skill(p,"vision"))*.02f:0;score+=(Random()-.5f)*(1.8f-Skill(p,"vision")*.01f)*DecisionNoiseFactor(p);  
  // Servir un partenaire marqué de près hors de la zone de finition, quand
  // on pourrait jouer ailleurs, revient souvent à lui faire perdre le ballon.
  if((candidate=="pass"||candidate=="switch")&&mate.position.x*dir<MarkedReceiverZone)score-=MarkedReceiverCost(space);
@@ -189,7 +189,7 @@ Actor best=null;float bestScore=-100;string kind="pass";
  // along the ground: its error is scaled by LongBallError.
  // Tempo already changes decision cadence and ball speed (hence reception
  // difficulty). Do not also worsen an otherwise identical prepared pass.
- float error=(1-skill/105)*(Random()-.5f)*(Math.Min(14,d*.30f)+pressure*2+BasePassExecutionUncertainty)*(kind=="switch"||d>30&&kind!="cross"?LongBallError:1);
+ float error=(1-skill/105)*(Random()-.5f)*(Math.Min(14,d*.30f)+pressure*2+BasePassExecutionUncertainty)*(kind=="switch"||d>30&&kind!="cross"?LongBallError:1)*PassErrorFactor(from);
  var end=PassTarget(from,to,kind)+new Point(error,error*(Random()<.5f?-1:1));
  // A lofted long ball is judged on its length: weight it wrongly and it
  // sails long (more often than short) and can carry over the touchline.
@@ -264,7 +264,7 @@ Actor best=null;float bestScore=-100;string kind="pass";
  float approachFacing=p.angle;  
  int dir=Direction(p.side);float d=Point.Distance(p.position,new Point(dir*52.5f,0));float quality=penalty?.76f:ShotQuality(p,header);State.shotXg=quality;State.metrics[p.side].xg+=quality;  
  float finishing=penalty?Skill(p,"penalties"):freeKick?FreeKickSkill(p):header?Skill(p,"headingAccuracy"):OpenPlayShotSkill(p,d);  
- float accuracy=penalty?.83f+finishing*.0012f:Mathx.Clamp(.30f+finishing/240-d/110,.15f,.74f);bool onTarget=Random()<accuracy;  
+ float accuracy=penalty?.83f+finishing*.0012f:Mathx.Clamp(.30f+finishing/240-d/110,.15f,.74f);accuracy+=Composure(p)*ComposureShotAccuracy;bool onTarget=Random()<accuracy;  
  var keeper=State.actors[(1-p.side)*11];float side=keeper.position.z>0?-1:1;  
  // Finishing and room to set the body govern how precisely a player  
  // can place the shot away from the keeper, including headers.  

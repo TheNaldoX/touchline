@@ -53,6 +53,7 @@ namespace Touchline.Editor
         static bool FocusedBoard=>Path.GetFileName(Output).StartsWith("ui-board-focus-",StringComparison.Ordinal);
         static bool FocusedDepth=>Path.GetFileName(Output).StartsWith("ui-recruitment-depth",StringComparison.Ordinal);
         static bool FocusedCareer=>Path.GetFileName(Output).StartsWith("ui-career-review-",StringComparison.Ordinal);
+        static bool FocusedImmersion=>Path.GetFileName(Output).StartsWith("ui-immersion-focus-",StringComparison.Ordinal);
         const int FocusedStepFrames=3;
         static TouchlineApp App=>TouchlineApp.Instance;
         static UIDocument Document=>App.GetComponent<UIDocument>();
@@ -77,6 +78,7 @@ namespace Touchline.Editor
 
         static List<Action> BuildSteps()
         {
+            if(FocusedImmersion)return BuildFocusedImmersionSteps();
             if(FocusedCareer)return BuildCareerReviewSteps();
             if(FocusedBoard)return BuildFocusedBoardSteps();
             if(FocusedTactics)return BuildFocusedTacticSteps();
@@ -120,6 +122,38 @@ namespace Touchline.Editor
                 list.Add(()=>{Capture(screen.tag+"-match-tactique");Click("Avec ballon");});
                 list.Add(()=>{Capture(screen.tag+"-match-consignes");SetField("tacticalTab","Composition");Call("Navigate","Match");});
             }
+            return list;
+        }
+
+        // Immersion : préparation, briefing adverse, causeries, cris depuis la touche,
+        // vestiaire de mi-temps, lecture de l'adjoint et consigne individuelle.
+        static List<Action> BuildFocusedImmersionSteps()
+        {
+            audit.AppendLine("Parcours ciblé immersion : deux résolutions natives par écran.");
+            var list=new List<Action>();var first=Screens[0];
+            void Both(string tag,Action prepare){foreach(var s in Screens){var screen=s;list.Add(()=>{Resize(screen.width,screen.height);prepare?.Invoke();});list.Add(()=>Capture(screen.tag+"-"+tag));}}
+            list.Add(()=>{App.Career.EnsureWorld(App.Database);Resize(first.width,first.height);Call("Navigate","Club");});
+            Both("preparation",()=>{Call("Navigate","Club");var focus=Root.Q("manager-training-focus");if(focus==null)throw new Exception("Thème d'entraînement absent");Root.Q<ScrollView>()?.ScrollTo(focus);});
+            list.Add(()=>{Resize(first.width,first.height);App.Career.life.day=App.Career.life.nextFixture;Call("Navigate","Match");});
+            list.Add(()=>Click("Entrer sur le terrain"));
+            list.Add(()=>{if(App.Career.match?.mindset==null||App.Career.match.mindset.Length!=2)throw new Exception("État mental absent du match de carrière");SetField("introAutomatic",false);Call("IntroGo",1);});
+            Both("briefing",()=>{var card=Root.Q("immersion-opponent");if(card==null)throw new Exception("Rapport adverse absent");Root.Q<ScrollView>("prematch-scroll").ScrollTo(card);});
+            list.Add(()=>Call("IntroGo",4));
+            Both("causerie-avant",()=>{var card=Root.Q("team-talk");if(card==null)throw new Exception("Causerie absente");Root.Q<ScrollView>("prematch-scroll").ScrollTo(card);});
+            list.Add(()=>{float before=App.Career.match.mindset[0].composure.Average();Click("team-talk-calm");float after=App.Career.match.mindset[0].composure.Average();if(after<=before)throw new Exception("Causerie sans effet");audit.AppendLine("Causerie « Rassurer » : sang-froid moyen "+before.ToString("0.00",CultureInfo.InvariantCulture)+" → "+after.ToString("0.00",CultureInfo.InvariantCulture));});
+            Both("causerie-reaction",()=>{var card=Root.Q("team-talk");if(card!=null)Root.Q<ScrollView>("prematch-scroll").ScrollTo(card);});
+            list.Add(()=>{Resize(first.width,first.height);if(Root.Q<Button>("prematch-kickoff")!=null)Click("prematch-kickoff");});
+            list.Add(()=>{Arena.Paused=true;Arena.Simulation.Advance(20*App.Career.match.SecondsPerMinute);Click("match-instructions-open");});
+            Both("cris-touche",()=>{var card=Root.Q("touchline-shouts");if(card==null)throw new Exception("Cris depuis la touche absents");Root.Q("match-instructions").Q<ScrollView>().ScrollTo(card);});
+            list.Add(()=>{Click("shout-press");if(App.Career.match.events.Last().kind!="shout")throw new Exception("Cri non enregistré");audit.AppendLine("Cri « Pressez ! » enregistré, retour au match.");});
+            list.Add(()=>{var sim=Arena.Simulation;sim.Advance(sim.State.HalfDuration);if(!sim.State.halfTime)throw new Exception("Mi-temps non atteinte");Call("MatchAnalysis");});
+            Both("vestiaire-mi-temps",null);
+            list.Add(()=>Click("team-talk-encourage"));
+            Both("vestiaire-reaction",null);
+            list.Add(()=>Click("Adjoint"));
+            Both("adjoint-lecture",null);
+            list.Add(()=>{Call("CloseModal");SetField("tacticalTab","Composition");SetField("selectedSlot",1);Call("Navigate","Tactique");});
+            Both("consigne-individuelle",()=>{var field=Root.Q("tactics-player-instruction");if(field==null)throw new Exception("Consigne individuelle absente");});
             return list;
         }
 
@@ -498,7 +532,7 @@ namespace Touchline.Editor
             float now=Time.realtimeSinceStartup;if(startedAt<0){startedAt=now;Application.logMessageReceived+=(m,st,t)=>{if(log.Length<200000)log.AppendLine(t+": "+m+(t==LogType.Exception?"\n"+st:""));};}
             if(TouchlineApp.Instance==null){if(now-startedAt>BootTimeoutSeconds)Finish("TouchlineApp absent");return;}
             if(now-startedAt>RunTimeoutSeconds){Finish("délai dépassé à l'étape "+stage);return;}
-            if(++frames<(FocusedTactics||FocusedRecruitment||FocusedLoan||FocusedNegotiation||FocusedBoard||FocusedDepth||FocusedCareer?FocusedStepFrames:StepFrames)||now-stepAt<StepSeconds)return;frames=0;stepAt=now;
+            if(++frames<(FocusedTactics||FocusedRecruitment||FocusedLoan||FocusedNegotiation||FocusedBoard||FocusedDepth||FocusedCareer||FocusedImmersion?FocusedStepFrames:StepFrames)||now-stepAt<StepSeconds)return;frames=0;stepAt=now;
             steps??=BuildSteps();
             if(stage<0)stage=0;
             if(stage>=steps.Count){Finish(failures==0?null:failures+" étape(s) en échec");return;}

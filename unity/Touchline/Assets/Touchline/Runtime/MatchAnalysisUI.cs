@@ -14,8 +14,12 @@ namespace Touchline
             arena.Paused=true;var m=Career.match;var panel=Modal("Lecture du match");panel.AddToClassList("match-analysis");panel.name="match-analysis";
             var order=FixtureDisplayOrder(m);var clubs=Row(panel,"analysis-clubs");Text(clubs,ClubName(order.HomeClub));Text(clubs,order.Score(m)+" · "+m.Minute+"′","analysis-score");Text(clubs,ClubName(order.AwayClub));
             var tabs=Row(panel,"profile-tabs");var body=Scroll(panel);body.name="match-analysis-body";
-            void Show(string tab){matchAnalysisTab=tab;foreach(var b in tabs.Query<Button>().ToList())b.EnableInClassList("active",b.text==tab);body.Clear();body.scrollOffset=Vector2.zero;if(tab=="Temps forts")MatchTimeline(body,m);else if(tab=="Adjoint")MatchCoach(body,m);else MatchStatistics(body,m);AnimateEntry(body);}
-            foreach(var tab in new[]{"Statistiques","Temps forts","Adjoint"})Button(tabs,tab,()=>Show(tab));Show(matchAnalysisTab);
+            string talkMoment=Career.TalkMoment();bool talkOpen=talkMoment!=null&&m.mindset!=null&&m.mindset.Length==2;
+            // À la pause et au coup de sifflet final, le vestiaire s'ouvre d'abord tant que le groupe n'a pas été réuni.
+            if(talkOpen&&m.mindset[0]?.talks?.Any(t=>t.StartsWith(talkMoment+"|group|",StringComparison.Ordinal))!=true){matchAnalysisTab="Vestiaire";lastTalkReactions=null;lastTalkError=null;}
+            if(!talkOpen&&matchAnalysisTab=="Vestiaire")matchAnalysisTab="Statistiques";
+            void Show(string tab){matchAnalysisTab=tab;foreach(var b in tabs.Query<Button>().ToList())b.EnableInClassList("active",b.text==tab);body.Clear();body.scrollOffset=Vector2.zero;if(tab=="Temps forts")MatchTimeline(body,m);else if(tab=="Adjoint")MatchCoach(body,m);else if(tab=="Vestiaire")TeamTalkCard(body,()=>Show("Vestiaire"));else MatchStatistics(body,m);AnimateEntry(body);}
+            foreach(var tab in talkOpen?new[]{"Statistiques","Temps forts","Adjoint","Vestiaire"}:new[]{"Statistiques","Temps forts","Adjoint"})Button(tabs,tab,()=>Show(tab));Show(matchAnalysisTab);
             var actions=Row(panel,"analysis-actions");Button(actions,"Modifier les consignes",()=>Navigate("Tactique")).SetEnabled(Career.life.managerBanUntil<=Career.life.day);
             Button(actions,m.finished?"Retour au club":m.halfTime?"Deuxième mi-temps":"Reprendre le match",()=>{CloseModal();if(m.finished){Navigate("Club");return;}if(m.halfTime)arena.Simulation.ResumeHalf();arena.Paused=false;}).AddToClassList("primary");
         }
@@ -33,9 +37,9 @@ namespace Touchline
             Stat("Arrêts / sorties captées",$"{a.saves} / {a.keeperClaims}",$"{b.saves} / {b.keeperClaims}");Stat("Hors-jeu",a.offsides.ToString(),b.offsides.ToString());Stat("Remplacements",m.substitutions[0].ToString(),m.substitutions[1].ToString());
             Text(parent,"Données issues des actions jouées. Les xG sont une estimation interne. Le début de match offre encore peu de recul.","footnote");
         }
-        static readonly string[] MajorEventKinds={"kickoff","goal","shot","save","woodwork","yellow","red","injury","substitution","penalty","interval","fulltime","abandoned"};
+        static readonly string[] MajorEventKinds={"kickoff","goal","shot","save","woodwork","yellow","red","injury","substitution","penalty","interval","fulltime","abandoned","assistant","shout","opponent-talk"};
         static bool SignificantMoment(string kind)=>Array.IndexOf(MajorEventKinds,kind)>=0;
-        static string MomentLabel(string kind)=>kind switch{"kickoff"=>"ENGAGEMENT","goal"=>"BUT","shot"=>"TIR","save"=>"ARRÊT","woodwork"=>"MONTANT","yellow"=>"AVERTISSEMENT","red"=>"EXCLUSION","injury"=>"BLESSURE","substitution"=>"REMPLACEMENT","penalty"=>"PENALTY","interval"=>"MI-TEMPS","fulltime"=>"FIN DU MATCH","abandoned"=>"ARRÊT DU MATCH",_=>"ACTION"};
+        static string MomentLabel(string kind)=>kind switch{"kickoff"=>"ENGAGEMENT","goal"=>"BUT","shot"=>"TIR","save"=>"ARRÊT","woodwork"=>"MONTANT","yellow"=>"AVERTISSEMENT","red"=>"EXCLUSION","injury"=>"BLESSURE","substitution"=>"REMPLACEMENT","penalty"=>"PENALTY","interval"=>"MI-TEMPS","fulltime"=>"FIN DU MATCH","abandoned"=>"ARRÊT DU MATCH","assistant"=>"ADJOINT","shout"=>"DEPUIS LA TOUCHE","opponent-talk"=>"VESTIAIRE ADVERSE",_=>"ACTION"};
         void MatchTimeline(VisualElement parent,MatchState m)
         {
             var filter=new Toggle("Inclure les passes et les duels"){value=allMatchEvents};parent.Add(filter);var entries=new VisualElement();parent.Add(entries);
@@ -45,6 +49,7 @@ namespace Touchline
         }
         void MatchCoach(VisualElement parent,MatchState m)
         {
+            AssistantObservations(parent,m);
             if(Career.world!=null)Career.EnsureStaffMarket(Database);var staff=Career.Staff("assistant");Text(parent,staff.name+" · Tactique "+staff.tactics+" / 20","section-title");
             if(staff.wage<=0){Text(parent,"Le poste d’adjoint est vacant. Recrutez un adjoint pour disposer de conseils.","notice");return;}
             Text(parent,staff.fictional?"Adjoint fictif · compétences de simulation":"Identité réelle · compétences estimées pour la simulation","footnote");

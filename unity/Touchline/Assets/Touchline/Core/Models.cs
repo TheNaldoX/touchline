@@ -87,7 +87,10 @@ namespace Touchline.Core
         public static float Distance(Point a, Point b) => (a - b).Length;
         public static Point Lerp(Point a, Point b, float t) => a + (b - a) * t;
     }
-    [Serializable] public class Slot { public string role, duty="support"; public float x, y; public Slot(string r, float x, float y) { role = r; this.x = x; this.y = y; } }
+    [Serializable] public class Slot { public string role, duty="support"; public float x, y;
+        // Consigne individuelle (PlayerInstructions) : lue sur le poste sans ballon. Vide = aucune.
+        public string instruction="";
+        public Slot(string r, float x, float y) { role = r; this.x = x; this.y = y; } }
     [Serializable] public class Tactic
     {
         public string formation = "4-3-3";
@@ -204,6 +207,8 @@ namespace Touchline.Core
         public float awayReviewAt=480, awayBaseLine=.45f, awayBaseTempo=.5f, awayBaseRisk=.5f;
         public float awayTacticalReviewAt=120,awayBaseDefensiveWidth=.45f,awayBasePress=.5f;
         public int awayObservedCrosses,awayObservedThrough;
+        // L'adversaire exploite une ligne haute observée (OpponentCoach) ; valeurs d'origine à restaurer.
+        public bool awayExploitingLine,awayBaseCounter;public float awayBaseDirectness=-1;
         public string awayPlan="balanced";
         public TeamMetrics[] metrics={new TeamMetrics(),new TeamMetrics()};
         public Actor[] actors;
@@ -214,6 +219,9 @@ namespace Touchline.Core
         public List<PendingSubstitution> pendingSubstitutions=new List<PendingSubstitution>();
         public List<float> homeWindows=new List<float>(), awayWindows=new List<float>();
         public List<MatchEvent> events=new List<MatchEvent>();
+        // État mental et automatismes des deux équipes (TeamMindset). Absent ou vide :
+        // moteur neutre, identique aux anciennes sauvegardes et à la calibration.
+        public TeamMindset[] mindset;
         public int Minute => MinuteAt(clock);
     }
 }
