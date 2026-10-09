@@ -21,11 +21,11 @@ static partial class P{
   Report(res);
  }
  class MatchStats{public int goals,shots,onTarget,corners,fouls,yellows,reds,pens,offsides,throws,passes,completed,goalKicks,freeKicks,homeGoals,awayGoals;public float possHome,diff,xg;public bool error;public Dictionary<string,int> ph=new Dictionary<string,int>(),ev=new Dictionary<string,int>();public string err;}
- static MatchStats Play(Database db,string home,string away,uint seed,Action<Tactic> configure=null,Action<MatchState> observe=null){
+ static MatchStats Play(Database db,string home,string away,uint seed,Action<Tactic> configure=null,Action<MatchState> observe=null,Action<MatchSimulation> prepare=null){
   var st=new MatchStats();
   try{
    var c=new Career{club=home};configure?.Invoke(c.tactic);c.lineup=Career.Select(db,home,c.tactic);
-   var sim=MatchSimulation.Create(db,c,away,seed,2700);sim.State.professionalRules=true;
+   var sim=MatchSimulation.Create(db,c,away,seed,2700);sim.State.professionalRules=true;prepare?.Invoke(sim);
    string prev=sim.State.phase;var m=sim.State;
    void Run(){while(!m.halfTime&&!m.finished){sim.Advance(.1);if(m.phase!=prev){st.ph[m.phase]=st.ph.GetValueOrDefault(m.phase)+1;if(m.phase=="penalty")st.pens++;if(m.phase=="goal-kick")st.goalKicks++;if(m.phase=="free-kick")st.freeKicks++;prev=m.phase;}}}
    Run();sim.ResumeHalf();Run();

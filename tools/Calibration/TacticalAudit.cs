@@ -12,15 +12,16 @@ static partial class P
 {
     sealed class TacticalSample
     {
-        public double Width, Line, Press, PassLength, Passes, Completion, Shots, Xg, Fitness, GoalsFor, GoalsAgainst;
-        public double[] Values=>new[]{Width,Line,Press,PassLength,Passes,Completion,Shots,Xg,Fitness,GoalsFor,GoalsAgainst};
-        public static readonly string[] Names={"Largeur (m)","Ligne (m depuis centre)","Pressing (joueur·s)","Passe moyenne (m)","Passes tentées","Passes réussies (%)","Tirs","xG","Condition finale (%)","Buts pour","Buts contre"};
+        public double Width, Line, Press, PassLength, Passes, Completion, Shots, Xg, Fitness, GoalsFor, GoalsAgainst, Crosses, ThroughAgainst, OffsidesCaught, HighRecoveries;
+        public double[] Values=>new[]{Width,Line,Press,PassLength,Passes,Completion,Shots,Xg,Fitness,GoalsFor,GoalsAgainst,Crosses,ThroughAgainst,OffsidesCaught,HighRecoveries};
+        public static readonly string[] Names={"Largeur (m)","Ligne (m depuis centre)","Pressing (joueur·s)","Passe moyenne (m)","Passes tentées","Passes réussies (%)","Tirs","xG","Condition finale (%)","Buts pour","Buts contre","Centres","Passes en profondeur adverses","Hors-jeu adverses","Récupérations hautes"};
         public void Read(MatchState m)
         {
             var t=m.metrics[0];Width=t.AverageWidth;Line=t.AverageLine;Press=t.pressingSeconds;
             PassLength=t.AveragePassLength(m.passes[0]);Passes=m.passes[0];Completion=Passes>0?100*m.completedPasses[0]/Passes:0;
             Shots=m.shots[0];Xg=t.xg;Fitness=m.actors.Where(x=>x.side==0&&x.slot>0).Average(x=>x.fitness);
             GoalsFor=m.score[0];GoalsAgainst=m.score[1];
+            Crosses=t.crosses;ThroughAgainst=m.metrics[1].throughBalls;OffsidesCaught=m.metrics[1].offsides;HighRecoveries=t.highRecoveries;
         }
     }
     static void AuditTactics(string[] args)
@@ -36,15 +37,26 @@ static partial class P
         var random=new Random(seed);var fixtures=new List<(string home,string away,uint seed)>();
         while(fixtures.Count<count){var home=clubs[random.Next(clubs.Length)];var others=clubs.Where(c=>c.league==home.league&&c.id!=home.id).ToArray();if(others.Length==0)continue;fixtures.Add((home.id,others[random.Next(others.Length)].id,(uint)random.Next()));}
         // Only the indicated instruction changes. Formation and selected XI stay identical.
-        var choices=new (string name,string low,string high,Action<Tactic,bool> set)[]{
-            ("Mentalité","prudente","offensive",(t,h)=>t.mentality=h?.8f:.2f),
-            ("Pressing","mesuré","intense",(t,h)=>t.pressing=h?.8f:.2f),
-            ("Ligne","basse","haute",(t,h)=>t.line=h?.8f:.2f),
-            ("Largeur","étroite","large",(t,h)=>t.width=h?.8f:.2f),
-            ("Rythme","patient","rapide",(t,h)=>t.tempo=h?.8f:.2f),
-            ("Passes","courtes","directes",(t,h)=>t.directness=h?.8f:.2f),
-            ("Mission des milieux","défense","attaque",(t,h)=>{foreach(var s in t.withBall.Where(s=>s.role=="CM"))s.duty=h?"attack":"defend";})
+        // Etat mental et automatismes (club dirigé seulement), valeurs de TeamMindset (−1 à +1).
+        static Action<MatchSimulation> Mind(Action<TeamMindset> set)=>sim=>{var ours=TeamMindset.Neutral();set(ours);sim.State.mindset=new[]{ours,TeamMindset.Neutral()};};
+        static Action<Tactic,bool> Instruct(string instruction,params string[] roles)=>(t,h)=>{for(int i=1;i<11;i++)if(roles.Contains(t.withoutBall[i].role))t.withoutBall[i].instruction=h?instruction:"";};
+        var mental=new (string name,string low,string high,Action<bool,TeamMindset> set)[]{
+            ("Compréhension","nouveau système","automatismes rodés",(h,m)=>m.understanding=h?.3f:-.6f),
+            ("Sang-froid","groupe nerveux","groupe serein",(h,m)=>{for(int i=0;i<11;i++)m.composure[i]=h?.3f:-.4f;}),
+            ("Engagement","groupe démobilisé","groupe remonté",(h,m)=>{for(int i=0;i<11;i++)m.drive[i]=h?.4f:-.3f;}),
         };
+        (string name,string low,string high,Action<Tactic,bool> set,Func<bool,Action<MatchSimulation>> prepare)[] choices=new (string name,string low,string high,Action<Tactic,bool> set,Func<bool,Action<MatchSimulation>> prepare)[]{
+            ("Mentalité","prudente","offensive",(t,h)=>t.mentality=h?.8f:.2f,null),
+            ("Pressing","mesuré","intense",(t,h)=>t.pressing=h?.8f:.2f,null),
+            ("Ligne","basse","haute",(t,h)=>t.line=h?.8f:.2f,null),
+            ("Largeur","étroite","large",(t,h)=>t.width=h?.8f:.2f,null),
+            ("Rythme","patient","rapide",(t,h)=>t.tempo=h?.8f:.2f,null),
+            ("Passes","courtes","directes",(t,h)=>t.directness=h?.8f:.2f,null),
+            ("Mission des milieux","défense","attaque",(t,h)=>{foreach(var s in t.withBall.Where(s=>s.role=="CM"))s.duty=h?"attack":"defend";},null),
+            ("Latéraux projetés","non","oui",Instruct(PlayerInstructions.GetForward,"LB","RB"),null),
+            ("Ailiers larges","non","oui",Instruct(PlayerInstructions.StayWide,"LW","RW"),null),
+            ("Marquage serré","non","oui",Instruct(PlayerInstructions.TightMarking,"LB","CB","RB"),null)
+        }.Concat(mental.Select(x=>(x.name,x.low,x.high,(Action<Tactic,bool>)((t,h)=>{}),(Func<bool,Action<MatchSimulation>>)(h=>Mind(m=>x.set(h,m)))))).ToArray();
         // Optional selection keeps identical fixture seeds for focused before/after audits.
         if(args.Length>3){
             var requested=args[3].Split(',');
@@ -60,8 +72,8 @@ static partial class P
             var low=new TacticalSample[count];var high=new TacticalSample[count];
             Parallel.For(0,count,new ParallelOptions{MaxDegreeOfParallelism=Environment.ProcessorCount},i=>{
                 var f=fixtures[i];low[i]=new TacticalSample();high[i]=new TacticalSample();
-                var a=Play(db,f.home,f.away,f.seed,t=>choice.set(t,false),low[i].Read);
-                var b=Play(db,f.home,f.away,f.seed,t=>choice.set(t,true),high[i].Read);
+                var a=Play(db,f.home,f.away,f.seed,t=>choice.set(t,false),low[i].Read,choice.prepare?.Invoke(false));
+                var b=Play(db,f.home,f.away,f.seed,t=>choice.set(t,true),high[i].Read,choice.prepare?.Invoke(true));
                 if(a.error||b.error)throw new InvalidOperationException($"{f.home}/{f.away} graine {f.seed}: {a.err} {b.err}");
             });
             for(int i=0;i<count;i++)foreach(var v in new[]{(choice.low,low[i]),(choice.high,high[i])})

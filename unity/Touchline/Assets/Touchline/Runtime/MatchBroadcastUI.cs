@@ -101,7 +101,7 @@ namespace Touchline
             if(feedbackSeen>m.events.Count)feedbackSeen=m.events.Count;
             while(feedbackSeen<m.events.Count){var e=m.events[feedbackSeen++];string title=MatchBroadcast.EventHeadline(e.kind);if(title==null)continue;
                 bool goal=e.kind=="goal";if(feedbackGoal&&now<feedbackUntil&&!goal)continue;
-                feedbackGoal=goal;feedbackUntil=now+(goal?5:2.1f);matchSignalTitle.text=title+(goal?"  "+FixtureDisplayOrder(m).Score(m):"");
+                feedbackGoal=goal;feedbackUntil=now+(goal||e.kind=="assistant"?5:2.1f);matchSignalTitle.text=title+(goal?"  "+FixtureDisplayOrder(m).Score(m):"");
                 var player=string.IsNullOrEmpty(e.player)?null:Database.Find(e.player);string name=player==null?"":arena.PlayerSurname(player.id);
                 matchSignalDetail.text=BroadcastClock(e.time,m.SecondsPerMinute)+" · "+(string.IsNullOrEmpty(name)?e.text:name+" · "+ClubName(e.side==0?m.home:m.away));matchSignal.EnableInClassList("match-signal-goal",goal);
             }
@@ -128,7 +128,7 @@ namespace Touchline
             }
             Actor tired=null;foreach(var actor in m.actors)if(actor.side==0&&!actor.sentOff&&(tired==null||actor.fitness<tired.fitness))tired=actor;
             quietInsights[0].text=tired==null?"":arena.PlayerSurname(tired.id)+" · condition la plus basse : "+Mathf.RoundToInt(tired.fitness)+" %.";
-            quietInsights[1].text=m.clock<10*m.SecondsPerMinute?"Premières minutes : encore peu de recul pour juger les tendances.":"Notre largeur : "+a.AverageWidth.ToString("0.0",French)+" m · passes moyennes : "+a.AveragePassLength(m.passes[0]).ToString("0.0",French)+" m.";
+            quietInsights[1].text=LatestAssistantLine(m)??(m.clock<10*m.SecondsPerMinute?"Premières minutes : encore peu de recul pour juger les tendances.":"Notre largeur : "+a.AverageWidth.ToString("0.0",French)+" m · passes moyennes : "+a.AveragePassLength(m.passes[0]).ToString("0.0",French)+" m.");
             quietInsights[2].text=m.pendingSubstitutions.Count>0?m.pendingSubstitutions.Count+" changement(s) en attente du prochain arrêt.":"Adversaire : "+m.awayTactic.formation+" · "+(m.awayPlan=="chase"?"prend davantage de risques.":m.awayPlan=="protect"?"protège son avance.":"organisation observée en direct.");
             int at=0;for(int i=m.events.Count-1;i>=0&&at<3;i--){var e=m.events[i];if(!SignificantMoment(e.kind))continue;quietMoments[at++].text=BroadcastClock(e.time,m.SecondsPerMinute)+" · "+e.text;}
             while(at<3)quietMoments[at++].text="";

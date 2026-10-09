@@ -5,7 +5,9 @@ using System.Linq;
 namespace Touchline.Core
 {
     [Serializable] public class ClubMessage { public int id,day;public string sender,subject,text,player,action,reference;public bool read,pinned; }
-    [Serializable] public class PlayerLife { public string id,discussionFocus;public float fitness=100,morale=75,trust=60,growth;public int lastTalk=-30,appearances,promiseUntil=-1,promiseStarts,banUntil,boostUntil=-1,rehabUntil,restUntil=-1; public PlayerLife Copy()=>(PlayerLife)MemberwiseClone(); }
+    [Serializable] public class PlayerLife { public string id,discussionFocus;public float fitness=100,morale=75,trust=60,growth;public int lastTalk=-30,appearances,promiseUntil=-1,promiseStarts,banUntil,boostUntil=-1,rehabUntil,restUntil=-1;
+        // Jour d'arrivée au club pour la cohésion (−1 = pas encore repéré, voir TrackPreparation).
+        public int joinedDay=-1; public PlayerLife Copy()=>(PlayerLife)MemberwiseClone(); }
     [Serializable] public class MedicalCase { public int id,opened,remaining,total,closed=-1,responsibilityEndedDay;public string player,diagnosis,treatment="pending",responsibilityEndedReason;public bool surgery,injection,consent,relapsed;public int reliefUntil=-1; }
     [Serializable] public class Facility { public string kind;public int level=1; }
     [Serializable] public class FacilityProject { public string kind,status,funding;public int level,requested,due,started;public long cost,contribution; }
@@ -20,6 +22,7 @@ namespace Touchline.Core
         public bool recordedMatch,corruptionEnabled;public int managerBanUntil,schemeCooldown=-30;public int leadershipUntil;
         public List<PlayerLife> players=new List<PlayerLife>();public List<PlayerLife> retiredPlayers=new List<PlayerLife>();public List<LoanPlayerHistory> loanedPlayers=new List<LoanPlayerHistory>();public List<ClubMessage> messages=new List<ClubMessage>();
         public List<MedicalCase> medical=new List<MedicalCase>();public List<Facility> facilities=new List<Facility>();
+        public TacticalPreparation preparation=new TacticalPreparation();
         public List<FacilityProject> projects=new List<FacilityProject>();public List<AccountEntry> ledger=new List<AccountEntry>();public List<IntegrityCase> investigations=new List<IntegrityCase>();
     }
     public partial class Career
@@ -78,9 +81,9 @@ namespace Touchline.Core
                 }else{
                     bool protectedDay=world!=null&&(NextFixture()?.day-life.day<=1||world.fixtures.Any(f=>f.played&&(f.home==club||f.away==club)&&life.day-f.day==1));
                     bool agreedRest=p.restUntil>life.day;if(agreedRest&&p.promiseUntil>=0)p.promiseUntil++;
-                    float recovery=life.training=="rest"||protectedDay||agreedRest?5:life.training=="heavy"?.7f:2.6f;
+                    float recovery=(life.training=="rest"||protectedDay||agreedRest?5:life.training=="heavy"?.7f:2.6f)+FocusRecoveryBonus();
                     p.fitness=Mathx.Clamp(p.fitness+recovery+Level("medical")*.12f,20,100);
-                    float risk=(life.training=="rest"||protectedDay||agreedRest?0:life.training=="heavy"?.0023f:.0008f)*(1+(100-p.fitness)/30)*(1-Level("medical")*.07f)*(p.rehabUntil>life.day?2:1);
+                    float risk=(life.training=="rest"||protectedDay||agreedRest?0:life.training=="heavy"?.0023f:.0008f)*(1+(100-p.fitness)/30)*(1-Level("medical")*.07f)*(p.rehabUntil>life.day?2:1)*FocusInjuryFactor();
                     if(Roll()<risk)OpenInjury(db,p.id,Roll()<.08f?"ligament":Roll()<.5f?"muscle":"bruise");
                     var data=db.Find(p.id);if(!agreedRest&&(world==null||world.managerStatus=="employed")&&data.age<24&&data.rating<data.potential&&life.training!="rest"){p.growth=Math.Min(data.potential-data.rating,p.growth+(.003f+Level("training")*.0015f+Level("academy")*.001f)*(p.morale/100)*(.75f+Staff("fitness").coaching/40f));}
                 }
@@ -98,6 +101,7 @@ namespace Touchline.Core
             IntegrityStoryDay();ResolveIntegrity(db);if(!life.investigations.Any(i=>i.status=="pending"))life.suspicion=Math.Max(0,life.suspicion-.1f);
             if(life.day%7==0&&life.players.Count>0){float condition=(float)life.players.Average(p=>p.fitness);Mail("Préparateur physique","Bilan de charge","Condition moyenne : "+condition.ToString("0")+" %. "+(condition<82?"Le groupe accumule de la fatigue. Prévoyez de la récupération et faites tourner.":"Le groupe supporte la charge actuelle. Conservez une journée légère avant la prochaine rencontre."));}
             if((world==null||world.managerStatus=="employed")&&life.day%14==0){var p=life.players.Where(p=>Available(p.id)&&(world?.contracts?.FirstOrDefault(c=>c.player==p.id)?.playingTime!=null?PlayingTimeConcern(p.id):PlayingTimeRoles.Normalize(world?.contracts?.FirstOrDefault(c=>c.player==p.id)?.role)!="youth"&&RoleMatchOpportunities(p.id)>0&&RoleAppearances(p.id)<Math.Max(1,RoleMatchOpportunities(p.id)/3))).OrderBy(p=>p.morale).FirstOrDefault();if(p!=null){p.morale=Math.Max(15,p.morale-2);Mail(db.Find(p.id).name,"Un moment pour parler ?","J’aimerais comprendre ma place dans le groupe. Pouvez-vous m’appeler ?",p.id,"talk");}}
+            if(world==null||world.managerStatus=="employed")PreparationDay();
             PlayerConversationDay(db);WorldDay(db);ApplyLife(db);
         }
         public MedicalCase OpenInjury(Database db,string id,string type)
@@ -181,7 +185,7 @@ namespace Touchline.Core
                 if(minutes>0&&injury?.reliefUntil>=life.day&&Roll()<.28f){injury.remaining+=7;injury.relapsed=true;injury.reliefUntil=-1;Mail("Staff médical","Aggravation après le match",db.Find(p.id).name+" : le retour sous antalgie a aggravé les symptômes. Sept jours supplémentaires estimés.",p.id,"medical");}
                 if(minutes>0&&injury==null&&Roll()<.009f*(1+(100-p.fitness)/35))OpenInjury(db,p.id,Roll()<.1f?"ligament":"muscle");
             }
-            if(world==null)Account(life.revenue*(70+Level("stadium")*3)/10000,"Recettes de la rencontre de préparation");life.nextFixture=life.day+7;Mail("Adjoint","Débrief de la rencontre",life.lastResult+". Le bilan physique est disponible dans Santé."+(estimatedConditionCount>0?" Condition estimée pour "+estimatedConditionCount+" joueur(s) sorti(s) : mesure de sortie absente ou inexploitable.":""));RecordWorldMatch(db);ApplyLife(db);
+            if(world==null)Account(life.revenue*(70+Level("stadium")*3)/10000,"Recettes de la rencontre de préparation");life.nextFixture=life.day+7;PreparationAfterMatch();Mail("Adjoint","Débrief de la rencontre",life.lastResult+". Le bilan physique est disponible dans Santé."+(estimatedConditionCount>0?" Condition estimée pour "+estimatedConditionCount+" joueur(s) sorti(s) : mesure de sortie absente ou inexploitable.":""));RecordWorldMatch(db);ApplyLife(db);
         }
         public void StartScheme(string kind,string player=null)
         {
@@ -197,6 +201,7 @@ namespace Touchline.Core
             simulation.State.professionalRules=world!=null;
             var fixture=world?.fixtures.FirstOrDefault(f=>f.id==world.activeFixture);
             simulation.State.venueSide=fixture==null||fixture.home==club?0:fixture.away==club?1:-1;
+            PrepareMatchMindset(null,simulation);
             life.recordedMatch=false;foreach(var c in life.investigations.Where(c=>c.kind=="fixing"&&c.accepted&&c.status=="pending")){foreach(var p in simulation.State.actors.Where(p=>p.side==1))p.fitness=Math.Max(30,p.fitness-5);c.accepted=false;Mail("Coulisses • fiction","Influence incertaine","Un léger désavantage adverse est simulé pour cette rencontre seulement. Le moteur décide toujours des actions et du résultat.",null,"integrity");}
         }
         public void ProcessMedicalEvents(Database db)

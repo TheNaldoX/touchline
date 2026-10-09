@@ -27,7 +27,7 @@ namespace Touchline.Core
                 var q=t.Position(p.slot,has,bx);p.intent=has?"support":"shape";
                 q.z+=b.position.z*dir*(has?.12f:.34f);
                 if(!has&&p.slot>0&&slot.y<60){float danger=Mathx.Clamp((-bx-20)/22,0,1)*(1-Mathx.Clamp(Math.Abs(b.position.z)/24,0,1));q.z*=1-.45f*danger;}
-                if(has&&p.slot>0){q.x+=slot.duty=="attack"?5:slot.duty=="defend"?-5:0;
+                if(has&&p.slot>0){q.x+=slot.duty=="attack"?5:slot.duty=="defend"?-5:0;InstructionWithBall(p,t,ref q);
                     if(transition&&t.counterAttack&&slot.duty!="defend"){q.x+=8;p.intent="counter";}
                     if(slot.duty=="defend")q.x=Math.Min(q.x,bx-7);
                     if(bx>22&&slot.duty=="attack"){q.x=Math.Min(48,Math.Max(q.x,bx+7));p.intent="run-behind";}
@@ -35,6 +35,7 @@ namespace Touchline.Core
                     DeliverySupport(p,owner,ref q);
                     if(owner!=null&&p!=owner&&!RunBehind(p,owner,slot.duty,ref q))q.x=Math.Min(q.x,OffsideLine(p.side)-.9f);
                 }
+                if(!has&&p.slot>0){InstructionWithoutBall(p,t,ref q);if(slot.y<38)q.x-=LineStagger(p);}
                 q=q*dir;
                 if(p.slot==0){p.intent="keeper";q=KeeperTarget(p);}
                 else if(p==owner){if(Point.Distance(p.carryTarget,p.position)<1)m.decision=Math.Min(m.decision,.1f);q=p.carryTarget;p.intent="carry";if(p.controlTime>0)q=p.position;}
@@ -53,14 +54,14 @@ namespace Touchline.Core
                     bool closeDelay=recovering&&Point.Distance(p.position,focus)<7;
                     // Ballon perdu haut : le plus proche presse aussitôt au lieu de se replier.
                     bool press=trigger&&(!recovering||closeDelay||highPress)||transition&&t.counterPress;
-                    float radius=5+t.pressing*18+(transition&&t.counterPress?7:0);
+                    float radius=(5+t.pressing*18+(transition&&t.counterPress?7:0))*(1+Drive(p)*DrivePressReach);
                     if(firstPress[p.side]==i&&press&&Point.Distance(p.position,focus)<radius){q=focus-new Point(dir*(closeDelay?1.4f:.65f),0);p.intent=closeDelay?"delay":"press";}
-                    else if(coverPress[p.side]==i&&press&&t.pressing>.35f&&Point.Distance(p.position,focus)<radius+3){q=focus+(new Point(-dir*52.5f,0)-focus).Normalized*(4.8f-t.pressing*2);p.intent="cover";}
+                    else if(coverPress[p.side]==i&&press&&t.pressing>.35f&&Point.Distance(p.position,focus)<(radius+3)*(1+Understanding(p.side)*UnderstandingCoverReach)){q=focus+(new Point(-dir*52.5f,0)-focus).Normalized*(4.8f-t.pressing*2);p.intent="cover";}
                     else{
                         // Track a runner only inside this player's zone; retain cover.
-                        Actor threat=null;float best=12;foreach(var o in m.actors)if(!o.sentOff&&o.side!=p.side&&o.slot>0){float d=Point.Distance(o.position,q);if(d<best&&o.position.x*dir<p.position.x*dir+12){best=d;threat=o;}}
+                        bool tight=Instruction(t,p.slot)==TightMarking;Actor threat=null;float best=tight?TightMarkingReach:DefaultMarkingReach;foreach(var o in m.actors)if(!o.sentOff&&o.side!=p.side&&o.slot>0){float d=Point.Distance(o.position,q);if(d<best&&o.position.x*dir<p.position.x*dir+12){best=d;threat=o;}}
                         if(slot.y<60)threat=CloseGoalSideMark(p,threat,m.actors,dir);
-                        if(threat!=null&&slot.y<60){q=Point.Lerp(q,threat.position-new Point(dir*2,0),.30f+Skill(p,"defensiveAwareness")*.003f);p.intent=threat==owner?"mark-carrier":"mark";}
+                        if(threat!=null&&slot.y<60){q=Point.Lerp(q,threat.position-new Point(dir*2,0),(tight?TightMarkingPull:.30f)+Skill(p,"defensiveAwareness")*.003f);p.intent=threat==owner?"mark-carrier":"mark";}
                         if(focusX< -24&&slot.y<60){float behind=slot.y<38?4.2f:1.2f;q.x=dir*Math.Max(-49,Math.Min(q.x*dir,focusX-behind));}
                         if(recovering){q.x-=dir*5;p.intent="recover";}
                     }
@@ -84,14 +85,15 @@ namespace Touchline.Core
                 // Legal receptions can place a body beyond the formation's
                 // interior margin. A planted kick/tackle must not slide back
                 // inside solely because its stationary waypoint is clamped.
+                if(p.intent=="shape"){float understanding=Understanding(p.side);if(understanding<0)q=Point.Lerp(q,p.position,-understanding*ShapeLagShare);}
                 targets[i]=ContactMobility(p)==0?p.position:new Point(Mathx.Clamp(q.x,-limit,limit),Mathx.Clamp(q.z,-lateralLimit,lateralLimit));
             }
             for(int i=0;i<22;i++){
                 var p=m.actors[i];if(p.sentOff)continue;float maxSpeed=(4.1f+Skill(p,"sprintSpeed")*.043f)*(.74f+p.fitness*.0026f);
-                if(p.injured)maxSpeed*=.65f;if(p==owner)maxSpeed*=.80f;if(p.intent=="shape"||p.intent=="support")maxSpeed*=.76f;
-                if(p.intent=="press")maxSpeed*=.83f+Tactic(p.side).pressing*.17f;
+                if(p.injured)maxSpeed*=.65f;if(p==owner)maxSpeed*=.80f;if(p.intent=="shape"||p.intent=="support")maxSpeed*=.76f*(1+Drive(p)*DriveShapeSpeed);
+                if(p.intent=="press")maxSpeed*=(.83f+Tactic(p.side).pressing*.17f)*(1+Drive(p)*DrivePressSpeed);
                 MoveActor(p,targets[i],maxSpeed);
-                p.fitness=Mathx.Clamp(p.fitness-(Step*State.LegacyTimeScale)*(.012f+p.velocity.Length*p.velocity.Length*.0006f)*(1.2f-Skill(p,"stamina")*.004f),15,100);
+                p.fitness=Mathx.Clamp(p.fitness-(Step*State.LegacyTimeScale)*(.012f+p.velocity.Length*p.velocity.Length*.0006f)*(1.2f-Skill(p,"stamina")*.004f)*FatigueFactor(p),15,100);
             }
             ResolvePlayerContacts();
         }

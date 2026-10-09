@@ -49,7 +49,7 @@ namespace Touchline
                 float flank=m.ball.position.z*simulation.Direction(side);return action+" · "+(flank>9?"côté gauche":flank< -9?"côté droit":"axe central");
             }
         }
-        public static string EventHeadline(string kind)=>kind switch{"goal"=>"BUT !","shot"=>"FRAPPE","save"=>"ARRÊT DU GARDIEN","woodwork"=>"SUR LE MONTANT","penalty"=>"PENALTY","offside"=>"HORS-JEU","red"=>"EXCLUSION",_=>null};
+        public static string EventHeadline(string kind)=>kind switch{"goal"=>"BUT !","shot"=>"FRAPPE","save"=>"ARRÊT DU GARDIEN","woodwork"=>"SUR LE MONTANT","penalty"=>"PENALTY","offside"=>"HORS-JEU","red"=>"EXCLUSION","assistant"=>"L’ADJOINT","shout"=>"DEPUIS LA TOUCHE",_=>null};
         public int LastFrameSteps {get;private set;}
         public bool BudgetLimited {get;private set;}
         public float EffectiveSpeed {get;private set;}
