@@ -1,0 +1,25 @@
+total 6504
+drwxr-xr-x 2 root root   4096 Oct  9 13:51 .
+drwxr-xr-x 3 root root   4096 Oct  9 13:26 ..
+-rw-r--r-- 1 root root   4791 Oct  9 13:51 audit-progress.txt
+-rw-r--r-- 1 root root   4894 Oct  9 13:51 audit.txt
+-rw-r--r-- 1 root root 449440 Oct  9 13:40 deplie-adjoint-lecture.png
+-rw-r--r-- 1 root root 382057 Oct  9 13:28 deplie-briefing.png
+-rw-r--r-- 1 root root 405443 Oct  9 13:29 deplie-causerie-avant.png
+-rw-r--r-- 1 root root 405806 Oct  9 13:30 deplie-causerie-reaction.png
+-rw-r--r-- 1 root root 379118 Oct  9 13:51 deplie-consigne-individuelle.png
+-rw-r--r-- 1 root root 454915 Oct  9 13:31 deplie-cris-touche.png
+-rw-r--r-- 1 root root 444809 Oct  9 13:27 deplie-preparation.png
+-rw-r--r-- 1 root root 354044 Oct  9 13:37 deplie-vestiaire-mi-temps.png
+-rw-r--r-- 1 root root 388148 Oct  9 13:39 deplie-vestiaire-reaction.png
+-rw-r--r-- 1 root root 372637 Oct  9 13:39 plie-adjoint-lecture.png
+-rw-r--r-- 1 root root 365550 Oct  9 13:27 plie-briefing.png
+-rw-r--r-- 1 root root 325556 Oct  9 13:28 plie-causerie-avant.png
+-rw-r--r-- 1 root root 325447 Oct  9 13:29 plie-causerie-reaction.png
+-rw-r--r-- 1 root root 293976 Oct  9 13:51 plie-consigne-individuelle.png
+-rw-r--r-- 1 root root 306025 Oct  9 13:30 plie-cris-touche.png
+-rw-r--r-- 1 root root 282935 Oct  9 13:26 plie-preparation.png
+-rw-r--r-- 1 root root 304610 Oct  9 13:37 plie-vestiaire-mi-temps.png
+-rw-r--r-- 1 root root 352171 Oct  9 13:38 plie-vestiaire-reaction.png
+-rw-r--r-- 1 root root   3900 Oct  9 13:51 progress.txt
+-rw-r--r-- 1 root root   1166 Oct  9 13:51 unity-messages.txt

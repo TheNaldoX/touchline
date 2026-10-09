@@ -1,0 +1,60 @@
+Parcours ciblé immersion : deux résolutions natives par écran.
+## plie-preparation · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 15 · < 48 dp : 0 · textes 38 · < 12 sp : 10 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×10 [unity-text-element.unity-label 11.0 sp] ex. « 2,46 M€ / mois · plafond 2,20 M€ / mois. Réduis… »
+
+## deplie-preparation · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 27 · < 48 dp : 0 · textes 55 · < 12 sp : 15 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×15 [unity-text-element.unity-label 11.0 sp] ex. « ESPACE MANAGER »
+
+## plie-briefing · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 16 · < 48 dp : 0 · textes 43 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## deplie-briefing · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 16 · < 48 dp : 0 · textes 42 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## plie-causerie-avant · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 22 · < 48 dp : 0 · textes 48 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## deplie-causerie-avant · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 16 · < 48 dp : 0 · textes 41 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+Causerie « Rassurer » : sang-froid moyen -0.12 → 0.20
+## plie-causerie-reaction · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 22 · < 48 dp : 0 · textes 49 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## deplie-causerie-reaction · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 16 · < 48 dp : 0 · textes 41 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## plie-cris-touche · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 29 · < 48 dp : 0 · textes 48 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## deplie-cris-touche · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 26 · < 48 dp : 0 · textes 44 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+Cri « Pressez ! » enregistré, retour au match.
+## plie-vestiaire-mi-temps · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 24 · < 48 dp : 0 · textes 41 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## deplie-vestiaire-mi-temps · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 24 · < 48 dp : 0 · textes 41 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## plie-vestiaire-reaction · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 24 · < 48 dp : 0 · textes 46 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## deplie-vestiaire-reaction · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 24 · < 48 dp : 0 · textes 45 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## plie-adjoint-lecture · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 18 · < 48 dp : 0 · textes 40 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## deplie-adjoint-lecture · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 18 · < 48 dp : 0 · textes 40 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## plie-consigne-individuelle · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 14 · < 48 dp : 0 · textes 55 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## deplie-consigne-individuelle · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 20 · < 48 dp : 0 · textes 65 · < 12 sp : 3 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×3 [unity-text-element.unity-label 11.0 sp] ex. « ESPACE MANAGER »
+
