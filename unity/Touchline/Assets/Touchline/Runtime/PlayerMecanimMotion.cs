@@ -219,7 +219,27 @@ namespace Touchline
             mecanimGraph.Evaluate(reset?0:Mathf.Max(0,dt));
             if(turnWeight>0)MecanimTurnYaw(turnWeight);
             MecanimFootLock(dt,reset);
+            MecanimPassContact(actor);
             return true;
+        }
+
+        void MecanimPassContact(Actor actor)
+        {
+            // Older saved actions may have no contact metadata; leave their capture untouched.
+            if(actor.action!="kick"||!ShortPass(actor)||actor.actionHeight<=0)return;
+            const float duration=.64f,contact=.18f,blendWindow=.14f; // seconds: engine kick and smooth correction around impact
+            const float maxCorrection=.35f; // metres: never pull a foot to an unreachable distant ball
+            const float minBallOffset=.15f; // metres: ignore missing contact points directly under the pelvis
+            float elapsed=duration-actor.actionTime;
+            float weight=1-Mathf.SmoothStep(0,1,Mathf.Abs(elapsed-contact)/blendWindow);
+            if(weight<=0)return;
+            var foot=Limb(leftFootedNow?"L":"R").foot;
+            var ball=new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z);
+            if(Vector3.ProjectOnPlane(ball-transform.position,Vector3.up).sqrMagnitude<minBallOffset*minBallOffset)return;
+            var correction=Vector3.ClampMagnitude(ball-InsideFootContactPosition(leftFootedNow),maxCorrection);
+            var rotation=foot.rotation;
+            SolveLeg(leftFootedNow?"L":"R",foot.position+correction*weight);
+            foot.rotation=rotation;
         }
 
         // Virage serré en course : au lieu de pivoter tout le corps d'un bloc pendant que
