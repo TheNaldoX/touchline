@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Vie du club : demandes de départ après insatisfaction durable, réponses et retrait selon le temps de jeu, conférences contextualisées et limitées dans le temps, actualités et plus large victoire des archives de carrière.
 - Arbitrage : une bousculade sous pression peut donner un penalty dans la surface ; prudence accrue du défenseur conservée, avec tests symétriques des deux mi-temps et comparaison sur deux graines.
 - Tempo : suppression du malus général de dispersion d'une passe préparée ; cadence des décisions, vitesse du ballon et difficulté réelle de réception conservées, avec audit patient/rapide sur 200 affiches identiques.
 - Direction : objectifs saisonniers persistants selon les moyens, l'effectif et la situation héritée, bilans mensuels explicitant la confiance, et carte de suivi dans Carrière.

@@ -52,6 +52,7 @@ namespace Touchline.Editor
         static bool FocusedNegotiation=>Path.GetFileName(Output).StartsWith("ui-negotiation-focus-",StringComparison.Ordinal);
         static bool FocusedBoard=>Path.GetFileName(Output).StartsWith("ui-board-focus-",StringComparison.Ordinal);
         static bool FocusedDepth=>Path.GetFileName(Output).StartsWith("ui-recruitment-depth",StringComparison.Ordinal);
+        static bool FocusedCareer=>Path.GetFileName(Output).StartsWith("ui-career-review-",StringComparison.Ordinal);
         const int FocusedStepFrames=3;
         static TouchlineApp App=>TouchlineApp.Instance;
         static UIDocument Document=>App.GetComponent<UIDocument>();
@@ -76,6 +77,7 @@ namespace Touchline.Editor
 
         static List<Action> BuildSteps()
         {
+            if(FocusedCareer)return BuildCareerReviewSteps();
             if(FocusedBoard)return BuildFocusedBoardSteps();
             if(FocusedTactics)return BuildFocusedTacticSteps();
             if(FocusedRecruitment)return BuildFocusedRecruitmentSteps();
@@ -143,6 +145,27 @@ namespace Touchline.Editor
             foreach(var s in Screens){var screen=s;
                 list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Carrière");});
                 list.Add(()=>Capture(screen.tag+"-bilan-direction"));
+            }
+            return list;
+        }
+
+        static List<Action> BuildCareerReviewSteps()
+        {
+            var list=BuildFocusedDepthSteps();list.AddRange(BuildFocusedBoardSteps());string player=null;
+            list.Add(()=>{
+                var c=App.Career;var f=c.world.fixtures.First(x=>x.home==c.club||x.away==c.club);
+                f.day=c.life.day;f.played=true;f.hg=f.home==c.club?0:2;f.ag=f.away==c.club?0:2;
+                player=App.Database.Squad(c.club).First(p=>!p.Goalkeeper&&c.Contract(App.Database,p.id).parent==null).id;
+                c.departureRequests.Add(new DepartureRequest{club=c.club,player=player,status="requested",since=c.life.day-28,opened=c.life.day});
+                audit.AppendLine("Conférence après défaite et demande de départ synthétiques ; aucune sauvegarde personnelle.");
+            });
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Presse");});
+                list.Add(()=>{if(Root.Q("press-after-protect")==null)throw new Exception("Conférence contextuelle absente");Capture(screen.tag+"-presse-resultat");Call("Conversation",player);});
+                list.Add(()=>{if(Root.Q("departure-allow")==null||Root.Q("departure-refuse")==null)throw new Exception("Choix de départ absents");Capture(screen.tag+"-demande-depart");Call("CloseModal");});
+                list.Add(()=>{Call("Navigate","Carrière");});
+                list.Add(()=>{var news=Root.Q("club-news");if(news==null)throw new Exception("Actualités absentes");news.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(news);});
+                list.Add(()=>Capture(screen.tag+"-actualites-club"));
             }
             return list;
         }
@@ -473,7 +496,7 @@ namespace Touchline.Editor
             float now=Time.realtimeSinceStartup;if(startedAt<0){startedAt=now;Application.logMessageReceived+=(m,st,t)=>{if(log.Length<200000)log.AppendLine(t+": "+m+(t==LogType.Exception?"\n"+st:""));};}
             if(TouchlineApp.Instance==null){if(now-startedAt>BootTimeoutSeconds)Finish("TouchlineApp absent");return;}
             if(now-startedAt>RunTimeoutSeconds){Finish("délai dépassé à l'étape "+stage);return;}
-            if(++frames<(FocusedTactics||FocusedRecruitment||FocusedLoan||FocusedNegotiation||FocusedBoard||FocusedDepth?FocusedStepFrames:StepFrames)||now-stepAt<StepSeconds)return;frames=0;stepAt=now;
+            if(++frames<(FocusedTactics||FocusedRecruitment||FocusedLoan||FocusedNegotiation||FocusedBoard||FocusedDepth||FocusedCareer?FocusedStepFrames:StepFrames)||now-stepAt<StepSeconds)return;frames=0;stepAt=now;
             steps??=BuildSteps();
             if(stage<0)stage=0;
             if(stage>=steps.Count){Finish(failures==0?null:failures+" étape(s) en échec");return;}

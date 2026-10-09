@@ -72,6 +72,7 @@ namespace Touchline.Core
         }
         void PlayerConversationDay(Database db)
         {
+            ReviewDepartureRequests(db);
             foreach(var p in life.players)if(p.restUntil==life.day){p.restUntil=-1;Mail("Préparateur physique","Fin du repos convenu",db.Find(p.id)?.name+" peut retrouver la sélection si son dossier médical et ses suspensions le permettent. Condition : "+p.fitness.ToString("0")+" %.",p.id,"talk");}
         }
         public string MessageCategory(ClubMessage m)
@@ -91,6 +92,7 @@ namespace Touchline.Core
                 var injury=Injury(m.player);return injury?.treatment=="pending"&&
                     (!string.IsNullOrEmpty(m.reference)?m.reference=="medical/"+injury.id:m.day>=injury.opened&&(m.subject?.Contains("blessure")??false));
             }
+            if(m.action=="talk"&&m.reference?.StartsWith("departure/",StringComparison.Ordinal)==true)return DepartureFor(m.player)?.status=="requested"&&world?.managerStatus=="employed";
             if(m.action=="transfer")return PendingTransferAgreement(m)!=null||PendingOutgoingLoanAgreement(m)!=null;
             if(m.action=="staff")return PendingStaffAgreement(m)!=null;
             if(m.action=="finance")return PendingCommercialAgreement(m)!=null;

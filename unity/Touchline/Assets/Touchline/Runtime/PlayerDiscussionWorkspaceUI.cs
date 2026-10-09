@@ -30,6 +30,7 @@ namespace Touchline
             var filter=new Toggle("Tous les sujets"){name="conversation-all-topics"};filter.AddToClassList("discussion-all-topics");browser.Add(filter);
             var choices=Scroll(browser);choices.name="conversation-topic-list";choices.AddToClassList("discussion-topic-list");
             var detail=Scroll(layout);detail.name="conversation-topic-detail";detail.AddToClassList("discussion-detail");
+            ShowDepartureDecision(detail,id);
             var dropdown=new DropdownField("Sujet",context.topics.Select(t=>t.title).ToList(),Array.FindIndex(context.topics,t=>t.key==context.defaultTopic)){name="conversation-topic-picker"};dropdown.AddToClassList("discussion-topic-picker");detail.Add(dropdown);
             var shortcuts=Row(detail,"discussion-shortcuts");shortcuts.name="conversation-shortcuts";
             var copy=new VisualElement{name="conversation-topic-copy"};detail.Add(copy);
