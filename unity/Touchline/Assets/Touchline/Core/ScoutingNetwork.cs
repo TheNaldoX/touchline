@@ -70,6 +70,8 @@ namespace Touchline.Core
             foreach(var m in world.scoutMissions.Where(m=>m.club==club&&(m.status=="active"||m.status=="finishing")).ToArray()){m.status="stopped";RefundScoutMission(m);}
             world.reports.RemoveAll(r=>r.club==club&&r.confidence<90);
             scoutAssignments?.Clear();scoutRecommendations?.Clear();
+            // Bind old saves before changing club, without deleting the recruitment history.
+            if(signings!=null)foreach(var signing in signings)if(string.IsNullOrEmpty(signing.club))signing.club=club;
         }
         public IEnumerable<PlayerData> ScoutCandidates(Database db,ScoutMission m)
         {
