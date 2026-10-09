@@ -115,6 +115,12 @@ namespace Touchline.Tests
             db.Find("p25").team = "retired";
             Assert.AreEqual(0, c.RecruitmentOverview(db).actionableOffers);
         }
+        [Test] public void RecruitmentDecisionDoesNotAdvertiseOwnershipNegotiationForBorrowedPlayer()
+        {
+            var p = db.Find("p24"); p.team = c.club; c.Contract(db, p.id).parent = "c1";
+            c.world.offers.Add(new TransferOffer { player = p.id, seller = c.club, destination = c.club, status = "accepted", renewal = true, due = c.life.day });
+            Assert.AreEqual(0, c.RecruitmentOverview(db).actionableOffers);
+        }
         [Test] public void ScoutingAdviceDeductsFutureSalaryCommitments()
         {
             c.life.revenue = 100000000;

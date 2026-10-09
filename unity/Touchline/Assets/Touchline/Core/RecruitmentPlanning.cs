@@ -46,6 +46,7 @@ namespace Touchline.Core
             if (offer == null || !string.IsNullOrEmpty(offer.destination) && offer.destination != club) return false;
             var player = db.Find(offer.player);
             if (player == null || PlayingCareerEnded(player)) return false;
+            if (!string.IsNullOrEmpty(world.contracts.FirstOrDefault(c => c.player == player.id)?.parent)) return false;
             if (offer.status == "sale") return player.team == club && offer.due >= life.day;
             // A previous counter-offer is history once a newer negotiation exists.
             var latest = world.offers.LastOrDefault(o => o.player == offer.player && o.status != "sale" && o.status != "sold"
