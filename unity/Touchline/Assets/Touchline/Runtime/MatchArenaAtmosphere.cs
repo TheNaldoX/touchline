@@ -18,6 +18,14 @@ namespace Touchline
             var renderer=go.AddComponent<MeshRenderer>();renderer.sharedMaterials=new[]{crowdMaterials[0],crowdMaterials[1],crowdMaterials[2]};
             renderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;renderer.receiveShadows=false;
         }
+        // Second anneau : se lève et saute aussi sur un but du club recevant (pas de bras : cartes simples).
+        // Coût CPU pendant la réaction seulement (≈ 6 k sommets à 20 Hz) ; absent en qualité basse.
+        CrowdReaction upperReaction;
+        void BuildUpperReaction(Mesh upper,CrowdRig rig)
+        {
+            upperReaction=null;if(!BroadcastGrade.Enabled(PlayerPrefs.GetInt("render-quality",1)))return;
+            upperReaction=new CrowdReaction(upper,rig);upperReaction.Observe(Simulation,false);
+        }
         // Taches sombres sous les joueurs et le ballon (ContactShadows), un appel de rendu.
         void BuildContactShadows()
         {
@@ -37,9 +45,9 @@ namespace Touchline
         void AdvanceAtmosphere(float frameDelta)
         {
             if(crowdReaction==null)return;
-            crowdReaction.Observe(Simulation,!QuietPresentation);
+            crowdReaction.Observe(Simulation,!QuietPresentation);upperReaction?.Observe(Simulation,!QuietPresentation);
             if(QuietPresentation)return;
-            crowdReaction.Advance(frameDelta);flags.Advance(frameDelta,crowdReaction.Excitement(0));
+            crowdReaction.Advance(frameDelta);upperReaction?.Advance(frameDelta);flags.Advance(frameDelta,crowdReaction.Excitement(0));
         }
     }
 }

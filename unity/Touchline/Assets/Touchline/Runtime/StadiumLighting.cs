@@ -27,6 +27,12 @@ namespace Touchline
 
         public static readonly Color DaySky=new Color(.56f,.67f,.79f),NightSky=new Color(.035f,.045f,.075f);
         public static readonly Color DayAmbient=new Color(.48f,.57f,.67f),NightAmbient=new Color(.17f,.19f,.25f);
+        // Ambiance en trois tons (ciel, horizon, sol), sans coût de rendu (harmoniques sphériques) :
+        // le dessus des surfaces garde DayAmbient / NightAmbient (pelouse, ombre du toit inchangées),
+        // les côtés des joueurs reçoivent la lumière renvoyée par les tribunes (le soir : les
+        // projecteurs tout autour du stade), le dessous un rebond vert de la pelouse.
+        public static readonly Color DayEquator=new Color(.5f,.54f,.58f),DayGround=new Color(.2f,.29f,.17f);
+        public static readonly Color NightEquator=new Color(.3f,.31f,.34f),NightGround=new Color(.1f,.16f,.1f);
 
         // Projecteurs allumés si le milieu du match tombe après le coucher du soleil.
         const float FloodlightLead=1f;         // h après le coup d'envoi (≈ mi-temps)
@@ -95,12 +101,20 @@ namespace Touchline
         public static Color Apply(Transform parent,bool night)
         {
             var sky=night?NightSky:DaySky;
-            RenderSettings.ambientMode=UnityEngine.Rendering.AmbientMode.Flat;RenderSettings.ambientLight=night?NightAmbient:DayAmbient;
+            RenderSettings.ambientMode=UnityEngine.Rendering.AmbientMode.Trilight;RenderSettings.ambientSkyColor=night?NightAmbient:DayAmbient;
+            RenderSettings.ambientEquatorColor=night?NightEquator:DayEquator;RenderSettings.ambientGroundColor=night?NightGround:DayGround;
             RenderSettings.fog=true;RenderSettings.fogColor=sky;RenderSettings.fogMode=FogMode.Linear;
-            if(night)Directional(parent,"Floodlights",Quaternion.Euler(FloodElevation,FloodYaw,0),FloodIntensity,FloodColor);
+            if(night)Directional(parent,FloodlightName,FloodRotation(FloodYaw),FloodIntensity,FloodColor);
             else Directional(parent,"Afternoon sun",SunRotation,SunIntensity,SunColor);
             return sky;
         }
+        public const string FloodlightName="Floodlights";
+        public static Quaternion FloodRotation(float yaw)=>Quaternion.Euler(FloodElevation,yaw,0);
+        // Lacet (°) de la lumière des projecteurs pour une caméra qui regarde vers lookX (signe en x) :
+        // le stade est éclairé de partout, on garde la rampe placée derrière la caméra
+        // (visages éclairés). Sert au ralenti de but le soir : sans cela, le plan bas côté
+        // +x était à contre-jour (joueurs presque noirs).
+        public static float FloodYawFacing(float lookX)=>lookX<0?-FloodYaw:FloodYaw;
         // Lampes des projecteurs : éteintes le jour (gris, éclairées par le soleil) ;
         // allumées le soir (blanc sans éclairage, pas d'émission ni de variante de shader).
         static readonly Color LampOff=new Color(.62f,.64f,.66f),LampOn=new Color(1,1,.94f)*LampGlow;
@@ -112,7 +126,7 @@ namespace Touchline
         public static Material BoardMaterial(bool night,Texture atlas){float led=night?BoardLedNight:BoardLedDay;return UnlitMaterial(new Color(led,led,led),atlas);}
         // Tribunes et public : les projecteurs visent la pelouse, les gradins restent
         // dans la pénombre (multiplicateur de couleur, alpha conservé).
-        public static Color StandLight(bool night)=>night?new Color(.5f,.5f,.55f,1):Color.white;
+        public static Color StandLight(bool night)=>night?new Color(.6f,.6f,.65f,1):Color.white; // le soir : gradins éclairés par le débord des projecteurs
         static void Directional(Transform parent,string name,Quaternion rotation,float intensity,Color color)
         {
             var light=new GameObject(name).AddComponent<Light>();light.transform.SetParent(parent,false);light.type=LightType.Directional;

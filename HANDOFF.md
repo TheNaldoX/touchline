@@ -42,6 +42,10 @@ Jeu de gestion de football type Football Manager, Unity **6000.3.24f1**, URP, An
 - **PR #34, #35 et #36 fusionnées** : main `ae2df218` contient la pile intégrée, les tenues et l'ambiance.
 - **PR #37 `feat/tactical-audit` → `main`** : consignes en deux touches et audit tactique. 699 tests Core réussis ; compilation/captures Unity ciblées validées, revue visuelle faite, test du rapport carrière réussi. APK 0.59/code52 construite et vérifiée, téléphone non vérifié.
 - Git HTTPS fonctionne sur ce PC. Le connecteur GitHub renvoie encore 403 en écriture ; utiliser Git pour les branches et REST avec les identifiants Git en mémoire pour la PR, sans exposer de secret.
+- **PR `feat/visual-polish` → `main`** : ciel en dégradé (`Runtime/StadiumSky.cs`, dôme qui suit la
+  caméra, coupé en qualité basse), ambiance trois tons, ralenti du soir éclairé de face (projecteurs
+  réorientés pendant le ralenti), montants de but ronds (`StadiumGeometry.GoalFrames`), filet gris
+  clair, second anneau qui réagit aux buts du club. Films `vis-*`.
 - Branches `release/0.xx` : uniquement pour construire un APK (voir §4). Ne pas fusionner.
 - APK le plus récent : **0.59.0-preview.1**, code 52 ; build GitHub Actions 37857283304 réussi sur release/0.59 (3043762397db9758c99e59795f6a7269ba6b32ca). Signature vérifiée, identique à 0.58 ; test matériel Fold restant.
 
@@ -118,8 +122,7 @@ touches 36,9 · passes 81,8 % · possession favori 56 %. **Hors fourchette** : p
 1. **#37 : validation locale et Unity terminée** (captures finales Actions 37855587630). APK 0.59/code52 construite et signature vérifiée. Faire tester Victor (gels, fluidité,
    rendu). Si ça rame : réduire post-process, flocage, ombres (`RenderBudget`). Ambiance (#36) : vérifier
    sur le Fold qu'un but ne provoque pas d'à-coup (maillage des tribunes réécrit à 20 Hz pendant ~10 s).
-   Ralenti de nuit : le plan bas est à contre-jour (joueurs sombres), à régler (lumière d'appoint ou
-   autre côté du but) si Victor le remarque.
+   Ralenti de nuit : contre-jour corrigé (PR feat/visual-polish), à confirmer sur le Fold.
 2. **Tactique** (demande de Victor) : vérifier que chaque consigne (mentalité, pressing, hauteur de
    ligne, largeur, tempo/jeu direct, rôles) a un effet mesurable dans le bon sens avec
    `tools/Calibration` (tableau consigne → effet), compléter les consignes manquantes avec des
@@ -138,7 +141,8 @@ touches 36,9 · passes 81,8 % · possession favori 56 %. **Hors fourchette** : p
    favori vers 45–55 %.
 
 Idées d'ambiance restantes (priorité basse, animations gelées) : remplaçants et staff sur les bancs,
-léger zoom sur les grosses occasions, tribune haute qui réagit aussi (aujourd'hui fixe).
+léger zoom sur les grosses occasions, variété du public (supporters debout, couleurs), escaliers et
+rambardes des tribunes, nuances de tonte du gazon, vignettage léger pendant les ralentis.
 
 ## 7. Modèle de fin de session (à recopier ici)
 
@@ -149,6 +153,22 @@ léger zoom sur les grosses occasions, tribune haute qui réagit aussi (aujourd'
 - Non vérifié : …
 - Prochaine étape : …
 ```
+
+### Session Claude du 8 octobre 2026 (rendu, PR feat/visual-polish)
+- Fait : ciel en dégradé avec nuages/collines/ville (`StadiumSky`, dôme qui suit la caméra, dessiné
+  en premier sans profondeur, sous le brouillard), ambiance trois tons (`StadiumLighting`),
+  projecteurs réorientés pendant le ralenti du soir (fin du contre-jour), gradins plus clairs le
+  soir (×0,6 au lieu de ×0,5), montants ronds vernis (`StadiumGeometry.GoalFrames`, remplace les
+  LineRenderer), filet gris clair, second anneau qui se lève sur les buts du club.
+- Mesures : appels de rendu +1 (ciel) −1 (deux LineRenderer → un maillage) = 0 ; matières +3
+  (ciel, montants, filet) ; texture +1 (512×256 RGB24 sans mipmap, 384 Ko) ; ~3 k triangles (dôme)
+  + 0,5 k (montants). Qualité basse (mode 0) : ciel et réaction du second anneau coupés. CPU : second
+  anneau ≈ 6 k sommets à 20 Hz pendant ~10 s après un but du club seulement.
+- Films : vis-homegoal(-night), vis-a2(-night), vis-goal-night (premier essai), vis2-homegoal-night,
+  vis2-a2(-night) (horizon du soir corrigé). Avant : atm-*.
+- Non vérifié : téléphone ; tests EditMode Unity (StadiumLookTests) seulement compilés ; silhouette
+  de ville peu visible depuis la caméra télé (cachée par les tribunes, visible surtout en ralenti).
+- Prochaine étape : §6 ; idées de rendu restantes dans la liste d'ambiance ci-dessus.
 
 ### Session Claude du 8 octobre 2026 (ambiance, PR #36)
 - Fait : réactions du public, virage aux couleurs du club, drapeaux, ombres de contact, ralenti en plan
