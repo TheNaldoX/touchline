@@ -85,6 +85,19 @@ namespace Touchline.Editor
             list.Add(()=>{Resize(first.width,first.height);Call("Navigate","Club");});
             // « Jusqu’au match » s’il existe (une touche), sinon saut direct au jour du match.
             list.Add(()=>{if(Root.Q<Button>("manager-advance-to-match")!=null){audit.AppendLine("Jusqu’au match : "+(App.Career.life.nextFixture-App.Career.life.day)+" jour(s) en une touche");Click("manager-advance-to-match");}else{App.Career.life.day=App.Career.life.nextFixture;Call("Navigate","Club");}});
+            // Veille du match, avec une carrière qui a vécu (actualités, objectifs, moral) : bureau,
+            // actualités, presse, carrière, effectif et fiche joueur, puis retour au match.
+            var wide=Screens[1];
+            list.Add(()=>{Resize(wide.width,wide.height);Call("Navigate","Club");});
+            list.Add(()=>{Capture(wide.tag+"-bureau-veille");Call("Navigate","Actualités");});
+            list.Add(()=>{Capture(wide.tag+"-actualites");Resize(first.width,first.height);Call("Navigate","Club");});
+            list.Add(()=>{Capture(first.tag+"-bureau-veille");Call("Navigate","Actualités");});
+            list.Add(()=>{Capture(first.tag+"-actualites");Call("Navigate","Presse");});
+            list.Add(()=>{Capture(first.tag+"-presse");Call("Navigate","Carrière");});
+            list.Add(()=>{Capture(first.tag+"-carriere");Call("Navigate","Effectif");});
+            list.Add(()=>{Capture(first.tag+"-effectif-veille");Call("PlayerProfile",App.Career.lineup[9]);});
+            list.Add(()=>{Click("Attributs");});
+            list.Add(()=>{Capture(first.tag+"-fiche-attributs");Call("CloseModal");Call("Navigate","Match");});
             list.Add(()=>{Capture(first.tag+"-jour-de-match");if(App.Career.life.day<App.Career.life.nextFixture){audit.AppendLine("Arrêt avant le match (décision à prendre) au jour "+App.Career.life.day);App.Career.life.day=App.Career.life.nextFixture;}Call("Navigate","Match");});
             list.Add(()=>{Capture(first.tag+"-avant-match");Click("Entrer sur le terrain");});
             list.Add(()=>{Capture(first.tag+"-presentation");if(Root.Q<Button>("prematch-kickoff")!=null)Click("prematch-kickoff");});
