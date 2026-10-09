@@ -2,6 +2,13 @@
 
 Lire AGENTS.md. Ce fichier contient uniquement l’état courant ; l’historique détaillé est dans Git et les PR. Mettre à jour en fin de lot, sans accumuler les comptes rendus anciens.
 
+## Session autonome autorisée — 17 h 19 à 18 h 49 Paris
+
+- Demande utilisateur : améliorer IA/décisions, graphismes/animations, UI, événements aléatoires à choix, finances/budgets et contenu original cohérent. Fin le9 octobre à16:49UTC ; réserver après18h25Paris aux validations. Automatisation touchline-am-liorations-jusqu-au-6-octobre réactivée toutes les10min, avec cette échéance et désactivation finale.
+- Unity actuelle : rendu37950676810. Session26334 attend puis déclenche runtime-tests ; ne pas lancer une seconde Unity, ne pas toucher Assets avant la fin de ces jobs.
+- Diagnostic finances commencé : ProfessionalManagement.TransferBudget déduit achats engagés, réserve de trésorerie, plafond12% des recettes et obligations des prêts ; WageBudget séparé. Examiner leur présentation et les engagements avant de changer les règles. CareerFinancialTransactions assure les contreparties des transferts : ne pas créer de recettes sans paiement.
+- Événements : recherche des classes Event/Incident non concluante ; inspecter CareerManagement et les messages/décisions existants avant de créer un système en doublon. Nouveaux choix à coûts proportionnés au club, effets bornés, aléatoire à graine et persistance testée.
+
 ## Reprise immédiate — 9 octobre 2026
 
 - Branche : `feat/recruitment-tactical-decisions`, PR #64, code62eb8a4 ; base PR #63 (`fix/signing-club-history`c022b2c), puis #62/#61.
