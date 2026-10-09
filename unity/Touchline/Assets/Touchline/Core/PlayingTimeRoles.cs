@@ -46,14 +46,15 @@ namespace Touchline.Core
             if(dismissal!=null){var arrival=match.events.FirstOrDefault(e=>e.kind=="substitution"&&e.player==id&&e.side==0);minutes=Math.Min(minutes,Math.Max(0,(dismissal.time-(arrival?.time??0))/match.SecondsPerMinute));}
             c.playingTime.Add(started,minutes);
         }
-        public string PlayingTimeOfferIssue(Database db,string id,string role)
+        public string PlayingTimeOfferIssue(Database db,string id,string role)=>PlayingTimeOfferIssueForClub(db,id,role,club);
+        string PlayingTimeOfferIssueForClub(Database db,string id,string role,string assessingClub)
         {
             var p=db.Find(id);if(p==null)return "Joueur introuvable.";role=PlayingTimeRoles.Normalize(role);
             if(role=="key"||role=="starter")return null;
-            float relative=p.rating-Strength(db,club);
+            float relative=p.rating+p.development-Strength(db,assessingClub);
             if(relative>=4)return "Le joueur attend un rôle de titulaire compte tenu de sa place estimée dans votre effectif. Une hausse salariale seule ne remplace pas ce projet sportif.";
             if(role=="youth"&&p.age>=20&&relative>=-3)return "Ce joueur s’estime déjà prêt pour des matchs seniors réguliers. Un simple statut de jeune sans quota de matchs ne lui convient pas.";
-            var current=world?.contracts?.FirstOrDefault(x=>x.player==id&&x.club==club);
+            var current=world?.contracts?.FirstOrDefault(x=>x.player==id&&x.club==assessingClub);
             if(current!=null&&relative>=-3&&(PlayingTimeRoles.Normalize(current.role)=="key"||PlayingTimeRoles.Normalize(current.role)=="starter"))return "Le joueur refuse de passer de son rôle de titulaire à un statut moins utilisé tant qu’il garde ce niveau dans l’effectif.";
             return null;
         }
