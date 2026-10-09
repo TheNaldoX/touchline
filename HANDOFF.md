@@ -9,7 +9,7 @@ Lire AGENTS.md. Ce fichier contient uniquement l’état courant ; l’historiqu
 - Claude a laissé deux lots, maintenant assemblés : `film/ui-recruitment-cell-2`9983765 (cellule de recrutement) et `film/ui-immersion-focus-1`b3cbf11 (immersion tactique). Un conflit CiUiScreens résolu en conservant les deux parcours.
 - Fonctionnalités : missions par recruteur, connaissance régionale, intérêt du joueur, personnalité simulée, adaptation des recrues ; préparation collective, causeries, cris, consignes individuelles et observations de l’adjoint.
 - Corrections de reprise : recommandations devenues inaccessibles filtrées ; Resize et ScrollTo séparés dans le scénario de captures ; carrière sans emploi rechargeable même si un ancien titulaire a quitté le club ou pris sa retraite. Les contrôles des matchs actifs et joueurs introuvables restent stricts.
-- Validation native1944eef réussie246/246 (Actions37943332562). Puis correction visuelle : boutons de causerie sur deux colonnes, retour à la ligne et hauteur automatique. Rendu ciblé huit captures en cours, Actions37944380106 / `film/ui-immersion-focus-talks-relay` /5feca04. Attendre puis regarder les images avant livraison. Pas de nouvelle APK ni fusion main.
+- Validation native1944eef réussie246/246 (Actions37943332562). Puis correction visuelle : boutons de causerie sur deux colonnes, retour à la ligne et hauteur automatique. Rendu ciblé réussi, Actions37944380106 / `film/ui-immersion-focus-talks-relay` /5feca04 : huit captures revues, boutons lisibles, réactions visibles, cibles≥48dp et textes≥12sp. Exception QuickSearch éditeur préexistante seulement. Pas de nouvelle APK ni fusion main.
 
 ## Preuves disponibles
 
@@ -59,7 +59,7 @@ Calibration :200 matchs/graine1, même catalogue. Avant `tools/Calibration/Repor
 
 ## Pièges et prochaines étapes
 
-1. Revoir les huit captures de causerie (sauvegarde déjà validée) ; compléter PR #62, puis produire un candidat APK distinct si les contrôles passent.
+1. Huit captures de causerie revues ; suivi des arrivées par club à corriger avant le prochain candidat APK.
 2. Test Fold réel : fluidité, gels, après-but, nuit, navigation et pliage. Main n’est pas fusionnée ; ne pas contourner ce point de validation.
 3. Calibration : ligne haute, sorties, penalties, xG ; audit des consignes sur graines appariées, pas de réglage pour satisfaire une seule graine.
 4. Revoir adaptation/recrutement après changement de club et équilibre sur plusieurs saisons. Puis lisibilité portrait et petits libellés11sp.
