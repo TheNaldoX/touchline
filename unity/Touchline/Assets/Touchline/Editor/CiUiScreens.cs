@@ -135,11 +135,11 @@ namespace Touchline.Editor
                 });
             }
             list.Add(()=>{
-                var c=App.Career;var objective=c.EnsureBoardObjective(App.Database);
+                var c=App.Career;var objective=c.EnsureBoardObjective(App.Database);c.life.day+=30;int playedDay=c.life.day-6;
                 foreach(var f in c.world.fixtures.Where(f=>f.league==objective.division&&(f.home==c.club||f.away==c.club)).Take(6)){
-                    f.played=true;f.hg=f.home==c.club?0:2;f.ag=f.away==c.club?0:2;
+                    f.day=playedDay++;f.played=true;f.hg=f.home==c.club?0:2;f.ag=f.away==c.club?0:2;
                 }
-                c.life.day+=30;c.ReviewBoardObjective(App.Database);
+                c.ReviewBoardObjective(App.Database);
                 audit.AppendLine("Bilan direction : six défaites de championnat synthétiques, carrière de validation uniquement.");
             });
             foreach(var s in Screens){var screen=s;
@@ -151,9 +151,10 @@ namespace Touchline.Editor
 
         static List<Action> BuildCareerReviewSteps()
         {
-            var list=BuildFocusedDepthSteps();list.AddRange(BuildFocusedBoardSteps());string player=null;
+            bool remaining=Path.GetFileName(Output).Contains("-remaining-");
+            var list=remaining?new List<Action>():BuildFocusedDepthSteps();if(!remaining)list.AddRange(BuildFocusedBoardSteps());string player=null;
             list.Add(()=>{
-                var c=App.Career;var f=c.world.fixtures.First(x=>x.home==c.club||x.away==c.club);
+                var c=App.Career;c.EnsureWorld(App.Database);var f=c.world.fixtures.First(x=>x.home==c.club||x.away==c.club);
                 f.day=c.life.day;f.played=true;f.hg=f.home==c.club?0:2;f.ag=f.away==c.club?0:2;
                 player=App.Database.Squad(c.club).First(p=>!p.Goalkeeper&&c.Contract(App.Database,p.id).parent==null).id;
                 c.departureRequests.Add(new DepartureRequest{club=c.club,player=player,status="requested",since=c.life.day-28,opened=c.life.day});
@@ -161,7 +162,8 @@ namespace Touchline.Editor
             });
             foreach(var s in Screens){var screen=s;
                 list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Presse");});
-                list.Add(()=>{if(Root.Q("press-after-protect")==null)throw new Exception("Conférence contextuelle absente");Capture(screen.tag+"-presse-resultat");Call("Conversation",player);});
+                list.Add(()=>{Capture(screen.tag+"-presse-resultat");if(Root.Q("press-after-protect")==null)throw new Exception("Conférence contextuelle absente");});
+                list.Add(()=>Call("Conversation",player));
                 list.Add(()=>{if(Root.Q("departure-allow")==null||Root.Q("departure-refuse")==null)throw new Exception("Choix de départ absents");Capture(screen.tag+"-demande-depart");Call("CloseModal");});
                 list.Add(()=>{Call("Navigate","Carrière");});
                 list.Add(()=>{var news=Root.Q("club-news");if(news==null)throw new Exception("Actualités absentes");news.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(news);});
@@ -500,9 +502,12 @@ namespace Touchline.Editor
             steps??=BuildSteps();
             if(stage<0)stage=0;
             if(stage>=steps.Count){Finish(failures==0?null:failures+" étape(s) en échec");return;}
+            File.AppendAllText(Path.Combine(Output,"progress.txt"),DateTime.UtcNow.ToString("O")+" START "+stage+"\n");
+            var timer=System.Diagnostics.Stopwatch.StartNew();
             try{steps[stage]();}
             catch(Exception e){failures++;var inner=e is TargetInvocationException t&&t.InnerException!=null?t.InnerException:e;audit.AppendLine("ERREUR étape "+stage+" : "+inner.Message);Debug.LogException(inner);}
-            stage++;
+            File.AppendAllText(Path.Combine(Output,"progress.txt"),DateTime.UtcNow.ToString("O")+" END "+stage+" "+timer.ElapsedMilliseconds+" ms\n");
+            File.WriteAllText(Path.Combine(Output,"audit-progress.txt"),audit.ToString());stage++;
         }
 
         static void Finish(string failure)
