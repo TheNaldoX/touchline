@@ -726,6 +726,10 @@ Button:disabled { opacity: .45; }
 .narrow .calendar-planning-dialog { width: 96%; }
 .scout-summary, .scout-mission-card, .scout-report-card { padding: 14px; margin-bottom: 10px; }
 .scout-actions { flex-wrap: wrap; margin-top: 8px; }
+.scout-report-controls { flex-wrap: wrap; margin-top: 8px; }
+.scout-report-controls > .unity-base-field { flex-basis: 45%; flex-grow: 1; min-width: 0; flex-direction: column; margin-right: 6px; }
+.scout-report-controls .unity-base-field__label { min-width: 0; font-size: 12px; margin-bottom: 4px; }
+.scout-report-controls .unity-base-field__input { min-height: 48px; }
 .scout-actions > Button { min-height: 48px; margin-right: 6px; margin-bottom: 5px; }
 .scout-status { color: #a6e8cd; font-size: 13px; margin-top: 7px; margin-bottom: 5px; white-space: normal; }
 .scout-report-advice { margin-top: 8px; white-space: normal; }

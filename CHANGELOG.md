@@ -3,7 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
-- Recrutement : les rapports conservent les niveaux et attributs observés au lieu de découvrir automatiquement la progression cachée des cibles.
+- Recrutement : les rapports conservent les niveaux et attributs observés au lieu de découvrir automatiquement la progression cachée des cibles ; filtres compacts et actions remontées dans les fiches de rapport.
 - Passes capturées : correction progressive de la jambe vers le ballon enregistré à l’impact, limitée aux passes et sans déplacer le joueur simulé.
 - Animation des passes courtes, en profondeur et en retrait : les gauchers utilisent le geste miroir du pied gauche, avec le même timing de contact que les droitiers.
 - Visibilité nocturne : lumière ambiante latérale renforcée sans projecteur supplémentaire ; pas de replacement Mecanim démarrés depuis le pied réellement affiché plutôt qu’un ancien appui inaccessible.
