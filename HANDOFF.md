@@ -38,7 +38,7 @@ Jeu de gestion de football type Football Manager, Unity **6000.3.24f1**, URP, An
 ## 3. État au 9 octobre 2026
 
 ### Branches et PR
-- Lot `fix/defensive-pass-anticipation` : deux gardes avant contact et 36 régressions Core. Correctif logique vérifié, **ne pas intégrer automatiquement dans une APK** : buts/tirs et avantage du favori augmentent sur les 200 matchs comparables. Voir le compte rendu en fin de fichier.
+- Lot `fix/defensive-pass-anticipation` / PR43 : gardes symétriques défenseurs et destinataires avant contact, 60 régressions dédiées, 759 tests Core réussis. Dernière calibration 200 matchs : 2,71 buts / 24,18 tirs, contre 3,25 / 29,78 pour la défense seule. Validation Unity et décision d'intégration encore nécessaires ; réserves détaillées en fin de fichier.
 - **PR #34, #35 et #36 fusionnées** : main `ae2df218` contient la pile intégrée, les tenues et l'ambiance.
 - **PR #37 `feat/tactical-audit` → `main`** : consignes en deux touches et audit tactique. 699 tests Core réussis ; compilation/captures Unity ciblées validées, revue visuelle faite, test du rapport carrière réussi. APK 0.59/code52 construite et vérifiée, téléphone non vérifié.
 - Git HTTPS fonctionne sur ce PC. Le connecteur GitHub renvoie encore 403 en écriture ; utiliser Git pour les branches et REST avec les identifiants Git en mémoire pour la PR, sans exposer de secret.
@@ -115,7 +115,7 @@ touches 36,9 · passes 81,8 % · possession favori 56 %. **Hors fourchette** : p
 
 ## 6. À faire (par priorité)
 
-- Candidat anticipation défensive : conserver séparé tant que les effets d'équilibre (3,25 buts, 29,78 tirs, favori 74,75 %) n'ont pas été examinés ; aucun coefficient compensatoire ajouté. Compilation Unity non réalisée pour ce lot.
+- Candidat anticipation symétrique : valider Unity et examiner les réserves (touches 50,43, penalties 0,19, sorties de but 13,54, favori 63,64 %) avant intégration. Les chiffres dégradés de la défense seule sont historiques ; le complément destinataires ramène buts et tirs dans les bornes sans coefficient compensatoire.
 
 1. **#37 : validation locale et Unity terminée** (captures finales Actions 37855587630). APK 0.59/code52 construite et signature vérifiée. Faire tester Victor (gels, fluidité,
    rendu). Si ça rame : réduire post-process, flocage, ombres (`RenderBudget`). Ambiance (#36) : vérifier
@@ -204,3 +204,11 @@ léger zoom sur les grosses occasions, tribune haute qui réagit aussi (aujourd'
 - Résultats avant → après : buts 2,83 → 3,25 ; tirs 26,84 → 29,78 ; cadrés 8,42 → 9,46 ; corners 8,88 → 8,24 ; fautes 22,52 → 21,35 ; jaunes 3,96 → 4,10 ; penalties 0,17 → 0,23 ; hors-jeu 3,73 → 3,87 ; touches 36,88 → 36,80 ; passes réussies 81,82 → 81,74 % ; favori net 67,68 → 74,75 % de victoires.
 - Limites : la correction supprime une information future avant le contact, mais n'améliore PAS l'équilibre agrégé de cet échantillon. Buts et tirs dépassent les bornes ; avantage du favori renforcé. La destination exacte reste utilisée après départ, pas de nouveau modèle de perception/réaction. Aucun retuning ajouté pour masquer ces effets. Compilation Unity, revue visuelle et APK non réalisées pour ce lot ; ne pas intégrer automatiquement à 0.60.
 - Prochaine étape : revue du coordinateur et décision sur un lot de rééquilibrage distinct, avec comparaison appariée et contrôle de la ligne haute. Conserver ce candidat et ses preuves séparés en attendant.
+
+### Complément Codex du 9 octobre 2026 — réception symétrique avant contact
+- Fait : garde `elapsed >= 0` sur les deux appels destinataires de `ReceptionTarget` dans `MatchMovement` (joueur de champ et gardien). Avant départ, le joueur conserve son placement tactique déjà calculé et le gardien son placement face au ballon visible. Aucune modification de finition, seuil statistique, vitesse ou coefficient.
+- Preuve : 24 nouveaux cas échouent avant correction (cible différente de 20 m), puis passent. États jumeaux avec mêmes positions/vitesses/angles et seule destination finale différente ; passe, profondeur, centre, deux côtés et périodes, gardien/joueur de champ, temps -0,18/-0,001/0/+0,12. Ensemble anticipation 60/60 ; suite Core 759/759. Preuves locales ignorées `.validation/receiver-expanded-before.txt`, `receiver-after.txt`, `core-symmetric-after.txt`.
+- Calibration complémentaire, sans écraser les précédentes : `tools/Calibration/Reports/defensive-anticipation-symmetric-after-200-seed1.txt`, 200 matchs graine 1, zéro erreur. Même base release060 SHA256 8400910DA9EB2AED5155D8AE760B3983C0F3168072008593BDA152BBCD1BC1AA.
+- Base → défense seule → correction symétrique : buts 2,83 → 3,25 → 2,71 ; tirs 26,84 → 29,78 → 24,18 ; cadrés 8,42 → 9,46 → 7,52 ; corners 8,88 → 8,24 → 9,46 ; fautes 22,52 → 21,35 → 20,43 ; jaunes 3,96 → 4,10 → 3,86 ; passes réussies 81,82 → 81,74 → 76,26 % ; favori 67,68 → 74,75 → 63,64 % de victoires. L'asymétrie du receveur était donc matériellement importante dans cette comparaison, sans prouver à elle seule une causalité générale pour tous les matchs.
+- Réserves actuelles : touches 50,43 (cible 35–50), penalties 0,19 (0,20–0,35), sorties de but 13,54 (14–20), favori 63,64 % (45–55 %) ; xG 1,70 pour 2,71 buts, écart préexistant d'estimation non corrigé. Volume passes 816,72 et précision 76,26 % restent dans les bornes mais proches du bas. Aucun retuning supplémentaire. La destination exacte reste exploitable après contact ; aucune nouvelle perception probabiliste ajoutée.
+- Statut : Assets gelés après ces mesures, pas de Runtime/Editor ni Unity/push. Ce complément remplace la conclusion de calibration défavorable de la version défense seule, mais ne vaut pas validation Unity ou autorisation automatique d'inclure PR43 dans l'APK. Coordinateur décide après revue.

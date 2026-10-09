@@ -65,5 +65,33 @@ namespace Touchline.Tests
                 }
             }
         }
+
+        [TestCase("pass",0,1,false)] [TestCase("pass",1,1,false)] [TestCase("pass",0,2,false)] [TestCase("pass",1,2,false)]
+        [TestCase("through",0,1,false)] [TestCase("through",1,1,false)] [TestCase("through",0,2,false)] [TestCase("through",1,2,false)]
+        [TestCase("cross",0,1,false)] [TestCase("cross",1,1,false)] [TestCase("cross",0,2,false)] [TestCase("cross",1,2,false)]
+        [TestCase("pass",0,1,true)] [TestCase("pass",1,1,true)] [TestCase("pass",0,2,true)] [TestCase("pass",1,2,true)]
+        [TestCase("through",0,1,true)] [TestCase("through",1,1,true)] [TestCase("through",0,2,true)] [TestCase("through",1,2,true)]
+        [TestCase("cross",0,1,true)] [TestCase("cross",1,1,true)] [TestCase("cross",0,2,true)] [TestCase("cross",1,2,true)]
+        public void ReceiverDoesNotKnowTheRandomEndpointUntilContact(string kind,int side,int period,bool keeper)
+        {
+            foreach(float elapsed in new[]{-.18f,-.001f,0f,.12f}){
+                var left=Setup(kind,side,period,elapsed,-10);var right=Setup(kind,side,period,elapsed,10);
+                int index=side*11+(keeper?0:9);
+                foreach(var sim in new[]{left,right}){
+                    var receiver=sim.State.actors[index];receiver.sentOff=false;receiver.action="run";receiver.actionTime=0;
+                    receiver.position=receiver.previous=new Point(sim.Direction(side)*(keeper?-20:20),0);receiver.velocity=new Point(sim.Direction(side)*2,.5f);
+                    if(keeper){sim.State.actors[side*11+9].sentOff=true;sim.State.ball.end.x=receiver.position.x;}
+                    sim.State.ball.to=receiver.id;Move(sim);
+                }
+                float gap=Point.Distance(left.MovementTarget(index),right.MovementTarget(index));
+                if(elapsed<0){
+                    Assert.Less(gap,.0001f,"Avant contact : "+kind+", gardien="+keeper+", temps="+elapsed);
+                    Assert.AreNotEqual("receive",left.State.actors[index].intent);
+                }else{
+                    Assert.Greater(gap,1,"La trajectoire visible après contact reste prise en compte, gardien="+keeper);
+                    if(!keeper)Assert.AreEqual("receive",left.State.actors[index].intent);
+                }
+            }
+        }
     }
 }

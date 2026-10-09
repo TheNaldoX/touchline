@@ -38,7 +38,8 @@ namespace Touchline.Core
                 q=q*dir;
                 if(p.slot==0){p.intent="keeper";q=KeeperTarget(p);}
                 else if(p==owner){if(Point.Distance(p.carryTarget,p.position)<1)m.decision=Math.Min(m.decision,.1f);q=p.carryTarget;p.intent="carry";if(p.controlTime>0)q=p.position;}
-                else if(b.to==p.id&&b.kind!="none"){q=ReceptionTarget(p);p.intent="receive";}
+                // Until contact, keep the visible supporting run instead of chasing the random endpoint.
+                else if(b.to==p.id&&b.kind!="none"&&b.elapsed>=0){q=ReceptionTarget(p);p.intent="receive";}
                 else if(!has){
                     var focus=DefensiveFocus(p.side);float focusX=focus.x*dir;
                     if(slot.y<38&&bx< -24)q.x=dir*Math.Max(-49.2f,Math.Min(q.x*dir,bx-3.2f));
@@ -120,7 +121,7 @@ namespace Touchline.Core
             var b=State.ball;var dir=Direction(p.side);var depth=Math.Max(1,b.position.x*dir+52.5f);var offset=Mathx.Clamp(depth*.11f,1,4.5f+Tactic(p.side).line*1.5f);
             var q=new Point(dir*(-52.5f+offset),Mathx.Clamp(b.position.z*offset/depth,-3.2f,3.2f));
             if(b.penalty&&b.kind=="shot"&&b.elapsed<0)return new Point(-dir*52.5f,0);
-            if(b.to==p.id&&b.side==p.side)return ReceptionTarget(p);
+            if(b.to==p.id&&b.side==p.side&&b.elapsed>=0)return ReceptionTarget(p);
             var owner=Owner;
             if(owner!=null&&owner.side!=p.side&&depth<17&&Math.Abs(b.position.z)<10){
                 float cover=Space(b.position,p.side,true);
