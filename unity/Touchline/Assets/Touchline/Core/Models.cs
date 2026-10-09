@@ -121,6 +121,9 @@ namespace Touchline.Core
     public static class Mathx { public static float Clamp(float v,float a,float b) => Math.Max(a,Math.Min(b,v)); }
     [Serializable] public partial class Career
     {
+        public const int ImportedRosterYear=2026;
+        // Zero preserves legacy careers; new imported careers start intakes next season.
+        public int youthGenerationFromYear;
         public int schema = 1;
         public string manager = "Victor", club = "176";
         public Tactic tactic = new Tactic();

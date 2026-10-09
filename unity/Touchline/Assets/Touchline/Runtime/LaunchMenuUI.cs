@@ -159,7 +159,7 @@ namespace Touchline
             try{
                 if(!validatedPrimary&&File.Exists(SavePath))ValidatePrimaryBeforeReplacement();
                 var db=TouchlineCatalogue.Load();
-                var state=new Career{club=launchDraftClub,manager=launchDraftManager.Trim(),revealAttributes=launchDraftReveal,saveBaseline=SaveBaseline.From(db)};state.lineup=Core.Career.Select(db,state.club,state.tactic);state.EnsureLife(db);if(!VisualValidation)state.EnsureWorld(db);
+                var state=new Career{club=launchDraftClub,manager=launchDraftManager.Trim(),revealAttributes=launchDraftReveal,saveBaseline=SaveBaseline.From(db),youthGenerationFromYear=Core.Career.ImportedRosterYear+1};state.lineup=Core.Career.Select(db,state.club,state.tactic);state.EnsureLife(db);if(!VisualValidation)state.EnsureWorld(db);
                 Database=db;Career=state;historyClub=null;careerSelected=true;launchMenuVisible=false;Save();
                 if(!lastCareerSaveSucceeded)throw new IOException("La nouvelle carrière n’a pas pu être enregistrée.");
                 if(arena!=null)Destroy(arena.gameObject);arena=null;launchCatalogue=null;launchBusy=false;page="Club";launchTab="Accueil";Build();
