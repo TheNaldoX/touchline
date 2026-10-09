@@ -26,6 +26,20 @@ namespace Touchline.Tests
         static void Age(ScoutReport r, int days){r.started -= days; r.due -= days; r.lastObserved -= days;}
 
         // --- Generated leagues -------------------------------------------------
+        [TestCase(false)][TestCase(true)] public void ImportedCareerDoesNotInventStartingYouthAndPolicySurvivesSave(bool imported)
+        {
+            db.players=db.players.Where(p=>!p.id.StartsWith("gen-",StringComparison.Ordinal)).ToArray();
+            var state=new Career{club="c0",youthGenerationFromYear=imported?Career.ImportedRosterYear+1:0};
+            state.lineup=Career.Select(db,state.club,state.tactic);state.EnsureWorld(db);
+            Assert.AreEqual(!imported,db.players.Any(p=>p.id.StartsWith("gen-",StringComparison.Ordinal)));
+            var restored=JsonUtility.FromJson<Career>(JsonUtility.ToJson(state));
+            Assert.AreEqual(state.youthGenerationFromYear,restored.youthGenerationFromYear);
+            if(imported){
+                restored.world.year++;
+                typeof(Career).GetMethod("CreateIntake",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(restored,new object[]{db});
+                Assert.IsTrue(db.players.Any(p=>p.id.StartsWith("gen-",StringComparison.Ordinal)));
+            }
+        }
         [Test] public void GeneratedLeaguesAreDeterministicIdempotentAndFrozen()
         {
             var a = new Database{leagues = new LeagueData[0], clubs = new ClubData[0], players = new PlayerData[0]};

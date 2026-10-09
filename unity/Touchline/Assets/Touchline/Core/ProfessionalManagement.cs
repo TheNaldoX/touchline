@@ -113,6 +113,7 @@ namespace Touchline.Core
         }
         void CreateIntake(Database db)
         {
+            if(world.year<youthGenerationFromYear){world.lastIntake=world.year;return;}
             if(world.lastIntake==world.year)return;world.lastIntake=world.year;int count=world.youth.Any(y=>db.Find(y.player)?.team=="academy-"+club)?5+Level("academy"):14+Level("academy");
             string[] first={"Alex","Noah","Elias","Adam","Gabriel","Sacha","Amine","Léo","Mathis","Ilyes","Nolan","Hugo"};string[] last={"Martin","Morel","Bernard","Petit","Roux","Diallo","Laurent","Perrin","Henry","Simon","Benoît","Garcia"};
             float baseline=Strength(db,club);var nationality=db.Squad(club).GroupBy(p=>p.nationality).OrderByDescending(g=>g.Count()).FirstOrDefault()?.Key??"France";

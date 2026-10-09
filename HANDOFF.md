@@ -37,6 +37,14 @@ Jeu de gestion de football type Football Manager, Unity **6000.3.24f1**, URP, An
 
 ## 3. État au 9 octobre 2026
 
+### Correction demandée après 0.61 — pas de joueurs fictifs dans la base de départ
+
+- Victor refuse l’extension fictive. Branche `fix/real-starting-catalogue` issue de la source livrée : nouvelles carrières sur `database.json` seul (21815 entrées, toutes avec un lien source ESPN ; cela ne certifie pas l’actualité des effectifs, salaires et notes). L’extension de 2784 joueurs/116 clubs/8 ligues est désactivée. SeasonSim suit cette base par défaut ; `--legacy-generated` est réservé aux diagnostics de l’ancienne version.
+- Le JSON figé reste uniquement pour décoder les anciennes carrières contenant déjà ces joueurs. Leur progression et leurs transferts ne sont pas supprimés ; une lecture ne réécrit aucun fichier. Le catalogue du menu reste intact et ne réintroduit pas les joueurs fictifs dans une nouvelle partie. Une carrière 0.61 conserve donc ses anciens joueurs fictifs : pas de purge destructive automatique.
+- Les nouvelles carrières n’inventent plus non plus de promotion initiale au centre : `youthGenerationFromYear=2027`, persisté, appliqué aux deux chemins de création et à SeasonSim. Le centre ne reçoit donc pas de promotion tant que de véritables jeunes ne sont pas intégrés ou que la saison suivante n’a pas commencé. Les anciens fichiers gardent leur comportement. La demande sur les newgens futurs est en clarification ; leur génération reste active à partir de 2027. Pas de nouvelle APK à ce stade ; la 0.61 livrée contient toujours l’extension.
+- Validation locale : **881/881 Core** et **six contrôles du chargement** réussis sous .NET (catalogue initial, carrière sans extension, reprise complète/compacte avec ou sans transfert puis seconde sauvegarde). Le détecteur hérité vérifie aussi contrats/comptes, pas seulement les joueurs modifiés. Deux tests Core couvrent la promotion initiale, sa règle persistée et la génération future. SeasonSim0 saison/--savecheck :22088 joueurs après import des libres sourcés, restauration identique complète/compacte40,37/2,58Mo. Pas de nouvelle simulation longue ni de test Fold.
+- Les validations intermédiaires Unity37924879859 et37925957457 ont été annulées volontairement avant des compléments de compatibilité, pas des succès. Source finale à valider **40e063c** ; PR #61 reste en brouillon jusqu’au résultat. Aucun nouvel APK construit dans ce lot.
+
 ### Livraison actuelle — APK 0.61 vérifiée (9 octobre, 11:29 UTC)
 
 - **À reprendre ici**, avant les étapes historiques ci-dessous. Branche `release/0.61-preview.1`, PR #60, source de build **62579583792280aa8ee7c996d1b47a1e0f88f838**. Actions **37921391496** réussie ; artefact **11613111834**. APK locale `artifacts/Touchline-Unity-0.61-preview.apk`, **73774374 octets**, version **0.61.0-preview.1/code54**, package `fr.personal.touchline.unity`, Unity IL2CPP ARM64 contrôlé.

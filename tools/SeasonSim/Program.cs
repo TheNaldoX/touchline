@@ -26,12 +26,12 @@ static class P{
   bool saveCheck=a.Contains("--savecheck");string dbText=File.ReadAllText(FindDatabase());
   // --savecheck : base lue comme dans Unity (JsonUtility simulé), pour comparer les formats de sauvegarde à l'identique.
   var db=saveCheck?UnityEngine.JsonUtility.FromJson<Database>(dbText):JsonSerializer.Deserialize<Database>(dbText,new JsonSerializerOptions{IncludeFields=true});
-  // Comme le jeu : ligues fictives générées au chargement (--no-generated pour la base seule).
-  var genWatch=System.Diagnostics.Stopwatch.StartNew();withGenerated=!a.Contains("--no-generated");int generatedPlayers=withGenerated?AppendGenerated(db):0;
+  // Catalogue importé, sauf diagnostic explicite de la version 0.61.
+  var genWatch=System.Diagnostics.Stopwatch.StartNew();withGenerated=a.Contains("--legacy-generated");int generatedPlayers=withGenerated?AppendGenerated(db):0;
   Console.WriteLine($"Base : {db.leagues.Length} ligues, {db.clubs.Length} clubs, {db.players.Length} joueurs ({generatedPlayers} générés en {genWatch.ElapsedMilliseconds} ms)");
   // Comme le jeu : empreinte prise sur la base elle-même, avant que la carrière la modifie.
   SaveBaseline baseline=saveCheck?SaveBaseline.From(db):null;
-  var c=new Career{club=club,saveBaseline=baseline};c.lineup=Career.Select(db,club,c.tactic);c.EnsureLife(db);
+  var c=new Career{club=club,saveBaseline=baseline,youthGenerationFromYear=withGenerated?0:Career.ImportedRosterYear+1};c.lineup=Career.Select(db,club,c.tactic);c.EnsureLife(db);
   int wsi=Array.IndexOf(a,"--worldseed");if(wsi>=0)c.life.seed=uint.Parse(a[wsi+1]);c.EnsureWorld(db);
   // --world : personne ne dirige le club, l'IA gère tous les effectifs (observation du monde seul).
   if(worldOnly){c.world.managerStatus="unemployed";c.life.nextFixture=int.MaxValue;}
