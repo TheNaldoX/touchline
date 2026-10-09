@@ -37,6 +37,15 @@ Jeu de gestion de football type Football Manager, Unity **6000.3.24f1**, URP, An
 
 ## 3. État au 9 octobre 2026
 
+### Suite de Claude — séparation ligne / pressing (travail non livré)
+
+- Branche `tune/match-balance-diagnostics`, base `integ/0.60` / c3fda366. Main non fusionnée ; test Fold toujours absent. Le nouvel ordre utilisateur autorise les travaux indépendants du test matériel.
+- `MatchMovement` : le seuil d'engagement dépend de l'intensité du pressing, plus de la hauteur de ligne ; celle-ci conserve son effet sur le placement. Quatre des huit nouveaux scénarios échouaient avant, les huit passent après, deux équipes couvertes. 819/819 tests Core (808 existants + 8 scénarios + 3 tests statistiques hors Unity).
+- Rapports `tools/Calibration/Reports/pressing-separation-*` : mêmes 200 matchs, graine 1. Buts 2,71→2,55 ; touches 50,43→49,54 ; favori 63,64→60,61 % ; sorties de but 13,54→13,87 ; penalties 0,19→0,14. Ce correctif logique ne constitue pas une calibration terminée : penalties dégradés, ligne haute encore trop favorable, tempo non modifié. Audit ligne 400 matchs avant + 400 après : avantage buts pour 0,91→0,74, buts contre −0,91→−0,87.
+- xG : estimation géométrique pré-tir distincte du calcul physique des buts ; écart moyen buts−xG 1,01 ±0,21 avant, 0,89 ±0,21 après (IC95 apparié approximatif). Ne pas multiplier arbitrairement les xG pour masquer cet écart. Favoris : 99 cas seulement, IC95 Wilson avant [53,82 ;72,44] %, après [50,76 ;69,66] %, sans prétendre que le changement de taux est statistiquement établi.
+- Unity à valider après les jobs de Claude : 37900269212, 37898658725, 37898432737. Pas de nouvelle instance lancée. Ses commits figés ne sont pas modifiés par ce travail local. `film/cam-bench2-goal` contient déjà caméra/ergonomie/bancs/public/rambardes et arrondi mensuel aux montants ronds ; éviter de refaire ces fichiers. Nouvelle APK non construite.
+- Suite : comparer rythme patient/rapide et traiter les risques contextuels de passe ; calibrer pénalties et ligne haute sans surajuster une graine ; approfondir objectifs de direction, demandes de départ, presse et actualités. La base réelle reste 21815 joueurs /715 clubs, pas 1434/45.
+
 ### Livraison 0.60 — état consolidé du 9 octobre
 
 - Sources intégrées `0a398c2a18a77b78d2cd145a0b35cb3ef013f7b5`, build sur `43d852b50b62f67eb4ae7df3607a43df2d4f1376` (documentation seulement ensuite), `release/0.60`, version `0.60.0-preview.1` / code 53. PR #37–#46 intégrées, aucune fusion automatique dans main. Cette section prévaut sur les essais historiques ci-dessous. PR de livraison #47, à ne pas fusionner en remplacement des lots individuels.

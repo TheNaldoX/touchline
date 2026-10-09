@@ -99,5 +99,31 @@ namespace Touchline.Tests
             typeof(MatchSimulation).GetMethod("Move",Private).Invoke(sim,null);
             Assert.AreEqual("press",first.intent);
         }
+
+        [TestCase(0,.2f)][TestCase(0,.8f)][TestCase(1,.2f)][TestCase(1,.8f)]
+        public void RaisingTheLineDoesNotOrderExtraPressing(int side,float line)
+        {
+            var sim=Setup(side,70,70,out var carrier,out var first,out var second);
+            sim.Tactic(1-side).pressing=.2f;sim.Tactic(1-side).line=line;
+            sim.Tactic(1-side).counterPress=false;sim.State.turnoverAt=-100;
+            first.position=first.previous=new Point(sim.Direction(side)*8,0);
+            second.position=second.previous=new Point(30,30);
+            sim.State.ball.position=carrier.position;
+            typeof(MatchSimulation).GetMethod("Move",Private).Invoke(sim,null);
+            Assert.AreNotEqual("press",first.intent,"Une ligne haute ne change pas la consigne de pressing.");
+        }
+
+        [TestCase(0,.2f)][TestCase(0,.8f)][TestCase(1,.2f)][TestCase(1,.8f)]
+        public void IntensivePressingCanEngageAtHalfwayWithEitherLine(int side,float line)
+        {
+            var sim=Setup(side,70,70,out var carrier,out var first,out var second);
+            sim.Tactic(1-side).pressing=.8f;sim.Tactic(1-side).line=line;
+            sim.Tactic(1-side).counterPress=false;sim.State.turnoverAt=-100;
+            first.position=first.previous=new Point(sim.Direction(side)*8,0);
+            second.position=second.previous=new Point(30,30);
+            sim.State.ball.position=carrier.position;
+            typeof(MatchSimulation).GetMethod("Move",Private).Invoke(sim,null);
+            Assert.AreEqual("press",first.intent);
+        }
     }
 }

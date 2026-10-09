@@ -45,6 +45,13 @@ static partial class P
             ("Passes","courtes","directes",(t,h)=>t.directness=h?.8f:.2f),
             ("Mission des milieux","défense","attaque",(t,h)=>{foreach(var s in t.withBall.Where(s=>s.role=="CM"))s.duty=h?"attack":"defend";})
         };
+        // Optional selection keeps identical fixture seeds for focused before/after audits.
+        if(args.Length>3){
+            var requested=args[3].Split(',');
+            if(requested.Any(name=>!choices.Any(c=>string.Equals(c.name,name,StringComparison.OrdinalIgnoreCase))))
+                throw new ArgumentException("Consigne inconnue. Utilisez : "+string.Join(", ",choices.Select(c=>c.name)));
+            choices=choices.Where(c=>requested.Any(name=>string.Equals(c.name,name,StringComparison.OrdinalIgnoreCase))).ToArray();
+        }
         using var csv=new StreamWriter(output);
         csv.WriteLine("consigne,variante,domicile,exterieur,graine,"+string.Join(",",TacticalSample.Names));
         Console.WriteLine($"Audit apparié : {count} affiches × 2 variantes par consigne, graine {seed}. Mesures du club dirigé (domicile).\nIA adverse active, aucun résultat de victoire garanti. IC 95 % indicatifs, sans correction des comparaisons multiples.\n");
