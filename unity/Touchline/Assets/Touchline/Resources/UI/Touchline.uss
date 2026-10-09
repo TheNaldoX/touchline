@@ -1224,9 +1224,6 @@ Button.prematch-selected { background-color: rgb(26,66,61); border-width: 1px; b
 .match-mentality > Button { flex-grow: 1; flex-basis: 0; min-width: 0; min-height: 48px; margin: 2px; padding: 4px 6px; font-size: 14px; }
 
 /* Recruitment decision hub: compact cards, independent from the virtualized market. */
-.recruit-workspace .recruit-tabs-scroll { flex-grow: 0; flex-shrink: 0; height: 68px; margin-bottom: 4px; }
-.recruit-workspace .recruit-tabs-scroll .recruit-tabs { flex-wrap: nowrap; justify-content: flex-start; margin-bottom: 2px; }
-.recruit-workspace .recruit-tabs-scroll .recruit-tabs > Button { flex-shrink: 0; flex-grow: 0; flex-basis: auto; min-height: 50px; height: 50px; min-width: 78px; font-size: 13px; margin: 0 4px 0 0; padding: 5px 10px; }
 .recruit-hub .recruit-hub-finances { align-items: stretch; flex-wrap: nowrap; margin-bottom: 4px; }
 .recruit-hub .recruit-hub-metric { flex-grow: 1; flex-basis: 0; min-width: 0; padding: 10px 12px; margin-right: 6px; background-color: rgb(22, 42, 54); border-radius: 8px; }
 .recruit-hub .recruit-hub-amount { font-size: 22px; color: rgb(165, 232, 211); margin-top: 4px; white-space: normal; }
@@ -1259,3 +1256,10 @@ Button.prematch-selected { background-color: rgb(26,66,61); border-width: 1px; b
 .recruit-workspace .recruit-filters .unity-base-field__input { min-width: 0; font-size: 13px; padding-left: 5px; padding-right: 3px; }
 .recruit-workspace .unity-base-popup-field__arrow { width: 12px; min-width: 12px; margin-left: 3px; margin-right: 0; -unity-background-image-tint-color: rgb(183, 205, 218); }
 .recruit-workspace .recruit-filters .unity-base-popup-field__text { margin-left: 0; margin-right: 0; }
+
+/* Five destinations stay visible on the folded phone without a horizontal scrollbar. */
+.recruit-workspace .recruit-tabs { flex-wrap: nowrap; flex-shrink: 0; margin-bottom: 8px; }
+.recruit-workspace .recruit-tabs > Button { flex-grow: 1; flex-shrink: 1; flex-basis: 0; min-width: 0; min-height: 50px; height: 50px; padding: 4px 5px; margin: 0 3px 0 0; }
+.narrow .recruit-workspace .recruit-tabs > Button { flex-basis: 0; font-size: 12px; margin-bottom: 0; }
+.recruit-workspace .recruit-budget, .recruit-workspace .recruit-results, .recruit-workspace .recruit-advanced-button,
+.recruit-workspace .recruit-player-detail, .narrow .recruit-workspace .recruit-player-detail { font-size: 12px; }

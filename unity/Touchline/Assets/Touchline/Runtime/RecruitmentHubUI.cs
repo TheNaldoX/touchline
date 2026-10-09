@@ -30,7 +30,7 @@ namespace Touchline
 
             var pipeline=Row(parent,"recruit-hub-pipeline");
             HubAction(pipeline,overview.observations+" en observation","recruit-hub-observations",()=>OpenRecruitmentReports("En cours"));
-            HubAction(pipeline,(overview.reportsReady+overview.reportsStale)+" rapports terminés","recruit-hub-reports",()=>OpenRecruitmentReports("Terminés"));
+            HubAction(pipeline,(overview.reportsReady+overview.reportsStale)+((overview.reportsReady+overview.reportsStale)==1?" rapport terminé":" rapports terminés"),"recruit-hub-reports",()=>OpenRecruitmentReports("Terminés"));
             HubAction(pipeline,overview.actionableOffers+" offres à traiter","recruit-hub-offers",()=>{recruitmentTab="Négociations et prêts";Build();});
             if(overview.reportsStale>0)HubAction(parent,overview.reportsStale+" rapports à actualiser","recruit-hub-stale",()=>OpenRecruitmentReports("À actualiser"));
 
@@ -50,7 +50,7 @@ namespace Touchline
                 var card=new VisualElement();card.AddToClassList("recruit-hub-need");card.name="recruit-hub-need-"+need.role;needs.Add(card);
                 var title=Row(card,"recruit-hub-need-title");Text(title,FrenchFootballPositions.Label(need.role),"recruit-hub-player-name");
                 var badge=Text(title,need.priority>=3?"Urgent":need.priority==2?"Renforcer":need.priority==1?"Anticiper":"Couvert","recruit-hub-badge");badge.EnableInClassList("recruit-hub-alert",need.priority>=2);
-                Text(card,need.available+" disponibles / "+need.target+" visés · "+need.reason,"recruit-hub-detail");
+                Text(card,need.available+(need.available==1?" disponible / ":" disponibles / ")+need.target+" visés · "+need.reason,"recruit-hub-detail");
                 var actions=Row(card,"recruit-hub-actions");
                 HubAction(actions,"Chercher","recruit-hub-search-"+need.role,()=>OpenRecruitmentMarket(need.searchRole));
                 var mission=HubAction(actions,"Mission ciblée","recruit-hub-mission-"+need.role,()=>{ResetRecruitmentCriteria();recruitRole=need.searchRole;NewScoutingMission();});mission.SetEnabled(Career.Staff("scout").wage>0);
