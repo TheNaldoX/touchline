@@ -33,7 +33,7 @@ namespace Touchline.Core
         }
         public void SetOfferTerms(string id,MarketTerms terms)
         {
-            OffPitch();var offer=world.offers.LastOrDefault(o=>o.player==id&&o.status=="pending");if(offer==null)throw new InvalidOperationException("Aucune proposition en cours.");
+            OffPitch();var offer=world.offers.LastOrDefault(o=>o.player==id&&OfferForManagedClub(o)&&o.status=="pending");if(offer==null)throw new InvalidOperationException("Aucune proposition en cours pour votre club.");
             ValidateTerms(terms,offer.loan);if(offer.loan&&terms.loanEndDay>(world.contracts.FirstOrDefault(c=>c.player==id)?.until??0))throw new InvalidOperationException("Le prêt dépasse l’échéance connue du contrat parent.");if(terms.obligationFee>TransferBudget-offer.fee)throw new InvalidOperationException("L’obligation d’achat excède le budget restant à engager.");offer.terms=terms;
         }
         void ValidateTerms(MarketTerms t,bool loan)

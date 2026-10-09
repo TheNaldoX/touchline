@@ -36,6 +36,9 @@ namespace Touchline.Core
         }
         void MoveManager(Database db,string target)
         {
+            // Old saves did not name the proposing club. Bind unsigned discussions
+            // before changing manager context; signed commitments keep their destination.
+            foreach(var offer in world.offers.Where(o=>string.IsNullOrEmpty(o.destination)&&(o.status=="pending"||o.status=="accepted"||o.status=="counter")))offer.destination=club;
             CloseClubScouting();
             var leavingAccount=world.aiAccounts?.FirstOrDefault(a=>a.club==club);if(leavingAccount!=null){
                 leavingAccount.cash=life.cash;leavingAccount.operatingDebt=world.debt;leavingAccount.projectedFromDay=life.day;

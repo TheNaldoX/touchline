@@ -6,6 +6,7 @@ name: Build Android APK
 
 on:
   push:
+    branches: ['release/**']
     tags: ['apk-*']
   workflow_dispatch:
 

@@ -169,20 +169,23 @@ namespace Touchline
         }
         public static Mesh GoalNet(int side)
         {
+            // Rings follow the existing mesh intersections: ~0.30 m apart, so a
+            // local ball impact can bend the middle of each continuous thread.
+            const int columns=25,rows=8,depths=6;
             var mesh=new Builder();float front=side*52.5f,back=front+side*1.8f;
-            for(int column=0;column<=25;column++){
-                float z=Mathf.Lerp(-3.66f,3.66f,column/25f);
-                mesh.Beam(new Vector3(front,2.44f,z),new Vector3(back,2.2f,z),.018f);
-                mesh.Beam(new Vector3(back,2.2f,z),new Vector3(back,.1f,z),.018f);
+            for(int column=0;column<=columns;column++){
+                float z=Mathf.Lerp(-3.66f,3.66f,column/(float)columns);
+                mesh.NetThread(new Vector3(front,2.44f,z),new Vector3(back,2.2f,z),.018f,depths);
+                mesh.NetThread(new Vector3(back,2.2f,z),new Vector3(back,.1f,z),.018f,rows);
             }
-            for(int row=0;row<=8;row++){
-                float t=row/8f;mesh.Beam(new Vector3(back,Mathf.Lerp(.1f,2.2f,t),-3.66f),new Vector3(back,Mathf.Lerp(.1f,2.2f,t),3.66f),.018f);
-                for(int edge=-1;edge<=1;edge+=2)mesh.Beam(new Vector3(front,Mathf.Lerp(.1f,2.44f,t),edge*3.66f),new Vector3(back,Mathf.Lerp(.1f,2.2f,t),edge*3.66f),.018f);
+            for(int row=0;row<=rows;row++){
+                float t=row/(float)rows;mesh.NetThread(new Vector3(back,Mathf.Lerp(.1f,2.2f,t),-3.66f),new Vector3(back,Mathf.Lerp(.1f,2.2f,t),3.66f),.018f,columns);
+                for(int edge=-1;edge<=1;edge+=2)mesh.NetThread(new Vector3(front,Mathf.Lerp(.1f,2.44f,t),edge*3.66f),new Vector3(back,Mathf.Lerp(.1f,2.2f,t),edge*3.66f),.018f,depths);
             }
-            for(int depth=1;depth<6;depth++){
-                float t=depth/6f,x=Mathf.Lerp(front,back,t),top=Mathf.Lerp(2.44f,2.2f,t);
-                mesh.Beam(new Vector3(x,top,-3.66f),new Vector3(x,top,3.66f),.018f);
-                for(int edge=-1;edge<=1;edge+=2)mesh.Beam(new Vector3(x,.1f,edge*3.66f),new Vector3(x,top,edge*3.66f),.018f);
+            for(int depth=1;depth<depths;depth++){
+                float t=depth/(float)depths,x=Mathf.Lerp(front,back,t),top=Mathf.Lerp(2.44f,2.2f,t);
+                mesh.NetThread(new Vector3(x,top,-3.66f),new Vector3(x,top,3.66f),.018f,columns);
+                for(int edge=-1;edge<=1;edge+=2)mesh.NetThread(new Vector3(x,.1f,edge*3.66f),new Vector3(x,top,edge*3.66f),.018f,rows);
             }
             return mesh.Build("Woven goal net");
         }
@@ -231,6 +234,23 @@ namespace Touchline
                 var direction=(end-start).normalized;var u=Vector3.Cross(direction,Vector3.up);if(u.sqrMagnitude<.001f)u=Vector3.right;u=u.normalized*(width*.5f);var v=Vector3.Cross(direction,u);
                 Quad(start-u-v,start+u-v,end+u-v,end-u-v);Quad(start+u-v,start+u+v,end+u+v,end+u-v);Quad(start+u+v,start-u+v,end-u+v,end+u+v);Quad(start-u+v,start-u-v,end-u-v,end-u+v);
                 Quad(start-u+v,start+u+v,start+u-v,start-u-v);Quad(end-u-v,end+u-v,end+u+v,end-u+v);
+            }
+            // Continuous square thread: four shared vertices per ring, no caps
+            // between segments. Beam's endpoint-only topology cannot bend locally.
+            public void NetThread(Vector3 start,Vector3 end,float width,int segments)
+            {
+                var direction=(end-start).normalized;var u=Vector3.Cross(direction,Vector3.up);if(u.sqrMagnitude<.001f)u=Vector3.right;u=u.normalized*(width*.5f);var v=Vector3.Cross(direction,u);
+                int first=vertices.Count;
+                for(int ring=0;ring<=segments;ring++){
+                    var centre=Vector3.Lerp(start,end,ring/(float)segments);
+                    vertices.Add(centre-u-v);vertices.Add(centre+u-v);vertices.Add(centre+u+v);vertices.Add(centre-u+v);
+                    for(int corner=0;corner<4;corner++)uvs.Add(default);
+                    if(ring==0)continue;
+                    for(int corner=0;corner<4;corner++){
+                        int a=first+(ring-1)*4+corner,b=first+(ring-1)*4+(corner+1)%4,c=a+4,d=b+4;
+                        triangles.AddRange(new[]{a,b,d,a,d,c});
+                    }
+                }
             }
             // Tube sans bouchons : les anneaux partagent leurs sommets (normales lissées, aspect rond).
             public void Tube(Vector3 start,Vector3 end,float radius,int sides)

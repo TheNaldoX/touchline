@@ -33,9 +33,11 @@ namespace Touchline.Editor
             Application.logMessageReceived+=hook;string logPath=null;
             try{
                 string name=Arg("-touchlineFilm","film");if(!System.Text.RegularExpressions.Regex.IsMatch(name,"^[a-zA-Z0-9.-]+$"))throw new Exception("Nom de film invalide");
+                bool cameraCrossing=name.Contains("camera-crossing"); // diagnostic de cadrage : ballon imposé, pas un match simulé
                 float start=float.Parse(Arg("-touchlineFilmStart","95"),System.Globalization.CultureInfo.InvariantCulture);
                 float seconds=Mathf.Clamp(float.Parse(Arg("-touchlineFilmSeconds","15"),System.Globalization.CultureInfo.InvariantCulture),1,40);
                 uint seed=uint.Parse(Arg("-touchlineFilmSeed","731"));
+                if(cameraCrossing){start=0;seconds=8;}
                 EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);
                 var db=JsonUtility.FromJson<Database>(Resources.Load<TextAsset>("Data/database").text);
                 string home=Arg("-touchlineFilmHome","176"),away=Arg("-touchlineFilmAway","160");
@@ -63,14 +65,17 @@ namespace Touchline.Editor
                 var broadcastDir=Path.Combine(output,"broadcast");var followDir=Path.Combine(output,"follow");Directory.CreateDirectory(broadcastDir);Directory.CreateDirectory(followDir);
                 // -touchlineLighting=night : éclairage de soirée (projecteurs) ; sinon après-midi.
                 PlayerPrefs.SetInt(StadiumLighting.PreferenceKey,Arg("-touchlineLighting","day")=="night"?StadiumLighting.Night:StadiumLighting.Day);
+                if(cameraCrossing){PlayerPrefs.SetInt("match-camera-mode",0);PlayerPrefs.SetFloat("match-camera-zoom",.85f);}
                 var root=new GameObject("CI match film");var arena=root.AddComponent<MatchArena>();arena.Initialize(db,sim);PlayerView.UseMecanim=Arg("-touchlineMecanim","1")=="1";arena.Speed=1;arena.Paused=false;arena.Broadcast.SetMode(MatchViewingMode.Full);
-                var target=new RenderTexture(Width,Height,24){antiAliasing=4};target.Create(); // même MSAA que TouchlineURP (4×)
-                arena.MatchCamera.targetTexture=target;arena.MatchCamera.aspect=(float)Width/Height;
+                if(cameraCrossing){arena.Paused=true;arena.SetAutomaticGoalReplays(false);if(arena.TacticalCamera)arena.CameraMode();}
+                int width=cameraCrossing&&name.Contains("portrait")?540:Width,height=cameraCrossing?(name.Contains("portrait")?1260:728):Height;
+                var target=new RenderTexture(width,height,24){antiAliasing=4};target.Create(); // même MSAA que TouchlineURP (4×)
+                arena.MatchCamera.targetTexture=target;arena.MatchCamera.aspect=(float)width/height;
                 {var probe=new GameObject("Probe camera").AddComponent<Camera>();probe.enabled=false;probe.clearFlags=CameraClearFlags.SolidColor;probe.backgroundColor=Color.red;probe.cullingMask=0;probe.targetTexture=target;
                  Capture(probe,target,root,Path.Combine(output,"probe-red.jpg"));diagnostics.AppendLine("probe-red mean="+MeanColor(target));UnityEngine.Object.DestroyImmediate(probe.gameObject);}
                 // Caméra « télé » rapprochée : basse, sur le côté, qui suit l'action en douceur.
                 var follow=new GameObject("Follow camera").AddComponent<Camera>();follow.enabled=false;follow.fieldOfView=32;follow.nearClipPlane=.15f;follow.farClipPlane=270;
-                follow.clearFlags=CameraClearFlags.SolidColor;follow.backgroundColor=RenderSettings.fogColor;follow.targetTexture=target;follow.aspect=(float)Width/Height;
+                follow.clearFlags=CameraClearFlags.SolidColor;follow.backgroundColor=RenderSettings.fogColor;follow.targetTexture=target;follow.aspect=(float)width/height;
                 // Même post-traitement que la caméra de diffusion (étalonnage BroadcastGrade).
                 follow.GetUniversalAdditionalCameraData().renderPostProcessing=arena.MatchCamera.GetUniversalAdditionalCameraData().renderPostProcessing;
                 Vector3 focus=Vector3.zero,focusVelocity=Vector3.zero;int count=Mathf.RoundToInt(seconds*Fps);
@@ -79,8 +84,20 @@ namespace Touchline.Editor
                 // d'accélération, m/s³) et vitesse de rotation (°/s).
                 var lastRoot=new Vector3[22];var lastVelocity=new Vector3[22];var lastAcceleration=new Vector3[22];var lastYaw=new float[22];var lastFeet=new Vector3[44];
                 var slides=new List<float>();var slidesByAction=new Dictionary<string,List<float>>();var yawByAction=new Dictionary<string,List<float>>();var jerks=new List<float>();var yawRates=new List<float>();float dt=1f/Fps;
+                Vector3 previousCamera=Vector3.zero;float largestCameraStep=0;
                 for(int i=0;i<count;i++){
+                    if(cameraCrossing){
+                        // Aller-retour devant l'ancien seuil x=28 m ; scène fixe pour isoler le recul caméra.
+                        float x=20+16*Mathf.Sin(Mathf.PI*i/(count-1));sim.State.clock=i*dt;
+                        sim.State.ball.owner=null;sim.State.ball.held=false;sim.State.ball.position=sim.State.ball.previous=new Point(x,0);
+                        sim.State.ball.height=sim.State.ball.previousHeight=.11f;
+                    }
                     arena.RenderFrame(1f/Fps);
+                    if(cameraCrossing){
+                        var position=arena.MatchCamera.transform.position;if(i>0)largestCameraStep=Mathf.Max(largestCameraStep,Vector3.Distance(previousCamera,position));previousCamera=position;
+                        var projected=arena.MatchCamera.WorldToViewportPoint(arena.BallDisplayPosition);
+                        if(projected.z<=0||projected.x<.1f||projected.x>.9f||projected.y<.1f||projected.y>.9f)throw new Exception("Ballon hors cadrage diagnostic, image "+i);
+                    }
                     for(int k=0;k<22;k++){var v=arena.PlayerVisual(k);if(v==null||sim.State.actors[k].sentOff)continue;var rootPosition=v.transform.position;float yaw=v.transform.eulerAngles.y;
                         for(int f=0;f<2;f++){var foot=v.FootPosition(f==0);if(i>1&&foot.y<.12f&&lastFeet[k*2+f].y<.12f){var d=foot-lastFeet[k*2+f];d.y=0;slides.Add(d.magnitude/dt);var key=sim.State.actors[k].action;if(!slidesByAction.TryGetValue(key,out var list))slidesByAction[key]=list=new List<float>();list.Add(d.magnitude/dt);}lastFeet[k*2+f]=foot;}
                         var velocity=(rootPosition-lastRoot[k])/dt;var acceleration=(velocity-lastVelocity[k])/dt;
@@ -93,11 +110,12 @@ namespace Touchline.Editor
                     follow.transform.position=new Vector3(focus.x,3.4f,Mathf.Max(focus.z-12,-40));follow.transform.LookAt(focus+Vector3.down*.2f); // caméra basse et proche, façon diffusion rapprochée
                     Capture(arena.MatchCamera,target,root,Path.Combine(broadcastDir,"frame-"+i.ToString("D4")+".jpg"));
                     if(i==0||i==count-1)diagnostics.AppendLine("frame "+i+" broadcast mean="+MeanColor(target)+" camera="+arena.MatchCamera.transform.position+" enabled="+arena.MatchCamera.enabled);
-                    Capture(follow,target,root,Path.Combine(followDir,"frame-"+i.ToString("D4")+".jpg"));
-                    if(arena.Paused)arena.Paused=false; // pas d'arrêt de diffusion pendant le tournage
+                    if(!cameraCrossing)Capture(follow,target,root,Path.Combine(followDir,"frame-"+i.ToString("D4")+".jpg")); // le diagnostic mesure seulement la caméra du match
+                    if(arena.Paused&&!cameraCrossing)arena.Paused=false; // pas d'arrêt de diffusion pendant le tournage normal
                 }
                 string Stats(List<float> values){if(values.Count==0)return "—";values.Sort();return $"moyenne {values.Average():0.00} · médiane {values[values.Count/2]:0.00} · p95 {values[(int)(values.Count*.95f)]:0.00} · max {values[values.Count-1]:0.00} (n={values.Count})";}
                 File.WriteAllText(Path.Combine(output,"metrics.txt"),"pied posé, glissement (m/s) : "+Stats(slides)+"\nà-coup de trajectoire (m/s³) : "+Stats(jerks)+"\nrotation (°/s) : "+Stats(yawRates)+"\n\nglissement par action :\n"+string.Join("\n",slidesByAction.OrderByDescending(x=>x.Value.Count).Select(x=>"  "+x.Key+" : "+Stats(x.Value)))+"\n\nrotation par action :\n"+string.Join("\n",yawByAction.OrderByDescending(x=>x.Value.Count).Select(x=>"  "+x.Key+" : "+Stats(x.Value)))+"\n");
+                if(cameraCrossing)File.WriteAllText(Path.Combine(output,"metrics.txt"),$"Diagnostic caméra uniquement, joueurs et simulation figés ; trajectoire ballon imposée.\nDéplacement maximal par image : {largestCameraStep:0.000} m à {Fps} i/s.\nBallon dans la zone utile à chaque image. Aucune mesure d'animation ni performance Android.\n");
                 File.WriteAllText(Path.Combine(output,"info.txt"),$"home={home} away={away} seed={seed} start={start} seconds={seconds} fps={Fps} clock_end={sim.State.clock:0.0} score={sim.State.score[0]}-{sim.State.score[1]}{goalNote}\nmecanim={PlayerView.UseMecanim} ready={PlayerView.MecanimReady}\ngraphics={SystemInfo.graphicsDeviceType} {SystemInfo.graphicsDeviceName} {SystemInfo.graphicsDeviceVersion}\n"+diagnostics);
                 arena.MatchCamera.targetTexture=null;target.Release();UnityEngine.Object.DestroyImmediate(target);UnityEngine.Object.DestroyImmediate(follow.gameObject);UnityEngine.Object.DestroyImmediate(root);
                 Debug.Log("TOUCHLINE_FILM_OK "+output);File.WriteAllText(logPath,log.ToString());EditorApplication.Exit(0);
