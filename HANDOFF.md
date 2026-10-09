@@ -38,6 +38,7 @@ Jeu de gestion de football type Football Manager, Unity **6000.3.24f1**, URP, An
 ## 3. État au 9 octobre 2026
 
 ### Branches et PR
+- **`fix/loan-contract-ownership`**, base PR #37 : correction du prêt entrant acquis gratuitement par « prolongation ». Proposition et signature vérifient les droits du prêteur ; anciens accords sauvegardés protégés, parent vide compatible, option d’achat payante conservée. Fiche, négociation et dossier orientent vers le contrat de prêt. Avant : 5 échecs sur 8 nouveaux cas ; après : 707/707 tests Core réussis, dont restauration et paiement de l’option. Compilation Unity et revue visuelle à effectuer avant livraison ; aucune modification du moteur de match.
 - **PR #34, #35 et #36 fusionnées** : main `ae2df218` contient la pile intégrée, les tenues et l'ambiance.
 - **PR #37 `feat/tactical-audit` → `main`** : consignes en deux touches et audit tactique. 699 tests Core réussis ; compilation/captures Unity ciblées validées, revue visuelle faite, test du rapport carrière réussi. APK 0.59/code52 construite et vérifiée, téléphone non vérifié.
 - Git HTTPS fonctionne sur ce PC. Le connecteur GitHub renvoie encore 403 en écriture ; utiliser Git pour les branches et REST avec les identifiants Git en mémoire pour la PR, sans exposer de secret.

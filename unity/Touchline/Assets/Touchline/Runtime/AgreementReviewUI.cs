@@ -24,10 +24,10 @@ namespace Touchline
         void TransferAgreementReview(TransferOffer offer)
         {
             var player=Database.Find(offer.player);if(player==null){Message("Le joueur n’est plus disponible.");return;}
-            bool retired=player.team=="retired"||Career.PlayerRetirementEffective(player.id);
+            bool retired=player.team=="retired"||Career.PlayerRetirementEffective(player.id);bool borrowed=Career.HasActiveLoan(player.id);
             var panel=AgreementPanel("Accord · "+player.name,"transfer-agreement-review");var body=Scroll(panel);
             Text(body,offer.renewal?"PROLONGATION":offer.precontract?"PRÉCONTRAT":offer.loan?"PRÊT ENTRANT":"TRANSFERT","eyebrow");
-            Text(body,retired?"Retraite effective · conditions conservées pour l’historique. Aucun contrat de joueur ne peut être signé.":"Conditions acceptées par l’agent. La signature reste votre décision.","notice");
+            Text(body,retired?"Retraite effective · conditions conservées pour l’historique. Aucun contrat de joueur ne peut être signé.":borrowed?"Le club prêteur possède toujours le joueur. Cet ancien accord ne peut pas remplacer le prêt : consultez ses clauses d’achat.":"Conditions acceptées par l’agent. La signature reste votre décision.","notice");
             ProfileFact(body,"Club actuel",ClubName(player.team));ProfileFact(body,"Indemnité",Money(offer.fee));
             ProfileFact(body,"Salaire mensuel intégral",Money(Core.Career.MonthlySalary(offer.wage)));ProfileFact(body,"Temps de jeu promis",AgreementRole(offer.role));Text(body,PlayingTimeRoles.Description(offer.role),"notice").name="agreement-playing-time-description";
             ProfileFact(body,"Durée du contrat",offer.years+" an(s)");ProfileFact(body,"Prime de présence",Money(offer.bonus));ProfileFact(body,"Clause libératoire",offer.clause>0?Money(offer.clause):"Aucune");
@@ -39,7 +39,7 @@ namespace Touchline
             var actions=Row(panel,"inbox-thread-actions");actions.AddToClassList("agreement-actions");var sign=PlayerManagementButton(actions,"Signer l’accord",()=>RunDecision(()=>{
                 if(offer.status!="accepted"||offer.due+7<Career.life.day||(offer.destination!=null&&offer.destination!=Career.club)||!Career.world.offers.Contains(offer))throw new InvalidOperationException("Cet accord n’est plus valable.");
                 Career.SignTransfer(Database,offer.player);
-            }));sign.name="agreement-sign-transfer";sign.AddToClassList("primary");sign.SetEnabled(PlayerManagementAvailable&&!retired);if(retired)sign.tooltip="Retraite effective : signature impossible.";Button(actions,"Tous les dossiers",OpenRecruitmentAgreements);
+            }));sign.name="agreement-sign-transfer";sign.AddToClassList("primary");sign.SetEnabled(PlayerManagementAvailable&&!retired&&!borrowed);if(retired)sign.tooltip="Retraite effective : signature impossible.";else if(borrowed)sign.tooltip="Le contrat parent interdit cette signature.";Button(actions,"Tous les dossiers",OpenRecruitmentAgreements);
         }
         void OutgoingLoanAgreementReview(OutgoingLoanOffer offer)
         {
