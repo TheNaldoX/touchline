@@ -1,0 +1,49 @@
+Audit d'interface Touchline · 1 dp = 2.625 px physiques · seuils : cible tactile 48 dp, texte 12 sp
+
+Parcours ciblé recrutement : navigation, postes, missions, joueurs libres et rapports ; deux résolutions natives. Aucune sauvegarde personnelle.
+## plie-recrutement-synthese · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 21 · < 48 dp : 0 · textes 37 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+Piste : offset=973.1593 / 1060.137 viewport=(x:19.84, y:271.23, width:358.59, height:610.75) contenu=(x:19.84, y:-701.93, width:358.59, height:1670.89) fiche=(x:32.81, y:832.01, width:55.31, height:49.97)
+## plie-recrutement-pistes · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 23 · < 48 dp : 0 · textes 43 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## deplie-recrutement-synthese · 2184×1968 px · échelle 2.54 · 1 unité UI = 0.97 dp · largeur logique 860 · hauteur 775
+   boutons visibles 27 · < 48 dp : 14 · textes 56 · < 12 sp : 7 · plus petit texte 10.6 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 46×46 dp
+   petit bouton ×1 « › » 46×46 dp
+   petit bouton ×1 « Continuer  → » 131×46 dp
+   petit bouton ×1 « Bureau » 150×46 dp
+   petit bouton ×1 « Effectif » 150×46 dp
+   petit bouton ×1 « Tactique » 150×46 dp
+   petit bouton ×1 « Match » 150×46 dp
+   petit bouton ×1 « Calendrier » 150×46 dp
+   petit bouton ×1 « Recrutement » 150×46 dp
+   petit bouton ×1 « Formation » 150×46 dp
+   petit bouton ×1 « Finances » 150×46 dp
+   petit bouton ×1 « Messages » 150×46 dp
+   petit bouton ×1 « Plus » 150×46 dp
+   petit bouton ×1 « Changer de club » 150×46 dp
+   petit texte ×6 [unity-text-element.unity-label 10.6 sp] ex. « TOUCHLINE / RECRUTEMENT »
+   petit texte ×1 [unity-text-element.unity-label 11.6 sp] ex. « Transferts : 8,01 M€ · Plafond salarial : 2,20 … »
+
+Piste : offset=172.8663 / 494.9727 viewport=(x:199.64, y:201.22, width:626.89, height:556.01) contenu=(x:199.64, y:28.35, width:626.89, height:1050.98) fiche=(x:526.08, y:707.22, width:55.52, height:50.01)
+## deplie-recrutement-pistes · 2184×1968 px · échelle 2.54 · 1 unité UI = 0.97 dp · largeur logique 860 · hauteur 775
+   boutons visibles 32 · < 48 dp : 14 · textes 67 · < 12 sp : 7 · plus petit texte 10.6 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 46×46 dp
+   petit bouton ×1 « › » 46×46 dp
+   petit bouton ×1 « Continuer  → » 131×46 dp
+   petit bouton ×1 « Bureau » 150×46 dp
+   petit bouton ×1 « Effectif » 150×46 dp
+   petit bouton ×1 « Tactique » 150×46 dp
+   petit bouton ×1 « Match » 150×46 dp
+   petit bouton ×1 « Calendrier » 150×46 dp
+   petit bouton ×1 « Recrutement » 150×46 dp
+   petit bouton ×1 « Formation » 150×46 dp
+   petit bouton ×1 « Finances » 150×46 dp
+   petit bouton ×1 « Messages » 150×46 dp
+   petit bouton ×1 « Plus » 150×46 dp
+   petit bouton ×1 « Changer de club » 150×46 dp
+   petit texte ×6 [unity-text-element.unity-label 10.6 sp] ex. « TOUCHLINE / RECRUTEMENT »
+   petit texte ×1 [unity-text-element.unity-label 11.6 sp] ex. « Transferts : 8,01 M€ · Plafond salarial : 2,20 … »
+
