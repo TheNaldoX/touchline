@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Validation UI : dates cohérentes des défaites synthétiques, reprise ciblée des écrans de presse et diagnostics par étape.
 - Catalogue fictif : chargement d’un jeu de données v1 figé et vérifié, identique pour .NET/Unity/Android, au lieu de régénérer une base dont l’empreinte variait selon le runtime.
 - Vie du club : demandes de départ après insatisfaction durable, réponses et retrait selon le temps de jeu, conférences contextualisées et limitées dans le temps, actualités et plus large victoire des archives de carrière.
 - Arbitrage : une bousculade sous pression peut donner un penalty dans la surface ; prudence accrue du défenseur conservée, avec tests symétriques des deux mi-temps et comparaison sur deux graines.
