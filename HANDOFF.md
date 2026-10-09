@@ -2,7 +2,13 @@
 
 Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dans Git/PR, pas de nouveaux journaux docs.
 
-## Lot courant — rapports de recrutement datés
+## Lot courant — préparation des gardiens
+
+- Branche `fix/keeper-claim-readiness`, base PR72/cbfb053. Mecanim conserve sa pose et ses appuis ; correction progressive des bras pour la préparation de prise aérienne. Annulation interpolée jusqu’au retour réel des mains, déplacement racine accompagné. Aucun Core ni ballon modifié.
+-19/19 tests KeeperClaimAnticipation réussis, dont6 nouveaux cas statique/course à30/60/120Hz. Trois anciens tests de mains trop basses corrigés. Essai intermédiaire de retour en course échouait de35–48cm, correction validée (`keeper-claim-moving-{before,after}.xml`).
+- Capture synthétique AVANT revue : `build/film/keeper-claim-before`,21 images ; mains à hauteur de taille malgré ballon aérien. Capture APRÈS et suite complète encore à effectuer. Ne pas revendiquer une prise entière, une nouvelle mocap ou une performance Android.
+
+## Lot recrutement — PR72
 
 - Branche `fix/scouting-report-snapshots`, base `4a7708a` (PR71), code `3688ec0`. Les fiches utilisent les estimations enregistrées ; attributs copiés au début et à la fin de l’observation. Plus de progression cachée découverte en lisant un vieux rapport. Les anciennes sauvegardes gardent leurs estimations ; attributs non archivés masqués, connaissance plafonnée89% pour permettre une actualisation, avertissement dans Rapports.
 - Core **926/926** : `.validation/scout-snapshots-core-v3.txt`. Trois nouveaux tests : stabilité après changement caché, anciennes sauvegardes, achèvement/renouvellement. Fixture des tests de fraîcheur explicitement moderne ; assertions conservées.

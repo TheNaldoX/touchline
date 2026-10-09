@@ -53,5 +53,30 @@ namespace Touchline.Tests
                 Assert.Less(Vector3.Distance(right.position,previous),.13f,"Obtaining possession must preserve the prepared pose");
             }finally{Object.DestroyImmediate(go);}
         }
+        [TestCase(30,false)] [TestCase(60,false)] [TestCase(120,false)]
+        [TestCase(30,true)] [TestCase(60,true)] [TestCase(120,true)]
+        public void ReadinessPreservesCapturedFeetAndReleasesCanceledTrajectory(int fps,bool moving)
+        {
+            var state=Scene(2.2f,out var keeper);var go=new GameObject("Ready keeper");var reference=new GameObject("Captured keeper");
+            try{
+                var view=go.AddComponent<PlayerView>();var captured=reference.AddComponent<PlayerView>();
+                view.Build(new PlayerData{id="keeper",heightCm=182},0,0,Color.yellow);captured.Build(new PlayerData{id="keeper",heightCm=182},0,0,Color.yellow);
+                var wrist=go.GetComponentsInChildren<Transform>().First(t=>t.name=="wrist.R");var control=reference.GetComponentsInChildren<Transform>().First(t=>t.name=="wrist.R");
+                Vector3 previous=Vector3.zero;float maximum=0,raised=0;
+                for(int frame=0;frame<=fps;frame++){
+                    float time=frame/(float)fps;state.ball.elapsed=.45f+time;
+                    keeper.previous=keeper.position;if(moving&&time>.34f){keeper.velocity=new Point(0,3.5f);keeper.position+=keeper.velocity/fps;keeper.action="run";}
+                    var sample=time<=.34f?KeeperClaimAnticipation.Evaluate(state,keeper,1):default;
+                    view.Render(keeper,1,1f/fps,default,new PlayerMotionContext{keeperClaim=sample});captured.Render(keeper,1,1f/fps);
+                    Assert.Less(Vector3.Distance(view.FootPosition(true),captured.FootPosition(true)),.001f);
+                    Assert.Less(Vector3.Distance(view.FootPosition(false),captured.FootPosition(false)),.001f);
+                    Assert.AreEqual(reference.transform.position,go.transform.position);
+                    if(frame>0)maximum=Mathf.Max(maximum,Vector3.Distance(wrist.position,previous)*fps);previous=wrist.position;raised=Mathf.Max(raised,wrist.position.y-control.position.y);
+                }
+                Assert.Greater(raised,.5f,"The rendered keeper actually prepares the catch");
+                Assert.Less(maximum,8,"Cancellation must blend out without snapping the hands");
+                Assert.Less(Vector3.Distance(wrist.position,control.position),.02f,"Return to captured idle after cancellation");
+            }finally{Object.DestroyImmediate(go);Object.DestroyImmediate(reference);}
+        }
     }
 }

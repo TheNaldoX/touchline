@@ -5,6 +5,41 @@ namespace Touchline
 {
     public sealed partial class PlayerView
     {
+        float mecanimClaimWeight;Vector3 mecanimClaimAim,mecanimClaimLeft,mecanimClaimRight,mecanimClaimRoot;bool mecanimClaimTracked;
+        void MecanimClaimReadiness(Actor actor,KeeperClaimAnticipationSample sample,float remaining,float dt,bool reset)
+        {
+            const float readinessRate=5; // blend weight per second
+            const float handSpeed=3.6f,readyReach=.35f; // m/s; metres in front of the body while preparing
+            if(reset||actor.slot!=0){mecanimClaimWeight=0;mecanimClaimTracked=false;}
+            if(actor.slot!=0)return;
+            bool claim=MatchSimulation.HasRecordedKeeperClaim(actor)&&mecanimClaimWeight>0;
+            float target=sample.active?sample.weight:claim?1:0;
+            mecanimClaimWeight=Mathf.MoveTowards(mecanimClaimWeight,target,Mathf.Max(0,dt)*readinessRate);
+            if(sample.active){
+                var planar=new Vector3(sample.target.x-transform.position.x,0,sample.target.z-transform.position.z);
+                // Prepare near the body, not at an interception point still beyond arm reach.
+                mecanimClaimAim=transform.position+Vector3.ClampMagnitude(planar,readyReach)+Vector3.up*sample.height;
+            }else if(claim){
+                var impact=new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z);
+                float gather=Mathf.SmoothStep(0,1,MatchSimulation.KeeperClaimSecondsAfterContact(actor,remaining)/MatchSimulation.KeeperClaimGatherDuration);
+                mecanimClaimAim=Vector3.Lerp(impact,transform.position+transform.forward*.36f+Vector3.up*1.1f,gather);
+            }
+            // The blend may finish before the hands have returned: keep their speed bounded until settled.
+            if(mecanimClaimWeight<=0&&!mecanimClaimTracked)return;
+            var left=Limb("L").wrist;var right=Limb("R").wrist;
+            var capturedLeft=left.position;var capturedRight=right.position;
+            if(!mecanimClaimTracked){mecanimClaimLeft=left.position;mecanimClaimRight=right.position;}
+            else {var travel=transform.position-mecanimClaimRoot;mecanimClaimLeft+=travel;mecanimClaimRight+=travel;}
+            var l=Vector3.Lerp(left.position,mecanimClaimAim+body.right*.11f-body.up*.075f,mecanimClaimWeight);
+            var r=Vector3.Lerp(right.position,mecanimClaimAim-body.right*.11f-body.up*.075f,mecanimClaimWeight);
+            SolveArm("L",Vector3.MoveTowards(mecanimClaimLeft,l,handSpeed*Mathf.Max(0,dt)),-body.up);
+            SolveArm("R",Vector3.MoveTowards(mecanimClaimRight,r,handSpeed*Mathf.Max(0,dt)),-body.up);
+            OrientKeeperHand(0,mecanimClaimAim);OrientKeeperHand(1,mecanimClaimAim);
+            mecanimClaimLeft=left.position;mecanimClaimRight=right.position;mecanimClaimRoot=transform.position;mecanimClaimTracked=true;
+            const float settledDistance=.005f; // metres: hand tracking can stop only once it meets the captured pose
+            if(mecanimClaimWeight<=0&&Vector3.Distance(mecanimClaimLeft,capturedLeft)<settledDistance&&Vector3.Distance(mecanimClaimRight,capturedRight)<settledDistance)mecanimClaimTracked=false;
+        }
+
         Quaternion[] claimPreviewPose;float claimPreviewWeight;int claimPreviewSequence;Vector3 claimPreviewImpact;
         void AnticipateKeeperClaimPose(Actor actor,KeeperClaimAnticipationSample sample,float dt,bool reset)
         {
