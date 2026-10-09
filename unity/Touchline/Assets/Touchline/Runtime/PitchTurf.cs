@@ -39,7 +39,10 @@ namespace Touchline
         public static Color FieldPixel(float x,float z)
         {
             int gx=Mathf.RoundToInt(x/GrainTile*Size),gy=Mathf.RoundToInt(z/GrainTile*Size);
-            float grain=Brightness(gx,gy);
+            return FieldPixel(x,z,Brightness(gx,gy));
+        }
+        static Color FieldPixel(float x,float z,float grain)
+        {
             float broad=Mathf.PerlinNoise(19.3f+x*.16f,43.7f+z*.16f);
             float fine=Mathf.PerlinNoise(5.1f+x*.73f,17.2f+z*.73f);
             float tone=grain*Mathf.Lerp(.92f,1.06f,broad)*Mathf.Lerp(.97f,1.03f,fine);
@@ -47,13 +50,18 @@ namespace Touchline
             return new Color(tone*Mathf.Lerp(.96f,1.015f,broad),tone,tone*Mathf.Lerp(.97f,.90f,broad),1);
         }
         public static Vector2 FieldUv(Vector3 point)=>new Vector2((point.x+HalfLength)/(2*HalfLength),(point.z+HalfWidth)/(2*HalfWidth));
-        public static Texture2D FieldTexture()
+        public static Texture2D FieldTexture(bool keepReadable=false)
         {
             var texture=new Texture2D(FieldWidth,FieldHeight,TextureFormat.RGB24,true){name="Full pitch turf",wrapMode=TextureWrapMode.Clamp,filterMode=FilterMode.Trilinear,anisoLevel=4};
             var pixels=new Color32[FieldWidth*FieldHeight];
-            for(int y=0;y<FieldHeight;y++)for(int x=0;x<FieldWidth;x++)
-                pixels[y*FieldWidth+x]=FieldPixel(((x+.5f)/FieldWidth*2-1)*HalfLength,((y+.5f)/FieldHeight*2-1)*HalfWidth);
-            texture.SetPixels32(pixels);texture.Apply(true,true);return texture;
+            // Compute the periodic micrograin once, not three noise octaves per field texel.
+            var grain=new float[Size*Size];for(int y=0;y<Size;y++)for(int x=0;x<Size;x++)grain[y*Size+x]=Brightness(x,y);
+            for(int y=0;y<FieldHeight;y++)for(int x=0;x<FieldWidth;x++){
+                float px=((x+.5f)/FieldWidth*2-1)*HalfLength,pz=((y+.5f)/FieldHeight*2-1)*HalfWidth;
+                int gx=Mathf.RoundToInt(px/GrainTile*Size)&(Size-1),gy=Mathf.RoundToInt(pz/GrainTile*Size)&(Size-1);
+                pixels[y*FieldWidth+x]=FieldPixel(px,pz,grain[gy*Size+gx]);
+            }
+            texture.SetPixels32(pixels);texture.Apply(true,!keepReadable);return texture;
         }
         // Surface du terrain 105 × 68 m en bandes de tonte : sous-maillage 0 = bandes
         // claires, 1 = sombres. Le coin à l'ombre du toit (x < shadeEndX, z < shadeEdge)
