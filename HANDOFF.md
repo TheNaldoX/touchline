@@ -9,8 +9,9 @@ Lire AGENTS.md. État courant uniquement ; historique dans Git et les PR. Claude
 - Pas chassés : fondu des poids gauche/droite au lieu du basculement instantané ; contrôles30/60/120Hz et pause. Pas de nouvelle mocap.
 - Qualité maximale : suppression du plafond commun1600×1000 ; mode maximal jusqu'à2160px par axe/2,6Mpx, aspect/densité préservés, MSAA4× avec repli matériel. Résolution adaptative conservée ; coût GPU accru, aucune mesure Fold.
 - Core923/923 : `.validation/visual-polish-core.txt`. Unity313/313 ciblés réussis, aucune erreur/alerte CS trouvée : Actions37975543320, artefact11638527992, `.validation/visual-polish-native-final`. Premier run302/303 : ancien test de rotation corrigé pour respecter le plafond600°/s déjà présent ; tous les nouveaux tests passaient.
-- **En cours : session54441**, `.validation/validate-visual-polish.ps1`. Film jour37976831352, puis film `graphics-polish-night`, tous deux sur61e8bfb. Script attend et récupère les résultats séquentiellement. Revoir images, métriques et erreurs avant livraison. **Une seule Unity, aucun changement Assets pendant tests/rendu/build.**
-- PR68 attachée au chat. Dernier corps PR dans `.validation/pr68-expanded.json`, à actualiser après revue. Aucun changement graphique encore livré en APK.
+- Films jour37976831352 et nuit37979409379 réussis sur61e8bfb ; vues large/rapprochée et deux séquences de neuf images revues. Terrain/équipes/ballon visibles, continuité UV ; gros plans nocturnes encore sombres, public simple. Runtime sans erreur Touchline. Glissement p95=0,40m/s mais pics au contrôle/préparation et maximum12,04m/s en course : non résolus, pas de comparaison appariée avant/après. Preuves `.validation/film-graphics-polish-{day,night}`.
+- **Build0.63/code56 en cours37982451316, source9d0246f02304700ff8894dbd7b0511049e2cb27e** (seule différence Assets depuis61e8bfb : version/code/nom APK). Session36004 exécute `.validation/deliver063.ps1` : attend, récupère, copie sans écrasement puis vérifie signature/version/ARM64/hash. **Une seule Unity, Assets figés pendant build.**
+- PR68 attachée au chat. Dernier corps PR dans `.validation/pr68-final-review.json`, à actualiser après APK. Aucun changement graphique encore livré en APK.
 
 ## Dernière APK conservée
 
