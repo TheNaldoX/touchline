@@ -194,6 +194,25 @@ namespace Touchline.Editor
                         if(Root.Q<DropdownField>("recruit-market")?.value!="Libres"||rows==null||rows.Count==0||rows.Cast<Touchline.Core.PlayerData>().Any(p=>p.team!="free"))throw new Exception("Raccourci joueurs libres incohérent");
                         Capture(screen.tag+"-recrutement-libres");Click("recruit-tab-Synthèse");
                     });
+                    list.Add(()=>{
+                        Call("OpenRecruitmentMarket","Tous","Tous");Root.Q<Foldout>("recruit-advanced").value=true;
+                        Root.Q<DropdownField>("recruit-country").value="Norvège";
+                    });
+                    list.Add(()=>{
+                        var rows=Root.Q<ListView>("recruit-list")?.itemsSource;
+                        var country=typeof(ClubData).GetField("country");
+                        if(rows==null||country==null||!rows.Cast<PlayerData>().Any(p=>p.team=="2980")
+                            ||rows.Cast<PlayerData>().Any(p=>!App.Database.clubs.Any(c=>c.id==p.team&&(string)country.GetValue(c)=="Norvège")))
+                            throw new Exception("Le territoire Norvège doit inclure Bodø/Glimt sans joueurs d'autres pays");
+                        Capture(screen.tag+"-recrutement-norvege");cash=App.Career.life.cash;missions=App.Career.world.scoutMissions.Count;
+                        Call("NewScoutingMission");
+                    });
+                    list.Add(()=>{
+                        if(Root.Q<DropdownField>("scout-mission-country")?.value!="Norvège"||App.Career.life.cash!=cash||App.Career.world.scoutMissions.Count!=missions)
+                            throw new Exception("La mission doit conserver le territoire sans engagement préalable");
+                        Capture(screen.tag+"-recrutement-mission-norvege");Call("CloseModal");Click("recruit-tab-Synthèse");
+                        audit.AppendLine("Norvège : joueurs retrouvés, territoire conservé dans la mission sans dépense : "+screen.tag);
+                    });
                     list.Add(()=>Click("recruit-hub-reports"));
                 }else{
                     list.Add(()=>{Capture(screen.tag+"-recrutement-marche");Click("recruit-tab-Rapports");});
