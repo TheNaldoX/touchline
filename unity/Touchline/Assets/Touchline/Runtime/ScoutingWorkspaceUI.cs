@@ -133,6 +133,7 @@ namespace Touchline
             PersonalityAndInterest(card,p,data);
             string age=data.observedDay<0?"":data.reportAge==0?"rapport du jour":"rapport de "+data.reportAge+" j";
             Text(card,"Connaissance "+data.knowledge+" %"+(age==""?"":" · "+age)+(data.stale?" · à actualiser":"")+" · territoire "+(data.territory??"—")+" : connaissance "+data.familiarityLabel+(data.depth>0?" · "+(data.depth+1)+" observations":""),"footnote");
+            if(!data.exact&&Career.ReportFor(p.id)?.attributesObserved==false)Text(card,"Ancien rapport : attributs non archivés. Actualisez l’observation pour les obtenir.","notice").name="scout-missing-snapshot-"+p.id;
             if(!string.IsNullOrEmpty(data.rival))Text(card,"Concurrence : "+data.rival,"scout-status").name="scout-rival-"+p.id;
             if(data.generated){var club=Database.clubs.FirstOrDefault(c=>c.id==p.team);var table=club==null?null:GeneratedWorld.SimulatedTable(Database,club.league,Career.world.year);int rank=table==null?-1:table.FindIndex(r=>r.club==club.id);
                 Text(card,(rank>=0?"Classement simulé : "+(rank+1)+"e / "+table.Count+" · ":"")+(GeneratedWorld.IsGenerated(p.id)?"joueur fictif généré, aucune personne réelle":"club fictif ; identité du joueur issue de la base importée"),"footnote");}

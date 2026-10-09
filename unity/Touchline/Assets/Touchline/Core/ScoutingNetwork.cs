@@ -22,7 +22,7 @@ namespace Touchline.Core
         // Department assignments have their own capacity per scout (ScoutingDepartment.cs).
         public int ActiveObservations=>world?.reports.Count(r=>(string.IsNullOrEmpty(r.club)||r.club==club)&&r.confidence<90&&!IsAssignmentReport(r))??0;
         public ScoutReport ReportFor(string id)=>world?.reports?.Where(r=>r.player==id&&(string.IsNullOrEmpty(r.club)||r.club==club)).OrderByDescending(r=>r.started).FirstOrDefault();
-        int ReportKnowledge(ScoutReport r){int age=Math.Max(0,life.day-(r.lastObserved>0?r.lastObserved:r.due));return r.confidence<40?r.confidence:Math.Max(40,r.confidence-Math.Max(0,age-120)/7);}
+        int ReportKnowledge(ScoutReport r){int age=Math.Max(0,life.day-(r.lastObserved>0?r.lastObserved:r.due));int knowledge=r.confidence<40?r.confidence:Math.Max(40,r.confidence-Math.Max(0,age-120)/7);return !r.attributesObserved?Math.Min(89,knowledge):knowledge;}
         void EnsureScouting()
         {
             if(world==null)throw new InvalidOperationException("Une carrière est nécessaire.");
@@ -42,6 +42,8 @@ namespace Touchline.Core
             // Potential is read with its own judging; the +3 keeps potential harder to read than ability.
             float uncertainty=1.5f+(20-judging)*.22f,potentialUncertainty=1.5f+(20-potentialJudging)*.22f+PotentialUncertaintyOffset;
             world.reports.Add(new ScoutReport{player=p.id,club=club,scout=scout.name,mission=assignment??mission?.id,judging=judging,depth=depth,started=life.day,due=life.day+Math.Max(5,19-judging/2)+(int)(Roll()*3),estimate=Mathx.Clamp(p.rating+p.development+AssessmentBias(p.id,"ability",life.day)*uncertainty,1,99),potential=Mathx.Clamp(p.potential+AssessmentBias(p.id,"potential",life.day)*potentialUncertainty,1,99),uncertainty=uncertainty,potentialUncertainty=potentialUncertainty});
+            world.reports[world.reports.Count-1].attributesObserved=true;
+            world.reports[world.reports.Count-1].observedAttributes=p.attributes?.Where(a=>a!=null).Select(a=>new AttributeValue{key=a.key,value=p.Attribute(a.key)}).ToArray();
         }
         public ScoutMission CreateScoutMission(Database db,string role,string nationality,int minAge,int maxAge,long maxFee,long maxMonthlyWage,string priority,long budget,string country="Tous")
         {
@@ -97,7 +99,11 @@ namespace Touchline.Core
                 r.confidence=Math.Min(90,Math.Max(0,(life.day-r.started)*90/Math.Max(1,r.due-r.started)));
                 if(r.confidence<90)continue;
                 if(r.judging<=0){r.judging=Math.Max(1,scout.judging);r.scout=scout.name;r.uncertainty=1.5f+(20-r.judging)*.22f;r.potentialUncertainty=r.uncertainty+3;r.estimate=Mathx.Clamp(p.rating+p.development+AssessmentBias(p.id,"ability",r.started)*r.uncertainty,1,99);r.potential=Mathx.Clamp(p.potential+AssessmentBias(p.id,"potential",r.started)*r.potentialUncertainty,1,99);}
-                r.lastObserved=life.day;r.advice=ScoutingAdvice(db,p,r);
+                // Completion is the last real observation; subsequent reads must not learn hidden changes.
+                r.estimate=Mathx.Clamp(p.rating+p.development+AssessmentBias(p.id,"ability",r.started)*r.uncertainty,1,99);
+                r.potential=Mathx.Clamp(p.potential+AssessmentBias(p.id,"potential",r.started)*r.potentialUncertainty,1,99);
+                r.observedAttributes=p.attributes?.Where(a=>a!=null).Select(a=>new AttributeValue{key=a.key,value=p.Attribute(a.key)}).ToArray();
+                r.attributesObserved=true;r.lastObserved=life.day;r.advice=ScoutingAdvice(db,p,r);
                 Mail(r.scout??scout.name,"Rapport disponible",p.name+" : "+r.advice+" Les étoiles sont relatives à votre effectif ; le potentiel reste incertain.",p.id,"scout");
                 OnScoutReportCompleted(db,p,r);
             }
@@ -140,6 +146,9 @@ namespace Touchline.Core
             int knowledge=Knowledge(id);if(knowledge<40)return default;int raw=(int)Mathx.Clamp((float)Math.Round(p.Attribute(key)/5),1,20);
             if(revealAttributes||p.team==club)return new AttributeAssessment{known=true,low=raw,high=raw};
             var report=ReportFor(id);int judging=report?.judging>0?report.judging:10;
+            var observed=report?.observedAttributes?.FirstOrDefault(a=>a!=null&&a.key==key);
+            if(observed!=null)raw=(int)Mathx.Clamp((float)Math.Round(observed.value/5),1,20);
+            else return default; // Old saves have no historical attributes: require a new observation.
             int uncertainty=knowledge>=90?(judging>=16?1:2):knowledge>=65?2:3;
             // An unknown territory widens the range; repeated observations narrow it (1–20 scale).
             if(ScoutingFamiliarity(db,p)<.5f)uncertainty++;if((report?.depth??0)>=2)uncertainty=Math.Max(1,uncertainty-1);

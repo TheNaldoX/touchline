@@ -10,9 +10,8 @@ namespace Touchline.Core
         public int Middle => (low + high) / 2;
         public override string ToString() => !known ? "?" : low == high ? low.ToString() : low + "–" + high;
     }
-    // Read-only view of what the club knows about a player. Ranges are derived on
-    // demand from the hidden values plus a stable per-report bias: nothing new is
-    // stored except ScoutReport.depth (number of completed observations).
+    // Read-only view of stored observations; hidden live values are reserved for
+    // the managed squad and the explicit reveal-attributes option.
     public sealed class ScoutReportCardData
     {
         public string player, grade = "?", gradeReason, fit, familiarityLabel, territory, rival, comparable, interest;
@@ -104,16 +103,16 @@ namespace Touchline.Core
             card.familiarity = card.exact ? 1 : ScoutingFamiliarity(db, p); card.familiarityLabel = FamiliarityLabel(card.familiarity);
             float level = p.rating + p.development;
             if (card.exact) { card.ability = new ScoutRange { low = (int)Math.Round(level), high = (int)Math.Round(level), known = true }; card.potential = new ScoutRange { low = (int)Math.Round(p.potential), high = (int)Math.Round(p.potential), known = true }; }
-            else if (card.knowledge >= 40)
+            else if (card.knowledge >= 40 && report != null && report.estimate > 0)
             {
-                int started = report?.started ?? 0;
                 float width = CardWidth(card.knowledge, card.judging, card.familiarity, card.depth);
-                card.ability = Around(level, AssessmentBias(id, "card-ability", started), width, 1);
+                // A report describes its observation date, not the hidden live player state.
+                card.ability = Around(report.estimate, 0, Math.Max(width,report.uncertainty), 1);
                 // Potential is harder to read, especially for young players.
                 // The scout's judging of potential (report.potentialUncertainty) may differ from his judging of ability.
                 float potentialFactor = report != null && report.uncertainty > 0 && report.potentialUncertainty > PotentialUncertaintyOffset ? Mathx.Clamp((report.potentialUncertainty - PotentialUncertaintyOffset) / report.uncertainty, .5f, 2) : 1;
                 float potentialWidth = width * 1.5f * potentialFactor + (p.age < 21 ? 4 : p.age < 24 ? 2 : 0);
-                card.potential = card.knowledge >= 65 ? Around(Math.Max(level, p.potential), AssessmentBias(id, "card-potential", started), potentialWidth, card.ability.low) : default;
+                card.potential = card.knowledge >= 65 && report.potential > 0 ? Around(report.potential, 0, Math.Max(potentialWidth,report.potentialUncertainty), card.ability.low) : default;
             }
             if (card.knowledge >= 40) DescribeProfile(db, p, card);
             Grade(db, p, card, overview);

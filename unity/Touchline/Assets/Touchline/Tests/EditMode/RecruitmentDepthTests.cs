@@ -107,6 +107,33 @@ namespace Touchline.Tests
         }
 
         // --- Report cards --------------------------------------------------------
+        [Test] public void ReportDoesNotLearnHiddenDevelopmentWithoutAnotherObservation()
+        {
+            c.Scout(db,"p30");Days(20);var before=c.ScoutReportCard(db,"p30");var attribute=c.AssessedAttribute(db,"p30","shortPassing");
+            var p=db.Find("p30");p.rating+=20;p.potential+=15;p.development+=10;p.attributes.First(a=>a.key=="shortPassing").value+=20;
+            var after=c.ScoutReportCard(db,"p30");var later=c.AssessedAttribute(db,"p30","shortPassing");
+            Assert.AreEqual(before.ability.low,after.ability.low);Assert.AreEqual(before.ability.high,after.ability.high);
+            Assert.AreEqual(before.potential.low,after.potential.low);Assert.AreEqual(before.potential.high,after.potential.high);
+            Assert.AreEqual(attribute.low,later.low);Assert.AreEqual(attribute.high,later.high);
+            var saved=JsonUtility.FromJson<Career>(JsonUtility.ToJson(c));Assert.AreEqual(c.ReportFor("p30").observedAttributes[0].value,saved.ReportFor("p30").observedAttributes[0].value);
+            c.revealAttributes=true;Assert.Greater(c.ScoutReportCard(db,"p30").ability.low,after.ability.low);
+        }
+        [Test] public void LegacyReportsKeepTheirEstimateButRequireObservationForAttributes()
+        {
+            c.Scout(db,"p30");Days(20);var r=c.ReportFor("p30");float estimate=r.estimate;r.observedAttributes=null;r.attributesObserved=false;
+            var saved=JsonUtility.FromJson<Career>(JsonUtility.ToJson(c));
+            Assert.AreEqual(estimate,saved.ReportFor("p30").estimate);
+            Assert.IsFalse(saved.AssessedAttribute(db,"p30","shortPassing").known);
+            Assert.IsTrue(saved.RecruitmentReportNeedsRefresh(saved.ReportFor("p30")));
+            c.Scout(db,"p30");Assert.IsNotNull(c.ReportFor("p30").observedAttributes);
+        }
+        [Test] public void ObservationCompletionUpdatesSnapshotThenFreezesIt()
+        {
+            c.Scout(db,"p30");var p=db.Find("p30");p.attributes.First(a=>a.key=="shortPassing").value=90;
+            Days(20);Assert.AreEqual(p.Attribute("shortPassing"),c.ReportFor("p30").observedAttributes.First(a=>a.key=="shortPassing").value);
+            Age(c.ReportFor("p30"),300);p.attributes.First(a=>a.key=="shortPassing").value=40;c.Scout(db,"p30");Days(20);
+            Assert.AreEqual(p.Attribute("shortPassing"),c.ReportFor("p30").observedAttributes.First(a=>a.key=="shortPassing").value);
+        }
         [Test] public void ReportRangesContainTruthAndNarrowWithObservationTime()
         {
             var p = db.Find("p30"); p.rating = 71; p.potential = 76;
