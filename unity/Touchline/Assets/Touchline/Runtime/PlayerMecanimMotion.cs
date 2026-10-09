@@ -310,6 +310,7 @@ namespace Touchline
         const float FootLockRelease=.40f;   // m : écart maximal, même si l'autre pied est déjà en train de se replacer
         const float FootStepDuration=.18f;  // s : durée d'un pas de replacement
         const float FootStepLift=.09f;      // m : hauteur du pied au milieu du pas
+        const float FootRecoveryGap=.06f; // m at standard stature: repair visible anchor jumps, not small IK drift
         const float FootLockBlend=12f;      // 1/s : sortie du verrouillage quand la pose lève le pied
         readonly Vector3[] footLockPoint=new Vector3[2];readonly bool[] footLocked=new bool[2];readonly float[] footLockWeight=new float[2];
         readonly float[] footStep=new float[2];readonly Vector3[] footStepFrom=new Vector3[2];
@@ -330,7 +331,12 @@ namespace Touchline
                 if(contact&&!footLocked[i]){var shown=Vector3.Lerp(p,footLockPoint[i],footLockWeight[i]);footLocked[i]=true;footLockPoint[i]=new Vector3(shown.x,p.y,shown.z);footLockWeight[i]=1;}
                 var drift=footLockPoint[i]-p;drift.y=0;
                 if(footLocked[i]&&contact&&(drift.magnitude>FootLockRelease||drift.magnitude>FootStepTrigger&&footStep[1-i]<=0)){
-                    footStepFrom[i]=footLockPoint[i];footStep[i]=Mathf.Epsilon;footLocked[i]=false;footLockWeight[i]=0;
+                    // Preserve reachable anchors; only recover from the visible foot when IK cannot reach the old support.
+                    var hip=Limb(side).upperLeg;var knee=Limb(side).lowerLeg;
+                    float reach=Vector3.Distance(hip.position,knee.position)+Vector3.Distance(knee.position,p)-.005f; // m: same reach margin as SolveLeg
+                    var anchor=new Vector3(footLockPoint[i].x,p.y,footLockPoint[i].z);
+                    var visibleGap=previousFeet[i]-footLockPoint[i];visibleGap.y=0;float tolerance=FootRecoveryGap*transform.localScale.y;
+                    footStepFrom[i]=visibleGap.sqrMagnitude>tolerance*tolerance&&Vector3.Distance(hip.position,anchor)>reach?previousFeet[i]:footLockPoint[i];footStep[i]=Mathf.Epsilon;footLocked[i]=false;footLockWeight[i]=0;
                     var holdRotation=foot.rotation;SolveLeg(side,new Vector3(footStepFrom[i].x,p.y,footStepFrom[i].z));foot.rotation=holdRotation;continue;
                 }
                 if(footLocked[i]&&!contact)footLocked[i]=false;

@@ -86,6 +86,8 @@ namespace Touchline.Editor
                 // d'accélération, m/s³) et vitesse de rotation (°/s).
                 var lastRoot=new Vector3[22];var lastVelocity=new Vector3[22];var lastAcceleration=new Vector3[22];var lastYaw=new float[22];var lastFeet=new Vector3[44];
                 var slides=new List<float>();var slidesByAction=new Dictionary<string,List<float>>();var yawByAction=new Dictionary<string,List<float>>();var jerks=new List<float>();var yawRates=new List<float>();float dt=1f/Fps;
+                const float FootTraceThreshold=4f; // m/s: locate the most visible grounded-foot jumps in this editor diagnostic
+                var footEvents=new System.Text.StringBuilder("frame\tactor\tid\tfoot\taction\tspeed_m_s\tprevious_y\tcurrent_y\tscreen_x\tscreen_y_from_bottom\n");
                 Vector3 previousCamera=Vector3.zero;float largestCameraStep=0;
                 for(int i=0;i<count;i++){
                     if(cameraCrossing){
@@ -101,7 +103,9 @@ namespace Touchline.Editor
                         if(projected.z<=0||projected.x<.1f||projected.x>.9f||projected.y<.1f||projected.y>.9f)throw new Exception("Ballon hors cadrage diagnostic, image "+i);
                     }
                     for(int k=0;k<22;k++){var v=arena.PlayerVisual(k);if(v==null||sim.State.actors[k].sentOff)continue;var rootPosition=v.transform.position;float yaw=v.transform.eulerAngles.y;
-                        for(int f=0;f<2;f++){var foot=v.FootPosition(f==0);if(i>1&&foot.y<.12f&&lastFeet[k*2+f].y<.12f){var d=foot-lastFeet[k*2+f];d.y=0;slides.Add(d.magnitude/dt);var key=sim.State.actors[k].action;if(!slidesByAction.TryGetValue(key,out var list))slidesByAction[key]=list=new List<float>();list.Add(d.magnitude/dt);}lastFeet[k*2+f]=foot;}
+                        for(int f=0;f<2;f++){var foot=v.FootPosition(f==0);if(i>1&&foot.y<.12f&&lastFeet[k*2+f].y<.12f){var d=foot-lastFeet[k*2+f];d.y=0;float speed=d.magnitude/dt;slides.Add(speed);var key=sim.State.actors[k].action;
+                            if(speed>=FootTraceThreshold){var screen=arena.MatchCamera.WorldToScreenPoint(foot);footEvents.AppendLine(FormattableString.Invariant($"{i}\t{k}\t{sim.State.actors[k].id}\t{f}\t{key}\t{speed:F3}\t{lastFeet[k*2+f].y:F3}\t{foot.y:F3}\t{screen.x:F1}\t{screen.y:F1}"));}
+                            if(!slidesByAction.TryGetValue(key,out var list))slidesByAction[key]=list=new List<float>();list.Add(d.magnitude/dt);}lastFeet[k*2+f]=foot;}
                         var velocity=(rootPosition-lastRoot[k])/dt;var acceleration=(velocity-lastVelocity[k])/dt;
                         if(i>3&&(rootPosition-lastRoot[k]).magnitude<.5f){jerks.Add((acceleration-lastAcceleration[k]).magnitude/dt);yawRates.Add(Mathf.Abs(Mathf.DeltaAngle(lastYaw[k],yaw))/dt);var key=sim.State.actors[k].action;if(!yawByAction.TryGetValue(key,out var list))yawByAction[key]=list=new List<float>();list.Add(Mathf.Abs(Mathf.DeltaAngle(lastYaw[k],yaw))/dt);}
                         lastRoot[k]=rootPosition;lastVelocity[k]=velocity;lastAcceleration[k]=acceleration;lastYaw[k]=yaw;}
@@ -115,6 +119,7 @@ namespace Touchline.Editor
                     if(!cameraCrossing)Capture(follow,target,root,Path.Combine(followDir,"frame-"+i.ToString("D4")+".jpg")); // le diagnostic mesure seulement la caméra du match
                     if(arena.Paused&&!cameraCrossing)arena.Paused=false; // pas d'arrêt de diffusion pendant le tournage normal
                 }
+                File.WriteAllText(Path.Combine(output,"foot-events.txt"),footEvents.ToString());
                 string Stats(List<float> values){if(values.Count==0)return "—";values.Sort();return $"moyenne {values.Average():0.00} · médiane {values[values.Count/2]:0.00} · p95 {values[(int)(values.Count*.95f)]:0.00} · max {values[values.Count-1]:0.00} (n={values.Count})";}
                 File.WriteAllText(Path.Combine(output,"metrics.txt"),"pied posé, glissement (m/s) : "+Stats(slides)+"\nà-coup de trajectoire (m/s³) : "+Stats(jerks)+"\nrotation (°/s) : "+Stats(yawRates)+"\n\nglissement par action :\n"+string.Join("\n",slidesByAction.OrderByDescending(x=>x.Value.Count).Select(x=>"  "+x.Key+" : "+Stats(x.Value)))+"\n\nrotation par action :\n"+string.Join("\n",yawByAction.OrderByDescending(x=>x.Value.Count).Select(x=>"  "+x.Key+" : "+Stats(x.Value)))+"\n");
                 if(cameraCrossing)File.WriteAllText(Path.Combine(output,"metrics.txt"),$"Diagnostic caméra uniquement, joueurs et simulation figés ; trajectoire ballon imposée.\nDéplacement maximal par image : {largestCameraStep:0.000} m à {Fps} i/s.\nBallon dans la zone utile à chaque image. Aucune mesure d'animation ni performance Android.\n");

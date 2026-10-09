@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Visibilité nocturne : lumière ambiante latérale renforcée sans projecteur supplémentaire ; pas de replacement Mecanim démarrés depuis le pied réellement affiché plutôt qu’un ancien appui inaccessible.
 - APK0.63/code56, rendu match : pelouse détaillée non répétitive, tonte moins contrastée, tissu des maillots et matières mates ; transitions gauche/droite des pas chassés interpolées selon le temps ; qualité maximale réellement plus détaillée, MSAA4× et résolution bornée à2,6Mpx.
 - Validation du moteur : comparaison neutre renforcée sur trois graines, actions et positions, sans compter les messages informatifs de l’adjoint comme des actions de jeu.
 - APK 0.62/code55 : regroupe les lots validés de recrutement, immersion tactique, sauvegardes et budget ; numéro de version distinct, anciennes APK préservées.

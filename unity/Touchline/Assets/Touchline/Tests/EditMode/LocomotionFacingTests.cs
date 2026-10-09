@@ -6,6 +6,24 @@ namespace Touchline.Tests
 {
     public class LocomotionFacingTests
     {
+        [TestCase(160)] [TestCase(182)] [TestCase(200)]
+        public void ReplacementStepStartsAtVisibleFootInsteadOfUnreachableAnchor(int height)
+        {
+            var root=new GameObject("Foot step origin");
+            try{
+                var view=root.AddComponent<PlayerView>();view.Build(new PlayerData{id="support-origin",heightCm=height},0,9,Color.blue);
+                var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+                T Field<T>(string name)=>(T)typeof(PlayerView).GetField(name,flags).GetValue(view);
+                Vector3 before=view.FootPosition(true);
+                Assert.Less(before.y,.12f*root.transform.localScale.y,"Fixture must exercise a grounded foot");
+                var previous=Field<Vector3[]>("previousFeet");previous[0]=before;previous[1]=view.FootPosition(false);
+                Field<bool[]>("footLocked")[0]=true;Field<float[]>("footLockWeight")[0]=1;
+                Field<Vector3[]>("footLockPoint")[0]=before+Vector3.back*.8f;
+                typeof(PlayerView).GetMethod("MecanimFootLock",flags).Invoke(view,new object[]{1f/60,false});
+                Assert.Greater(Field<float[]>("footStep")[0],0,"Stale support must initiate a recovery step");
+                Assert.Less(Vector3.Distance(before,view.FootPosition(true)),.015f,"The first step frame must not jump towards the stale anchor");
+            }finally{Object.DestroyImmediate(root);}
+        }
         [TestCase(30)] [TestCase(60)] [TestCase(120)]
         public void StrafeReversalBlendsContinuouslyAtDifferentFrameRates(int fps)
         {
