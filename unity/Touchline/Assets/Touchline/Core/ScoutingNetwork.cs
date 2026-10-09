@@ -34,9 +34,11 @@ namespace Touchline.Core
         void StartObservation(Database db,PlayerData p,ScoutMission mission)
         {
             var scout=Staff("scout");int judging=Math.Max(1,Math.Min(20,scout.judging));
+            // A renewed report keeps the count of completed observations: each one narrows the ranges.
+            int depth=world.reports.Where(r=>r.player==p.id&&(string.IsNullOrEmpty(r.club)||r.club==club)&&r.confidence>=90).Select(r=>r.depth+1).DefaultIfEmpty(0).Max();
             world.reports.RemoveAll(r=>r.player==p.id&&(string.IsNullOrEmpty(r.club)||r.club==club));
             float uncertainty=1.5f+(20-judging)*.22f;
-            world.reports.Add(new ScoutReport{player=p.id,club=club,scout=scout.name,mission=mission?.id,judging=judging,started=life.day,due=life.day+Math.Max(5,19-judging/2)+(int)(Roll()*3),estimate=Mathx.Clamp(p.rating+p.development+AssessmentBias(p.id,"ability",life.day)*uncertainty,1,99),potential=Mathx.Clamp(p.potential+AssessmentBias(p.id,"potential",life.day)*(uncertainty+3),1,99),uncertainty=uncertainty,potentialUncertainty=uncertainty+3});
+            world.reports.Add(new ScoutReport{player=p.id,club=club,scout=scout.name,mission=mission?.id,judging=judging,depth=depth,started=life.day,due=life.day+Math.Max(5,19-judging/2)+(int)(Roll()*3),estimate=Mathx.Clamp(p.rating+p.development+AssessmentBias(p.id,"ability",life.day)*uncertainty,1,99),potential=Mathx.Clamp(p.potential+AssessmentBias(p.id,"potential",life.day)*(uncertainty+3),1,99),uncertainty=uncertainty,potentialUncertainty=uncertainty+3});
         }
         public ScoutMission CreateScoutMission(Database db,string role,string nationality,int minAge,int maxAge,long maxFee,long maxMonthlyWage,string priority,long budget,string country="Tous")
         {
@@ -103,6 +105,7 @@ namespace Touchline.Core
                 }
                 if(m.status=="finishing"&&!world.reports.Any(r=>r.club==club&&r.mission==m.id&&r.confidence<90)){m.status="complete";ScoutMail(scout.name,"Mission de recrutement terminée",m.found+" profil(s) observé(s) dans cette recherche. Consultez Rapports, comparez les profils puis vérifiez les attentes avec leurs agents.");}
             }
+            RecruitmentRivalsDay(db);
         }
         string ScoutingAdvice(Database db,PlayerData p,ScoutReport r)
         {
@@ -126,6 +129,8 @@ namespace Touchline.Core
             if(revealAttributes||p.team==club)return new AttributeAssessment{known=true,low=raw,high=raw};
             var report=ReportFor(id);int judging=report?.judging>0?report.judging:10;
             int uncertainty=knowledge>=90?(judging>=16?1:2):knowledge>=65?2:3;
+            // An unknown territory widens the range; repeated observations narrow it (1–20 scale).
+            if(ScoutingFamiliarity(db,p)<.5f)uncertainty++;if((report?.depth??0)>=2)uncertainty=Math.Max(1,uncertainty-1);
             int offset=(int)Math.Round(AssessmentBias(id,key,report?.started??0)*Math.Max(.4f,(20-judging)*.12f));
             int center=(int)Mathx.Clamp(raw+offset,1,20);return new AttributeAssessment{known=true,low=Math.Max(1,center-uncertainty),high=Math.Min(20,center+uncertainty)};
         }
