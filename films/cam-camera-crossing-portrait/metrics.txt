@@ -1,0 +1,3 @@
+Diagnostic caméra uniquement, joueurs et simulation figés ; trajectoire ballon imposée.
+Déplacement maximal par image : 0.258 m à 30 i/s.
+Ballon dans la zone utile à chaque image. Aucune mesure d'animation ni performance Android.
