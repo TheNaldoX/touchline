@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Moteur : défenseurs et destinataires (gardien compris) ne lisent plus la destination finale avant le contact ; placement visible conservé avant départ et réception anticipée ensuite, avec comparaison de 200 matchs avant/après.
 - Tactique : audit apparié de sept consignes (200 affiches), raccourcis de match en deux touches avec pause/vitesse conservées et boutons adaptés au Fold, captures CI vérifiées et compteur de joueurs libres corrigé dans le diagnostic carrière.
 - Ambiance : tribunes qui se lèvent en vague, sautent et lèvent bras et écharpes sur un but (à moitié sur une frappe), virage populaire aux couleurs du club avec écharpes et grands drapeaux, drapeaux de coin qui flottent, ombres de contact sous les joueurs et le ballon, ralenti des buts filmé en plan bas à côté du but qui suit le ballon (le filet se creuse aussi au ralenti).
 - Visuel joueurs : tenues générées aux couleurs du club (uni, rayures, cerceaux, manches, écharpe, bande ; gardiens distincts), nom et numéro au dos, coupes et couleurs de cheveux, chaussures variées ; étalonnage télé léger (bloom des projecteurs le soir, coupé en qualité basse), usure du gazon, filet qui se creuse sur les buts.
