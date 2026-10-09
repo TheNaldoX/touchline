@@ -5,7 +5,7 @@ Lire AGENTS.md. Ce fichier contient uniquement l’état courant ; l’historiqu
 ## Session autonome autorisée — 17 h 19 à 18 h 49 Paris
 
 - Demande utilisateur : améliorer IA/décisions, graphismes/animations, UI, événements aléatoires à choix, finances/budgets et contenu original cohérent. Fin le9 octobre à16:49UTC ; réserver après18h25Paris aux validations. Automatisation touchline-am-liorations-jusqu-au-6-octobre réactivée toutes les10min, avec cette échéance et désactivation finale.
-- Unity actuelle : tests runtime37955944893 sur f959fe0 (code36360b6), après rendu37953810119 réussi. Assets figés jusque-là. Tests précédents37952223643 réussis273/273, artefact11627385676 récupéré (.validation/recruitment-context-native).
+- Unity : tests runtime37955944893 sur f959fe0 (code36360b6) réussis275/275, artefact11628751153 récupéré (.validation/budget-visibility-native), après rendu37953810119 réussi. Aucune instance active. Tests précédents37952223643 réussis273/273, artefact11627385676 récupéré (.validation/recruitment-context-native).
 - Diagnostic finances commencé : ProfessionalManagement.TransferBudget déduit achats engagés, réserve de trésorerie, plafond12% des recettes et obligations des prêts ; WageBudget séparé. Examiner leur présentation et les engagements avant de changer les règles. CareerFinancialTransactions assure les contreparties des transferts : ne pas créer de recettes sans paiement.
 - Événements : recherche des classes Event/Incident non concluante ; inspecter CareerManagement et les messages/décisions existants avant de créer un système en doublon. Nouveaux choix à coûts proportionnés au club, effets bornés, aléatoire à graine et persistance testée.
 
@@ -30,7 +30,7 @@ Lire AGENTS.md. Ce fichier contient uniquement l’état courant ; l’historiqu
 ## Lot budget explicite — PR65
 
 - BudgetSummary calcule une vue sans mutation : trésorerie, réserve, achats engagés, prêts à achat obligatoire, plafond direction et marges salariales après arrivées signées. FinancePage explique les limites sans changer leurs montants.
-- Core921/921 (.validation/budget-summary-core.txt), deux régressions ajoutées. Rendu37953810119 /36360b6 réussi : huit images revues, comparaisons repliées sans débordement et budget lisible plié/déplié. Audit : boutons ≥48dp ; trois titres de navigation préexistants à11sp en déplié restent sous le seuil12sp. Exception QuickSearch éditeur préexistante, aucune pile Touchline. Tests natifs37955944893 en cours. Nouveau contenu à choix/événements et graphismes/IA encore à travailler, ne pas déclarer réalisés.
+- Core921/921 (.validation/budget-summary-core.txt), deux régressions ajoutées. Rendu37953810119 /36360b6 réussi : huit images revues, comparaisons repliées sans débordement et budget lisible plié/déplié. Audit : boutons ≥48dp ; trois titres de navigation préexistants à11sp en déplié restent sous le seuil12sp. Exception QuickSearch éditeur préexistante, aucune pile Touchline. Tests natifs37955944893 réussis275/275 ; artefact11628751153, ZIP SHA256 45A7B83C569EF08BD6D7D2BF0793A117CCB98C41DA6C9AC65DE06C90C23256A7. Nouveau contenu à choix/événements et graphismes/IA encore à travailler, ne pas déclarer réalisés.
 
 ## Preuves disponibles
 
@@ -90,4 +90,5 @@ Calibration :200 matchs/graine1, même catalogue. Avant `tools/Calibration/Repor
 - Exception UnityEditor.Search/QuickSearch au démarrage des rendus existants : pas de pile Touchline ; ne pas la confondre avec une erreur CS du jeu.
 
 Historique complet de la passation avant condensation : `git show 8c59424:HANDOFF.md`. Détails et preuves des lots précédents dans leurs PR ; ne relire que le sujet nécessaire.
+
 
