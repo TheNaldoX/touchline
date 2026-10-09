@@ -1,0 +1,32 @@
+Calibration : 200 matchs demandés, graine 17. Niveau du favori : moyenne des 14 meilleurs ratings initiaux ; seuil de 3 points.
+
+Matchs : 200 (erreurs : 0)
+
+| Stat par match | Moyenne | Écart-type | Fourchette |
+|---|---|---|---|
+| Buts | 2,47 | 1,90 | 2,5 – 3,0 |
+| xG | 1,64 | 0,84 | ~2,6 |
+| Tirs | 23,49 | 7,88 | 22 – 28 |
+| Tirs cadrés | 6,90 | 3,60 | 7 – 10 |
+| Corners | 8,49 | 4,27 | 8 – 11 |
+| Fautes | 20,79 | 4,56 | 20 – 26 |
+| Cartons jaunes | 3,87 | 1,77 | 3 – 5 |
+| Cartons rouges | 0,13 | 0,35 | ~0,1 |
+| Penalties | 0,17 | 0,38 | 0,20 – 0,35 |
+| Hors-jeu | 3,96 | 1,97 | 3 – 5 |
+| Touches | 50,50 | 9,67 | 35 – 50 |
+| Sorties de but | 13,81 | 4,13 | 14 – 20 |
+| Coups francs | 24,58 | 4,93 | 20 – 26 |
+| Passes | 835,62 | 77,44 | 800 – 1000 |
+| Réussite passes % | 76,61 | 2,62 | 75 – 87 |
+
+Favori net (écart ≥ 3 pts, 100 matchs) : victoires 60,00 %, nuls 21,00 %, possession 55,25 %
+  Tous les favoris : 60/100, IC95 Wilson [50.20 ; 69.06] % (incertitude d'échantillonnage seulement).
+  Favori à domicile : 36/55, IC95 Wilson [52.25 ; 76.64] % (incertitude d'échantillonnage seulement).
+  Favori à l'extérieur : 24/45, IC95 Wilson [39.08 ; 67.07] % (incertitude d'échantillonnage seulement).
+  écart 3–6 (44 matchs) : victoires du favori 52,27 %, nuls 27,27 %
+  écart 6–+ (56 matchs) : victoires du favori 66,07 %, nuls 16,07 %
+Domicile : victoires 44,50 %, nuls 26,50 %
+Buts − xG par match : 0,83 ± 0,22 (IC95 apparié approximatif). Les xG sont une estimation géométrique avant tir ; le résultat vient de la trajectoire, des interventions et du gardien, pas d'un tirage de Bernoulli selon ces xG.
+
+Phases (entrées par match) : corner 8,49, free-kick 24,58, goal 2,47, goal-kick 13,81, kickoff 3,41, penalty 0,17, play 101,16, throw-in 50,50

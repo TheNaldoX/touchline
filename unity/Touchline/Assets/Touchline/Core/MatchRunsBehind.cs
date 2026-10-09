@@ -21,6 +21,18 @@ namespace Touchline.Core
         const float RunBehindAttackDuty=1.4f,RunBehindSupportDuty=.6f; // fréquence selon la consigne du joueur (×)
         const float RunBehindBaseTendency=.5f;     // + placement/100 : 0,5× (placement 0) à 1,5× (placement 100)
         const float RunBehindReactionMin=.1f,RunBehindReactionPerPoint=.004f; // réaction du porteur (s, s par point de vision manquant)
+        const float LineBreakValue=12f; // decision-score points, scaled by passer vision and lane safety
+        const float LineBreakClearance=.75f,LineBreakReceivingSpace=4f; // metres beyond the line / clear reception radius
+
+        float LineBreakingPassValue(Actor passer,Actor runner,Point target,float line,float safety)
+        {
+            int dir=Direction(passer.side);
+            // A runner already offside, a deep low block, or a covered arrival
+            // offers no clear break. A sweeper keeper also counts as cover.
+            if(line>=36||runner.position.x*dir>line+.1f||target.x*dir<line+LineBreakClearance||
+                (runner.position.x-passer.position.x)*dir<8||Space(target,1-passer.side)<LineBreakReceivingSpace)return 0;
+            return LineBreakValue*Skill(passer,"vision")*.01f*safety;
+        }
 
         // Retourne true si p est en train de faire un appel ; met à jour sa cible.
         bool RunBehind(Actor p,Actor owner,string duty,ref Point q)
