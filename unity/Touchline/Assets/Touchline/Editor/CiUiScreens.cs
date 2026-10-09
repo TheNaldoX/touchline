@@ -8,6 +8,7 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Touchline.Core;
 
 namespace Touchline.Editor
 {
@@ -46,6 +47,7 @@ namespace Touchline.Editor
         // Focused PR validation still renders at native Fold resolution. Three frames
         // allow layout/repaint to settle without twelve expensive software-rendered frames.
         static bool FocusedTactics=>Path.GetFileName(Output).StartsWith("ui-tactical-focus-",StringComparison.Ordinal);
+        static bool FocusedLoan=>Path.GetFileName(Output).StartsWith("ui-loan-focus-",StringComparison.Ordinal);
         const int FocusedStepFrames=3;
         static TouchlineApp App=>TouchlineApp.Instance;
         static UIDocument Document=>App.GetComponent<UIDocument>();
@@ -71,6 +73,7 @@ namespace Touchline.Editor
         static List<Action> BuildSteps()
         {
             if(FocusedTactics)return BuildFocusedTacticSteps();
+            if(FocusedLoan)return BuildFocusedLoanSteps();
             var list=new List<Action>();
             list.Add(()=>{App.Career.EnsureWorld(App.Database);});
             foreach(var s in Screens){
@@ -142,6 +145,48 @@ namespace Touchline.Editor
             return list;
         }
 
+        static List<Action> BuildFocusedLoanSteps()
+        {
+            audit.AppendLine("Parcours ciblé : droits du prêteur, fiche, contrat de prêt et ancien accord. Carrière de validation en mémoire ; six captures natives, pas de sauvegarde personnelle ni d’achat exécuté.");
+            var list=new List<Action>();string playerId=null,ownerName=null;Employment loan=null;TransferOffer legacy=null;long cash=0;
+            list.Add(()=>{
+                var validation=typeof(TouchlineApp).GetProperty("VisualValidation",BindingFlags.Instance|BindingFlags.NonPublic);
+                if(validation==null||!(bool)validation.GetValue(App))throw new Exception("La carrière de validation sans sauvegarde est obligatoire");
+                var career=App.Career;career.EnsureWorld(App.Database);career.match=null;career.world.managerStatus="employed";career.life.managerBanUntil=career.life.day;
+                var player=App.Database.Squad(career.club).Where(p=>!p.Goalkeeper).OrderBy(p=>p.id,StringComparer.Ordinal).First();playerId=player.id;
+                var owner=App.Database.clubs.Where(c=>c.id!=career.club&&c.playable).OrderBy(c=>c.id,StringComparer.Ordinal).First();ownerName=owner.name;
+                loan=career.Contract(App.Database,playerId);loan.parent=owner.id;loan.parentUntil=loan.until;loan.club=career.club;loan.loanUntil=career.life.day+90;loan.until=loan.loanUntil;
+                // Representative UI fixture only: borrowing does not create ownership.
+                loan.terms=new MarketTerms{loanEndDay=loan.loanUntil,loanWagePercent=50,optionFee=100000};
+                legacy=new TransferOffer{player=playerId,seller=career.club,destination=career.club,status="accepted",renewal=true,wage=player.wage,years=3,role="starter",due=career.life.day};
+                career.world.offers.Add(legacy);cash=career.life.cash;
+            });
+            foreach(var s in Screens){
+                var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Club");App.PlayerProfile(playerId);});
+                list.Add(()=>{
+                    if(!Root.Query<Button>().ToList().Any(b=>b.text=="Contrat de prêt")||Root.Query<Button>().ToList().Any(b=>b.text=="Contrat / prolonger"))
+                        throw new Exception("La fiche du joueur emprunté propose encore une prolongation");
+                    Capture(screen.tag+"-fiche-joueur-prete");Click("Contrat de prêt");
+                });
+                list.Add(()=>{
+                    var panel=Root.Q("loan-contract-ownership");var purchase=panel?.Q<Button>("loan-contract-purchase");
+                    if(panel==null||purchase==null||!purchase.enabledSelf||!panel.Query<TextElement>().ToList().Any(t=>t.text==ownerName))
+                        throw new Exception("Le contrat de prêt ne montre pas le propriétaire et l’option d’achat disponible");
+                    audit.AppendLine(screen.tag+" : fiche sans prolongation, contrat du prêteur et option de 100 000 € accessibles.");
+                    Capture(screen.tag+"-contrat-pret");Call("CloseModal");Call("TransferAgreementReview",legacy);
+                });
+                list.Add(()=>{
+                    var sign=Root.Q<Button>("agreement-sign-transfer");
+                    if(sign==null||sign.enabledSelf||!App.Career.HasActiveLoan(playerId)||loan.parent==null||App.Career.life.cash!=cash)
+                        throw new Exception("L’ancien accord ne protège pas les droits ou la trésorerie du prêt");
+                    audit.AppendLine(screen.tag+" : ancien accord affiché, signature désactivée, parent et trésorerie inchangés.");
+                    Capture(screen.tag+"-ancien-accord-bloque");Call("CloseModal");
+                });
+            }
+            return list;
+        }
+
         static void AssertQuickPressing(int level,bool paused)
         {
             float expected=level==2?.8f:.5f;float speed=Arena.Speed;
@@ -158,7 +203,7 @@ namespace Touchline.Editor
             float now=Time.realtimeSinceStartup;if(startedAt<0){startedAt=now;Application.logMessageReceived+=(m,st,t)=>{if(log.Length<200000)log.AppendLine(t+": "+m+(t==LogType.Exception?"\n"+st:""));};}
             if(TouchlineApp.Instance==null){if(now-startedAt>BootTimeoutSeconds)Finish("TouchlineApp absent");return;}
             if(now-startedAt>RunTimeoutSeconds){Finish("délai dépassé à l'étape "+stage);return;}
-            if(++frames<(FocusedTactics?FocusedStepFrames:StepFrames)||now-stepAt<StepSeconds)return;frames=0;stepAt=now;
+            if(++frames<((FocusedTactics||FocusedLoan)?FocusedStepFrames:StepFrames)||now-stepAt<StepSeconds)return;frames=0;stepAt=now;
             steps??=BuildSteps();
             if(stage<0)stage=0;
             if(stage>=steps.Count){Finish(failures==0?null:failures+" étape(s) en échec");return;}
