@@ -152,6 +152,21 @@ namespace Touchline
             }
             return mesh.Build("Floodlight lamps");
         }
+        // Montants et barres transversales des deux buts : tubes ronds (12 cm), un seul maillage.
+        // Remplace deux traits LineRenderer plats, toujours tournés vers la caméra (bande blanche sans relief).
+        public const float GoalHalfWidth=3.66f,GoalHeight=2.44f; // m, dimensions intérieures
+        public const float PostRadius=.06f;                       // m (12 cm de diamètre)
+        const int PostSides=10;                                   // facettes d'un tube (normales lissées)
+        public static Mesh GoalFrames()
+        {
+            var mesh=new Builder();
+            for(int side=-1;side<=1;side+=2){
+                float x=side*52.5f,z=GoalHalfWidth+PostRadius,bar=GoalHeight+PostRadius;
+                for(int edge=-1;edge<=1;edge+=2)mesh.Tube(new Vector3(x,0,edge*z),new Vector3(x,bar+PostRadius,edge*z),PostRadius,PostSides);
+                mesh.Tube(new Vector3(x,bar,-z-PostRadius),new Vector3(x,bar,z+PostRadius),PostRadius,PostSides);
+            }
+            return mesh.Build("Round goal frames");
+        }
         public static Mesh GoalNet(int side)
         {
             var mesh=new Builder();float front=side*52.5f,back=front+side*1.8f;
@@ -216,6 +231,14 @@ namespace Touchline
                 var direction=(end-start).normalized;var u=Vector3.Cross(direction,Vector3.up);if(u.sqrMagnitude<.001f)u=Vector3.right;u=u.normalized*(width*.5f);var v=Vector3.Cross(direction,u);
                 Quad(start-u-v,start+u-v,end+u-v,end-u-v);Quad(start+u-v,start+u+v,end+u+v,end+u-v);Quad(start+u+v,start-u+v,end-u+v,end+u+v);Quad(start-u+v,start-u-v,end-u-v,end-u+v);
                 Quad(start-u+v,start+u+v,start+u-v,start-u-v);Quad(end-u-v,end+u-v,end+u+v,end-u+v);
+            }
+            // Tube sans bouchons : les anneaux partagent leurs sommets (normales lissées, aspect rond).
+            public void Tube(Vector3 start,Vector3 end,float radius,int sides)
+            {
+                var direction=(end-start).normalized;var u=Vector3.Cross(direction,Vector3.up);if(u.sqrMagnitude<.001f)u=Vector3.right;u.Normalize();var v=Vector3.Cross(direction,u);
+                int first=vertices.Count;
+                for(int i=0;i<sides;i++){float a=i*2*Mathf.PI/sides;var offset=(u*Mathf.Cos(a)+v*Mathf.Sin(a))*radius;vertices.Add(start+offset);vertices.Add(end+offset);uvs.Add(default);uvs.Add(default);}
+                for(int i=0;i<sides;i++){int a=first+2*i,b=first+2*((i+1)%sides);triangles.AddRange(new[]{a,b+1,a+1,a,b,b+1});} // faces vers l'extérieur
             }
             public void Box(Vector3 center,Vector3 size)
             {

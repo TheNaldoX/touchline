@@ -9,6 +9,7 @@ namespace Touchline
         GoalReplayPoses goalReplay;int replayKnownScore;float pendingGoalClock=-1;
         readonly GoalReplayCamera replayCamera=new GoalReplayCamera();float liveFieldOfView;
         readonly string[] replayPlayerIds=new string[22];
+        Light floodlight; // projecteurs (soir seulement) : orientés vers le plan du ralenti, rétablis au retour au direct
         public bool GoalReplayActive=>goalReplay!=null&&goalReplay.Active;
         public float GoalReplayProgress=>goalReplay?.Progress??0;
         public long GoalReplayPayloadBytes=>goalReplay?.EstimatedPayloadBytes??0;
@@ -33,7 +34,7 @@ namespace Touchline
             // Freeze only presentation; the authoritative live match is untouched.
             // Force a final sample so Skip restores the exact latest displayed pose.
             pendingGoalClock=-1;goalReplay.Capture(time,true);
-            if(goalReplay.Begin()){liveFieldOfView=MatchCamera.fieldOfView;replayCamera.Begin(ball.position.x,ball.position);foreach(var line in tacticalLines)line.enabled=false;}
+            if(goalReplay.Begin()){liveFieldOfView=MatchCamera.fieldOfView;replayCamera.Begin(ball.position.x,ball.position);LightReplay(true);foreach(var line in tacticalLines)line.enabled=false;}
         }
         void AdvanceGoalReplay(float elapsed)
         {
@@ -46,7 +47,9 @@ namespace Touchline
         }
         // Rappelable sans faire avancer le plan (changement de format en cours de ralenti).
         void ReframeGoalReplayCamera(){replayCamera.Apply(MatchCamera);MatchCamera.farClipPlane=goalReplay.RecordedCameraFarClip;}
-        void RestoreAfterGoalReplay(){MatchCamera.fieldOfView=liveFieldOfView;MatchCamera.farClipPlane=goalReplay.RecordedCameraFarClip;cameraReset=true;poseCache.Reset();foreach(var line in tacticalLines)line.enabled=showTactics;}
+        // Changement au moment des coupes (début et fin du ralenti) : aucun saut visible en continu.
+        void LightReplay(bool replay){if(floodlight!=null)floodlight.transform.rotation=StadiumLighting.FloodRotation(replay?StadiumLighting.FloodYawFacing(-replayCamera.Side):StadiumLighting.FloodYaw);}
+        void RestoreAfterGoalReplay(){LightReplay(false);MatchCamera.fieldOfView=liveFieldOfView;MatchCamera.farClipPlane=goalReplay.RecordedCameraFarClip;cameraReset=true;poseCache.Reset();foreach(var line in tacticalLines)line.enabled=showTactics;}
         public void SkipGoalReplay(){if(!GoalReplayActive)return;goalReplay.Skip();RestoreAfterGoalReplay();}
     }
 }
