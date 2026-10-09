@@ -50,6 +50,7 @@ namespace Touchline.Editor
         static bool FocusedRecruitment=>Path.GetFileName(Output).StartsWith("ui-recruitment-focus-",StringComparison.Ordinal);
         static bool FocusedLoan=>Path.GetFileName(Output).StartsWith("ui-loan-focus-",StringComparison.Ordinal);
         static bool FocusedNegotiation=>Path.GetFileName(Output).StartsWith("ui-negotiation-focus-",StringComparison.Ordinal);
+        static bool FocusedBoard=>Path.GetFileName(Output).StartsWith("ui-board-focus-",StringComparison.Ordinal);
         const int FocusedStepFrames=3;
         static TouchlineApp App=>TouchlineApp.Instance;
         static UIDocument Document=>App.GetComponent<UIDocument>();
@@ -74,6 +75,7 @@ namespace Touchline.Editor
 
         static List<Action> BuildSteps()
         {
+            if(FocusedBoard)return BuildFocusedBoardSteps();
             if(FocusedTactics)return BuildFocusedTacticSteps();
             if(FocusedRecruitment)return BuildFocusedRecruitmentSteps();
             if(FocusedLoan)return BuildFocusedLoanSteps();
@@ -113,6 +115,32 @@ namespace Touchline.Editor
                 list.Add(()=>{Capture(screen.tag+"-regie");Call("CloseModal");SetField("tacticalTab","Composition");Call("Navigate","Tactique");});
                 list.Add(()=>{Capture(screen.tag+"-match-tactique");Click("Avec ballon");});
                 list.Add(()=>{Capture(screen.tag+"-match-consignes");SetField("tacticalTab","Composition");Call("Navigate","Match");});
+            }
+            return list;
+        }
+
+        static List<Action> BuildFocusedBoardSteps()
+        {
+            var list=new List<Action>();
+            list.Add(()=>App.Career.EnsureWorld(App.Database));
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Carrière");});
+                list.Add(()=>{
+                    if(Root.Q("board-season-objective")==null)throw new Exception("Objectif de direction absent");
+                    Capture(screen.tag+"-objectif-direction");
+                });
+            }
+            list.Add(()=>{
+                var c=App.Career;var objective=c.EnsureBoardObjective(App.Database);
+                foreach(var f in c.world.fixtures.Where(f=>f.league==objective.division&&(f.home==c.club||f.away==c.club)).Take(6)){
+                    f.played=true;f.hg=f.home==c.club?0:2;f.ag=f.away==c.club?0:2;
+                }
+                c.life.day+=30;c.ReviewBoardObjective(App.Database);
+                audit.AppendLine("Bilan direction : six défaites de championnat synthétiques, carrière de validation uniquement.");
+            });
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Carrière");});
+                list.Add(()=>Capture(screen.tag+"-bilan-direction"));
             }
             return list;
         }
@@ -399,7 +427,7 @@ namespace Touchline.Editor
             float now=Time.realtimeSinceStartup;if(startedAt<0){startedAt=now;Application.logMessageReceived+=(m,st,t)=>{if(log.Length<200000)log.AppendLine(t+": "+m+(t==LogType.Exception?"\n"+st:""));};}
             if(TouchlineApp.Instance==null){if(now-startedAt>BootTimeoutSeconds)Finish("TouchlineApp absent");return;}
             if(now-startedAt>RunTimeoutSeconds){Finish("délai dépassé à l'étape "+stage);return;}
-            if(++frames<(FocusedTactics||FocusedRecruitment||FocusedLoan||FocusedNegotiation?FocusedStepFrames:StepFrames)||now-stepAt<StepSeconds)return;frames=0;stepAt=now;
+            if(++frames<(FocusedTactics||FocusedRecruitment||FocusedLoan||FocusedNegotiation||FocusedBoard?FocusedStepFrames:StepFrames)||now-stepAt<StepSeconds)return;frames=0;stepAt=now;
             steps??=BuildSteps();
             if(stage<0)stage=0;
             if(stage>=steps.Count){Finish(failures==0?null:failures+" étape(s) en échec");return;}

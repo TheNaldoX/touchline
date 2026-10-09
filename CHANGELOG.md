@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Direction : objectifs saisonniers persistants selon les moyens, l'effectif et la situation héritée, bilans mensuels explicitant la confiance, et carte de suivi dans Carrière.
 - Moteur : déclenchement du pressing séparé de la hauteur de ligne, huit scénarios symétriques de régression et audits appariés ; rapports enrichis avec incertitude des victoires du favori et écart buts–xG.
 - Filets : fils continus subdivisés aux mailles pour réagir réellement aux impacts centraux des deux buts, avec déformation locale et retour au repos ; rayon et ressort inchangés.
 - Recrutement : territoires fiables pour 45 clubs hors catalogue de championnats (1 434 joueurs), filtres et missions par pays partagés, sans ajout de ligue ni modification des notes.
