@@ -91,11 +91,12 @@ jobs:
           which ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg)
           src="unity/Touchline/build/film/${{ steps.name.outputs.film }}"
           out="$RUNNER_TEMP/film/${{ steps.name.outputs.film }}"; mkdir -p "$out"
-          ls -la "$src" "$src/broadcast" | head -5
+          ls -la "$src" | head -5
           cp "$src"/*.png "$src"/*.txt "$out/" 2>/dev/null || true # captures d'interface (film/ui…)
-          [ -d "$src/broadcast" ] || exit 0 # pas de vidéo pour les captures d'interface
+          case "${{ steps.name.outputs.film }}" in ui*) exit 0;; esac # captures d’interface uniquement
+          [ -f "$src/broadcast/frame-0000.jpg" ] || { echo "::error::Première image broadcast absente"; exit 1; }
           for cam in broadcast follow; do
-            [ -f "$src/$cam/frame-0000.jpg" ] || continue # diagnostic caméra : pas de seconde vue à encoder
+            if [ "$cam" = follow ] && [ ! -f "$src/$cam/frame-0000.jpg" ]; then continue; fi # seconde vue facultative
             ffmpeg -v error -y -framerate 30 -i "$src/$cam/frame-%04d.jpg" -c:v libx264 -pix_fmt yuv420p -crf 26 -preset veryfast "$out/$cam.mp4"
             ffmpeg -v error -y -framerate 30 -i "$src/$cam/frame-%04d.jpg" -vf "fps=2,scale=480:-1,tile=4x5" -frames:v 1 "$out/$cam-sheet.jpg"
             ffmpeg -v error -y -framerate 30 -i "$src/$cam/frame-%04d.jpg" -vf "select='not(mod(n\,15))',scale=480:-1,tile=4x5" -frames:v 1 "$out/$cam-sheet-all.jpg" || true
