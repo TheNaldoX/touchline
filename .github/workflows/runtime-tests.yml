@@ -29,7 +29,7 @@ jobs:
           path: unity/Touchline/Library
           key: Library-RuntimeTests-${{ hashFiles('unity/Touchline/Packages/packages-lock.json', 'unity/Touchline/ProjectSettings/ProjectVersion.txt') }}
           restore-keys: Library-Android-
-      - name: Exécuter les régressions caméra dans Unity
+      - name: Exécuter les régressions du cadrage et du stade dans Unity
         uses: game-ci/unity-test-runner@fa6ced25861c16ef56187828c43f76d00df43a23 # v4.3.2, architecture stable sans CLI intermédiaire
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -42,8 +42,8 @@ jobs:
           testMode: EditMode
           artifactsPath: runtime-test-results
           githubToken: ${{ secrets.GITHUB_TOKEN }}
-          checkName: Régressions du cadrage
-          customParameters: -testFilter Touchline.Tests.BroadcastFramingTests;Touchline.Tests.BroadcastGoalGroundTests034
+          checkName: Régressions du cadrage et du stade
+          customParameters: -testFilter Touchline.Tests.BroadcastFramingTests;Touchline.Tests.BroadcastGoalGroundTests034;Touchline.Tests.StadiumAtmosphereTests;Touchline.Tests.StadiumCrowdGeometryTests;Touchline.Tests.StadiumGeometryTests;Touchline.Tests.StadiumLightingTests;Touchline.Tests.StadiumLookTests;Touchline.Tests.CrowdLifeTests;Touchline.Tests.MatchKitPaletteTests;Touchline.Tests.PlayerKitTests
       - name: Vérifier que des tests ont réellement été exécutés
         run: |
           python3 - <<'PY'
@@ -57,10 +57,10 @@ jobs:
           assert reports, 'Aucun résultat NUnit'
           cases = {case.attrib['fullname']: case.attrib.get('result')
                    for root in reports for case in root.iter('test-case')}
-          assert len(cases) == 37, f'Résultat incomplet : {len(cases)} cas sur 37 attendus'
+          assert len(cases) == 95, f'Résultat incomplet : {len(cases)} cas sur 95 attendus'
           unsuccessful = {name: result for name, result in cases.items() if result != 'Passed'}
           assert not unsuccessful, f'Cas non réussis : {unsuccessful}'
-          for method, count in [('EnteringTheLastThird', 8), ('PortraitDelivery', 2)]:
+          for method, count in [('EnteringTheLastThird', 8), ('PortraitDelivery', 2), ('StadiumLookTests.', 8)]:
               actual = sum(method in name for name in cases)
               assert actual == count, f'Régression absente : {method}, {actual}/{count}'
           print(f'{len(cases)} cas Unity réussis, dont les dix nouvelles régressions')
