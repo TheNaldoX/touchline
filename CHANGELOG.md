@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Reprise de Claude : assemblage cellule de recrutement/immersion tactique, filtrage des recommandations devenues inaccessibles et correction du défilement des captures de causerie ; validation en cours.
 - Base de départ : retrait des 2 784 joueurs/116 clubs fictifs et de la promotion fictive initiale du centre ; anciennes carrières conservées avec leur catalogue compatible, sans réécriture au chargement.
 - Android 0.61/code54 livré et signé : candidat intégré moteur, direction, relations et recrutement, avec catalogue fictif figé et sauvegardes compatibles ; réserves de calibration et test Fold conservées.
 - Validation UI : dates cohérentes des défaites synthétiques, reprise ciblée des écrans de presse et diagnostics par étape.

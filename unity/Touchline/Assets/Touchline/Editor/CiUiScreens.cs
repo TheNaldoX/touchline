@@ -133,7 +133,7 @@ namespace Touchline.Editor
         {
             audit.AppendLine("Parcours ciblé immersion : deux résolutions natives par écran.");
             var list=new List<Action>();var first=Screens[0];
-            void Both(string tag,Action prepare){foreach(var s in Screens){var screen=s;list.Add(()=>{Resize(screen.width,screen.height);prepare?.Invoke();});list.Add(()=>Capture(screen.tag+"-"+tag));}}
+            void Both(string tag,Action prepare){foreach(var s in Screens){var screen=s;list.Add(()=>Resize(screen.width,screen.height));list.Add(()=>prepare?.Invoke());list.Add(()=>Capture(screen.tag+"-"+tag));}}
             list.Add(()=>{App.Career.EnsureWorld(App.Database);Resize(first.width,first.height);Call("Navigate","Club");});
             Both("preparation",()=>{Call("Navigate","Club");var focus=Root.Q("manager-training-focus");if(focus==null)throw new Exception("Thème d'entraînement absent");Root.Q<ScrollView>()?.ScrollTo(focus);});
             list.Add(()=>{Resize(first.width,first.height);App.Career.life.day=App.Career.life.nextFixture;Call("Navigate","Match");});

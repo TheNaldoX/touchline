@@ -9,6 +9,16 @@ namespace Touchline.Tests
     // Scouting department, hidden personality, player willingness and settling of new signings.
     public class RecruitmentDepartmentTests
     {
+        [Test] public void SavedRecommendationIsHiddenWhenPlayerNoLongerConsidersTheClub()
+        {
+            var player=db.players.First(p=>p.team!=c.club&&!p.Goalkeeper);
+            c.revealAttributes=true;
+            foreach(var teammate in db.Squad(player.team))teammate.rating=99;
+            c.scoutRecommendations.Add(player.id);
+            Assert.IsTrue(c.PlayerTransferInterest(db,player.id).refuses);
+            Assert.IsFalse(c.DepartmentRecommendations(db).Contains(player.id));
+            Assert.IsTrue(c.scoutRecommendations.Contains(player.id),"Keep the historical report without presenting it as a current recommendation.");
+        }
         Database db; Career c;
         [SetUp] public void Setup()
         {

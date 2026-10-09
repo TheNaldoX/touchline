@@ -37,6 +37,15 @@ Jeu de gestion de football type Football Manager, Unity **6000.3.24f1**, URP, An
 
 ## 3. État au 9 octobre 2026
 
+### Reprise de Claude — recrutement et immersion, candidat non livré
+
+- Branche `fix/claude-handoff-validation`, base `fix/real-starting-catalogue`4469c84. Fusion des branches Claude `film/ui-recruitment-cell-2`9983765 et `film/ui-immersion-focus-1`b3cbf11. Un conflit dans CiUiScreens résolu en gardant les deux scénarios. Aucune fusion main, aucun changement aux APK livrées.
+- Lots retrouvés : missions individuelles de recruteurs, connaissance régionale, intérêt/personnalité simulée et adaptation des recrues ; familiarité/cohésion, causeries, cris, consignes individuelles et observations de l’adjoint. Le refus des joueurs fictifs de départ est conservé. Ne pas présenter les traits simulés comme des faits biographiques.
+- Correction de reprise : DepartmentRecommendations filtre aussi les refus actuels, pour retirer les anciennes recommandations devenues inaccessibles ; test ajouté. Dans les captures d’immersion de Claude, la causerie n’était pas visible malgré un scénario réussi : Resize et ScrollTo sont désormais deux étapes séparées, laissant le layout se calculer.
+- Contrôles :905/905 Core à l’assemblage, puis nouveau test à valider ;200 matchs/graine1 dans `tools/Calibration/Reports/claude-relay-after-200-seed1.txt`, avant comparable `pressure-penalties-after-200-seed1.txt`. Buts2,58→2,61 ; tirs24,60→24,72 ; favori54,55→52,53% ; penalties.19 et sorties13,79 inchangés. Donc état neutre pas strictement identique : ne pas reprendre cette affirmation des commentaires Claude. Limites xG et ligne haute toujours présentes.
+- Rendus Claude37939096762(recrutement) et37935969487(immersion) réussis, disponibles dans films. Premières images relues : recommandations obsolètes visibles, captures de causerie montrant le haut de la présentation ; corrigés, nouvelle revue nécessaire. Quelques légendes11sp. Validation native de l’ensemble à lancer avec les deux nouvelles classes de tests.
+- Correction précédente sans joueurs fictifs : Unity **210/210**, Actions37926637983, source40e063c, artefact11615140142, archiveSHA704FBB9E324C5317E670EA7B71C225E0CED8F49A9FBE93547F32FE19A9A21116. Preuve locale `.validation/real-catalogue-native`. Cette réussite ne valide pas les nouveaux lots de Claude.
+
 ### Correction demandée après 0.61 — pas de joueurs fictifs dans la base de départ
 
 - Victor refuse l’extension fictive. Branche `fix/real-starting-catalogue` issue de la source livrée : nouvelles carrières sur `database.json` seul (21815 entrées, toutes avec un lien source ESPN ; cela ne certifie pas l’actualité des effectifs, salaires et notes). L’extension de 2784 joueurs/116 clubs/8 ligues est désactivée. SeasonSim suit cette base par défaut ; `--legacy-generated` est réservé aux diagnostics de l’ancienne version.

@@ -211,6 +211,6 @@ namespace Touchline.Core
         }
         /// <summary>Recommended players still worth a look (scoutable, report known), most recent first.</summary>
         public List<string> DepartmentRecommendations(Database db)
-            => (scoutRecommendations ?? new List<string>()).AsEnumerable().Reverse().Where(id => Scoutable(db.Find(id)) && Knowledge(id) >= 40).ToList();
+            => (scoutRecommendations ?? new List<string>()).AsEnumerable().Reverse().Where(id => Scoutable(db.Find(id)) && Knowledge(id) >= 40 && !PlayerTransferInterest(db,id).refuses).ToList();
     }
 }
