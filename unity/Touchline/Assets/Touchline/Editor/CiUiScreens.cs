@@ -272,6 +272,14 @@ namespace Touchline.Editor
                         Capture(screen.tag+"-recrutement-marche");Click("recruit-tab-Synthèse");
                     });
                     if(Path.GetFileName(Output).Contains("-polish")){
+                        list.Add(()=>{Click("recruit-hub-mission-"+role);Root.Q<LongField>("scout-mission-wage").value=0;});
+                        list.Add(()=>{
+                            var notice=Root.Q("scout-mission-blocked");var send=Root.Q<Button>("scout-mission-send");
+                            if(notice==null||notice.resolvedStyle.display==DisplayStyle.None||!Root.worldBound.Contains(notice.worldBound.min)||!Root.worldBound.Contains(notice.worldBound.max)||send.enabledSelf)throw new Exception("Le refus de mission doit être expliqué près du bouton visible");
+                            Capture(screen.tag+"-recrutement-mission-plafond");Root.Q<LongField>("scout-mission-wage").value=1000;
+                            if(!send.enabledSelf||notice.style.display.value!=DisplayStyle.None)throw new Exception("Le plafond positif doit réactiver la proposition sans envoyer la mission");
+                            Call("CloseModal");
+                        });
                         list.Add(()=>Click("recruit-tab-Rapports"));
                         list.Add(()=>{Capture(screen.tag+"-recrutement-rapports");var action=Root.Query<Button>().ToList().First(b=>b.text=="Contacter l’agent");action.GetFirstAncestorOfType<ScrollView>().ScrollTo(action);});
                         list.Add(()=>Capture(screen.tag+"-recrutement-rapport-actions"));

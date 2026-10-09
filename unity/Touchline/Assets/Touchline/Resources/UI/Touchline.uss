@@ -1255,6 +1255,7 @@ Button.prematch-selected { background-color: rgb(26,66,61); border-width: 1px; b
 .recruit-workspace .recruit-filters > DropdownField { min-height: 50px; height: 50px; }
 .recruit-workspace .recruit-filters .unity-base-field__input { min-width: 0; font-size: 13px; padding-left: 5px; padding-right: 3px; }
 .recruit-workspace .unity-base-popup-field__arrow { width: 12px; min-width: 12px; margin-left: 3px; margin-right: 0; -unity-background-image-tint-color: rgb(183, 205, 218); }
+.scout-form .unity-base-popup-field__arrow { -unity-background-image-tint-color: rgb(183, 205, 218); }
 .recruit-workspace .recruit-filters .unity-base-popup-field__text { margin-left: 0; margin-right: 0; }
 
 /* Five destinations stay visible on the folded phone without a horizontal scrollbar. */

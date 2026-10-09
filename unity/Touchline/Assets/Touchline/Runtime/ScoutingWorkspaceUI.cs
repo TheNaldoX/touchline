@@ -50,9 +50,11 @@ namespace Touchline
             Text(body,"Territoire : clubs rattachés à ce pays, y compris hors des championnats jouables. Nationalité : filtre indépendant. Pour les joueurs libres, choisissez Tous les territoires. Les profils disponibles ne constituent pas des effectifs mondiaux exhaustifs. Les joueurs de moins de 18 ans peuvent être observés, leur transfert reste limité dans la simulation.","footnote");
             var wageHint=Text(body,"","footnote");wageHint.name="scout-mission-wage-hint";
             if(monthlyRoom<=0)Text(body,"Aucune marge salariale après les engagements réservés. Vous pouvez préparer une liste pour plus tard ou étudier un prêt avec prise en charge partielle. Un joueur libre demande aussi un salaire.","notice");
+            var blocked=Text(panel,"Indiquez un salaire mensuel maximal supérieur à 0 € pour lancer la recherche.","notice");blocked.name="scout-mission-blocked";
             var start=Button(panel,"Envoyer le recruteur",()=>{try{if(observations.value<1||observations.value>4)throw new InvalidOperationException("Financez de une à quatre observations.");Career.CreateScoutMission(Database,role.value,nationality.value,min.value,max.value,fee.value,wage.value,new[]{"ready","prospect","free","value"}[priority.index],Career.ObservationCost*observations.value,country.value);Save();recruitmentTab="Missions";Build();}catch(Exception e){Message(e.Message);}});start.name="scout-mission-send";start.AddToClassList("primary");
             void UpdateWageHint(){start.SetEnabled(wage.value>0);wageHint.text="Marge salariale : "+Money(monthlyRoom)+" / mois. Ce plafond filtre les observations ; il ne constitue pas une offre ni une réservation de salaire. "+(wage.value<=0?"Renseignez un plafond positif pour lancer la recherche.":wage.value>monthlyRoom?"Ce plafond dépasse votre marge actuelle : un recrutement nécessitera de dégager du budget.":"");}
-            wage.RegisterValueChangedCallback(_=>UpdateWageHint());UpdateWageHint();
+            void UpdateBlocked()=>blocked.style.display=wage.value<=0?DisplayStyle.Flex:DisplayStyle.None;
+            wage.RegisterValueChangedCallback(_=>{UpdateWageHint();UpdateBlocked();});UpdateWageHint();UpdateBlocked();
         }
         void ScoutingReports(VisualElement parent)
         {
