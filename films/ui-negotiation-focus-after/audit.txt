@@ -1,0 +1,101 @@
+Audit d'interface Touchline · 1 dp = 2.625 px physiques · seuils : cible tactile 48 dp, texte 12 sp
+
+## plie-negociation-conditions · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 22 · < 48 dp : 0 · textes 53 · < 12 sp : 2 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×2 [unity-text-element.unity-label 11.0 sp] ex. « AGENT · PREMIER ÉCHANGE »
+
+## plie-negociation-erreur · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 23 · < 48 dp : 0 · textes 70 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## plie-negociation-pret-erreur · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 23 · < 48 dp : 0 · textes 59 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+plie : salaire nul et indemnité négative refusés, formulaire et deux brouillons préservés, promesse et prime conservées, finances intactes ; offre corrigée créée une seule fois.
+## plie-negociation-envoyee · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 15 · < 48 dp : 0 · textes 22 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## deplie-negociation-conditions · 2184×1968 px · échelle 2.54 · 1 unité UI = 0.97 dp · largeur logique 860 · hauteur 775
+   boutons visibles 20 · < 48 dp : 15 · textes 50 · < 12 sp : 10 · plus petit texte 10.6 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 46×46 dp
+   petit bouton ×1 « › » 46×46 dp
+   petit bouton ×1 « Continuer  → » 131×46 dp
+   petit bouton ×1 « Bureau » 150×46 dp
+   petit bouton ×1 « Effectif » 150×46 dp
+   petit bouton ×1 « Tactique » 150×46 dp
+   petit bouton ×1 « Match » 150×46 dp
+   petit bouton ×1 « Calendrier » 150×46 dp
+   petit bouton ×1 « Recrutement » 150×46 dp
+   petit bouton ×1 « Formation » 150×46 dp
+   petit bouton ×1 « Finances » 150×46 dp
+   petit bouton ×1 « Messages » 150×46 dp
+   petit bouton ×1 « Plus » 150×46 dp
+   petit bouton ×1 « Changer de club » 150×46 dp
+   petit bouton ×1 « Fermer » 82×46 dp
+   petit texte ×8 [unity-text-element.unity-label 10.6 sp] ex. « TOUCHLINE / RECRUTEMENT »
+   petit texte ×2 [unity-text-element.unity-label 11.6 sp] ex. « Transferts : 120,00 M€ · Plafond salarial : 26,… »
+
+## deplie-negociation-erreur · 2184×1968 px · échelle 2.54 · 1 unité UI = 0.97 dp · largeur logique 860 · hauteur 775
+   boutons visibles 21 · < 48 dp : 16 · textes 66 · < 12 sp : 10 · plus petit texte 10.6 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 46×46 dp
+   petit bouton ×1 « › » 46×46 dp
+   petit bouton ×1 « Continuer  → » 131×46 dp
+   petit bouton ×1 « Bureau » 150×46 dp
+   petit bouton ×1 « Effectif » 150×46 dp
+   petit bouton ×1 « Tactique » 150×46 dp
+   petit bouton ×1 « Match » 150×46 dp
+   petit bouton ×1 « Calendrier » 150×46 dp
+   petit bouton ×1 « Recrutement » 150×46 dp
+   petit bouton ×1 « Formation » 150×46 dp
+   petit bouton ×1 « Finances » 150×46 dp
+   petit bouton ×1 « Messages » 150×46 dp
+   petit bouton ×1 « Plus » 150×46 dp
+   petit bouton ×1 « Changer de club » 150×46 dp
+   petit bouton ×1 « Fermer » 82×46 dp
+   petit bouton ×1 « Envoyer à l’agent » 662×46 dp
+   petit texte ×7 [unity-text-element.unity-label 10.6 sp] ex. « TOUCHLINE / RECRUTEMENT »
+   petit texte ×3 [unity-text-element.unity-label 11.6 sp] ex. « Transferts : 120,00 M€ · Plafond salarial : 26,… »
+
+## deplie-negociation-pret-erreur · 2184×1968 px · échelle 2.54 · 1 unité UI = 0.97 dp · largeur logique 860 · hauteur 775
+   boutons visibles 21 · < 48 dp : 16 · textes 56 · < 12 sp : 8 · plus petit texte 10.6 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 46×46 dp
+   petit bouton ×1 « › » 46×46 dp
+   petit bouton ×1 « Continuer  → » 131×46 dp
+   petit bouton ×1 « Bureau » 150×46 dp
+   petit bouton ×1 « Effectif » 150×46 dp
+   petit bouton ×1 « Tactique » 150×46 dp
+   petit bouton ×1 « Match » 150×46 dp
+   petit bouton ×1 « Calendrier » 150×46 dp
+   petit bouton ×1 « Recrutement » 150×46 dp
+   petit bouton ×1 « Formation » 150×46 dp
+   petit bouton ×1 « Finances » 150×46 dp
+   petit bouton ×1 « Messages » 150×46 dp
+   petit bouton ×1 « Plus » 150×46 dp
+   petit bouton ×1 « Changer de club » 150×46 dp
+   petit bouton ×1 « Fermer » 82×46 dp
+   petit bouton ×1 « Envoyer à l’agent » 662×46 dp
+   petit texte ×6 [unity-text-element.unity-label 10.6 sp] ex. « TOUCHLINE / RECRUTEMENT »
+   petit texte ×2 [unity-text-element.unity-label 11.6 sp] ex. « Transferts : 120,00 M€ · Plafond salarial : 26,… »
+
+deplie : salaire nul et indemnité négative refusés, formulaire et deux brouillons préservés, promesse et prime conservées, finances intactes ; offre corrigée créée une seule fois.
+## deplie-negociation-envoyee · 2184×1968 px · échelle 2.54 · 1 unité UI = 0.97 dp · largeur logique 860 · hauteur 775
+   boutons visibles 21 · < 48 dp : 16 · textes 34 · < 12 sp : 9 · plus petit texte 10.6 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 46×46 dp
+   petit bouton ×1 « › » 46×46 dp
+   petit bouton ×1 « Continuer  → » 131×46 dp
+   petit bouton ×1 « Bureau » 150×46 dp
+   petit bouton ×1 « Effectif » 150×46 dp
+   petit bouton ×1 « Tactique » 150×46 dp
+   petit bouton ×1 « Match » 150×46 dp
+   petit bouton ×1 « Calendrier » 150×46 dp
+   petit bouton ×1 « Recrutement » 150×46 dp
+   petit bouton ×1 « Formation » 150×46 dp
+   petit bouton ×1 « Finances » 150×46 dp
+   petit bouton ×1 « Messages » 150×46 dp
+   petit bouton ×1 « Plus » 150×46 dp
+   petit bouton ×1 « Changer de club » 150×46 dp
+   petit bouton ×1 « Fiche » 51×46 dp
+   petit bouton ×1 « Retirer l’offre » 90×46 dp
+   petit texte ×2 [unity-text-element.unity-button 11.6 sp] ex. « Fiche »
+   petit texte ×6 [unity-text-element.unity-label 10.6 sp] ex. « TOUCHLINE / RECRUTEMENT »
+   petit texte ×1 [unity-text-element.unity-label 11.6 sp] ex. « Transferts : 120,00 M€ · Plafond salarial : 26,… »
+
