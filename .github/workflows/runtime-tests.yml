@@ -30,7 +30,7 @@ jobs:
           key: Library-RuntimeTests-${{ hashFiles('unity/Touchline/Packages/packages-lock.json', 'unity/Touchline/ProjectSettings/ProjectVersion.txt') }}
           restore-keys: Library-Android-
       - name: Exécuter les régressions caméra dans Unity
-        uses: game-ci/unity-test-runner@v4
+        uses: game-ci/unity-test-runner@fa6ced25861c16ef56187828c43f76d00df43a23 # v4.3.2, architecture stable sans CLI intermédiaire
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
@@ -40,7 +40,6 @@ jobs:
           unityVersion: 6000.3.24f1
           customImage: unityci/editor:ubuntu-6000.3.24f1-android-3
           testMode: EditMode
-          coverageEnabled: false
           artifactsPath: runtime-test-results
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: Régressions du cadrage
