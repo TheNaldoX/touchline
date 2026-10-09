@@ -29,9 +29,12 @@ namespace Touchline.Tests
         }
         [TestCase(false)][TestCase(true)] public void LegacyFictionalTransferRestoresWithoutChangingNewCatalogue(bool compact)
         {
-            var original=TouchlineCatalogue.Load();var expanded=TouchlineCatalogue.Load();
+            db.leagues=new[]{new LeagueData{id="test",name="Test",country="France"}};
+            foreach(var team in db.clubs){team.playable=true;team.annualRevenue=20000000;}
+            var original=JsonUtility.FromJson<Database>(JsonUtility.ToJson(db));
+            var expanded=JsonUtility.FromJson<Database>(JsonUtility.ToJson(db));
             GeneratedWorld.AppendFrozen(expanded,JsonUtility.FromJson<Database>(Resources.Load<TextAsset>("Data/generated-world-v1").text));
-            var c=new Career{club="176",saveBaseline=SaveBaseline.From(expanded)};
+            var c=new Career{club="a",saveBaseline=SaveBaseline.From(expanded)};
             c.lineup=Career.Select(expanded,c.club,c.tactic);c.EnsureWorld(expanded);
             var bought=expanded.players.First(p=>GeneratedWorld.IsGenerated(p.id)).Copy();
             bought.team=c.club;bought.wage=789;
