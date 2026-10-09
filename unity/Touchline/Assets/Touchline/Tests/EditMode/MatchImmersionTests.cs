@@ -23,12 +23,13 @@ namespace Touchline.Tests
         }
         static T Call<T>(MatchSimulation sim,string name,params object[] args)=>(T)typeof(MatchSimulation).GetMethod(name,Private).Invoke(sim,args);
         static void Mind(MatchSimulation sim,Action<TeamMindset> set){var ours=TeamMindset.Neutral();set(ours);sim.State.mindset=new[]{ours,TeamMindset.Neutral()};}
-        static string Fingerprint(MatchState m)=>string.Join(",",m.score)+"/"+string.Join(",",m.passes)+"/"+string.Join(",",m.completedPasses)+"/"+m.events.Count+"/"+string.Join(";",m.actors.Select(a=>a.position.x.ToString("R")+":"+a.fitness.ToString("R")));
+        static string Fingerprint(MatchState m)=>string.Join(",",m.score)+"/"+string.Join(",",m.passes)+"/"+string.Join(",",m.completedPasses)+"/"+string.Join(";",m.events.Where(e=>e.kind!="assistant").Select(e=>e.kind+":"+e.time+":"+e.player))+"/"+string.Join(";",m.actors.Select(a=>a.position.x.ToString("R")+":"+a.position.z.ToString("R")+":"+a.fitness.ToString("R")));
 
-        [Test] public void NeutralMindsetLeavesTheEngineIdentical()
+        // Informational assistant messages are allowed; football events and physical results must stay identical.
+        [TestCase(11u)] [TestCase(29u)] [TestCase(83u)] public void NeutralMindsetLeavesTheEngineIdentical(uint seed)
         {
-            var db=Db();var plain=Sim(db);var neutral=Sim(db);Mind(neutral,_=>{});
-            foreach(var sim in new[]{plain,neutral}){sim.Advance(sim.State.HalfDuration*.4);}
+            var db=Db();var plain=Sim(db,seed);var neutral=Sim(db,seed);Mind(neutral,_=>{});
+            foreach(var sim in new[]{plain,neutral}){sim.Advance(sim.State.HalfDuration*.8);}
             Assert.AreEqual(Fingerprint(plain.State),Fingerprint(neutral.State));
         }
         [Test] public void UnderstandingAndComposureChangePassPrecision()
