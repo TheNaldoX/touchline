@@ -152,15 +152,11 @@ namespace Touchline
             if(w.debt>0){var debt=new LongField("Rembourser (€)"){value=Math.Min(w.debt,Math.Max(0,Career.life.cash/10))};s.Add(debt);Button(s,"Rembourser la dette",()=>RunDecision(()=>Career.RepayDebt(debt.value)));}
             Heading(s,"Mouvements comptables");foreach(var item in Career.life.ledger.TakeLast(35).Reverse())Text(s,Touchline.Core.Career.Epoch.AddDays(item.day).ToString("dd MMM",French)+" · "+item.label+" · "+Money(item.amount));Text(s,Career.life.financeSource,"footnote");
         }
-        void PressPage()
-        {
-            var s=Scroll(content);Heading(s,"La salle de presse");var f=Career.NextFixture();var stage=Card(s,"press-stage");Text(stage,"CONFÉRENCE DE PRESSE","eyebrow");Text(stage,f?.venue??"Centre d’entraînement · "+Own.name,"display-title");var wall=Row(stage,"sponsor-wall");foreach(var d in Career.world.sponsors.Where(d=>d.status=="signed"))Text(wall,d.name,"pill");Text(wall,Own.name,"pill");Text(s,"Votre message agit sur le moral et sur les attentes. Une prise de parole par conférence.","muted");
-            foreach(var phase in new[]{"before","after"}){var card=Card(s);Text(card,phase=="before"?"Avant-match : quel est votre objectif ?":"Après-match : quel message pour le groupe ?","section-title");foreach(var answer in new[]{"calm","ambition","protect"})Button(card,answer=="calm"?"Rester mesuré":answer=="ambition"?"Afficher notre ambition":"Protéger mes joueurs",()=>RunDecision(()=>Career.Press(phase,answer)));}
-        }
+        void PressPage()=>ContextualPressPage();
         void ManagerPage()
         {
             var s=Scroll(content);Heading(s,"Votre parcours");Text(s,Career.manager+" · "+Career.world.managerStatus,"display-title");Text(s,"Réputation : "+Career.life.reputation.ToString("0")+" · Confiance du conseil : "+Career.life.boardTrust.ToString("0")+" %");Text(s,"Propriétaire : "+Career.world.owner,"muted");
-            ShowBoardObjective(s);ShowJobOffers(s);
+            ShowBoardObjective(s);ShowJobOffers(s);ShowClubNews(s);
             if(Career.world.managerStatus=="dismissed"){Text(s,"De nouveaux postes deviennent accessibles sept jours après votre départ.");foreach(var c in Database.clubs.Where(c=>c.id!=Career.club&&c.playable&&c.annualRevenue<=Career.life.revenue*1.5).Take(20))Button(s,"Postuler · "+c.name,()=>RunDecision(()=>Career.TakeJob(Database,c.id)));}
             Heading(s,"Archives des saisons");foreach(var h in Career.world.honours.Where(h=>h.club==Career.club).Reverse())Text(s,h.year+" · "+Career.CompetitionName(Database,h.competition));
         }

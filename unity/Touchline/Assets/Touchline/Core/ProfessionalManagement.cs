@@ -165,13 +165,12 @@ namespace Touchline.Core
         public void RepayDebt(long amount){OffPitch();if(amount<=0||amount>world.debt)throw new InvalidOperationException("Remboursement invalide.");Charge(amount,"Remboursement de dette");world.debt-=amount;}
         public void Press(string phase,string answer)
         {
-            OffPitch();var fixture=phase=="before"?NextFixture():world.fixtures.LastOrDefault(f=>f.played&&(f.home==club||f.away==club));
-            if(fixture==null||!new[]{"calm","ambition","protect"}.Contains(answer)||phase!="before"&&phase!="after")throw new InvalidOperationException("Aucune conférence disponible.");
-            if(world.press.Any(p=>p.fixture==fixture.id&&p.phase==phase))throw new InvalidOperationException("Vous avez déjà pris la parole.");
-            if(phase=="before"&&fixture.day-life.day>2)throw new InvalidOperationException("La conférence se tient dans les deux jours précédant la rencontre.");
+            OffPitch();var context=Conference(phase);
+            if(!context.Available||!new[]{"calm","ambition","protect"}.Contains(answer))throw new InvalidOperationException(context.unavailable??"Réponse invalide.");
+            var fixture=context.fixture;
             world.press.Add(new PressAppearance{fixture=fixture.id,phase=phase,answer=answer,day=life.day});
-            foreach(var p in life.players){p.morale=Mathx.Clamp(p.morale+(answer=="protect"?1:answer=="ambition"?(p.trust>60?1:-1):.25f),10,100);}
-            world.supporterTrust=Mathx.Clamp(world.supporterTrust+(answer=="ambition"?1:0),0,100);
+            foreach(var p in life.players)p.morale=Mathx.Clamp(p.morale+PressMorale(context,answer,p),10,100);
+            world.supporterTrust=Mathx.Clamp(world.supporterTrust+(answer=="ambition"?(phase=="after"&&context.result<0?-1:1):0),0,100);
             Mail("Attaché de presse","Votre déclaration",answer=="calm"?"Nous nous concentrons sur notre travail et sur ce que nous pouvons maîtriser.":answer=="protect"?"J’assume les décisions. Le groupe a besoin de notre soutien.":"Nous voulons imposer notre jeu et obtenir un résultat.",null,"press");
         }
         void ManagementDay(Database db)
