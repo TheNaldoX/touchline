@@ -10,20 +10,25 @@ namespace Touchline
 {
     public sealed partial class TouchlineApp
     {
-        string recruitmentTab="Marché",recruitOrder="Valeur",recruitNationality="Tous",recruitCountry="Tous",recruitLeague="Tous";
+        string recruitmentTab="Synthèse",recruitOrder="Valeur",recruitNationality="Tous",recruitCountry="Tous",recruitLeague="Tous";
         bool recruitAdvanced;
         int recruitMinAge=16,recruitMaxAge=45;long recruitMaxFee,recruitMaxMonthly;
         void ResetRecruitmentFilters()
         {
+            ResetRecruitmentCriteria();Build();
+        }
+        void ResetRecruitmentCriteria()
+        {
             recruitSearch="";recruitRole=marketFilter=recruitNationality=recruitCountry=recruitLeague="Tous";
             recruitOrder="Valeur";recruitMinAge=16;recruitMaxAge=45;recruitMaxFee=recruitMaxMonthly=0;recruitAdvanced=false;
-            Build();
         }
         void RecruitmentWorkspace()
         {
             content.AddToClassList("recruit-workspace");var title=Row(content,"recruit-titlebar");Heading(title,"Recrutement");if(Career.world==null)return;
             Text(title,"Transferts : "+Money(Career.TransferBudget)+" · Plafond salarial : "+Money(Core.Career.MonthlySalary(Career.WageBudget))+" / mois","recruit-budget");
-            var tabs=Row(content,"recruit-tabs");foreach(var tab in new[]{"Marché","Missions","Rapports","Négociations et prêts"}){var b=Button(tabs,tab,()=>{recruitmentTab=tab;Build();});b.name="recruit-tab-"+tab;b.AddToClassList(tab==recruitmentTab?"active":"recruit-tab");}
+            var tabScroll=new ScrollView(ScrollViewMode.Horizontal){name="recruit-tabs-scroll",verticalScrollerVisibility=ScrollerVisibility.Hidden,horizontalScrollerVisibility=ScrollerVisibility.Auto};tabScroll.AddToClassList("recruit-tabs-scroll");content.Add(tabScroll);
+            var tabs=Row(tabScroll,"recruit-tabs");foreach(var tab in new[]{"Synthèse","Marché","Missions","Rapports","Négociations et prêts"}){var b=Button(tabs,tab=="Négociations et prêts"?"Dossiers":tab,()=>{recruitmentTab=tab;Build();});b.name="recruit-tab-"+tab;b.AddToClassList(tab==recruitmentTab?"active":"recruit-tab");if(tab==recruitmentTab)tabScroll.schedule.Execute(()=>tabScroll.ScrollTo(b));}
+            if(recruitmentTab=="Synthèse"){RecruitmentHub(Scroll(content));return;}
             if(recruitmentTab=="Missions"){ScoutingMissions(Scroll(content));return;}if(recruitmentTab=="Rapports"){ScoutingReports(Scroll(content));return;}if(recruitmentTab!="Marché"){RecruitmentDossiers(Scroll(content));return;}
             var toolbar=Row(content,"recruit-toolbar");var searchTools=Row(toolbar,"recruit-search-tools");var field=new TextField("Nom"){value=recruitSearch,name="recruit-search",tooltip="Rechercher un joueur par son nom"};searchTools.Add(field);
             var clear=Button(searchTools,"Effacer",()=>{field.value="";});clear.name="recruit-clear";

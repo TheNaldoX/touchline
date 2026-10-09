@@ -1222,3 +1222,33 @@ Button.prematch-selected { background-color: rgb(26,66,61); border-width: 1px; b
 .match-mentality { flex-direction: row; align-items: center; flex-shrink: 0; padding: 2px; background-color: rgba(13,27,42,.95); }
 .match-mentality-label { font-size: 13px; color: rgb(155,176,197); margin: 0 6px 0 8px; flex-shrink: 0; }
 .match-mentality > Button { flex-grow: 1; flex-basis: 0; min-width: 0; min-height: 48px; margin: 2px; padding: 4px 6px; font-size: 14px; }
+
+/* Recruitment decision hub: compact cards, independent from the virtualized market. */
+.recruit-workspace .recruit-tabs-scroll { flex-grow: 0; flex-shrink: 0; height: 68px; margin-bottom: 4px; }
+.recruit-workspace .recruit-tabs-scroll .recruit-tabs { flex-wrap: nowrap; justify-content: flex-start; margin-bottom: 2px; }
+.recruit-workspace .recruit-tabs-scroll .recruit-tabs > Button { flex-shrink: 0; flex-grow: 0; flex-basis: auto; min-height: 50px; height: 50px; min-width: 78px; font-size: 13px; margin: 0 4px 0 0; padding: 5px 10px; }
+.recruit-hub .recruit-hub-finances { align-items: stretch; flex-wrap: nowrap; margin-bottom: 4px; }
+.recruit-hub .recruit-hub-metric { flex-grow: 1; flex-basis: 0; min-width: 0; padding: 10px 12px; margin-right: 6px; background-color: rgb(22, 42, 54); border-radius: 8px; }
+.recruit-hub .recruit-hub-amount { font-size: 22px; color: rgb(165, 232, 211); margin-top: 4px; white-space: normal; }
+.recruit-hub .recruit-hub-note { font-size: 13px; color: rgb(163, 181, 195); white-space: normal; margin: 2px 0 7px; }
+.recruit-hub .recruit-hub-detail { font-size: 13px; white-space: normal; margin: 3px 0; color: rgb(207, 219, 229); }
+.recruit-hub .recruit-hub-pipeline { justify-content: flex-start; margin-bottom: 8px; }
+.recruit-hub .recruit-hub-action { min-height: 50px; min-width: 50px; font-size: 13px; padding: 6px 10px; margin: 3px 5px 3px 0; }
+.recruit-hub .recruit-hub-columns { align-items: flex-start; flex-wrap: nowrap; }
+.recruit-hub .recruit-hub-section { flex-grow: 1; flex-basis: 0; min-width: 0; padding: 12px; margin-right: 6px; }
+.recruit-hub .recruit-hub-section > .section-title { font-size: 17px; margin: 0 0 6px; }
+.recruit-hub .recruit-hub-need, .recruit-hub .recruit-hub-candidate { border-top-width: 1px; border-top-color: rgb(46, 66, 81); padding-top: 10px; margin-top: 8px; padding-bottom: 5px; }
+.recruit-hub .recruit-hub-need-title { justify-content: space-between; }
+.recruit-hub .recruit-hub-player-name { font-size: 15px; -unity-font-style: bold; white-space: normal; margin-right: 5px; }
+.recruit-hub .recruit-hub-badge { font-size: 13px; color: rgb(156, 213, 191); margin: 3px 0; }
+.recruit-hub .recruit-hub-alert { color: rgb(242, 198, 119); }
+.recruit-hub .recruit-hub-actions { justify-content: flex-start; margin-top: 4px; }
+.recruit-hub .recruit-hub-assessment { font-size: 14px; color: rgb(242, 206, 129); margin: 4px 0; }
+.recruit-hub #recruit-hub-candidate-role { min-height: 50px; margin: 5px 0; }
+.recruit-hub #recruit-hub-candidate-role .unity-base-field__label { min-width: 48px; width: 48px; font-size: 13px; }
+.recruit-hub .recruit-hub-shortcuts { justify-content: flex-start; margin-bottom: 12px; }
+.narrow .recruit-hub .recruit-hub-columns { flex-direction: column; }
+.narrow .recruit-hub .recruit-hub-section { flex-basis: auto; width: 100%; margin-right: 0; }
+.narrow .recruit-hub .recruit-hub-amount { font-size: 20px; }
+.narrow .recruit-hub .recruit-hub-metric { padding: 9px; }
+.narrow .recruit-hub .recruit-hub-pipeline > Button { flex-basis: 45%; flex-grow: 1; }

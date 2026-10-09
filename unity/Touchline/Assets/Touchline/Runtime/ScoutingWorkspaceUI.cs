@@ -43,11 +43,16 @@ namespace Touchline
             var priority=new DropdownField("Priorité",new List<string>{"Renfort immédiat","Développement des jeunes","Joueurs libres","Coût maîtrisé"},0){name="scout-mission-priority"};fields.Add(priority);
             var min=new IntegerField("Âge minimum"){value=Math.Max(16,recruitMinAge),name="scout-mission-min-age"};fields.Add(min);var max=new IntegerField("Âge maximum"){value=Math.Min(45,recruitMaxAge),name="scout-mission-max-age"};fields.Add(max);
             var fee=new LongField("Valeur maximale (€)"){value=recruitMaxFee>0?recruitMaxFee:Career.TransferBudget,name="scout-mission-fee"};fields.Add(fee);
-            var wage=new LongField("Salaire maximal / mois (€)"){value=recruitMaxMonthly>0?recruitMaxMonthly:Math.Max(1000,Core.Career.MonthlySalary(Math.Max(0,Career.WageBudget-Career.Payroll(Database)))/2),name="scout-mission-wage"};fields.Add(wage);
+            long monthlyRoom=Career.RecruitmentOverview(Database).monthlyWageRoom;
+            var wage=new LongField("Salaire maximal / mois (€)"){value=recruitMaxMonthly>0?recruitMaxMonthly:monthlyRoom/2,name="scout-mission-wage"};fields.Add(wage);
             var observations=new IntegerField("Observations financées (1–4)"){value=4,name="scout-mission-observations"};fields.Add(observations);
             var budget=Text(body,"","scout-status");budget.name="scout-mission-budget";void UpdateBudget()=>budget.text="Enveloppe prépayée : "+Money(Career.ObservationCost*Math.Max(1,Math.Min(4,observations.value)))+" · "+Money(Career.ObservationCost)+" par profil";observations.RegisterValueChangedCallback(_=>UpdateBudget());UpdateBudget();
             Text(body,"Territoire : clubs des championnats couverts dans ce pays. Nationalité : filtre indépendant. Pour les joueurs libres, choisissez Tous les territoires. Les profils disponibles ne constituent pas des effectifs mondiaux exhaustifs. Les joueurs de moins de 18 ans peuvent être observés, leur transfert reste limité dans la simulation.","footnote");
+            var wageHint=Text(body,"","footnote");wageHint.name="scout-mission-wage-hint";
+            if(monthlyRoom<=0)Text(body,"Aucune marge salariale après les engagements réservés. Vous pouvez préparer une liste pour plus tard ou étudier un prêt avec prise en charge partielle. Un joueur libre demande aussi un salaire.","notice");
             var start=Button(panel,"Envoyer le recruteur",()=>{try{if(observations.value<1||observations.value>4)throw new InvalidOperationException("Financez de une à quatre observations.");Career.CreateScoutMission(Database,role.value,nationality.value,min.value,max.value,fee.value,wage.value,new[]{"ready","prospect","free","value"}[priority.index],Career.ObservationCost*observations.value,country.value);Save();recruitmentTab="Missions";Build();}catch(Exception e){Message(e.Message);}});start.name="scout-mission-send";start.AddToClassList("primary");
+            void UpdateWageHint(){start.SetEnabled(wage.value>0);wageHint.text="Marge salariale : "+Money(monthlyRoom)+" / mois. Ce plafond filtre les observations ; il ne constitue pas une offre ni une réservation de salaire. "+(wage.value<=0?"Renseignez un plafond positif pour lancer la recherche.":wage.value>monthlyRoom?"Ce plafond dépasse votre marge actuelle : un recrutement nécessitera de dégager du budget.":"");}
+            wage.RegisterValueChangedCallback(_=>UpdateWageHint());UpdateWageHint();
         }
         void ScoutingReports(VisualElement parent)
         {
