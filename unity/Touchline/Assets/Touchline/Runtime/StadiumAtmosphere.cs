@@ -56,13 +56,13 @@ namespace Touchline
             }
             // Bancs : remplaçants (survêtement du club) et un membre du staff assis, entraîneur debout devant.
             for(int side=-1;side<=1;side+=2){
-                bool away=side>0;int kit=away?AwayBenchClothing:HomeBenchClothing;
+                bool awayBench=side>0;int kit=awayBench?AwayBenchClothing:HomeBenchClothing;
                 for(int seat=0;seat<StadiumGeometry.BenchSeats;seat++){
                     uint sample=Next();var position=new Vector3(side*StadiumGeometry.BenchX+(seat-(StadiumGeometry.BenchSeats-1)*.5f)*StadiumGeometry.BenchSeatPitch,StadiumGeometry.BenchSeatTop,StadiumGeometry.BenchSeatZ+BenchBackOffset);
-                    int first=builder.VertexCount;builder.Person(position,Vector3.back,.46f+((sample>>16)&7)*.01f,seat==StadiumGeometry.BenchSeats-1?StaffClothing:kit,5+(int)((sample>>25)&1),sample,true);builder.EndPerson(first,position,away);
+                    int first=builder.VertexCount;builder.Person(position,Vector3.back,.46f+((sample>>16)&7)*.01f,seat==StadiumGeometry.BenchSeats-1?StaffClothing:kit,5+(int)((sample>>25)&1),sample,true);builder.EndPerson(first,position,awayBench);
                 }
                 uint coach=Next();var feet=new Vector3(side*(StadiumGeometry.BenchX-StadiumGeometry.BenchSeats*.5f*StadiumGeometry.BenchSeatPitch-CoachSideOffset),0,CoachZ);
-                int start=builder.VertexCount;builder.Standing(feet,Vector3.back,StandingHip,.5f,StaffClothing,5+(int)((coach>>25)&1),coach);builder.EndPerson(start,feet+Vector3.up*StandingHip,away);
+                int start=builder.VertexCount;builder.Standing(feet,Vector3.back,StandingHip,.5f,StaffClothing,5+(int)((coach>>25)&1),coach);builder.EndPerson(start,feet+Vector3.up*StandingHip,awayBench);
             }
             rig=builder.Rig();return builder.Build();
         }
