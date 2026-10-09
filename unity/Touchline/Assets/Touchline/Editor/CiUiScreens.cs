@@ -47,6 +47,7 @@ namespace Touchline.Editor
         // allow layout/repaint to settle without twelve expensive software-rendered frames.
         static bool FocusedTactics=>Path.GetFileName(Output).StartsWith("ui-tactical-focus-",StringComparison.Ordinal);
         static bool FocusedRecruitment=>Path.GetFileName(Output).StartsWith("ui-recruitment-focus-",StringComparison.Ordinal);
+        static bool FocusedNegotiation=>Path.GetFileName(Output).StartsWith("ui-negotiation-focus-",StringComparison.Ordinal);
         const int FocusedStepFrames=3;
         static TouchlineApp App=>TouchlineApp.Instance;
         static UIDocument Document=>App.GetComponent<UIDocument>();
@@ -73,6 +74,7 @@ namespace Touchline.Editor
         {
             if(FocusedTactics)return BuildFocusedTacticSteps();
             if(FocusedRecruitment)return BuildFocusedRecruitmentSteps();
+            if(FocusedNegotiation)return BuildFocusedNegotiationSteps();
             var list=new List<Action>();
             list.Add(()=>{App.Career.EnsureWorld(App.Database);});
             foreach(var s in Screens){
@@ -108,6 +110,85 @@ namespace Touchline.Editor
                 list.Add(()=>{Capture(screen.tag+"-regie");Call("CloseModal");SetField("tacticalTab","Composition");Call("Navigate","Tactique");});
                 list.Add(()=>{Capture(screen.tag+"-match-tactique");Click("Avec ballon");});
                 list.Add(()=>{Capture(screen.tag+"-match-consignes");SetField("tacticalTab","Composition");Call("Navigate","Match");});
+            }
+            return list;
+        }
+
+        static List<Action> BuildFocusedNegotiationSteps()
+        {
+            bool reference=Path.GetFileName(Output).EndsWith("-before",StringComparison.Ordinal);
+            var list=new List<Action>();string player=null;long cash=0;int offers=0,ledger=0;VisualElement form=null;
+            void AssertUnchanged()
+            {
+                if(App.Career.life.cash!=cash||App.Career.world.offers.Count!=offers||App.Career.life.ledger.Count!=ledger)throw new Exception("Une offre invalide a modifié les finances ou les dossiers");
+            }
+            void AssertError()
+            {
+                var error=Root.Q<Label>("negotiation-error");
+                if(Root.Q("transfer-negotiation-form")!=form||error==null||string.IsNullOrEmpty(error.text)||error.resolvedStyle.display==DisplayStyle.None)throw new Exception("Le formulaire ou son erreur persistante a disparu");
+                AssertUnchanged();
+            }
+            list.Add(()=>{
+                var safe=typeof(TouchlineApp).GetProperty("VisualValidation",BindingFlags.Instance|BindingFlags.NonPublic);
+                if(safe==null||!(bool)safe.GetValue(App))throw new Exception("La validation doit isoler les sauvegardes personnelles");
+                App.Career.EnsureWorld(App.Database);
+                player=App.Database.players.First(p=>p.team!=App.Career.club&&p.team!="free"&&p.team!="retired"&&!p.team.StartsWith("academy-")&&p.age>=24).id;
+                // Isolated UI fixture: abundant budget and a valid parent contract avoid
+                // unrelated market restrictions when exercising corrected resubmission.
+                App.Career.life.cash=1000000000;App.Career.life.revenue=1000000000;
+                App.Career.life.day=(int)(new DateTime(2026,6,20)-Touchline.Core.Career.Epoch).TotalDays;
+                var contract=App.Career.Contract(App.Database,player);contract.parent=null;contract.until=App.Career.life.day+730;
+                App.Database.Find(player).wage=500;
+            });
+            foreach(var s in Screens)
+            {
+                var screen=s;
+                list.Add(()=>{
+                    Resize(screen.width,screen.height);App.Career.world.offers.RemoveAll(o=>o.player==player);
+                    Call("Navigate","Recrutement");Call("TransferDialog",player);
+                });
+                list.Add(()=>{
+                    form=Root.Q("transfer-negotiation-form");if(form==null)throw new Exception("Formulaire de négociation absent");
+                    Root.Q<Toggle>("negotiation-loan").value=true;
+                    Root.Q<IntegerField>("negotiation-loan-share").value=37;Root.Q<IntegerField>("negotiation-loan-days").value=60;
+                    Root.Q<LongField>("negotiation-loan-option").value=120000;Root.Q<LongField>("negotiation-fee").value=9000;Root.Q<LongField>("negotiation-bonus").value=111;
+                    Root.Q<Toggle>("negotiation-loan").value=false;
+                    Root.Q<LongField>("negotiation-monthly-wage").value=0;Root.Q<LongField>("negotiation-fee").value=50000;
+                    Root.Q<LongField>("negotiation-bonus").value=222;Root.Q<IntegerField>("negotiation-years").value=4;
+                    Root.Q<DropdownField>("negotiation-role").value=Touchline.Core.PlayingTimeRoles.Label("starter");
+                    form.Q<ScrollView>().ScrollTo(Root.Q<Button>("negotiation-send"));
+                    cash=App.Career.life.cash;offers=App.Career.world.offers.Count;ledger=App.Career.life.ledger.Count;
+                });
+                list.Add(()=>{Capture(screen.tag+"-negociation-conditions");Click("negotiation-send");});
+                if(reference)
+                {
+                    list.Add(()=>{AssertUnchanged();if(Root.Q("transfer-negotiation-form")!=null)throw new Exception("Le défaut de référence attendu n'est pas reproduit");Capture(screen.tag+"-negociation-erreur");audit.AppendLine("Référence : salaire nul rejeté, formulaire détruit, finances intactes.");});
+                    continue;
+                }
+                list.Add(()=>{
+                    AssertError();
+                    if(Root.Q<LongField>("negotiation-monthly-wage").value!=0||Root.Q<LongField>("negotiation-bonus").value!=222||Root.Q<IntegerField>("negotiation-years").value!=4||Root.Q<DropdownField>("negotiation-role").value!=Touchline.Core.PlayingTimeRoles.Label("starter"))throw new Exception("Conditions permanentes perdues");
+                    Capture(screen.tag+"-negociation-erreur");
+                    Root.Q<Toggle>("negotiation-loan").value=true;
+                    if(Root.Q<IntegerField>("negotiation-loan-share").value!=37||Root.Q<IntegerField>("negotiation-loan-days").value!=60||Root.Q<LongField>("negotiation-loan-option").value!=120000||Root.Q<LongField>("negotiation-bonus").value!=111||Root.Q<LongField>("negotiation-fee").value!=9000)throw new Exception("Brouillon de prêt perdu");
+                    Root.Q<LongField>("negotiation-fee").value=-1;form.Q<ScrollView>().ScrollTo(Root.Q<Button>("negotiation-send"));
+                });
+                list.Add(()=>{Click("negotiation-send");});
+                list.Add(()=>{
+                    AssertError();Capture(screen.tag+"-negociation-pret-erreur");
+                    if(Root.Q<IntegerField>("negotiation-loan-share").value!=37||Root.Q<LongField>("negotiation-loan-option").value!=120000)throw new Exception("Conditions de prêt perdues après erreur");
+                    Root.Q<LongField>("negotiation-fee").value=9000;Root.Q<Toggle>("negotiation-loan").value=false;
+                    if(Root.Q<LongField>("negotiation-fee").value!=50000||Root.Q<LongField>("negotiation-bonus").value!=222||Root.Q<LongField>("negotiation-monthly-wage").value!=0)throw new Exception("Retour au brouillon permanent incorrect");
+                    Root.Q<LongField>("negotiation-monthly-wage").value=10000;Click("negotiation-send");
+                });
+                list.Add(()=>{
+                    var offer=App.Career.world.offers.LastOrDefault(o=>o.player==player&&o.status=="pending");
+                    if(offer==null||offer.loan||offer.role!="starter"||offer.bonus!=222||offer.fee!=50000||offer.years!=4||offer.wage!=Touchline.Core.Career.WeeklySalary(10000)||Root.Q("transfer-negotiation-form")!=null)throw new Exception("Renvoi corrigé : offre ou sortie du formulaire incorrecte");
+                    if(App.Career.life.cash!=cash||App.Career.world.offers.Count!=offers+1)throw new Exception("La proposition doit créer exactement un dossier sans débit de signature");
+                    audit.AppendLine(screen.tag+" : salaire nul et indemnité négative refusés, formulaire et deux brouillons préservés, promesse et prime conservées, finances intactes ; offre corrigée créée une seule fois.");
+                    SetField("recruitmentTab","Négociations et prêts");Call("Navigate","Recrutement");
+                });
+                list.Add(()=>{Capture(screen.tag+"-negociation-envoyee");});
             }
             return list;
         }
@@ -234,7 +315,7 @@ namespace Touchline.Editor
             float now=Time.realtimeSinceStartup;if(startedAt<0){startedAt=now;Application.logMessageReceived+=(m,st,t)=>{if(log.Length<200000)log.AppendLine(t+": "+m+(t==LogType.Exception?"\n"+st:""));};}
             if(TouchlineApp.Instance==null){if(now-startedAt>BootTimeoutSeconds)Finish("TouchlineApp absent");return;}
             if(now-startedAt>RunTimeoutSeconds){Finish("délai dépassé à l'étape "+stage);return;}
-            if(++frames<(FocusedTactics||FocusedRecruitment?FocusedStepFrames:StepFrames)||now-stepAt<StepSeconds)return;frames=0;stepAt=now;
+            if(++frames<(FocusedTactics||FocusedRecruitment||FocusedNegotiation?FocusedStepFrames:StepFrames)||now-stepAt<StepSeconds)return;frames=0;stepAt=now;
             steps??=BuildSteps();
             if(stage<0)stage=0;
             if(stage>=steps.Count){Finish(failures==0?null:failures+" étape(s) en échec");return;}
