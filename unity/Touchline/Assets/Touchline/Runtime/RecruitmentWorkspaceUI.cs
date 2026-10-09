@@ -108,9 +108,10 @@ namespace Touchline
             if(offers.Length==0)Text(parent,"Aucune négociation. Ouvrez une fiche ou contactez un agent depuis Marché.","empty-state");
             foreach(var o in offers){var p=Database.Find(o.player);if(p==null)continue;var card=Card(parent,"recruit-dossier");Text(card,p.name+" · "+OfferStatus(o.status),"section-title");Text(card,Money(o.fee)+" d’indemnité · "+Money(Core.Career.MonthlySalary(o.wage))+" / mois","muted");var actions=Row(card,"recruit-dossier-actions");Button(actions,"Fiche",()=>PlayerProfile(p.id));
                 if(p.team=="retired"||Career.PlayerRetirementEffective(p.id)){Text(card,"Retraite effective · dossier historique", "muted");continue;}
-                if(o.status=="accepted"&&o.due+7>=Career.life.day)Button(actions,"Signer l’accord",()=>RunDecision(()=>Career.SignTransfer(Database,o.player))).AddToClassList("primary");
-                if(o.status=="counter")Button(actions,"Reprendre la négociation",()=>TransferDialog(o.player));
-                if(o.status=="sale"&&o.due>=Career.life.day)Button(actions,"Accepter la vente · "+ClubName(o.seller),()=>Confirm("Accepter la cession ?",Money(o.fee)+" pour "+p.name,()=>RunDecision(()=>Career.AcceptSale(Database,o.player))));
+                bool decision=Career.RecruitmentOfferNeedsDecision(Database,o);
+                if(decision&&o.status=="accepted")Button(actions,"Signer l’accord",()=>RunDecision(()=>Career.SignTransfer(Database,o.player))).AddToClassList("primary");
+                if(decision&&o.status=="counter")Button(actions,"Reprendre la négociation",()=>TransferDialog(o.player));
+                if(decision&&o.status=="sale")Button(actions,"Accepter la vente · "+ClubName(o.seller),()=>Confirm("Accepter la cession ?",Money(o.fee)+" pour "+p.name,()=>RunDecision(()=>Career.AcceptSale(Database,o.player))));
                 if(o.status=="pending"||o.status=="accepted")Button(actions,"Retirer l’offre",()=>RunDecision(()=>Career.RejectOffer(o.player)));
             }
         }
