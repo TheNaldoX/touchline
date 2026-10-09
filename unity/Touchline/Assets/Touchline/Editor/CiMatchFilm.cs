@@ -110,7 +110,7 @@ namespace Touchline.Editor
                     follow.transform.position=new Vector3(focus.x,3.4f,Mathf.Max(focus.z-12,-40));follow.transform.LookAt(focus+Vector3.down*.2f); // caméra basse et proche, façon diffusion rapprochée
                     Capture(arena.MatchCamera,target,root,Path.Combine(broadcastDir,"frame-"+i.ToString("D4")+".jpg"));
                     if(i==0||i==count-1)diagnostics.AppendLine("frame "+i+" broadcast mean="+MeanColor(target)+" camera="+arena.MatchCamera.transform.position+" enabled="+arena.MatchCamera.enabled);
-                    Capture(follow,target,root,Path.Combine(followDir,"frame-"+i.ToString("D4")+".jpg"));
+                    if(!cameraCrossing)Capture(follow,target,root,Path.Combine(followDir,"frame-"+i.ToString("D4")+".jpg")); // le diagnostic mesure seulement la caméra du match
                     if(arena.Paused&&!cameraCrossing)arena.Paused=false; // pas d'arrêt de diffusion pendant le tournage normal
                 }
                 string Stats(List<float> values){if(values.Count==0)return "—";values.Sort();return $"moyenne {values.Average():0.00} · médiane {values[values.Count/2]:0.00} · p95 {values[(int)(values.Count*.95f)]:0.00} · max {values[values.Count-1]:0.00} (n={values.Count})";}

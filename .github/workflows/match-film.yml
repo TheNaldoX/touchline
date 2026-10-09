@@ -95,6 +95,7 @@ jobs:
           cp "$src"/*.png "$src"/*.txt "$out/" 2>/dev/null || true # captures d'interface (film/ui…)
           [ -d "$src/broadcast" ] || exit 0 # pas de vidéo pour les captures d'interface
           for cam in broadcast follow; do
+            [ -f "$src/$cam/frame-0000.jpg" ] || continue # diagnostic caméra : pas de seconde vue à encoder
             ffmpeg -v error -y -framerate 30 -i "$src/$cam/frame-%04d.jpg" -c:v libx264 -pix_fmt yuv420p -crf 26 -preset veryfast "$out/$cam.mp4"
             ffmpeg -v error -y -framerate 30 -i "$src/$cam/frame-%04d.jpg" -vf "fps=2,scale=480:-1,tile=4x5" -frames:v 1 "$out/$cam-sheet.jpg"
             ffmpeg -v error -y -framerate 30 -i "$src/$cam/frame-%04d.jpg" -vf "select='not(mod(n\,15))',scale=480:-1,tile=4x5" -frames:v 1 "$out/$cam-sheet-all.jpg" || true
