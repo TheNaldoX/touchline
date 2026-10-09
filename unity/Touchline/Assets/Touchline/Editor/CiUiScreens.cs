@@ -53,6 +53,7 @@ namespace Touchline.Editor
         static bool FocusedBoard=>Path.GetFileName(Output).StartsWith("ui-board-focus-",StringComparison.Ordinal);
         static bool FocusedDepth=>Path.GetFileName(Output).StartsWith("ui-recruitment-depth",StringComparison.Ordinal);
         static bool FocusedCareer=>Path.GetFileName(Output).StartsWith("ui-career-review-",StringComparison.Ordinal);
+        static bool FocusedCell=>Path.GetFileName(Output).StartsWith("ui-recruitment-cell-",StringComparison.Ordinal);
         const int FocusedStepFrames=3;
         static TouchlineApp App=>TouchlineApp.Instance;
         static UIDocument Document=>App.GetComponent<UIDocument>();
@@ -78,6 +79,7 @@ namespace Touchline.Editor
         static List<Action> BuildSteps()
         {
             if(FocusedCareer)return BuildCareerReviewSteps();
+            if(FocusedCell)return BuildFocusedCellSteps();
             if(FocusedBoard)return BuildFocusedBoardSteps();
             if(FocusedTactics)return BuildFocusedTacticSteps();
             if(FocusedRecruitment)return BuildFocusedRecruitmentSteps();
@@ -436,6 +438,63 @@ namespace Touchline.Editor
                     Capture(screen.tag+"-profondeur-marche-suede");Call("ComparePlayer",generated);
                 });
                 list.Add(()=>{if(Root.Q("player-comparison")==null)throw new Exception("Comparaison absente");Capture(screen.tag+"-profondeur-comparaison");Call("CloseModal");});
+            }
+            return list;
+        }
+
+        // film/ui-recruitment-cell… : scouting department, assignment, recommendations, report personality/interest,
+        // signings' settling and the negotiation's interest line. Synthetic in-memory data, never a personal save.
+        static List<Action> BuildFocusedCellSteps()
+        {
+            audit.AppendLine("Parcours ciblé cellule de recrutement : recruteurs et affectation, recommandations, personnalité/intérêt dans le rapport, intégration des recrues, intérêt en négociation ; deux résolutions natives, données synthétiques en mémoire.");
+            var list=new List<Action>();string target=null,local=null,extraKey=null;
+            list.Add(()=>{
+                var safe=typeof(TouchlineApp).GetProperty("VisualValidation",BindingFlags.Instance|BindingFlags.NonPublic);
+                if(safe==null||!(bool)safe.GetValue(App))throw new Exception("La validation doit isoler les sauvegardes personnelles");
+                var c=App.Career;var db=App.Database;c.EnsureWorld(db);c.revealAttributes=false;c.match=null;c.world.managerStatus="employed";c.EnsureStaffMarket(db);
+                string home=ScoutingGeography.Country(db,db.clubs.First(x=>x.id==c.club));
+                string abroad=home=="Espagne"?"Italie":"Espagne";
+                var abroadClubs=new HashSet<string>(ScoutingGeography.ClubIds(db,abroad));var homeClubs=new HashSet<string>(ScoutingGeography.ClubIds(db,home));
+                bool Usable(PlayerData p)=>p.team!=c.club&&p.age>=20&&p.age<=28&&!p.Goalkeeper&&p.wage>0;
+                var t=db.players.Where(p=>abroadClubs.Contains(p.team)&&Usable(p)).OrderByDescending(p=>p.rating).First();target=t.id;
+                var l=db.players.Where(p=>homeClubs.Contains(p.team)&&Usable(p)).OrderByDescending(p=>p.rating).First();local=l.id;
+                if(c.ScoutSlots<2)throw new Exception("Le club de validation doit pouvoir employer deux recruteurs");
+                var extra=c.staffMarket.First(m=>m.role=="scout"&&m.club==null);extra.club=c.club;extra.wage=Math.Max(extra.wage,400);extra.until=c.life.day+700;c.life.staff.members.Add(extra);extraKey=extra.id;
+                c.AssignScout(db,c.ScoutingDepartment(db).First(x=>x.chief).key,"needs");c.AssignScout(db,extraKey,"territory",abroad);
+                c.scoutRegions.Add(new ScoutRegionKnowledge{staff=extraKey,country=abroad,level=46});
+                int day=c.life.day;
+                c.world.reports.Add(new ScoutReport{player=target,club=c.club,scout=extra.name,mission="assign-"+extraKey,started=day-25,due=day-2,lastObserved=day-2,confidence=90,judging=extra.judging,depth=1,estimate=t.rating+t.development,potential=Math.Max(t.potential,t.rating),uncertainty=2.4f,potentialUncertainty=6.7f,advice="Rapport de contrôle."});
+                c.world.reports.Add(new ScoutReport{player=local,club=c.club,scout=c.Staff("scout").name,started=day-40,due=day-20,lastObserved=day-20,confidence=90,judging=c.Staff("scout").judging,estimate=l.rating+l.development,potential=Math.Max(l.potential,l.rating),uncertainty=2.4f,potentialUncertainty=5.4f,advice="Rapport de contrôle."});
+                c.scoutRecommendations.Add(local);c.scoutRecommendations.Add(target);
+                var own=db.Squad(c.club).Where(p=>!p.Goalkeeper).OrderByDescending(p=>p.rating).Take(2).ToArray();
+                c.signings.Add(new SigningRecord{player=own[0].id,from="test",fromCountry=abroad,day=day-30,settleDays=120,penalty=.05f,knowledge=90,estimate=own[0].rating+own[0].development-2,actual=own[0].rating+own[0].development});
+                c.signings.Add(new SigningRecord{player=own[1].id,from="test",fromCountry=home,day=day-200,settleDays=45,penalty=.02f,knowledge=0,actual=own[1].rating+own[1].development,settled=true});
+                audit.AppendLine("Cible étrangère "+target+" ("+t.team+", "+abroad+"), cible locale "+local+" ; deux recrues synthétiques ("+own[0].id+", "+own[1].id+") ; recruteur ajouté "+extraKey+".");
+            });
+            foreach(var s in Screens){
+                var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);SetField("recruitmentTab","Synthèse");Call("Navigate","Recrutement");});
+                list.Add(()=>{
+                    if(Root.Q("recruit-hub-recommendation-"+target)==null)throw new Exception("Recommandation de la cellule absente");
+                    if(Root.Q("recruit-hub-signings")==null)throw new Exception("Intégration des recrues absente");
+                    var section=Root.Q("recruit-hub-recommendations");section.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(section);
+                });
+                list.Add(()=>{Capture(screen.tag+"-cellule-recommandations");var section=Root.Q("recruit-hub-signings");section.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(section);});
+                list.Add(()=>{Capture(screen.tag+"-cellule-integration");SetField("recruitmentTab","Missions");Call("Navigate","Recrutement");});
+                list.Add(()=>{
+                    if(Root.Q("scout-department")==null||Root.Q("scout-member-"+extraKey)==null||Root.Q("scout-skill-potential-"+extraKey)==null)throw new Exception("Cellule de recrutement incomplète");
+                    var assignment=Root.Q<Label>("scout-assignment-"+extraKey);if(assignment==null||!assignment.text.Contains("Exploration"))throw new Exception("Affectation non affichée");
+                    Capture(screen.tag+"-cellule-recruteurs");Click("scout-assign-"+extraKey);
+                });
+                list.Add(()=>{if(Root.Q("scout-assignment-dialog")==null||Root.Q("scout-assignment-hint")==null)throw new Exception("Dialogue d’affectation absent");Capture(screen.tag+"-cellule-affectation");Call("CloseModal");SetField("scoutReportFilter","Tous");SetField("recruitmentTab","Rapports");Call("Navigate","Recrutement");});
+                list.Add(()=>{
+                    foreach(var name in new[]{"scout-personality-","scout-interest-","scout-comparable-"})if(Root.Q(name+target)==null)throw new Exception("Rapport incomplet : "+name+target);
+                    var card=App.Career.ScoutReportCard(App.Database,target);
+                    audit.AppendLine(screen.tag+" : note "+card.grade+" niveau "+card.ability+" ambition "+card.ambition+" adaptabilité "+card.adaptability+" · "+card.comparable+" · intérêt "+card.interest);
+                    var report=Root.Q("scout-report-"+target);report.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(report);
+                });
+                list.Add(()=>{Capture(screen.tag+"-cellule-rapport");Call("TransferDialog",target);});
+                list.Add(()=>{if(Root.Q("negotiation-interest")==null)throw new Exception("Intérêt du joueur absent de la négociation");Capture(screen.tag+"-cellule-negociation");Call("CloseModal");});
             }
             return list;
         }

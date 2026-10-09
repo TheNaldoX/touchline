@@ -146,6 +146,20 @@ namespace Touchline.Tests
             Assert.AreEqual(90, restored.signings.Single().settleDays); Assert.AreEqual(.05f, restored.signings.Single().penalty, 1e-6);
         }
 
+        [Test] public void DeadlineDayAcceleratesRivalBidsWithinTheWindow()
+        {
+            int Day(int y, int m, int d) => (int)(new DateTime(y, m, d) - Career.Epoch).TotalDays;
+            int year = c.Date.Year;
+            c.life.day = Day(year, 7, 10); Assert.IsFalse(c.DeadlinePeriod); Assert.AreEqual(Day(year, 9, 1), c.WindowCloseDay);
+            c.life.day = Day(year, 10, 10); Assert.AreEqual(-1, c.WindowCloseDay);
+            foreach (var p in db.players.Where(p => p.team != c.club && !p.Goalkeeper)) c.shortlist.Add(p.id);
+            var day = typeof(Career).GetMethod("RecruitmentRivalsDay", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            for (int d = Day(year, 8, 26); d <= Day(year, 8, 31); d++){c.life.day = d; Assert.IsTrue(c.DeadlinePeriod); day.Invoke(c, new object[]{db});}
+            Assert.Greater(c.rivalBids.Count, 0, "activité quotidienne des rivaux en fin de mercato");
+            Assert.IsTrue(c.rivalBids.All(b => b.decision <= Day(year, 9, 1)), "le vendeur tranche avant la fermeture");
+            Assert.IsTrue(c.rivalBids.Any(b => b.day % 7 != 0), "offres possibles hors du cycle hebdomadaire");
+        }
+
         [Test] public void LanguageAndAbroadLengthenSettling()
         {
             Assert.AreEqual(Career.PersonalityTrait("x", Career.Adaptability), Career.PersonalityTrait("x", Career.Adaptability), "valeur stable");

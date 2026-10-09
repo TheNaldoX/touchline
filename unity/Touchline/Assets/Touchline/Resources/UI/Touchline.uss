@@ -1268,3 +1268,10 @@ Button.prematch-selected { background-color: rgb(26,66,61); border-width: 1px; b
 .narrow .recruit-workspace .recruit-tabs > Button { flex-basis: 0; font-size: 12px; margin-bottom: 0; }
 .recruit-workspace .recruit-budget, .recruit-workspace .recruit-results, .recruit-workspace .recruit-advanced-button,
 .recruit-workspace .recruit-player-detail, .narrow .recruit-workspace .recruit-player-detail { font-size: 12px; }
+
+/* Cellule de recrutement (ScoutingDepartmentUI) */
+.scout-department { padding: 14px; margin-bottom: 10px; }
+.scout-member { border-top-width: 1px; border-top-color: rgb(46, 66, 81); padding-top: 10px; margin-top: 8px; padding-bottom: 6px; }
+.scout-member-bars { margin-top: 4px; margin-bottom: 4px; }
+.scout-member .scout-range-label { min-width: 190px; }
+.narrow .scout-member .scout-range-label { min-width: 150px; font-size: 12px; }

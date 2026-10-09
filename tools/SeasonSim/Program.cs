@@ -7,6 +7,9 @@
 //   --report : tableau par saison des indicateurs de l'IA des clubs (effectifs, âges,
 //              économie, transferts, champions, survie des promus, progression par âge).
 //   --worldseed N : graine du générateur de la carrière (tirages du monde) ; 825671 par défaut.
+//   --recruit J : le club géré recrute via sa cellule (chef recruteur + un recruteur de jugement J,
+//              affectés aux besoins) ; signe les profils notés A/B que le joueur accepte. Bilan
+//              rapport / réalité des recrues en fin de simulation.
 using System;using System.Collections.Generic;using System.Globalization;using System.IO;using System.Linq;using System.Reflection;using System.Text.Json;using Touchline.Core;
 static class P{
  static string FindDatabase(){foreach(var start in new[]{Environment.CurrentDirectory,AppContext.BaseDirectory}){var d=new DirectoryInfo(start);while(d!=null){var f=Path.Combine(d.FullName,"unity","Touchline","Assets","Touchline","Resources","Data","database.json");if(File.Exists(f))return f;d=d.Parent;}}throw new FileNotFoundException("database.json introuvable");}
@@ -38,8 +41,10 @@ static class P{
   var simFixture=typeof(Career).GetMethod("SimulateFixture",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic);
   Console.WriteLine($"Club : {db.clubs.First(x=>x.id==club).name} — {seasons} saison(s), matchs du club {(engine?"au moteur":"tirés au sort")}\n");
   if(a.Contains("--savesize")){{var f0=Environment.GetEnvironmentVariable("CALIB_SAVEFILE");if(f0!=null)File.WriteAllText(f0+".start.json",UnityEngine.JsonUtility.ToJson(c));}Console.WriteLine($"Sauvegarde initiale (format Unity) : {UnityEngine.JsonUtility.ToJson(c).Length/1e6:0.0} Mo, rosterChanges : {c.world.rosterChanges.Count}");}
+  int ri=Array.IndexOf(a,"--recruit");int recruit=ri>=0?int.Parse(a[ri+1]):-1;
   var snapshots=new List<Snapshot>{Snap(db,c)};int startYear=c.world.year,matches=0;var sw=System.Diagnostics.Stopwatch.StartNew();
   for(int guard=0;guard<400*seasons+50&&c.world.year<startYear+seasons;guard++){
+   if(recruit>=0)Recruit(db,c,recruit);
    try{c.AdvanceDay(db);}
    catch(InvalidOperationException e) when(e.Message.Contains("rencontre est prévue")){
      var f=c.NextFixture();if(f==null)throw;c.world.activeFixture=f.id;string opp=f.home==club?f.away:f.home;
@@ -66,6 +71,7 @@ static class P{
   Console.WriteLine($"{matches} matchs joués par le club, {sw.Elapsed.TotalSeconds:0} s\n");
   Report(db,c,snapshots);
   if(a.Contains("--report"))ClubAiReport(db,c,snapshots);
+  if(recruit>=0)RecruitReport(db,c,recruit);
   if(saveCheck)return SaveCheck(c,dbText);
   if(a.Contains("--savesize")){var t=System.Diagnostics.Stopwatch.StartNew();var json=UnityEngine.JsonUtility.ToJson(c);{var f1=Environment.GetEnvironmentVariable("CALIB_SAVEFILE");if(f1!=null)File.WriteAllText(f1+".end.json",json);}Console.WriteLine($"\nTaille de sauvegarde (format Unity) : {json.Length/1e6:0.0} Mo, sérialisée en {t.ElapsedMilliseconds} ms ; rosterChanges : {c.world.rosterChanges.Count} joueurs, contrats : {c.world.contracts.Count}, messages : {c.life.messages.Count}");}
   int di=Array.IndexOf(a,"--dump");if(di>=0)File.WriteAllLines(a[di+1],c.world.aiTransfers.Select(t=>t.year+" "+t.player+" "+t.seller+">"+t.buyer+" "+t.fee+" "+t.wage).Concat(db.players.OrderBy(p=>p.id,StringComparer.Ordinal).Select(p=>p.id+" "+p.team+" "+p.rating.ToString("R",CultureInfo.InvariantCulture)+" "+p.wage)));
@@ -106,6 +112,40 @@ static class P{
   return diffs==0?0:1;
  }
  static long GetLong(object o,string name){var f=o.GetType().GetField(name);return f==null?0:Convert.ToInt64(f.GetValue(o));}
+ // --recruit : politique scriptée du club géré, uniquement par les API publiques du Core.
+ static bool recruitReady;
+ const int RecruitSquadCap=28,RecruitPerWindow=4,WindowSpan=75; // joueurs ; recrues par fenêtre ; jours couvrant une fenêtre
+ static void Recruit(Database db,Career c,int judging){
+  if(c.world.managerStatus!="employed")return;
+  if(!recruitReady){
+   recruitReady=true;c.EnsureStaffMarket(db);c.Staff("scout").judging=judging;
+   var extra=c.staffMarket.FirstOrDefault(m=>m.role=="scout"&&m.club==null);
+   if(extra!=null&&c.ScoutSlots>1){extra.club=c.club;extra.wage=Math.Max(extra.wage,300);extra.until=c.life.day+3650;extra.judging=judging;c.life.staff.members.Add(extra);}
+   foreach(var s in c.ScoutingDepartment(db))c.AssignScout(db,s.key,"needs");
+  }
+  try{
+   foreach(var o in c.world.offers.Where(o=>o.status=="accepted"&&o.destination==c.club&&!o.renewal).ToArray())try{c.SignTransfer(db,o.player);}catch(InvalidOperationException){}
+   foreach(var o in c.world.offers.Where(o=>o.status=="counter"&&o.destination==c.club&&!o.renewal&&o.due>=c.life.day-3&&o.attempts<2).ToArray())try{c.ProposeTransfer(db,o.player,o.fee,o.wage,o.years,o.role);}catch(Exception){}
+   if(!c.WindowOpen||c.life.day%2!=0||db.Squad(c.club).Count>=RecruitSquadCap||c.signings.Count(s=>c.life.day-s.day<WindowSpan)>=RecruitPerWindow)return;
+   foreach(var id in c.DepartmentRecommendations(db)){
+    if(c.world.offers.Any(o=>o.player==id&&o.destination==c.club))continue;
+    var p=db.Find(id);var card=c.ScoutReportCard(db,id);string role=card.grade=="A"?"starter":"rotation";
+    var interest=c.PlayerTransferInterest(db,id,role);if(interest.refuses)continue;
+    long fee=p.team=="free"?0:(long)(p.value*1.05),wage=Math.Max(interest.requiredWeeklyWage,(long)(p.wage*1.12));
+    try{c.ProposeTransfer(db,id,fee,wage,3,role);break;}catch(Exception){}
+   }
+  }catch(InvalidOperationException){} // jour de match : décisions reportées
+ }
+ static void RecruitReport(Database db,Career c,int judging){
+  var rows=c.signings.Where(s=>s.knowledge>=40&&s.estimate>0).ToArray();
+  Console.WriteLine($"\n## Recrutement par la cellule (jugement {judging}/20)\n");
+  Console.WriteLine("| Recrue | Arrivée | Estimation | Niveau réel | Écart | Aujourd'hui | Indemnité | Intégration (j) |");
+  Console.WriteLine("|---|---|---|---|---|---|---|---|");
+  foreach(var s in c.signings){var p=db.Find(s.player);if(p==null)continue;
+   Console.WriteLine($"| {p.name} | {Career.Epoch.AddDays(s.day):dd/MM/yyyy} | {(s.estimate>0?s.estimate.ToString("0.0",FR):"—")} | {s.actual.ToString("0.0",FR)} | {(s.estimate>0?(s.actual-s.estimate).ToString("+0.0;-0.0",FR):"—")} | {(p.rating+p.development).ToString("0.0",FR)} | {M(s.fee)} | {s.settleDays} |");}
+  if(rows.Length==0){Console.WriteLine("Aucune recrue avec rapport.");return;}
+  Console.WriteLine($"\nRecrues avec rapport : {rows.Length} · écart moyen réel−estimé {rows.Average(s=>s.actual-s.estimate).ToString("+0.00;-0.00",FR)} · écart absolu {rows.Average(s=>Math.Abs(s.actual-s.estimate)).ToString("0.00",FR)} · déceptions (≥3 sous l'estimation) {rows.Count(s=>s.actual<s.estimate-3)} · bonnes surprises (≥3 au-dessus) {rows.Count(s=>s.actual>s.estimate+3)} · niveau réel moyen {rows.Average(s=>s.actual).ToString("0.0",FR)} · indemnités {M(rows.Sum(s=>s.fee))}");
+ }
  static void Report(Database db,Career c,List<Snapshot> snaps){
   string N(string id)=>db.clubs.FirstOrDefault(x=>x.id==id)?.name??id;
   Console.WriteLine("| Saison | Jour | Trésorerie club | Effectif | Force top 14 | Âge moyen | Salaire médian (monde) | Transferts IA cumulés |");
