@@ -187,7 +187,9 @@ Actor best=null;float bestScore=-100;string kind="pass";
  float skill=Skill(from,kind=="cross"?"crossing":d>27?"longPassing":"shortPassing");float pressure=Math.Max(0,3-Space(from.position,1-from.side));  
  // A long aerial ball is much harder to land on a team-mate than a pass
  // along the ground: its error is scaled by LongBallError.
- float error=(1-skill/105)*(Random()-.5f)*(Math.Min(14,d*.30f)+pressure*2+Tactic(from.side).tempo*2)*(kind=="switch"||d>30&&kind!="cross"?LongBallError:1);  
+ // Tempo already changes decision cadence and ball speed (hence reception
+ // difficulty). Do not also worsen an otherwise identical prepared pass.
+ float error=(1-skill/105)*(Random()-.5f)*(Math.Min(14,d*.30f)+pressure*2+BasePassExecutionUncertainty)*(kind=="switch"||d>30&&kind!="cross"?LongBallError:1);  
  var end=PassTarget(from,to,kind)+new Point(error,error*(Random()<.5f?-1:1));
  // A lofted long ball is judged on its length: weight it wrongly and it
  // sails long (more often than short) and can carry over the touchline.
@@ -239,6 +241,8 @@ Actor best=null;float bestScore=-100;string kind="pass";
  // A clearance stays in play only through a clearly open long channel.
  public const float OpenClearanceSafety=.75f;
  public const float LongBallError=2.2f;
+ // Metres before skill/random scaling; preserves execution noise at default tempo.
+ public const float BasePassExecutionUncertainty=1f;
  // Points de score retirés à la conduite d'un joueur qui vient d'orienter
  // son corps pour une passe encore jouable.
  public const float PreparedDeliveryCommitment=4f;

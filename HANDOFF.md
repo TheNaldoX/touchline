@@ -37,6 +37,14 @@ Jeu de gestion de football type Football Manager, Unity **6000.3.24f1**, URP, An
 
 ## 3. État au 9 octobre 2026
 
+### Tempo — exécution des passes (travail non livré)
+
+- `fix/tempo-pass-execution`, base moteur PR #49. Le terme `tempo*2` de dispersion devient une incertitude de base de 1 m avant pondération (valeur historique à tempo .5). La cadence, la vitesse du ballon, le ciblage du partenaire en mouvement et les difficultés de réception ne changent pas. Six tests symétriques passe/profondeur/renversement échouent avant, passent après ; 825/825 Core sur cette branche (sans les dix tests de direction de la PR #50).
+- 200 matchs graine 1 avant/après, rapports `tempo-execution-*` : favori 60,61→54,55 %, buts 2,55→2,46, penalties .14→.17, touches49,54→49,92, sorties13,87→13,74, passes76,34→76,21 %. Buts un peu sous la cible ; pas de rééquilibrage terminé ni d'effet causal établi sur les victoires avec seulement99 favoris.
+- Audit rythme 400 matchs avant +400 après : écart de tirs rapide−patient −1,43±.78→−.24±.74 (non concluant après), buts pour −.07±.22→+.03±.23 (non concluant dans les deux cas), réussite passes −3,26→−2,76 points. Un jeu rapide n'est pas une garantie d'efficacité et conserve ses risques physiques de contrôle.
+- Prochaine cause identifiée : `ResolveCarrierPressure` interdit toute faute dans la surface (`!ownBox`), alors qu'une prudence accrue devrait réduire ce risque, pas créer une immunité. À traiter séparément, puis contrôler une graine indépendante.
+- Management dans PR #50 (`feat/board-season-objectives`) : objectifs persistants et carte Carrière, dix tests, total829. Ne pas perdre cette branche lors de l'intégration. Rendus externes de Claude encore en cours ; pas de nouveau Unity lancé. Planche `cam-bench2-a2-night` relue : terrain et acteurs visibles, acteurs encore petits ; rendu logiciel 15s/450images, pas de mesure Fold.
+
 ### Suite de Claude — séparation ligne / pressing (travail non livré)
 
 - Branche `tune/match-balance-diagnostics`, base `integ/0.60` / c3fda366. Main non fusionnée ; test Fold toujours absent. Le nouvel ordre utilisateur autorise les travaux indépendants du test matériel.
