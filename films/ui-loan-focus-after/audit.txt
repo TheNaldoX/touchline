@@ -1,0 +1,105 @@
+Audit d'interface Touchline · 1 dp = 2.625 px physiques · seuils : cible tactile 48 dp, texte 12 sp
+
+Parcours ciblé : droits du prêteur, fiche, contrat de prêt et ancien accord. Carrière de validation en mémoire ; six captures natives, pas de sauvegarde personnelle ni d’achat exécuté.
+## plie-fiche-joueur-prete · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 26 · < 48 dp : 0 · textes 65 · < 12 sp : 18 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×8 [unity-text-element.unity-button 11.0 sp] ex. « Vue d’ensemble »
+   petit texte ×10 [unity-text-element.unity-label 11.0 sp] ex. « BUREAU / LUNDI 15 JUIN »
+
+plie : fiche sans prolongation, contrat du prêteur et option de 100 000 € accessibles.
+## plie-contrat-pret · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 20 · < 48 dp : 0 · textes 51 · < 12 sp : 6 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×6 [unity-text-element.unity-label 11.0 sp] ex. « BUREAU / LUNDI 15 JUIN »
+
+plie : ancien accord affiché, signature désactivée, parent et trésorerie inchangés.
+## plie-ancien-accord-bloque · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 20 · < 48 dp : 0 · textes 58 · < 12 sp : 7 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×7 [unity-text-element.unity-label 11.0 sp] ex. « BUREAU / LUNDI 15 JUIN »
+
+## deplie-fiche-joueur-prete · 2184×1968 px · échelle 2.54 · 1 unité UI = 0.97 dp · largeur logique 860 · hauteur 775
+   boutons visibles 37 · < 48 dp : 29 · textes 89 · < 12 sp : 34 · plus petit texte 10.6 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 46×46 dp
+   petit bouton ×1 « › » 46×46 dp
+   petit bouton ×1 « Continuer  → » 131×46 dp
+   petit bouton ×1 « Bureau » 150×46 dp
+   petit bouton ×2 « Effectif » 150×46 dp
+   petit bouton ×1 « Tactique » 150×46 dp
+   petit bouton ×1 « Match » 150×46 dp
+   petit bouton ×2 « Calendrier » 150×46 dp
+   petit bouton ×1 « Recrutement » 150×46 dp
+   petit bouton ×1 « Formation » 150×46 dp
+   petit bouton ×1 « Finances » 150×46 dp
+   petit bouton ×1 « Messages » 150×46 dp
+   petit bouton ×1 « Plus » 150×46 dp
+   petit bouton ×1 « Changer de club » 150×46 dp
+   petit bouton ×1 « Tous les menus » 105×46 dp
+   petit bouton ×1 « Jusqu’au match » 118×46 dp
+   petit bouton ×1 « Préparer la rencontre » 138×46 dp
+   petit bouton ×1 « Infrastructures » 149×46 dp
+   petit bouton ×1 « Fermer » 82×46 dp
+   petit bouton ×1 « Vue d’ensemble » 180×46 dp
+   petit bouton ×1 « Attributs » 138×46 dp
+   petit bouton ×1 « Contrat » 132×46 dp
+   petit bouton ×1 « Relations » 141×46 dp
+   petit bouton ×1 « Sources » 135×46 dp
+   petit bouton ×1 « Comparer » 101×46 dp
+   petit texte ×6 [unity-text-element.unity-button 11.6 sp] ex. « Tous les menus »
+   petit texte ×24 [unity-text-element.unity-label 10.6 sp] ex. « TOUCHLINE / BUREAU »
+   petit texte ×4 [unity-text-element.unity-label 11.6 sp] ex. « Victor · Saison 2026 / 2027 »
+
+deplie : fiche sans prolongation, contrat du prêteur et option de 100 000 € accessibles.
+## deplie-contrat-pret · 2184×1968 px · échelle 2.54 · 1 unité UI = 0.97 dp · largeur logique 860 · hauteur 775
+   boutons visibles 31 · < 48 dp : 23 · textes 76 · < 12 sp : 29 · plus petit texte 10.6 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 46×46 dp
+   petit bouton ×1 « › » 46×46 dp
+   petit bouton ×1 « Continuer  → » 131×46 dp
+   petit bouton ×1 « Bureau » 150×46 dp
+   petit bouton ×2 « Effectif » 150×46 dp
+   petit bouton ×1 « Tactique » 150×46 dp
+   petit bouton ×1 « Match » 150×46 dp
+   petit bouton ×2 « Calendrier » 150×46 dp
+   petit bouton ×1 « Recrutement » 150×46 dp
+   petit bouton ×1 « Formation » 150×46 dp
+   petit bouton ×1 « Finances » 150×46 dp
+   petit bouton ×1 « Messages » 150×46 dp
+   petit bouton ×1 « Plus » 150×46 dp
+   petit bouton ×1 « Changer de club » 150×46 dp
+   petit bouton ×1 « Tous les menus » 105×46 dp
+   petit bouton ×1 « Jusqu’au match » 118×46 dp
+   petit bouton ×1 « Préparer la rencontre » 138×46 dp
+   petit bouton ×1 « Infrastructures » 149×46 dp
+   petit bouton ×1 « Fermer » 82×46 dp
+   petit bouton ×1 « Lever l’option · 100 000 € » 676×46 dp
+   petit bouton ×1 « Voir les dossiers de prêt » 676×46 dp
+   petit texte ×6 [unity-text-element.unity-button 11.6 sp] ex. « Tous les menus »
+   petit texte ×20 [unity-text-element.unity-label 10.6 sp] ex. « TOUCHLINE / BUREAU »
+   petit texte ×3 [unity-text-element.unity-label 11.6 sp] ex. « Victor · Saison 2026 / 2027 »
+
+deplie : ancien accord affiché, signature désactivée, parent et trésorerie inchangés.
+## deplie-ancien-accord-bloque · 2184×1968 px · échelle 2.54 · 1 unité UI = 0.97 dp · largeur logique 860 · hauteur 775
+   boutons visibles 31 · < 48 dp : 23 · textes 82 · < 12 sp : 32 · plus petit texte 10.6 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 46×46 dp
+   petit bouton ×1 « › » 46×46 dp
+   petit bouton ×1 « Continuer  → » 131×46 dp
+   petit bouton ×1 « Bureau » 150×46 dp
+   petit bouton ×2 « Effectif » 150×46 dp
+   petit bouton ×1 « Tactique » 150×46 dp
+   petit bouton ×1 « Match » 150×46 dp
+   petit bouton ×2 « Calendrier » 150×46 dp
+   petit bouton ×1 « Recrutement » 150×46 dp
+   petit bouton ×1 « Formation » 150×46 dp
+   petit bouton ×1 « Finances » 150×46 dp
+   petit bouton ×1 « Messages » 150×46 dp
+   petit bouton ×1 « Plus » 150×46 dp
+   petit bouton ×1 « Changer de club » 150×46 dp
+   petit bouton ×1 « Tous les menus » 105×46 dp
+   petit bouton ×1 « Jusqu’au match » 118×46 dp
+   petit bouton ×1 « Préparer la rencontre » 138×46 dp
+   petit bouton ×1 « Infrastructures » 149×46 dp
+   petit bouton ×1 « Fermer » 82×46 dp
+   petit bouton ×1 « Signer l’accord » 118×46 dp
+   petit bouton ×1 « Tous les dossiers » 118×46 dp
+   petit texte ×8 [unity-text-element.unity-button 11.6 sp] ex. « Tous les menus »
+   petit texte ×21 [unity-text-element.unity-label 10.6 sp] ex. « TOUCHLINE / BUREAU »
+   petit texte ×3 [unity-text-element.unity-label 11.6 sp] ex. « Victor · Saison 2026 / 2027 »
+
