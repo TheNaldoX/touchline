@@ -5,13 +5,13 @@ Lire AGENTS.md. Ce fichier contient uniquement l’état courant ; l’historiqu
 ## Session autonome autorisée — 17 h 19 à 18 h 49 Paris
 
 - Demande utilisateur : améliorer IA/décisions, graphismes/animations, UI, événements aléatoires à choix, finances/budgets et contenu original cohérent. Fin le9 octobre à16:49UTC ; réserver après18h25Paris aux validations. Automatisation touchline-am-liorations-jusqu-au-6-octobre réactivée toutes les10min, avec cette échéance et désactivation finale.
-- Unity actuelle : tests37952223643 sur4623ddf, démarrés après réussite du rendu37950676810. Session26334 terminée. Ne pas toucher Assets avant la fin des tests.
+- Unity actuelle : rendu37953810119 sur36360b6, film/ui-recruitment-focus-context-budget. Suite scriptée : tests runtime après réussite. Assets figés jusque-là. Tests précédents37952223643 réussis273/273, artefact11627385676 récupéré (.validation/recruitment-context-native).
 - Diagnostic finances commencé : ProfessionalManagement.TransferBudget déduit achats engagés, réserve de trésorerie, plafond12% des recettes et obligations des prêts ; WageBudget séparé. Examiner leur présentation et les engagements avant de changer les règles. CareerFinancialTransactions assure les contreparties des transferts : ne pas créer de recettes sans paiement.
 - Événements : recherche des classes Event/Incident non concluante ; inspecter CareerManagement et les messages/décisions existants avant de créer un système en doublon. Nouveaux choix à coûts proportionnés au club, effets bornés, aléatoire à graine et persistance testée.
 
 ## Reprise immédiate — 9 octobre 2026
 
-- Branche : `feat/recruitment-tactical-decisions`, PR #64, code62eb8a4 ; base PR #63 (`fix/signing-club-history`c022b2c), puis #62/#61.
+- Branche : `feat/club-budget-visibility`, PR #65, code36360b6 ; base PR #64 (18c08e6), puis #63/#62/#61.
 - Claude et Codex alternent, jamais simultanément. Victor a réinitialisé ses limites et demandé de poursuivre. Il demande aussi une méthode économe : contexte court, lectures ciblées, lots stabilisés avant Unity, attentes scriptées.
 - Claude a laissé deux lots, maintenant assemblés : `film/ui-recruitment-cell-2`9983765 (cellule de recrutement) et `film/ui-immersion-focus-1`b3cbf11 (immersion tactique). Un conflit CiUiScreens résolu en conservant les deux parcours.
 - Fonctionnalités : missions par recruteur, connaissance régionale, intérêt du joueur, personnalité simulée, adaptation des recrues ; préparation collective, causeries, cris, consignes individuelles et observations de l’adjoint.
@@ -25,7 +25,12 @@ Lire AGENTS.md. Ce fichier contient uniquement l’état courant ; l’historiqu
 - Recommandations triées par budget puis besoins du système, comparaison au titulaire/référent et adéquation tactique connue. Conseils avec essai, compromis et indicateurs ; tempo formulé comme hypothèse.
 - Core919/919. Deux graines ×200 avant/après, rapports recruitment-context-* dans tools/Calibration/Reports. Statistiques hors xG identiques ; xG1,69/1,72→2,50/2,52 pour2,61/2,69 buts. Correction de l’estimation seulement, coefficient interne1,65 ; pas validé sur données réelles.
 - Ligne haute NON résolue : essai de déplacement différencié retiré (buts/penalties dégradés). Retard de lecture défensive retiré après régressions ; runs flight-read invalides, conflit de compilation .NET, ne pas les citer. Penalties0,19/0,26 ; sorties13,79/13,46 restent inchangés.
-- Rendu37950676810 réussi, récupéré dans .validation/film-ui-recruitment-focus-context. Revue des deux captures comparaison : DÉFAUT visible, texte doré non replié déborde, trois colonnes trop étroites en déplié. Corriger Touchline.uss ligne1247 (.recruit-hub-assessment : white-space normal, largeur contrainte) et revoir colonnes1238 ; scénario doit vérifier le texte replié, audit actuel ne voit pas ce débordement. Quatre autres captures encore à revoir. Tests natifs37952223643 en cours, Assets figés jusque-là. Aucun APK nouveau.
+- Rendu37950676810 réussi, récupéré dans .validation/film-ui-recruitment-focus-context. Revue des deux captures comparaison : DÉFAUT visible, texte doré non replié déborde, trois colonnes trop étroites en déplié. Corriger Touchline.uss ligne1247 (.recruit-hub-assessment : white-space normal, largeur contrainte) et revoir colonnes1238 ; scénario doit vérifier le texte replié, audit actuel ne voit pas ce débordement. Quatre autres captures encore à revoir. Tests natifs37952223643 réussis273/273. Correction UI18c08e6 : texte repliable et deux colonnes au lieu de trois ; nouvelle capture en cours via PR65. Aucun APK nouveau.
+
+## Lot budget explicite — PR65
+
+- BudgetSummary calcule une vue sans mutation : trésorerie, réserve, achats engagés, prêts à achat obligatoire, plafond direction et marges salariales après arrivées signées. FinancePage explique les limites sans changer leurs montants.
+- Core921/921 (.validation/budget-summary-core.txt), deux régressions ajoutées. Rendu37953810119 /36360b6 en cours avec la correction UI de PR64 ; revoir huit images avant livraison, puis résultats natifs. Nouveau contenu à choix/événements et graphismes/IA encore à travailler, ne pas déclarer réalisés.
 
 ## Preuves disponibles
 
