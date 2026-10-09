@@ -183,5 +183,24 @@ namespace Touchline.Tests
             Assert.AreEqual(covered.id,result.First().player);
             Assert.IsFalse(result.Single(r=>r.player==needed.id).affordable);
         }
+
+        [Test] public void BudgetSummaryExplainsCashConstraintWithoutMutatingCareer()
+        {
+            c.life.cash=0;string before=JsonUtility.ToJson(c);
+            var budget=c.BudgetSummary(db);
+            Assert.AreEqual(0,budget.transferAvailable);Assert.AreEqual(0,budget.cashRemaining);
+            Assert.Greater(budget.policyRemaining,0);StringAssert.Contains("Trésorerie",budget.limitingFactor);
+            Assert.AreEqual(before,JsonUtility.ToJson(c));
+        }
+
+        [Test] public void BudgetSummaryIncludesFutureSignedWagesAndBoardLimit()
+        {
+            c.life.cash=100000000;
+            c.world.offers.Add(new TransferOffer{player="p24",destination=c.club,status="scheduled",wage=c.WageBudget});
+            var budget=c.BudgetSummary(db);
+            Assert.AreEqual(Career.MonthlySalary(c.WageBudget),budget.monthlyReservedWages);
+            Assert.AreEqual(0,budget.monthlyWageRoom);StringAssert.Contains("direction",budget.limitingFactor);
+            Assert.AreEqual(c.TransferBudget,budget.transferAvailable);
+        }
     }
 }
