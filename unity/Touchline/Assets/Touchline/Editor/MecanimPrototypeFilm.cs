@@ -118,6 +118,7 @@ namespace Touchline.Editor
                     var lab=new System.Text.StringBuilder("scénario;images;geste(s);glissement médiane (m/s);p95;max;n\n");
                     Point Dir(float degrees)=>new Point(Mathf.Sin(degrees*Mathf.Deg2Rad),Mathf.Cos(degrees*Mathf.Deg2Rad));
                     void Begin(Actor a,string action,string kind,float duration,float contact,Point aim,float height){if(a.action==action&&a.actionKind==kind)return;a.action=action;a.actionKind=kind;a.actionSequence++;a.actionTime=duration;a.actionContactTime=contact;a.actionTarget=aim;a.actionHeight=height;}
+                    var contactBall=GameObject.CreatePrimitive(PrimitiveType.Sphere);contactBall.name="Recorded pass contact";contactBall.transform.SetParent(root.transform);contactBall.transform.localScale=Vector3.one*.22f;contactBall.GetComponent<Renderer>().sharedMaterial=PlayerView.Material(Color.white);contactBall.SetActive(false);
                     void Scenario(string label,float seconds,Action<Actor,float> script){
                         var actor=new Actor{id=player.id,slot=5,action="idle",angle=0,position=new Point(0,-4),previous=new Point(0,-4)};
                         script(actor,0);view.ResetPresentation();float clock=0;int start=frame;var slides=new List<float>();var lastFeet=new Vector3[2];var seen=new List<string>();
@@ -126,6 +127,8 @@ namespace Touchline.Editor
                             float t=f/(float)Fps;
                             while(clock+MatchSimulation.Step<=t+1e-4f){clock+=MatchSimulation.Step;actor.previous=actor.position;script(actor,clock);actor.position=actor.previous+actor.velocity*MatchSimulation.Step;}
                             var forward=new Vector3(Mathf.Sin(actor.angle),0,Mathf.Cos(actor.angle));var ball=new Vector3(actor.position.x,.11f,actor.position.z)+forward*.6f;
+                            if(actor.action=="kick")ball=new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z);
+                            contactBall.SetActive(actor.action=="kick");contactBall.transform.position=ball;
                             view.Render(actor,Mathf.Clamp01((t-clock)/MatchSimulation.Step),f==0?0:1f/Fps,ball,default);
                             if(view.MecanimGestureClip!=null&&!seen.Contains(view.MecanimGestureClip))seen.Add(view.MecanimGestureClip);
                             for(int s=0;s<2;s++){var foot=view.FootPosition(s==0);if(f>1&&foot.y<.12f&&lastFeet[s].y<.12f){var d=foot-lastFeet[s];d.y=0;slides.Add(d.magnitude*Fps);}lastFeet[s]=foot;}
@@ -158,6 +161,14 @@ namespace Touchline.Editor
                         if(t<.5f){a.action="run";a.velocity=Dir(0)*1.5f;}
                         else if(t<.8f-.001f){Begin(a,"control","control-foot",.3f,0,a.position,.11f);a.actionTime=.3f-(t-.5f);a.angle=150*Mathf.Deg2Rad;a.velocity=Dir(0)*.3f;}
                         else{a.action="run";a.actionKind=null;a.actionTime=0;a.angle=150*Mathf.Deg2Rad;a.velocity=Dir(150)*2f;}});
+                    foreach(bool left in new[]{false,true}){
+                        view.ChangeIdentity(new PlayerData{id=left?"pass-left":"pass-right",heightCm=182,preferredFoot=left?"Left":"Right"});
+                        Scenario(left?"passe-gauche-contact":"passe-droite-contact",1.6f,(a,t)=>{
+                            a.velocity=new Point();
+                            if(t>=.4f&&t<1.04f){Begin(a,"kick","pass",.64f,.18f,a.position+new Point(0,.42f),.11f);a.actionTime=.64f-(t-.4f);}
+                            else{a.action="idle";a.actionKind=null;a.actionTime=0;}
+                        });
+                    }
                     File.WriteAllText(Path.Combine(output,"lab.txt"),lab.ToString());info.AppendLine().Append(lab); // lab.txt n'est pas publié par le workflow ; info.txt l'est
                 }
                 File.WriteAllText(Path.Combine(output,"info.txt"),info.ToString());

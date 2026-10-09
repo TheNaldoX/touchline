@@ -6,6 +6,25 @@ namespace Touchline.Tests
 {
     public class LocomotionFacingTests
     {
+        [TestCase(160,false,30)] [TestCase(160,true,120)]
+        [TestCase(182,false,60)] [TestCase(182,true,30)]
+        [TestCase(200,false,120)] [TestCase(200,true,60)]
+        public void CapturedPassReachesRecordedBallAtImpact(int height,bool left,int fps)
+        {
+            bool before=PlayerView.UseMecanim;var root=new GameObject("Captured pass contact");
+            try{
+                PlayerView.UseMecanim=true;
+                var view=root.AddComponent<PlayerView>();view.Build(new PlayerData{id="pass-contact",heightCm=height,preferredFoot=left?"Left":"Right"},0,9,Color.blue);
+                var ball=new Vector3(0,.11f,.42f);
+                var actor=new Actor{id="pass-contact",slot=9,action="kick",actionKind="pass",actionSequence=1,actionTarget=new Point(ball.x,ball.z),actionHeight=ball.y};
+                float last=0;
+                for(int frame=0;frame/(float)fps<.18f;frame++){float elapsed=frame/(float)fps;actor.actionTime=.64f-elapsed;view.Render(actor,1,1f/fps,ball);last=elapsed;}
+                actor.actionTime=.46f;view.Render(actor,1,.18f-last,ball);
+                Assert.Less(Vector3.Distance(view.InsideFootContactPosition(left),ball),.055f,"Medial boot surface must meet the recorded ball at impact");
+                Assert.Greater(view.FootPosition(!left).y,.03f,"Support foot must remain above the pitch");
+                Assert.AreEqual(Vector3.zero,root.transform.position);
+            }finally{Object.DestroyImmediate(root);PlayerView.UseMecanim=before;}
+        }
         [TestCase(false,"pass")] [TestCase(true,"pass")]
         [TestCase(false,"through")] [TestCase(true,"through")]
         [TestCase(false,"cutback")] [TestCase(true,"cutback")]
