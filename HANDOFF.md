@@ -37,6 +37,14 @@ Jeu de gestion de football type Football Manager, Unity **6000.3.24f1**, URP, An
 
 ## 3. État au 9 octobre 2026
 
+### Direction — objectifs saisonniers (branche non livrée)
+
+- `feat/board-season-objectives`, basée sur `tune/match-balance-diagnostics` / PR #49. Objectif sportif fixé une fois par club/division/saison : rang économique 60 %, rang de l'effectif 40 %, pondéré par les matchs restant à jouer pour une arrivée après cinq rencontres. Politique de simulation explicitement étiquetée, pas une déclaration réelle du propriétaire. Plafond salarial au moment de l'accord conservé comme référence, sans modifier le plafond financier actuel.
+- `ReviewBoardObjective` remplace le classement attendu recalculé chaque mois. Premier jugement après cinq matchs ; variation sportive plafonnée à cinq points par mois, variation réellement appliquée indiquée, appels répétés bloqués pendant 30 jours. Licenciement et offres d'autres clubs existants conservés ; l'ancien entraîneur ne reçoit pas de nouveaux bilans. Objectifs des anciens clubs et vingt saisons conservés.
+- 829/829 tests Core, dont dix nouveaux tests indépendants de la fixture ProfessionalTests exclue du runner. Migration null, sauvegarde, nouveau club/nouvelle saison, arrivée tardive, plafond de confiance et absence de gains par répétition vérifiés.
+- Deux saisons passives avec Marseille, 92 matchs à scores simplifiés : sauvegarde/rechargement identique sur 23690 joueurs, format complet 90,75 Mo / compact 7,61 Mo. Club non recruté : 16 joueurs après expirations, un seul club sous 18 ; ne pas présenter cet essai comme une carrière bien gérée ou comme deux saisons jouées par le moteur complet. Ajustements ultérieurs des seuls bilans (variation réellement appliquée, arrivée tardive) couverts par les tests, pas encore par un nouveau passage long.
+- Nouvelle carte `board-season-objective` dans Carrière ; scénario natif `film/ui-board-focus-*` préparé (objectif + bilan après six défaites synthétiques, formats plié/déplié). Compilation Unity, captures et revue visuelle en attente de la file externe de Claude. Aucune nouvelle APK ni fusion dans main. Quota consulté : 70 % hebdomadaire consommé, aucune réinitialisation utilisée.
+
 ### Suite de Claude — séparation ligne / pressing (travail non livré)
 
 - Branche `tune/match-balance-diagnostics`, base `integ/0.60` / c3fda366. Main non fusionnée ; test Fold toujours absent. Le nouvel ordre utilisateur autorise les travaux indépendants du test matériel.

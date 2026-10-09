@@ -21,6 +21,7 @@ namespace Touchline.Core
         public bool enableEurope=true;public List<Division> divisions=new List<Division>();
         public List<Fixture> fixtures=new List<Fixture>();public List<Tournament> cups=new List<Tournament>();
         public List<Honour> honours=new List<Honour>();public List<Fixture> history=new List<Fixture>();
+        public List<BoardObjective> boardObjectives=new List<BoardObjective>();
         public List<PromotionPair> promotionPairs=new List<PromotionPair>();public List<SplitGroup> splits=new List<SplitGroup>();
         public List<PlayerData> rosterChanges=new List<PlayerData>();
         public List<ClubDevelopmentReference> developmentReferences=new List<ClubDevelopmentReference>();
@@ -61,7 +62,7 @@ namespace Touchline.Core
         }
         public void EnsureWorld(Database db)
         {
-            EnsureLife(db);if(world!=null&&world.divisions!=null&&world.divisions.Count>0){ImportFreeAgents(db);EnsureStaffMarket(db);EnsureAiClubAccounts(db);return;}
+            EnsureLife(db);if(world!=null&&world.divisions!=null&&world.divisions.Count>0){ImportFreeAgents(db);EnsureStaffMarket(db);EnsureAiClubAccounts(db);EnsureBoardObjective(db);return;}
             world=new CareerWorld();world.year=Date.Month>=6?Date.Year:Date.Year-1;
             foreach(var league in db.leagues??Array.Empty<LeagueData>()){
                 if(league.scoutingOnly)continue;
@@ -73,7 +74,7 @@ namespace Touchline.Core
             GenerateSeason(db,true);InitializeEmployment(db);EnsureAiClubAccounts(db);CreateIntake(db);
             Mail("Secrétariat sportif","La carrière est ouverte","Le calendrier relie désormais les résultats, les classements et la saison suivante. Les rencontres importées conservent leur source ; les autres affiches et tous les résultats de départ sont simulés.");
             foreach(var f in world.fixtures.Where(f=>!f.played&&f.day<life.day).OrderBy(f=>f.day))SimulateFixture(db,f);
-            WorldDay(db);
+            EnsureBoardObjective(db);WorldDay(db);
         }
         int DayOf(DateTime d)=>(int)(d-Touchline.Core.Career.Epoch).TotalDays;
         public string CompetitionName(Database db,string id)=>db.leagues?.FirstOrDefault(l=>l.id==id)?.name??(id=="ucl"?"Ligue des champions":id=="uel"?"Europa League":id=="uecl"?"Conference League":id=="friendly"?"Match amical":id.StartsWith("cup-")?DomesticCupName(id.Substring(4)):id);
