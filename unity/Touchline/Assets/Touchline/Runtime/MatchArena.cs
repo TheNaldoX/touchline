@@ -176,7 +176,7 @@ namespace Touchline
         {
             if(Simulation==null||ball==null||QuietPresentation)return; if(GoalReplayActive){ReframeGoalReplayCamera();return;}
             int direction=ball.position.x>=0?1:-1;var center=tactical?new Vector3(0,.6f,0):focus;
-            BroadcastFraming.Apply(MatchCamera,center,ball.position,tactical,Mathf.Abs(ball.position.x)>28,direction,zoom);
+            BroadcastFraming.Apply(MatchCamera,center,ball.position,tactical,true,direction,zoom);
             float required=Vector3.Distance(MatchCamera.transform.position,center);
             // Expanding the safe frame is immediate; contracting it is gradual.
             // The second viewport pass must not advance smoothing twice per frame.

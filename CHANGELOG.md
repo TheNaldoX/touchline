@@ -4,6 +4,7 @@ Une ligne par pull request, la plus récente en haut.
 
 ## À venir
 - Recrutement : synthèse des besoins tactiques sans double compter les polyvalents, budgets après engagements, rapports et pistes observées, accès directs aux missions, joueurs libres et agents, avec plafonds d'observation cohérents.
+- Caméra de match : entrée progressive du but dans le cadre, sans recul brutal au passage du dernier tiers ou lors des centres en portrait ; ballon et couloirs de passe restent cadrés.
 - Tactique : audit apparié de sept consignes (200 affiches), raccourcis de match en deux touches avec pause/vitesse conservées et boutons adaptés au Fold, captures CI vérifiées et compteur de joueurs libres corrigé dans le diagnostic carrière.
 - Rendu : ciel en dégradé avec nuages, collines et silhouette de ville (fenêtres allumées le soir, fond uni en qualité basse), ralenti du soir éclairé de face (plus de joueurs à contre-jour), lumière ambiante en trois tons (côtés éclairés, rebond vert de la pelouse), tribunes un peu plus visibles le soir, montants de but ronds et vernis, filet plus léger, second anneau qui se lève aussi sur les buts du club.
 - Ambiance : tribunes qui se lèvent en vague, sautent et lèvent bras et écharpes sur un but (à moitié sur une frappe), virage populaire aux couleurs du club avec écharpes et grands drapeaux, drapeaux de coin qui flottent, ombres de contact sous les joueurs et le ballon, ralenti des buts filmé en plan bas à côté du but qui suit le ballon (le filet se creuse aussi au ralenti).

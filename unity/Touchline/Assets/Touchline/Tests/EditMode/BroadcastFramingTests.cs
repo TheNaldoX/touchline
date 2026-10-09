@@ -7,6 +7,35 @@ namespace Touchline.Tests
 {
     public class BroadcastFramingTests
     {
+        [TestCase(.43f,-1,.1f)] [TestCase(.43f,1,.1f)] [TestCase(1.32f,-1,.1f)] [TestCase(1.32f,1,.1f)]
+        [TestCase(.43f,-1,.5f)] [TestCase(.43f,1,.5f)] [TestCase(1.32f,-1,.5f)] [TestCase(1.32f,1,.5f)]
+        public void EnteringTheLastThirdDoesNotCutToAWiderCamera(float aspect,int end,float step)
+        {
+            var go=new GameObject("Continuous goal framing");try{
+                var c=go.AddComponent<Camera>();c.aspect=aspect;c.fieldOfView=46;Vector3 previous=Vector3.zero;
+                int leg=Mathf.RoundToInt(10/step);
+                for(int i=0;i<=2*leg;i++){
+                    float x=23+(i<=leg?i:2*leg-i)*step;var ball=new Vector3(end*x,.11f,0);var focus=new Vector3(end*(x-4),.6f,0);
+                    BroadcastFraming.Apply(c,focus,ball,false,true,end,.85f);Check(c,ball);
+                    if(i>0)Assert.Less(Vector3.Distance(previous,c.transform.position),8*step,"Pas de coupe au seuil du dernier tiers : x="+x);
+                    previous=c.transform.position;
+                    if(x>=28&&Mathf.Abs(end*52.5f-focus.x)<=29){Check(c,new Vector3(end*52.5f,0,-3.66f));Check(c,new Vector3(end*52.5f,2.44f,3.66f));}
+                }
+            }finally{Object.DestroyImmediate(go);}
+        }
+        [TestCase(18f,10f,true)] [TestCase(17f,12f,false)]
+        public void PortraitDeliveryDoesNotJumpAtTheCentralFramingThreshold(float ballZ,float focusZ,bool moveBall)
+        {
+            var go=new GameObject("Continuous portrait delivery");try{
+                var c=go.AddComponent<Camera>();c.aspect=.43f;c.fieldOfView=46;Vector3 previous=Vector3.zero;
+                for(int i=0;i<=80;i++){
+                    float offset=2-(i<=40?i:80-i)*.1f;var ball=new Vector3(35,.11f,ballZ+(moveBall?offset:0));var focus=new Vector3(28,.6f,focusZ+(moveBall?0:offset));
+                    BroadcastFraming.Apply(c,focus,ball,false,true,1,.85f);Check(c,ball);
+                    if(i>0)Assert.Less(Vector3.Distance(previous,c.transform.position),1f,"La livraison ne doit pas déclencher un recul brutal");
+                    previous=c.transform.position;
+                }
+            }finally{Object.DestroyImmediate(go);}
+        }
         [TestCase(.43f,-1,-1)] [TestCase(.43f,1,1)] [TestCase(1.32f,1,-1)] [TestCase(3.62f,-1,1)] [TestCase(3.62f,1,1)]
         public void CornersKeepBallAndGoalInsideTheViewport(float aspect,int end,int side)
         {
