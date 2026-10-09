@@ -7,6 +7,16 @@ namespace Touchline.Tests
 {
     public class PlayerKitTests
     {
+        [Test] public void FabricDetailPreservesKitColoursAndIsSpatiallyStable()
+        {
+            float min=1,max=0;
+            for(int i=0;i<100;i++){
+                var p=new Vector3(-.2f+i*.004f,1.31f,.08f);float v=KitTexture.FabricShade(p);
+                Assert.That(v,Is.InRange(.88f,1f));Assert.AreEqual(v,KitTexture.FabricShade(p));min=Mathf.Min(min,v);max=Mathf.Max(max,v);
+            }
+            Assert.Greater(max-min,.02f,"Fabric variation preserves team colours");
+        }
+
         [Test] public void ClubKitsAreDeterministicAndKeepersStandApart()
         {
             var home=new Color(.80f,.08f,.10f);var away=new Color(.05f,.09f,.22f);

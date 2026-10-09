@@ -60,7 +60,7 @@ namespace Touchline
             renderBudget=TouchlineApp.Instance==null?null:TouchlineApp.Instance.GetComponent<RenderBudget>();renderBudget?.ResetMatchSample();
             var root=new GameObject("Stadium · metres");root.transform.SetParent(transform);world=root.transform;
             // Bandes de tonte claire/sombre ; la texture de grain les assombrit en moyenne (compensé).
-            turfGrain=PitchTurf.Grain();turf=TurfMaterial(DarkStripe);white=PlayerView.Material(MarkingWhite);
+            turfGrain=PitchTurf.FieldTexture();turf=TurfMaterial(DarkStripe);white=PlayerView.Material(MarkingWhite);
             // Après-midi : l'ombre du toit d'en face sur la pelouse est simulée (matières assombries,
             // sans ombre portée reçue) car elle dépasse la distance des ombres temps réel.
             var career=TouchlineApp.Instance!=null?TouchlineApp.Instance.Career:null;var fixture=career?.world?.fixtures?.Find(f=>f.id==career.world.activeFixture);
@@ -199,9 +199,9 @@ namespace Touchline
         static readonly Color MarkingWhite=new Color(.88f,.89f,.81f),SurroundGreen=new Color(.075f,.18f,.09f);
         static readonly Color GoalFrameWhite=new Color(.93f,.93f,.91f),NetGrey=new Color(.72f,.74f,.73f);
         const float GoalFrameSmoothness=.6f; // peinture laquée des montants (reflet net)
-        static readonly Color LightStripe=new Color(.118f,.325f,.136f),DarkStripe=new Color(.088f,.252f,.100f); // tonte (avant grain)
+        static readonly Color LightStripe=new Color(.128f,.322f,.142f),DarkStripe=new Color(.102f,.277f,.116f); // tonte (avant grain)
         const float DefaultZoom=.85f; // cadrage télé par défaut, plus serré (joueurs plus lisibles) ; réglable au pincement
-        Material TurfMaterial(Color stripe){var m=PlayerView.Material(stripe/PitchTurf.MeanBrightness);m.color=new Color(m.color.r,m.color.g,m.color.b,1);m.mainTexture=turfGrain;return m;}
+        Material TurfMaterial(Color stripe){var m=PlayerView.Material(stripe/PitchTurf.MeanBrightness);m.color=new Color(m.color.r,m.color.g,m.color.b,1);m.mainTexture=turfGrain;m.SetFloat("_Smoothness",.04f);return m;}
         void Surface(Mesh mesh,Material material,bool shadows,bool receiveShadows=true){stadiumMeshes.Add(mesh);var go=new GameObject(mesh.name);go.transform.SetParent(world,false);go.AddComponent<MeshFilter>().sharedMesh=mesh;var renderer=go.AddComponent<MeshRenderer>();renderer.sharedMaterial=material;renderer.shadowCastingMode=shadows?UnityEngine.Rendering.ShadowCastingMode.On:UnityEngine.Rendering.ShadowCastingMode.Off;renderer.receiveShadows=receiveShadows;}
         static void DisposeArenaObject(UnityEngine.Object item){if(item==null)return;if(Application.isPlaying)Destroy(item);else DestroyImmediate(item);}
         void OnDestroy(){var materials=new System.Collections.Generic.HashSet<Material>();foreach(var r in GetComponentsInChildren<Renderer>())if(r.GetComponentInParent<PlayerView>()==null)foreach(var material in r.sharedMaterials)if(material!=null)materials.Add(material);foreach(var material in materials)DisposeArenaObject(material);foreach(var mesh in stadiumMeshes)DisposeArenaObject(mesh);DisposeArenaObject(pitchMesh);DisposeArenaObject(turfGrain);DisposeArenaObject(boardAtlas);DisposeArenaObject(contactTexture);DisposeArenaObject(skyTexture);if(world!=null)DisposeArenaObject(world.gameObject);}

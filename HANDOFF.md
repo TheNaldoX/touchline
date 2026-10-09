@@ -2,12 +2,14 @@
 
 Lire AGENTS.md. Ce fichier contient uniquement l’état courant ; l’historique détaillé est dans Git et les PR. Mettre à jour en fin de lot, sans accumuler les comptes rendus anciens.
 
-## Reprise après livraison0.62 — demande « Continue »
+## Lot graphique demandé explicitement — en cours
 
-- Automatisation précédente arrêtée ; reprise ponctuelle autorisée après livraison. Branche fix/neutral-mindset-regression, PR67, source7f751ee850dfb47cf40bb0b3da5b0a34e6f72c4c, base APK0.62/PR66. Aucune modification de production retenue dans ce lot.
-- Deux essais de passes en profondeur retirés : utiliser seulement la cible future donne6,14hors-jeu et67,68% de victoires favoris ; le limiter aux appels encore en jeu donne4,18hors-jeu mais51,41touches et61,62%favoris (200matchs/graine1, contre4,05/49,93/52,53% avant). Ligne haute toujours avantagée ; ne pas réintroduire comme correctif validé.
-- Preuves locales .validation/through-target-* et through-onside-* ; chaque audit Ligne compare200affiches bas/haut. Dernier essai : +9,36tirs et−0,54but encaissé pour la ligne haute. Sources Core intégralement revenues à0.62.
-- Correction conservée : test NeutralMindset compare trois graines sur36minutes, événements de football et positionsX/Z ; ignore uniquement les messages informatifs assistant. L’ancien comptage des messages créait un faux échec. Core923/923 (.validation/neutral-regression-core.txt). Validation Unity37962815505 réussie277/277, artefact11632827454 récupéré (.validation/neutral-regression-native). Aucune Unity active. Aucun écran modifié, pas de nouvelle APK nécessaire.
+- Branche feat/match-surface-motion-polish, base PR67/APK0.62. Demande utilisateur : gros travail graphique/textures/fluidité. Aucune modification Core/simulation.
+- Pelouse : texture RGB2048×1024 avec mipmaps (~8MiB GPU), bruit de surface non répétitif et UV continus sur les bandes/ombre ; même nombre de passes/matériaux. Texture CPU libérée après upload. Tonte moins contrastée, gazon mat.
+- Maillots : grain textile et panneaux discrets intégrés à la texture partagée ; matières mates. Pas de photo ou mocap importée.
+- Animations : le mixeur basculait instantanément gauche/droite en pas chassés ; interpolation exponentielle des deux poids, tests30/60/120Hz et pause. Autres contacts/trajectoires inchangés.
+- Tests locaux en cours .validation/visual-polish-core.txt ; nouveaux tests Runtime StadiumLook/PlayerKit/LocomotionFacing. Prochaine étape : Unity, puis films jour et nuit séquentiels et revue réelle. Une seule Unity, aucune modification Assets pendant validation/rendu. Aucun test Fold, aucune promesse de performance réelle.
+- Lot précédent PR67 : Core923/923, Unity277/277 (37962815505), tests neutres corrigés ; deux essais de passes retirés pour régressions (rapports .validation/through-target-* et through-onside-*). Défense haute toujours trop avantageuse.
 ## Reprise immédiate — 9 octobre 2026
 
 - Branche : `feat/club-budget-visibility`, PR #65, code36360b6 ; base PR #64 (18c08e6), puis #63/#62/#61.

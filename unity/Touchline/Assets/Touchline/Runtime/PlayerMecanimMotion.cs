@@ -60,7 +60,7 @@ namespace Touchline
         readonly AnimationClipPlayable[] actionPlayables=new AnimationClipPlayable[2];
         readonly float[] actionWeights=new float[2];readonly bool[] actionLive=new bool[2];
         int activeAction=-1;string mecanimActionKey;int mecanimActionSequence=-1;float mecanimActionElapsed,mecanimActionContact;
-        float moveBlend,dribbleBlend,backwardBlend,sideBlend,sideSign=1;bool mecanimKeeper;
+        float moveBlend,dribbleBlend,backwardBlend,sideBlend,sideSign=1,strafeRightBlend=1;bool mecanimKeeper;
         AnimationClipPlayable strafeLeftPlayable,strafeRightPlayable;
 
         bool EnsureMecanimGraph(bool keeper)
@@ -141,6 +141,8 @@ namespace Touchline
         }
 
         // Retourne false si l'animation capturée n'est pas disponible (repli procédural).
+        // Exact exponential response keeps reversals continuous at 30, 60 and 120 Hz.
+        public static float StrafeBlend(float current,float target,float dt)=>Mathf.Lerp(current,Mathf.Clamp01(target),1-Mathf.Exp(-Mathf.Max(0,dt)*LocomotionBlendRate));
         bool MecanimRender(Actor actor,float dt,bool reset,float poseSpeed,bool carrying)
         {
             if(!UseMecanim||!EnsureMecanimGraph(actor.slot==0))return false;leftFootedNow=leftFooted;mecanimPoseSpeed=poseSpeed;
@@ -161,6 +163,7 @@ namespace Touchline
             }
             float directionK=reset?1:1-Mathf.Exp(-dt*BackwardSmoothing);
             backwardBlend=Mathf.Lerp(backwardBlend,backward,directionK);sideBlend=Mathf.Lerp(sideBlend,side,directionK);
+            strafeRightBlend=reset?(sideSign>0?1:0):StrafeBlend(strafeRightBlend,sideSign>0?1:0,dt);
 
             // Gestes : nouveau geste → emplacement libre, fondu d'entrée, temps calé sur le contact.
             bool acting=MecanimAction(actor,out var clipName,out var simContact),turnGesture=false;
@@ -207,7 +210,7 @@ namespace Touchline
             mecanimMixer.SetInputWeight(SprintInput,forward*toRun*toSprint);
             mecanimMixer.SetInputWeight(JogBackInput,back*(1-toRunBack));
             mecanimMixer.SetInputWeight(RunBackInput,back*toRunBack);
-            mecanimMixer.SetInputWeight(StrafeLeftInput,sideSign<0?lateral:0);mecanimMixer.SetInputWeight(StrafeRightInput,sideSign>0?lateral:0);
+            mecanimMixer.SetInputWeight(StrafeLeftInput,lateral*(1-strafeRightBlend));mecanimMixer.SetInputWeight(StrafeRightInput,lateral*strafeRightBlend);
             mecanimMixer.SetInputWeight(DribbleInput,moving*dribbleBlend);
             mecanimMixer.SetInputWeight(ActionInput,a0);mecanimMixer.SetInputWeight(ActionInput+1,a1);
             body.localPosition=Vector3.zero;body.localRotation=Quaternion.identity;

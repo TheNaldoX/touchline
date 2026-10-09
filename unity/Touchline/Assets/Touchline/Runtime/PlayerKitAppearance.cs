@@ -27,6 +27,8 @@ namespace Touchline
         void ApplyKit()
         {
             var worn=WornKit;bool textured=worn.Textured;
+            // Matte fabric distinguishes cloth from skin and boot leather.
+            shirt.SetFloat("_Smoothness",.08f);ownedMaterials[2].SetFloat("_Smoothness",.08f);ownedMaterials[3].SetFloat("_Smoothness",.04f);
             shirt.mainTexture=textured?KitTexture.For(worn,ShirtPart):null;shirt.color=textured?Color.white:worn.shirt;
             shirt.mainTextureScale=textured?KitTexture.Scale:Vector2.one;shirt.mainTextureOffset=textured?KitTexture.Offset:Vector2.zero;
             ownedMaterials[2].color=worn.shorts;ownedMaterials[3].color=worn.socks;
