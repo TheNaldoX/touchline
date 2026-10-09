@@ -2,13 +2,12 @@
 
 Lire AGENTS.md. Ce fichier contient uniquement l’état courant ; l’historique détaillé est dans Git et les PR. Mettre à jour en fin de lot, sans accumuler les comptes rendus anciens.
 
-## Session autonome autorisée — 17 h 19 à 18 h 49 Paris
+## Reprise après livraison0.62 — demande « Continue »
 
-- Demande utilisateur : améliorer IA/décisions, graphismes/animations, UI, événements aléatoires à choix, finances/budgets et contenu original cohérent. Fin le9 octobre à16:49UTC ; réserver après18h25Paris aux validations. Automatisation touchline-am-liorations-jusqu-au-6-octobre réactivée toutes les10min, avec cette échéance et désactivation finale.
-- Unity : tests runtime37955944893 sur f959fe0 (code36360b6) réussis275/275, artefact11628751153 récupéré (.validation/budget-visibility-native), après rendu37953810119 réussi. Build APK0.62/code55 réussi : Actions37957302244, source029274fa50c345808567c6aa6ef986768db87880, branche feat/apk-062-validated-career, PR66. Assets figés ; une seule Unity. Seuls version et nom de fichier changent après validations. Récupérer artefact APK puis verify-apk.ps1 (VersionCode55, VersionName0.62.0-preview.1), signature/hash/ARM64 avant livraison. Ne pas relancer Core inchangé. Tests précédents37952223643 réussis273/273, artefact11627385676 récupéré (.validation/recruitment-context-native).
-- Diagnostic finances commencé : ProfessionalManagement.TransferBudget déduit achats engagés, réserve de trésorerie, plafond12% des recettes et obligations des prêts ; WageBudget séparé. Examiner leur présentation et les engagements avant de changer les règles. CareerFinancialTransactions assure les contreparties des transferts : ne pas créer de recettes sans paiement.
-- Événements : recherche des classes Event/Incident non concluante ; inspecter CareerManagement et les messages/décisions existants avant de créer un système en doublon. Nouveaux choix à coûts proportionnés au club, effets bornés, aléatoire à graine et persistance testée.
-
+- Automatisation précédente arrêtée ; reprise ponctuelle autorisée après livraison. Branche fix/neutral-mindset-regression, base APK0.62/PR66. Aucune modification de production retenue dans ce lot.
+- Deux essais de passes en profondeur retirés : utiliser seulement la cible future donne6,14hors-jeu et67,68% de victoires favoris ; le limiter aux appels encore en jeu donne4,18hors-jeu mais51,41touches et61,62%favoris (200matchs/graine1, contre4,05/49,93/52,53% avant). Ligne haute toujours avantagée ; ne pas réintroduire comme correctif validé.
+- Preuves locales .validation/through-target-* et through-onside-* ; chaque audit Ligne compare200affiches bas/haut. Dernier essai : +9,36tirs et−0,54but encaissé pour la ligne haute. Sources Core intégralement revenues à0.62.
+- Correction conservée : test NeutralMindset compare trois graines sur36minutes, événements de football et positionsX/Z ; ignore uniquement les messages informatifs assistant. L’ancien comptage des messages créait un faux échec. Core923/923 (.validation/neutral-regression-core.txt). Validation Unity à lancer ; aucun écran modifié, pas de nouvelle APK nécessaire.
 ## Reprise immédiate — 9 octobre 2026
 
 - Branche : `feat/club-budget-visibility`, PR #65, code36360b6 ; base PR #64 (18c08e6), puis #63/#62/#61.

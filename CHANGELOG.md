@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Validation du moteur : comparaison neutre renforcée sur trois graines, actions et positions, sans compter les messages informatifs de l’adjoint comme des actions de jeu.
 - APK 0.62/code55 : regroupe les lots validés de recrutement, immersion tactique, sauvegardes et budget ; numéro de version distinct, anciennes APK préservées.
 - Finances : détail des réserves, achats engagés, obligations de prêts et marges salariales, avec explication du plafond limitant les transferts.
 - Recrutement contextualisé par poste, budget et comparaison interne ; conseils tactiques avec pistes à tester et estimation des occasions recalibrée séparément des tirs.
