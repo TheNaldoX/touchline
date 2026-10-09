@@ -51,6 +51,7 @@ namespace Touchline.Core
             Mail(Staff("scout").name,"Observation engagée",p.name+" sera observé. Rapport attendu le "+Epoch.AddDays(ReportFor(id).due).ToString("dd/MM")+" ; l’évaluation dépend du niveau du recruteur.",id,"scout");
         }
         public bool WindowOpen=>Date.Month==1||Date.Month==6&&Date.Day>=15||Date.Month==7||Date.Month==8||Date.Month==9&&Date.Day==1;
+        bool OfferForManagedClub(TransferOffer offer)=>string.IsNullOrEmpty(offer.destination)||offer.destination==club;
         // Ownership remains with the parent until the return or purchase is processed,
         // even if the scheduled loan end date has passed. Empty legacy parents mean no loan.
         public bool HasActiveLoan(string id)=>world?.contracts?.Any(c=>c.player==id&&!string.IsNullOrEmpty(c.parent))??false;
@@ -68,20 +69,20 @@ namespace Touchline.Core
             if(p.age<18&&!renewal)throw new InvalidOperationException("Les transferts de mineurs sont exclus de cette simulation simplifiée.");
             if(years<1||years>(p.age<18?3:5)||fee<0||wage<=0||bonus<0||clause<0||!PlayingTimeRoles.Valid(role))throw new ArgumentException("Conditions contractuelles invalides.");
             if(role=="youth"&&p.age>=24)throw new ArgumentException("Le statut de jeune en développement est réservé aux joueurs de moins de 24 ans.");
-            if(world.offers.Any(o=>o.player==id&&(o.status=="pending"||o.status=="accepted")))throw new InvalidOperationException("Une négociation est déjà ouverte.");
+            if(world.offers.Any(o=>o.player==id&&OfferForManagedClub(o)&&(o.status=="pending"||o.status=="accepted")))throw new InvalidOperationException("Une négociation est déjà ouverte.");
             if(!renewal&&fee>TransferBudget)throw new InvalidOperationException("L’offre dépasse l’enveloppe de recrutement.");
             // A loan reallocates an existing gross salary; it does not amend the parent contract.
             if(loan)wage=p.wage;
             long effectiveWage=loan?wage*terms.loanWagePercent/100:wage;
             long payroll=Payroll(db)+ReservedWages-(renewal?p.wage:0)+effectiveWage;
             if(payroll>Math.Max(WageBudget,Payroll(db)))throw new InvalidOperationException("La masse salariale dépasserait le plafond du conseil.");
-            var old=world.offers.LastOrDefault(o=>o.player==id);int attempts=old!=null&&life.day-old.due<30?old.attempts+1:1;if(attempts>3)throw new InvalidOperationException("Négociations suspendues pendant trente jours.");
+            var old=world.offers.LastOrDefault(o=>o.player==id&&OfferForManagedClub(o));int attempts=old!=null&&life.day-old.due<30?old.attempts+1:1;if(attempts>3)throw new InvalidOperationException("Négociations suspendues pendant trente jours.");
             world.offers.Add(new TransferOffer{player=id,seller=p.team,destination=club,precontract=precontract,joinDay=precontract?Contract(db,id).until+1:life.day,terms=terms,fee=renewal||precontract||p.team=="free"?0:fee,wage=wage,years=years,role=role,loan=loan&&!renewal,renewal=renewal,bonus=bonus,clause=clause,due=life.day+2,attempts=attempts});
             Mail("Agent de "+p.name,"Proposition reçue","Nous étudions les conditions et le statut proposé : "+PlayingTimeRoles.Label(role)+". "+PlayingTimeRoles.Description(role)+" Réponse sous deux jours.",id,"transfer");
         }
         public void SignTransfer(Database db,string id)
         {
-            OffPitch();var o=world.offers.LastOrDefault(x=>x.player==id&&(x.destination==null||x.destination==club)&&x.status=="accepted");if(o==null||o.due+7<life.day)throw new InvalidOperationException("L’accord n’est plus valable.");
+            OffPitch();var o=world.offers.LastOrDefault(x=>x.player==id&&OfferForManagedClub(x)&&x.status=="accepted");if(o==null||o.due+7<life.day)throw new InvalidOperationException("L’accord n’est plus valable.");
             var p=db.Find(id);if(PlayingCareerEnded(p))throw new InvalidOperationException("La carrière de ce joueur est terminée ; cet accord ne peut plus être signé.");if(p.team!=o.seller||!o.renewal&&!o.precontract&&p.team!="free"&&!WindowOpen)throw new InvalidOperationException("Le joueur ou la fenêtre de transfert a changé.");
             if(HasActiveLoan(id))throw new InvalidOperationException("Le joueur appartient toujours au club prêteur. Cet accord ne peut pas remplacer son prêt ; utilisez l’option d’achat prévue ou attendez son retour.");
             if(o.loan&&(o.terms==null||o.terms.loanEndDay<=life.day||o.terms.loanEndDay>Contract(db,id).until))throw new InvalidOperationException("La fin du prêt ou l’échéance du contrat parent a changé. Renégociez les conditions.");
@@ -96,7 +97,7 @@ namespace Touchline.Core
             p.team=club;p.wage=o.wage;AfterFinancialTermsChange(db,club,o.seller);SavePlayer(p);o.status="signed";if(!life.players.Any(x=>x.id==id))life.players.Add(new PlayerLife{id=id,fitness=p.fitness,morale=p.morale});
             Mail("Secrétariat","Contrat signé",p.name+" rejoint votre projet. Statut promis : "+PlayingTimeRoles.Label(c.role)+". "+PlayingTimeRoles.Description(c.role)+" Les salaires et primes sont désormais dus.",id,"transfer");
         }
-        public void RejectOffer(string id){OffPitch();var o=world.offers.Last(x=>x.player==id&&(x.status=="accepted"||x.status=="pending"));o.status="withdrawn";}
+        public void RejectOffer(string id){OffPitch();var o=world.offers.LastOrDefault(x=>x.player==id&&OfferForManagedClub(x)&&(x.status=="accepted"||x.status=="pending"));if(o==null)throw new InvalidOperationException("Aucune offre ouverte pour votre club.");o.status="withdrawn";}
         public void ListForSale(Database db,string id)
         {
             OffPitch();var p=db.Find(id);if(p.team!=club||db.Squad(club).Count<=18||Contract(db,id).parent!=null)throw new InvalidOperationException("Le club doit conserver dix-huit joueurs et ne peut céder un joueur prêté.");
@@ -181,11 +182,13 @@ namespace Touchline.Core
             if(life.day%30==0)foreach(var slot in new[]{"maillot","équipementier","naming"})if(!world.sponsors.Any(s=>s.slot==slot&&s.status!="expired")){world.sponsors.Add(new CommercialDeal{name="Horizon · "+slot+" · "+world.year,slot=slot,annual=Math.Max(10000,life.revenue*(slot=="maillot"?50:slot=="naming"?12:25)/1000),years=2});}
             ScoutingDay(db);
             foreach(var o in world.offers.Where(o=>o.status=="pending"&&o.due<=life.day)){
-                var p=db.Find(o.player);long expectedFee=o.renewal||o.precontract||p.team=="free"?0:(long)(p.value*(o.loan?.12f:1.05f));long expectedWage=(long)(p.wage*(o.renewal?1.08f:o.loan?1f:1.12f));
+                string destination=string.IsNullOrEmpty(o.destination)?club:o.destination;var p=db.Find(o.player);
+                if(p==null||!db.clubs.Any(c=>c.id==destination)){o.status="expired";continue;}
+                long expectedFee=o.renewal||o.precontract||p.team=="free"?0:(long)(p.value*(o.loan?.12f:1.05f));long expectedWage=(long)(p.wage*(o.renewal?1.08f:o.loan?1f:1.12f));
                 if(o.loan)expectedFee+=(long)(p.wage*26*(100-(o.terms?.loanWagePercent??100))/100);
-                string roleIssue=PlayingTimeOfferIssue(db,p.id,o.role);bool willing=o.renewal||p.rating<Strength(db,club)+8;bool accepted=roleIssue==null&&o.fee>=expectedFee&&o.wage>=expectedWage&&willing&&(o.clause==0||o.clause>=p.value);
+                string roleIssue=PlayingTimeOfferIssueForClub(db,p.id,o.role,destination);bool willing=o.renewal||p.rating+p.development<Strength(db,destination)+8;bool accepted=roleIssue==null&&o.fee>=expectedFee&&o.wage>=expectedWage&&willing&&(o.clause==0||o.clause>=p.value);
                 o.status=accepted?"accepted":"counter";if(!accepted){o.fee=expectedFee;o.wage=expectedWage;}
-                Mail("Agent de "+p.name,accepted?"Accord de principe":"Négociation à reprendre",accepted?"Conditions acceptées avec le statut de "+PlayingTimeRoles.Label(o.role)+". "+PlayingTimeRoles.Description(o.role)+" Vous avez sept jours pour confirmer la signature.":roleIssue!=null?roleIssue:willing?"La proposition doit être relevée : indemnité "+expectedFee.ToString("N0")+" €, salaire mensuel "+MonthlySalary(expectedWage).ToString("N0")+" €. Une clause libératoire ne doit pas être inférieure à la valeur du joueur.":"Le joueur ne juge pas le projet sportif suffisamment attractif.",p.id,"transfer",TransferMessageReference(o));
+                if(destination==club)Mail("Agent de "+p.name,accepted?"Accord de principe":"Négociation à reprendre",accepted?"Conditions acceptées avec le statut de "+PlayingTimeRoles.Label(o.role)+". "+PlayingTimeRoles.Description(o.role)+" Vous avez sept jours pour confirmer la signature.":roleIssue!=null?roleIssue:willing?"La proposition doit être relevée : indemnité "+expectedFee.ToString("N0")+" €, salaire mensuel "+MonthlySalary(expectedWage).ToString("N0")+" €. Une clause libératoire ne doit pas être inférieure à la valeur du joueur.":"Le joueur ne juge pas le projet sportif suffisamment attractif.",p.id,"transfer",TransferMessageReference(o));
             }
             foreach(var o in world.offers.Where(o=>o.status=="accepted"&&o.due+7<life.day))o.status="expired";
             foreach(var c in world.contracts.ToArray()){
