@@ -9,6 +9,19 @@ namespace Touchline
     public sealed partial class TouchlineApp
     {
         void PreseasonPanel(VisualElement parent)=>CalendarPreparation(parent);
+        void ActiveLoanContractDialog(string id)
+        {
+            var player=Database.Find(id);var loan=Career.world.contracts.FirstOrDefault(c=>c.player==id&&!string.IsNullOrEmpty(c.parent));
+            if(player==null||loan==null){Message("Ce prêt n’est plus en cours.");return;}
+            var panel=Modal("Contrat de prêt · "+player.name);panel.name="loan-contract-ownership";var body=Scroll(panel);
+            Text(body,"Le contrat appartient au club prêteur. Une prolongation au club d’accueil ne permet pas d’acquérir le joueur.","notice");
+            ProfileFact(body,"Club propriétaire",ClubName(loan.parent));ProfileFact(body,"Club d’accueil",ClubName(loan.club));
+            AgreementLoanFacts(body,loan.terms,loan.loanUntil);
+            if(loan.club==Career.club&&loan.terms?.optionFee>0&&loan.loanUntil>=Career.life.day)
+                PlayerManagementButton(body,"Lever l’option · "+Money(loan.terms.optionFee),()=>Confirm("Lever l’option ?","Le club propriétaire recevra "+Money(loan.terms.optionFee)+". Votre club prendra ensuite en charge le salaire intégral.",()=>RunDecision(()=>Career.ExerciseLoanOption(Database,id)))).name="loan-contract-purchase";
+            else Text(body,loan.loanUntil<Career.life.day?"Le retour de prêt doit être traité avant une nouvelle négociation.":loan.terms?.obligationFee>0?"L’obligation d’achat sera évaluée à la fin du prêt, selon les conditions signées.":"Aucune option d’achat immédiatement disponible. Le prêt doit prendre fin avant une nouvelle négociation.","muted");
+            Button(body,"Voir les dossiers de prêt",OpenRecruitmentAgreements).name="loan-contract-dossiers";
+        }
         void ActiveLoansPanel(VisualElement parent)
         {
             foreach(var o in Career.outgoingLoans.Where(o=>o.owner==Career.club&&(o.status=="pending"||o.status=="accepted"||o.status=="declined"))){var card=Card(parent);Text(card,"Prêt de "+Database.Find(o.player).name+" · "+ClubName(o.borrower)+" · "+o.status);if(o.status=="accepted"&&o.due+7>=Career.life.day&&!Career.PlayerRetirementEffective(o.player)&&Database.Find(o.player)?.team!="retired")Button(card,"Signer le prêt sortant",()=>RunDecision(()=>Career.SignOutgoingLoan(Database,o.player)));}

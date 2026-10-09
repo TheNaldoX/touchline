@@ -3,6 +3,15 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Filets : fils continus subdivisés aux mailles pour réagir réellement aux impacts centraux des deux buts, avec déformation locale et retour au repos ; rayon et ressort inchangés.
+- Recrutement : territoires fiables pour 45 clubs hors catalogue de championnats (1 434 joueurs), filtres et missions par pays partagés, sans ajout de ligue ni modification des notes.
+- Négociations : une offre invalide affiche son erreur dans le formulaire sans effacer les montants, la promesse de temps de jeu ni les brouillons de transfert et de prêt.
+- Recrutement : synthèse des besoins tactiques sans double compter les polyvalents, budgets après engagements, rapports et pistes observées, accès directs aux missions, joueurs libres et agents, avec plafonds d'observation cohérents.
+- Caméra de match : entrée progressive du but dans le cadre, sans recul brutal au passage du dernier tiers ou lors des centres en portrait ; ballon et couloirs de passe restent cadrés.
+- Négociations : les offres restent évaluées et modifiables pour leur club destinataire après un changement de manager ; les attentes de rôle et l’attractivité tiennent compte de la progression ou du déclin actuel du joueur.
+- Contrats : un joueur emprunté ne peut plus devenir la propriété du club via une prolongation gratuite ; les anciens accords sont bloqués et la fiche dirige vers les clauses du prêt, avec achat payant conservé.
+- Moteur : défenseurs et destinataires (gardien compris) ne lisent plus la destination finale avant le contact ; placement visible conservé avant départ et réception anticipée ensuite, avec comparaison de 200 matchs avant/après.
+- Tactique : audit apparié de sept consignes (200 affiches), raccourcis de match en deux touches avec pause/vitesse conservées et boutons adaptés au Fold, captures CI vérifiées et compteur de joueurs libres corrigé dans le diagnostic carrière.
 - Rendu : ciel en dégradé avec nuages, collines et silhouette de ville (fenêtres allumées le soir, fond uni en qualité basse), ralenti du soir éclairé de face (plus de joueurs à contre-jour), lumière ambiante en trois tons (côtés éclairés, rebond vert de la pelouse), tribunes un peu plus visibles le soir, montants de but ronds et vernis, filet plus léger, second anneau qui se lève aussi sur les buts du club.
 - Ambiance : tribunes qui se lèvent en vague, sautent et lèvent bras et écharpes sur un but (à moitié sur une frappe), virage populaire aux couleurs du club avec écharpes et grands drapeaux, drapeaux de coin qui flottent, ombres de contact sous les joueurs et le ballon, ralenti des buts filmé en plan bas à côté du but qui suit le ballon (le filet se creuse aussi au ralenti).
 - Visuel joueurs : tenues générées aux couleurs du club (uni, rayures, cerceaux, manches, écharpe, bande ; gardiens distincts), nom et numéro au dos, coupes et couleurs de cheveux, chaussures variées ; étalonnage télé léger (bloom des projecteurs le soir, coupé en qualité basse), usure du gazon, filet qui se creuse sur les buts.
