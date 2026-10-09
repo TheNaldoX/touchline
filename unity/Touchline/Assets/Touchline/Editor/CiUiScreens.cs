@@ -46,6 +46,7 @@ namespace Touchline.Editor
         // Focused PR validation still renders at native Fold resolution. Three frames
         // allow layout/repaint to settle without twelve expensive software-rendered frames.
         static bool FocusedTactics=>Path.GetFileName(Output).StartsWith("ui-tactical-focus-",StringComparison.Ordinal);
+        static bool FocusedRecruitment=>Path.GetFileName(Output).StartsWith("ui-recruitment-focus-",StringComparison.Ordinal);
         const int FocusedStepFrames=3;
         static TouchlineApp App=>TouchlineApp.Instance;
         static UIDocument Document=>App.GetComponent<UIDocument>();
@@ -71,6 +72,7 @@ namespace Touchline.Editor
         static List<Action> BuildSteps()
         {
             if(FocusedTactics)return BuildFocusedTacticSteps();
+            if(FocusedRecruitment)return BuildFocusedRecruitmentSteps();
             var list=new List<Action>();
             list.Add(()=>{App.Career.EnsureWorld(App.Database);});
             foreach(var s in Screens){
@@ -142,6 +144,92 @@ namespace Touchline.Editor
             return list;
         }
 
+        static List<Action> BuildFocusedRecruitmentSteps()
+        {
+            bool reference=Path.GetFileName(Output).EndsWith("-before",StringComparison.Ordinal);
+            audit.AppendLine("Parcours ciblé recrutement : navigation, postes, missions, joueurs libres et rapports ; deux résolutions natives. Aucune sauvegarde personnelle.");
+            var list=new List<Action>();string role=null,searchRole=null,reportedPlayer=null;long cash=0;int missions=0;
+            list.Add(()=>{
+                var safe=typeof(TouchlineApp).GetProperty("VisualValidation",BindingFlags.Instance|BindingFlags.NonPublic);
+                if(safe==null||!(bool)safe.GetValue(App))throw new Exception("La validation doit isoler les sauvegardes personnelles");
+                App.Career.EnsureWorld(App.Database);App.Career.revealAttributes=false;
+                var p=App.Database.players.First(p=>p.team!=App.Career.club&&p.team!="free"&&p.team!="retired"&&!p.team.StartsWith("academy-")&&p.age>=18);
+                reportedPlayer=p.id;
+                App.Career.world.reports.Add(new Touchline.Core.ScoutReport{player=p.id,club=App.Career.club,scout="Cellule de test",started=App.Career.life.day-20,due=App.Career.life.day-1,lastObserved=App.Career.life.day,confidence=90,estimate=72,potential=78,judging=15,uncertainty=3,potentialUncertainty=5,advice="Rapport de contrôle : comparer le profil et les conditions financières."});
+            });
+            foreach(var s in Screens){
+                var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);SetField("recruitmentTab",reference?"Marché":"Synthèse");Call("Navigate","Recrutement");});
+                if(!reference){
+                    list.Add(()=>{
+                        Capture(screen.tag+"-recrutement-synthese");
+                        if(Path.GetFileName(Output).Contains("-polish"))foreach(var tab in Root.Query<Button>().ToList().Where(b=>b.name!=null&&b.name.StartsWith("recruit-tab-",StringComparison.Ordinal)))
+                            if(tab.worldBound.xMin<Root.worldBound.xMin||tab.worldBound.xMax>Root.worldBound.xMax)throw new Exception("Onglet de recrutement hors écran : "+tab.text);
+                        var candidate=Root.Q("recruit-hub-candidate-"+reportedPlayer);
+                        if(candidate==null)throw new Exception("Le profil observé doit figurer dans les pistes connues");
+                        var scroll=Root.Q<ScrollView>("recruit-hub");
+                        var profile=Root.Q<Button>("recruit-hub-profile-"+reportedPlayer);
+                        if(profile==null)throw new Exception("Bouton de fiche absent de la piste");
+                        // Target the actual action, not the top of a potentially tall card.
+                        // Run after the navigation's deferred scroll restoration (35 ms).
+                        scroll.schedule.Execute(()=>scroll.ScrollTo(profile)).StartingIn(100);
+                    });
+                    list.Add(()=>{
+                        var scroll=Root.Q<ScrollView>("recruit-hub");var profile=Root.Q<Button>("recruit-hub-profile-"+reportedPlayer);
+                        audit.AppendLine("Piste : offset="+scroll.scrollOffset.y+" / "+scroll.verticalScroller.highValue+" viewport="+scroll.contentViewport.worldBound+" contenu="+scroll.contentContainer.worldBound+" fiche="+profile?.worldBound);
+                        Capture(screen.tag+"-recrutement-pistes");
+                        if(profile==null||!profile.worldBound.Overlaps(scroll.contentViewport.worldBound))throw new Exception("La piste connue reste hors du défilement visible");
+                        Root.Q<ScrollView>("recruit-hub").scrollOffset=Vector2.zero;
+                    });
+                    if(Path.GetFileName(Output).Contains("-scroll"))continue;
+                    list.Add(()=>{
+                        var search=Root.Query<Button>().ToList().First(b=>b.name!=null&&b.name.StartsWith("recruit-hub-search-",StringComparison.Ordinal));
+                        role=search.name.Substring("recruit-hub-search-".Length);
+                        searchRole=role switch{"LM"=>"LW","RM"=>"RW","LWB"=>"LB","RWB"=>"RB","CF"=>"ST","SS"=>"ST",_=>role};Click(search.name);
+                    });
+                    list.Add(()=>{
+                        if(Root.Q<DropdownField>("recruit-role")?.value!=searchRole||Root.Q<ListView>("recruit-list")==null)throw new Exception("Le besoin ne filtre pas le marché au bon poste");
+                        Capture(screen.tag+"-recrutement-marche");Click("recruit-tab-Synthèse");
+                    });
+                    if(Path.GetFileName(Output).Contains("-polish")){
+                        list.Add(()=>{Click("recruit-hub-mission-"+role);Root.Q<LongField>("scout-mission-wage").value=0;});
+                        list.Add(()=>{
+                            var notice=Root.Q("scout-mission-blocked");var send=Root.Q<Button>("scout-mission-send");
+                            if(notice==null||notice.resolvedStyle.display==DisplayStyle.None||!Root.worldBound.Contains(notice.worldBound.min)||!Root.worldBound.Contains(notice.worldBound.max)||send.enabledSelf)throw new Exception("Le refus de mission doit être expliqué près du bouton visible");
+                            Capture(screen.tag+"-recrutement-mission-plafond");Root.Q<LongField>("scout-mission-wage").value=1000;
+                            if(!send.enabledSelf||notice.style.display.value!=DisplayStyle.None)throw new Exception("Le plafond positif doit réactiver la proposition sans envoyer la mission");
+                            Call("CloseModal");
+                        });
+                        list.Add(()=>Click("recruit-tab-Rapports"));
+                        list.Add(()=>{Capture(screen.tag+"-recrutement-rapports");var action=Root.Query<Button>().ToList().First(b=>b.text=="Contacter l’agent");action.GetFirstAncestorOfType<ScrollView>().ScrollTo(action);});
+                        list.Add(()=>Capture(screen.tag+"-recrutement-rapport-actions"));
+                        continue;
+                    }
+                    list.Add(()=>{cash=App.Career.life.cash;missions=App.Career.world.scoutMissions.Count;Click("recruit-hub-mission-"+role);});
+                    list.Add(()=>{
+                        if(Root.Q<DropdownField>("scout-mission-role")?.value!=searchRole||App.Career.life.cash!=cash||App.Career.world.scoutMissions.Count!=missions)throw new Exception("Préparation mission : poste ou engagement financier incorrect");
+                        Capture(screen.tag+"-recrutement-mission");Call("CloseModal");Click("recruit-hub-free");
+                        audit.AppendLine("Besoin → marché au bon poste ; mission préremplie sans dépense avant confirmation : "+screen.tag);
+                    });
+                    list.Add(()=>{
+                        var rows=Root.Q<ListView>("recruit-list")?.itemsSource;
+                        if(Root.Q<DropdownField>("recruit-market")?.value!="Libres"||rows==null||rows.Count==0||rows.Cast<Touchline.Core.PlayerData>().Any(p=>p.team!="free"))throw new Exception("Raccourci joueurs libres incohérent");
+                        Capture(screen.tag+"-recrutement-libres");Click("recruit-tab-Synthèse");
+                    });
+                    list.Add(()=>Click("recruit-hub-reports"));
+                }else{
+                    list.Add(()=>{Capture(screen.tag+"-recrutement-marche");Click("recruit-tab-Rapports");});
+                }
+                list.Add(()=>{
+                    if(Root.Q("scout-report-"+reportedPlayer)==null)throw new Exception("Rapport connu inaccessible");
+                    Capture(screen.tag+"-recrutement-rapports");
+                    if(App.Career.revealAttributes)throw new Exception("Le parcours a désactivé le masquage des attributs");
+                    audit.AppendLine("Rapport observé accessible, option d'attributs masqués préservée : "+screen.tag);
+                });
+            }
+            return list;
+        }
+
         static void AssertQuickPressing(int level,bool paused)
         {
             float expected=level==2?.8f:.5f;float speed=Arena.Speed;
@@ -158,7 +246,7 @@ namespace Touchline.Editor
             float now=Time.realtimeSinceStartup;if(startedAt<0){startedAt=now;Application.logMessageReceived+=(m,st,t)=>{if(log.Length<200000)log.AppendLine(t+": "+m+(t==LogType.Exception?"\n"+st:""));};}
             if(TouchlineApp.Instance==null){if(now-startedAt>BootTimeoutSeconds)Finish("TouchlineApp absent");return;}
             if(now-startedAt>RunTimeoutSeconds){Finish("délai dépassé à l'étape "+stage);return;}
-            if(++frames<(FocusedTactics?FocusedStepFrames:StepFrames)||now-stepAt<StepSeconds)return;frames=0;stepAt=now;
+            if(++frames<(FocusedTactics||FocusedRecruitment?FocusedStepFrames:StepFrames)||now-stepAt<StepSeconds)return;frames=0;stepAt=now;
             steps??=BuildSteps();
             if(stage<0)stage=0;
             if(stage>=steps.Count){Finish(failures==0?null:failures+" étape(s) en échec");return;}

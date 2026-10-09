@@ -10,26 +10,30 @@ namespace Touchline
 {
     public sealed partial class TouchlineApp
     {
-        string recruitmentTab="Marché",recruitOrder="Valeur",recruitNationality="Tous",recruitCountry="Tous",recruitLeague="Tous";
+        string recruitmentTab="Synthèse",recruitOrder="Valeur",recruitNationality="Tous",recruitCountry="Tous",recruitLeague="Tous";
         bool recruitAdvanced;
         int recruitMinAge=16,recruitMaxAge=45;long recruitMaxFee,recruitMaxMonthly;
         void ResetRecruitmentFilters()
         {
+            ResetRecruitmentCriteria();Build();
+        }
+        void ResetRecruitmentCriteria()
+        {
             recruitSearch="";recruitRole=marketFilter=recruitNationality=recruitCountry=recruitLeague="Tous";
             recruitOrder="Valeur";recruitMinAge=16;recruitMaxAge=45;recruitMaxFee=recruitMaxMonthly=0;recruitAdvanced=false;
-            Build();
         }
         void RecruitmentWorkspace()
         {
             content.AddToClassList("recruit-workspace");var title=Row(content,"recruit-titlebar");Heading(title,"Recrutement");if(Career.world==null)return;
             Text(title,"Transferts : "+Money(Career.TransferBudget)+" · Plafond salarial : "+Money(Core.Career.MonthlySalary(Career.WageBudget))+" / mois","recruit-budget");
-            var tabs=Row(content,"recruit-tabs");foreach(var tab in new[]{"Marché","Missions","Rapports","Négociations et prêts"}){var b=Button(tabs,tab,()=>{recruitmentTab=tab;Build();});b.name="recruit-tab-"+tab;b.AddToClassList(tab==recruitmentTab?"active":"recruit-tab");}
+            var tabs=Row(content,"recruit-tabs");foreach(var tab in new[]{"Synthèse","Marché","Missions","Rapports","Négociations et prêts"}){var b=Button(tabs,tab=="Négociations et prêts"?"Dossiers":tab,()=>{recruitmentTab=tab;Build();});b.name="recruit-tab-"+tab;b.AddToClassList(tab==recruitmentTab?"active":"recruit-tab");}
+            if(recruitmentTab=="Synthèse"){RecruitmentHub(Scroll(content));return;}
             if(recruitmentTab=="Missions"){ScoutingMissions(Scroll(content));return;}if(recruitmentTab=="Rapports"){ScoutingReports(Scroll(content));return;}if(recruitmentTab!="Marché"){RecruitmentDossiers(Scroll(content));return;}
             var toolbar=Row(content,"recruit-toolbar");var searchTools=Row(toolbar,"recruit-search-tools");var field=new TextField("Nom"){value=recruitSearch,name="recruit-search",tooltip="Rechercher un joueur par son nom"};searchTools.Add(field);
             var clear=Button(searchTools,"Effacer",()=>{field.value="";});clear.name="recruit-clear";
             Button(searchTools,"Réinitialiser",ResetRecruitmentFilters).name="recruit-reset";
             var filters=Row(toolbar,"recruit-filters");
-            var roles=ScoutingRoles();var role=new DropdownField(roles,recruitRole){name="recruit-role",tooltip="Filtrer les postes",formatListItemCallback=FrenchFootballPositions.Label,formatSelectedValueCallback=position=>root.ClassListContains("narrow")?(position=="Tous"?"Postes":FrenchFootballPositions.Short(position)):FrenchFootballPositions.Label(position)};filters.Add(role);
+            var roles=ScoutingRoles();var role=new DropdownField(roles,recruitRole){name="recruit-role",tooltip="Filtrer les postes",formatListItemCallback=FrenchFootballPositions.Label,formatSelectedValueCallback=position=>position=="Tous"?"Postes":FrenchFootballPositions.Short(position)};filters.Add(role);
             var markets=new List<string>{"Tous","Libres","Bientôt libres","Fin de contrat ≤ 6 mois","Ma sélection","Observés"};var market=new DropdownField(markets,marketFilter){name="recruit-market",tooltip="Marché et sélection",formatSelectedValueCallback=selection=>root.ClassListContains("narrow")?(selection switch{"Tous"=>"Marché","Bientôt libres"=>"À libérer","Fin de contrat ≤ 6 mois"=>"≤ 6 mois","Ma sélection"=>"Suivis",_=>selection}):selection};filters.Add(market);
             var order=new DropdownField(new List<string>{"Valeur","Salaire","Âge","Nom"},recruitOrder){name="recruit-order",tooltip="Ordre de recherche"};filters.Add(order);
             var advancedButton=Button(toolbar,recruitAdvanced?"Fermer les filtres":"Filtres +",()=>{});advancedButton.name="recruit-advanced-button";advancedButton.AddToClassList("recruit-advanced-button");advancedButton.tooltip="Pays, championnat, nationalité, âge et budgets";
@@ -103,9 +107,10 @@ namespace Touchline
             if(offers.Length==0)Text(parent,"Aucune négociation. Ouvrez une fiche ou contactez un agent depuis Marché.","empty-state");
             foreach(var o in offers){var p=Database.Find(o.player);if(p==null)continue;var card=Card(parent,"recruit-dossier");Text(card,p.name+" · "+OfferStatus(o.status),"section-title");Text(card,Money(o.fee)+" d’indemnité · "+Money(Core.Career.MonthlySalary(o.wage))+" / mois","muted");var actions=Row(card,"recruit-dossier-actions");Button(actions,"Fiche",()=>PlayerProfile(p.id));
                 if(p.team=="retired"||Career.PlayerRetirementEffective(p.id)){Text(card,"Retraite effective · dossier historique", "muted");continue;}
-                if(o.status=="accepted"&&o.due+7>=Career.life.day)Button(actions,"Signer l’accord",()=>RunDecision(()=>Career.SignTransfer(Database,o.player))).AddToClassList("primary");
-                if(o.status=="counter")Button(actions,"Reprendre la négociation",()=>TransferDialog(o.player));
-                if(o.status=="sale"&&o.due>=Career.life.day)Button(actions,"Accepter la vente · "+ClubName(o.seller),()=>Confirm("Accepter la cession ?",Money(o.fee)+" pour "+p.name,()=>RunDecision(()=>Career.AcceptSale(Database,o.player))));
+                bool decision=Career.RecruitmentOfferNeedsDecision(Database,o);
+                if(decision&&o.status=="accepted")Button(actions,"Signer l’accord",()=>RunDecision(()=>Career.SignTransfer(Database,o.player))).AddToClassList("primary");
+                if(decision&&o.status=="counter")Button(actions,"Reprendre la négociation",()=>TransferDialog(o.player));
+                if(decision&&o.status=="sale")Button(actions,"Accepter la vente · "+ClubName(o.seller),()=>Confirm("Accepter la cession ?",Money(o.fee)+" pour "+p.name,()=>RunDecision(()=>Career.AcceptSale(Database,o.player))));
                 if(o.status=="pending"||o.status=="accepted")Button(actions,"Retirer l’offre",()=>RunDecision(()=>Career.RejectOffer(o.player)));
             }
         }
