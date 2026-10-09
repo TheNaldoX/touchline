@@ -1,0 +1,33 @@
+Audit d'interface Touchline · 1 dp = 2.625 px physiques · seuils : cible tactile 48 dp, texte 12 sp
+
+Parcours ciblé recrutement : navigation, postes, missions, joueurs libres et rapports ; deux résolutions natives. Aucune sauvegarde personnelle.
+## plie-recrutement-synthese · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 21 · < 48 dp : 0 · textes 37 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+Piste : offset=1098.667 / 1297.8 viewport=(x:19.84, y:271.23, width:358.59, height:610.75) contenu=(x:19.84, y:-827.43, width:358.59, height:1908.55) fiche=(x:32.81, y:832.01, width:55.31, height:49.97)
+## plie-recrutement-pistes · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 20 · < 48 dp : 0 · textes 41 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## plie-comparaison-contextuelle · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 21 · < 48 dp : 0 · textes 42 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## plie-budget-explique · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 8 · < 48 dp : 0 · textes 32 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## deplie-recrutement-synthese · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 27 · < 48 dp : 0 · textes 54 · < 12 sp : 3 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×3 [unity-text-element.unity-label 11.0 sp] ex. « ESPACE MANAGER »
+
+Piste : offset=389.7142 / 631.2381 viewport=(x:200.00, y:205.71, width:597.71, height:525.71) contenu=(x:200.00, y:-184.00, width:597.71, height:1156.95) fiche=(x:512.38, y:681.52, width:55.24, height:49.90)
+## deplie-recrutement-pistes · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 36 · < 48 dp : 0 · textes 70 · < 12 sp : 3 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×3 [unity-text-element.unity-label 11.0 sp] ex. « ESPACE MANAGER »
+
+## deplie-comparaison-contextuelle · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 29 · < 48 dp : 0 · textes 61 · < 12 sp : 3 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×3 [unity-text-element.unity-label 11.0 sp] ex. « ESPACE MANAGER »
+
+## deplie-budget-explique · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 14 · < 48 dp : 0 · textes 45 · < 12 sp : 3 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×3 [unity-text-element.unity-label 11.0 sp] ex. « ESPACE MANAGER »
+
