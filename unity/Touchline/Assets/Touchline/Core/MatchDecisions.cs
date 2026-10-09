@@ -29,6 +29,10 @@ namespace Touchline.Core
  return Mathx.Clamp(quality*(header?.65f:1),.01f,.75f);  
  }  
  float ShotPlacement(Actor player,float finishing)=>Mathx.Clamp((finishing-35)/55,0,1)*Mathx.Clamp(Space(player.position,1-player.side,true)/4,.4f,1);  
+ // Calibration of displayed pre-shot odds against 400 simulated matches (seeds 1/2).
+ // This is a simulation estimate, not real-world xG. Shot selection keeps its original utility.
+ public const float ReportedShotOddsScale=1.65f;
+ public static float CalibratedShotEstimate(float geometry){float q=Mathx.Clamp(geometry,0,1);return q*ReportedShotOddsScale/(1-q+q*ReportedShotOddsScale);}
  float AvailableShotWidth(Actor player)=>.2f+(1.4f+1.5f*ShotPlacement(player,Skill(player,"finishing")))*.85f;  
  bool ShootingLaneClear(Actor player,float goalZ)  
  {  
@@ -262,7 +266,7 @@ Actor best=null;float bestScore=-100;string kind="pass";
  void Shoot(Actor p,bool header=false,bool penalty=false,bool freeKick=false)  
  {  
  float approachFacing=p.angle;  
- int dir=Direction(p.side);float d=Point.Distance(p.position,new Point(dir*52.5f,0));float quality=penalty?.76f:ShotQuality(p,header);State.shotXg=quality;State.metrics[p.side].xg+=quality;  
+ int dir=Direction(p.side);float d=Point.Distance(p.position,new Point(dir*52.5f,0));float quality=penalty?.76f:CalibratedShotEstimate(ShotQuality(p,header));State.shotXg=quality;State.metrics[p.side].xg+=quality;
  float finishing=penalty?Skill(p,"penalties"):freeKick?FreeKickSkill(p):header?Skill(p,"headingAccuracy"):OpenPlayShotSkill(p,d);  
  float accuracy=penalty?.83f+finishing*.0012f:Mathx.Clamp(.30f+finishing/240-d/110,.15f,.74f);accuracy+=Composure(p)*ComposureShotAccuracy;bool onTarget=Random()<accuracy;  
  var keeper=State.actors[(1-p.side)*11];float side=keeper.position.z>0?-1:1;  

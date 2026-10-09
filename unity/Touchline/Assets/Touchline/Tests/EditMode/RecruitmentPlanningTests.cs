@@ -159,5 +159,29 @@ namespace Touchline.Tests
             Assert.IsNotEmpty(result); Assert.IsTrue(result.All(r => r.knowledge == 100 && FootballPositions.Matches(db.Find(r.player), "CB")));
             Assert.IsEmpty(c.RecruitmentRecommendations(db, limit: 0));
         }
+
+        [Test] public void RecruitmentPrioritizesMissingRoleOverStrongerCoveredRole()
+        {
+            PlanningSquad(new[]{"LB"},new[]{"LB"});
+            var covered=db.Find("p24");covered.position="LB";covered.positions=new[]{"LB"};
+            var needed=db.Find("p25");needed.position="RB";needed.positions=new[]{"RB"};
+            PlanningReport(covered.id,level:85);PlanningReport(needed.id,level:70);
+            var result=c.RecruitmentRecommendations(db);
+            Assert.AreEqual(needed.id,result.First().player);
+            StringAssert.Contains("Pas de référence",result.First().comparison);
+            StringAssert.Contains(db.Find("p0").name,result.Single(r=>r.player==covered.id).comparison);
+            Assert.IsNotNull(result.First().tacticalFit);
+        }
+
+        [Test] public void RecruitmentKeepsUnaffordablePriorityBelowFundableAlternative()
+        {
+            PlanningSquad(new[]{"LB"},new[]{"LB"});
+            var covered=db.Find("p24");covered.position="LB";covered.positions=new[]{"LB"};
+            var needed=db.Find("p25");needed.position="RB";needed.positions=new[]{"RB"};needed.wage=100000000;
+            PlanningReport(covered.id);PlanningReport(needed.id);
+            var result=c.RecruitmentRecommendations(db);
+            Assert.AreEqual(covered.id,result.First().player);
+            Assert.IsFalse(result.Single(r=>r.player==needed.id).affordable);
+        }
     }
 }

@@ -76,6 +76,8 @@ namespace Touchline
                 Text(card,player.name,"recruit-hub-player-name");
                 Text(card,FrenchFootballPositions.PlayerLabel(player)+" · "+player.age+" ans · "+ClubName(player.team),"recruit-hub-detail");
                 Text(card,recommendation.reason,"recruit-hub-detail");
+                Text(card,recommendation.comparison,"recruit-hub-assessment").name="recruit-hub-comparison-"+player.id;
+                Text(card,recommendation.tacticalFit,"recruit-hub-detail");
                 if(recommendation.levelKnown)Text(card,Stars(recommendation.assessedLevel,ClubRatingBaseline())+" · estimation pour votre club","recruit-hub-assessment");
                 var report=Career.ScoutReportCard(Database,player.id,CachedRecruitmentOverview());if(report.ability.known)Text(card,"Note "+report.grade+" · niveau "+report.ability+(report.potential.known?" · potentiel "+report.potential:"")+(report.generated?" · ligue générée":""),"recruit-hub-assessment").name="recruit-hub-grade-"+player.id;
                 Text(card,Money(recommendation.estimatedFee)+" · "+Money(recommendation.currentMonthlyWage)+" / mois estimés","recruit-hub-detail");

@@ -178,6 +178,14 @@ namespace Touchline.Tests
             m.metrics[0].lineSum=-30f*10;m.awayTacticalReviewAt=0;Call<object>(sim,"ReviewOpponent");
             Assert.IsFalse(m.awayExploitingLine);Assert.AreEqual(before,m.awayTactic.directness);Assert.AreEqual(counter,m.awayTactic.counterAttack);
         }
+        [Test] public void DisplayedShotEstimateIsBoundedAndPreservesChanceOrdering()
+        {
+            Assert.AreEqual(0,MatchSimulation.CalibratedShotEstimate(0));
+            Assert.AreEqual(1,MatchSimulation.CalibratedShotEstimate(1));
+            float previous=0;
+            for(int i=1;i<=100;i++){float value=MatchSimulation.CalibratedShotEstimate(i/100f);Assert.Greater(value,previous);Assert.LessOrEqual(value,1);previous=value;}
+        }
+
         [Test] public void OpponentRallyAtHalfTimeWhenLosingAndAssistantReadsTheGame()
         {
             var db=Db();var sim=Sim(db);Mind(sim,_=>{});sim.State.score[0]=2;
@@ -185,6 +193,9 @@ namespace Touchline.Tests
             var m=sim.State;m.homeTactic.line=.8f;m.metrics[1].throughBalls=4;
             Assert.IsTrue(MatchAssistant.Observe(m).Any(o=>o.key=="line-exposed"));
             m.homeTactic.line=.4f;Assert.IsFalse(MatchAssistant.Observe(m).Any(o=>o.key=="line-exposed"));
+            m.passes[0]=50;m.completedPasses[0]=25;m.homeTactic.tempo=.8f;m.mindset=null;
+            var passing=MatchAssistant.Observe(m).Single(o=>o.key=="passing").text;
+            StringAssert.Contains("peut y contribuer",passing);StringAssert.Contains("Surveillez",passing);
             var report=MatchAssistant.Opponent(db,m);Assert.AreEqual(2,report.danger.Count);StringAssert.Contains(m.awayTactic.formation,report.style);Assert.IsNotEmpty(report.advice);
         }
     }
