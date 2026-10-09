@@ -1,0 +1,239 @@
+Audit d'interface Touchline · 1 dp = 2.625 px physiques · seuils : cible tactile 48 dp, texte 12 sp
+
+Parcours ciblé recrutement : navigation, postes, missions, joueurs libres et rapports ; deux résolutions natives. Aucune sauvegarde personnelle.
+## plie-recrutement-synthese · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 21 · < 48 dp : 0 · textes 35 · < 12 sp : 1 · plus petit texte 11.0 sp · coupés au bord : 1
+   petit texte ×1 [unity-text-element.unity-label 11.0 sp] ex. « Transferts : 8,01 M€ · Plafond salarial : 2,20 … »
+   coupé « Dossiers » x 349–427
+
+## plie-recrutement-pistes · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 21 · < 48 dp : 0 · textes 35 · < 12 sp : 1 · plus petit texte 11.0 sp · coupés au bord : 1
+   petit texte ×1 [unity-text-element.unity-label 11.0 sp] ex. « Transferts : 8,01 M€ · Plafond salarial : 2,20 … »
+   coupé « Dossiers » x 349–427
+
+## plie-recrutement-marche · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 32 · < 48 dp : 0 · textes 68 · < 12 sp : 8 · plus petit texte 11.0 sp · coupés au bord : 1
+   petit texte ×1 [unity-text-element.unity-button 11.0 sp] ex. « Filtres + »
+   petit texte ×7 [unity-text-element.unity-label 11.0 sp] ex. « Transferts : 8,01 M€ · Plafond salarial : 2,20 … »
+   coupé « Dossiers » x 349–427
+
+## plie-recrutement-mission · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 23 · < 48 dp : 0 · textes 57 · < 12 sp : 1 · plus petit texte 11.0 sp · coupés au bord : 1
+   petit texte ×1 [unity-text-element.unity-label 11.0 sp] ex. « Transferts : 8,01 M€ · Plafond salarial : 2,20 … »
+   coupé « Dossiers » x 349–427
+
+Besoin → marché au bon poste ; mission préremplie sans dépense avant confirmation : plie
+## plie-recrutement-libres · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 32 · < 48 dp : 0 · textes 68 · < 12 sp : 8 · plus petit texte 11.0 sp · coupés au bord : 1
+   petit texte ×1 [unity-text-element.unity-button 11.0 sp] ex. « Filtres + »
+   petit texte ×7 [unity-text-element.unity-label 11.0 sp] ex. « Transferts : 8,01 M€ · Plafond salarial : 2,20 … »
+   coupé « Dossiers » x 349–427
+
+## plie-recrutement-norvege · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 24 · < 48 dp : 0 · textes 50 · < 12 sp : 6 · plus petit texte 11.0 sp · coupés au bord : 1
+   petit texte ×1 [unity-text-element.unity-button 11.0 sp] ex. « Fermer les filtres »
+   petit texte ×5 [unity-text-element.unity-label 11.0 sp] ex. « Transferts : 8,01 M€ · Plafond salarial : 2,20 … »
+   coupé « Dossiers » x 349–427
+
+## plie-recrutement-mission-norvege · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 26 · < 48 dp : 0 · textes 72 · < 12 sp : 6 · plus petit texte 11.0 sp · coupés au bord : 1
+   petit texte ×1 [unity-text-element.unity-button 11.0 sp] ex. « Fermer les filtres »
+   petit texte ×5 [unity-text-element.unity-label 11.0 sp] ex. « Transferts : 8,01 M€ · Plafond salarial : 2,20 … »
+   coupé « Dossiers » x 349–427
+
+Norvège : joueurs retrouvés, territoire conservé dans la mission sans dépense : plie
+## plie-recrutement-rapports · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 21 · < 48 dp : 0 · textes 32 · < 12 sp : 1 · plus petit texte 11.0 sp · coupés au bord : 1
+   petit texte ×1 [unity-text-element.unity-label 11.0 sp] ex. « Transferts : 8,01 M€ · Plafond salarial : 2,20 … »
+   coupé « Dossiers » x 349–427
+
+Rapport observé accessible, option d'attributs masqués préservée : plie
+## plie-recrutement-rapport-actions · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 22 · < 48 dp : 0 · textes 33 · < 12 sp : 1 · plus petit texte 11.0 sp · coupés au bord : 1
+   petit texte ×1 [unity-text-element.unity-label 11.0 sp] ex. « Transferts : 8,01 M€ · Plafond salarial : 2,20 … »
+   coupé « Dossiers » x 349–427
+
+## deplie-recrutement-synthese · 2184×1968 px · échelle 2.54 · 1 unité UI = 0.97 dp · largeur logique 860 · hauteur 775
+   boutons visibles 27 · < 48 dp : 14 · textes 56 · < 12 sp : 7 · plus petit texte 10.6 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 46×46 dp
+   petit bouton ×1 « › » 46×46 dp
+   petit bouton ×1 « Continuer  → » 131×46 dp
+   petit bouton ×1 « Bureau » 150×46 dp
+   petit bouton ×1 « Effectif » 150×46 dp
+   petit bouton ×1 « Tactique » 150×46 dp
+   petit bouton ×1 « Match » 150×46 dp
+   petit bouton ×1 « Calendrier » 150×46 dp
+   petit bouton ×1 « Recrutement » 150×46 dp
+   petit bouton ×1 « Formation » 150×46 dp
+   petit bouton ×1 « Finances » 150×46 dp
+   petit bouton ×1 « Messages » 150×46 dp
+   petit bouton ×1 « Plus » 150×46 dp
+   petit bouton ×1 « Changer de club » 150×46 dp
+   petit texte ×7 [unity-text-element.unity-label 10.6 sp] ex. « TOUCHLINE / RECRUTEMENT »
+
+## deplie-recrutement-pistes · 2184×1968 px · échelle 2.54 · 1 unité UI = 0.97 dp · largeur logique 860 · hauteur 775
+   boutons visibles 27 · < 48 dp : 14 · textes 56 · < 12 sp : 7 · plus petit texte 10.6 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 46×46 dp
+   petit bouton ×1 « › » 46×46 dp
+   petit bouton ×1 « Continuer  → » 131×46 dp
+   petit bouton ×1 « Bureau » 150×46 dp
+   petit bouton ×1 « Effectif » 150×46 dp
+   petit bouton ×1 « Tactique » 150×46 dp
+   petit bouton ×1 « Match » 150×46 dp
+   petit bouton ×1 « Calendrier » 150×46 dp
+   petit bouton ×1 « Recrutement » 150×46 dp
+   petit bouton ×1 « Formation » 150×46 dp
+   petit bouton ×1 « Finances » 150×46 dp
+   petit bouton ×1 « Messages » 150×46 dp
+   petit bouton ×1 « Plus » 150×46 dp
+   petit bouton ×1 « Changer de club » 150×46 dp
+   petit texte ×7 [unity-text-element.unity-label 10.6 sp] ex. « TOUCHLINE / RECRUTEMENT »
+
+## deplie-recrutement-marche · 2184×1968 px · échelle 2.54 · 1 unité UI = 0.97 dp · largeur logique 860 · hauteur 775
+   boutons visibles 50 · < 48 dp : 21 · textes 101 · < 12 sp : 48 · plus petit texte 10.6 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 46×46 dp
+   petit bouton ×1 « › » 46×46 dp
+   petit bouton ×1 « Continuer  → » 131×46 dp
+   petit bouton ×1 « Bureau » 150×46 dp
+   petit bouton ×1 « Effectif » 150×46 dp
+   petit bouton ×1 « Tactique » 150×46 dp
+   petit bouton ×1 « Match » 150×46 dp
+   petit bouton ×1 « Calendrier » 150×46 dp
+   petit bouton ×1 « Recrutement » 150×46 dp
+   petit bouton ×1 « Formation » 150×46 dp
+   petit bouton ×1 « Finances » 150×46 dp
+   petit bouton ×1 « Messages » 150×46 dp
+   petit bouton ×1 « Plus » 150×46 dp
+   petit bouton ×1 « Changer de club » 150×46 dp
+   petit bouton ×7 « ☆ » 46×48 dp
+   petit texte ×24 [unity-text-element.unity-button 11.6 sp] ex. « Effacer »
+   petit texte ×16 [unity-text-element.unity-label 10.6 sp] ex. « TOUCHLINE / RECRUTEMENT »
+   petit texte ×8 [unity-text-element.unity-label 11.6 sp] ex. « Pays du club »
+
+## deplie-recrutement-mission · 2184×1968 px · échelle 2.54 · 1 unité UI = 0.97 dp · largeur logique 860 · hauteur 775
+   boutons visibles 29 · < 48 dp : 16 · textes 82 · < 12 sp : 18 · plus petit texte 10.6 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 46×46 dp
+   petit bouton ×1 « › » 46×46 dp
+   petit bouton ×1 « Continuer  → » 131×46 dp
+   petit bouton ×1 « Bureau » 150×46 dp
+   petit bouton ×1 « Effectif » 150×46 dp
+   petit bouton ×1 « Tactique » 150×46 dp
+   petit bouton ×1 « Match » 150×46 dp
+   petit bouton ×1 « Calendrier » 150×46 dp
+   petit bouton ×1 « Recrutement » 150×46 dp
+   petit bouton ×1 « Formation » 150×46 dp
+   petit bouton ×1 « Finances » 150×46 dp
+   petit bouton ×1 « Messages » 150×46 dp
+   petit bouton ×1 « Plus » 150×46 dp
+   petit bouton ×1 « Changer de club » 150×46 dp
+   petit bouton ×1 « Fermer » 82×46 dp
+   petit bouton ×1 « Envoyer le recruteur » 709×46 dp
+   petit texte ×7 [unity-text-element.unity-label 10.6 sp] ex. « TOUCHLINE / RECRUTEMENT »
+   petit texte ×11 [unity-text-element.unity-label 11.6 sp] ex. « Poste »
+
+Besoin → marché au bon poste ; mission préremplie sans dépense avant confirmation : deplie
+## deplie-recrutement-libres · 2184×1968 px · échelle 2.54 · 1 unité UI = 0.97 dp · largeur logique 860 · hauteur 775
+   boutons visibles 50 · < 48 dp : 21 · textes 101 · < 12 sp : 48 · plus petit texte 10.6 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 46×46 dp
+   petit bouton ×1 « › » 46×46 dp
+   petit bouton ×1 « Continuer  → » 131×46 dp
+   petit bouton ×1 « Bureau » 150×46 dp
+   petit bouton ×1 « Effectif » 150×46 dp
+   petit bouton ×1 « Tactique » 150×46 dp
+   petit bouton ×1 « Match » 150×46 dp
+   petit bouton ×1 « Calendrier » 150×46 dp
+   petit bouton ×1 « Recrutement » 150×46 dp
+   petit bouton ×1 « Formation » 150×46 dp
+   petit bouton ×1 « Finances » 150×46 dp
+   petit bouton ×1 « Messages » 150×46 dp
+   petit bouton ×1 « Plus » 150×46 dp
+   petit bouton ×1 « Changer de club » 150×46 dp
+   petit bouton ×7 « ☆ » 46×48 dp
+   petit texte ×24 [unity-text-element.unity-button 11.6 sp] ex. « Effacer »
+   petit texte ×16 [unity-text-element.unity-label 10.6 sp] ex. « TOUCHLINE / RECRUTEMENT »
+   petit texte ×8 [unity-text-element.unity-label 11.6 sp] ex. « Pays du club »
+
+## deplie-recrutement-norvege · 2184×1968 px · échelle 2.54 · 1 unité UI = 0.97 dp · largeur logique 860 · hauteur 775
+   boutons visibles 38 · < 48 dp : 18 · textes 79 · < 12 sp : 35 · plus petit texte 10.6 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 46×46 dp
+   petit bouton ×1 « › » 46×46 dp
+   petit bouton ×1 « Continuer  → » 131×46 dp
+   petit bouton ×1 « Bureau » 150×46 dp
+   petit bouton ×1 « Effectif » 150×46 dp
+   petit bouton ×1 « Tactique » 150×46 dp
+   petit bouton ×1 « Match » 150×46 dp
+   petit bouton ×1 « Calendrier » 150×46 dp
+   petit bouton ×1 « Recrutement » 150×46 dp
+   petit bouton ×1 « Formation » 150×46 dp
+   petit bouton ×1 « Finances » 150×46 dp
+   petit bouton ×1 « Messages » 150×46 dp
+   petit bouton ×1 « Plus » 150×46 dp
+   petit bouton ×1 « Changer de club » 150×46 dp
+   petit bouton ×4 « ☆ » 46×48 dp
+   petit texte ×15 [unity-text-element.unity-button 11.6 sp] ex. « Effacer »
+   petit texte ×12 [unity-text-element.unity-label 10.6 sp] ex. « TOUCHLINE / RECRUTEMENT »
+   petit texte ×8 [unity-text-element.unity-label 11.6 sp] ex. « Pays du club »
+
+## deplie-recrutement-mission-norvege · 2184×1968 px · échelle 2.54 · 1 unité UI = 0.97 dp · largeur logique 860 · hauteur 775
+   boutons visibles 40 · < 48 dp : 20 · textes 105 · < 12 sp : 46 · plus petit texte 10.6 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 46×46 dp
+   petit bouton ×1 « › » 46×46 dp
+   petit bouton ×1 « Continuer  → » 131×46 dp
+   petit bouton ×1 « Bureau » 150×46 dp
+   petit bouton ×1 « Effectif » 150×46 dp
+   petit bouton ×1 « Tactique » 150×46 dp
+   petit bouton ×1 « Match » 150×46 dp
+   petit bouton ×1 « Calendrier » 150×46 dp
+   petit bouton ×1 « Recrutement » 150×46 dp
+   petit bouton ×1 « Formation » 150×46 dp
+   petit bouton ×1 « Finances » 150×46 dp
+   petit bouton ×1 « Messages » 150×46 dp
+   petit bouton ×1 « Plus » 150×46 dp
+   petit bouton ×1 « Changer de club » 150×46 dp
+   petit bouton ×4 « ☆ » 46×48 dp
+   petit bouton ×1 « Fermer » 82×46 dp
+   petit bouton ×1 « Envoyer le recruteur » 709×46 dp
+   petit texte ×15 [unity-text-element.unity-button 11.6 sp] ex. « Effacer »
+   petit texte ×12 [unity-text-element.unity-label 10.6 sp] ex. « TOUCHLINE / RECRUTEMENT »
+   petit texte ×19 [unity-text-element.unity-label 11.6 sp] ex. « Pays du club »
+
+Norvège : joueurs retrouvés, territoire conservé dans la mission sans dépense : deplie
+## deplie-recrutement-rapports · 2184×1968 px · échelle 2.54 · 1 unité UI = 0.97 dp · largeur logique 860 · hauteur 775
+   boutons visibles 28 · < 48 dp : 14 · textes 45 · < 12 sp : 8 · plus petit texte 10.6 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 46×46 dp
+   petit bouton ×1 « › » 46×46 dp
+   petit bouton ×1 « Continuer  → » 131×46 dp
+   petit bouton ×1 « Bureau » 150×46 dp
+   petit bouton ×1 « Effectif » 150×46 dp
+   petit bouton ×1 « Tactique » 150×46 dp
+   petit bouton ×1 « Match » 150×46 dp
+   petit bouton ×1 « Calendrier » 150×46 dp
+   petit bouton ×1 « Recrutement » 150×46 dp
+   petit bouton ×1 « Formation » 150×46 dp
+   petit bouton ×1 « Finances » 150×46 dp
+   petit bouton ×1 « Messages » 150×46 dp
+   petit bouton ×1 « Plus » 150×46 dp
+   petit bouton ×1 « Changer de club » 150×46 dp
+   petit texte ×7 [unity-text-element.unity-label 10.6 sp] ex. « TOUCHLINE / RECRUTEMENT »
+   petit texte ×1 [unity-text-element.unity-label 11.6 sp] ex. « Valeur 2,50 M€ · salaire actuel estimé 49 183 €… »
+
+Rapport observé accessible, option d'attributs masqués préservée : deplie
+## deplie-recrutement-rapport-actions · 2184×1968 px · échelle 2.54 · 1 unité UI = 0.97 dp · largeur logique 860 · hauteur 775
+   boutons visibles 28 · < 48 dp : 14 · textes 45 · < 12 sp : 8 · plus petit texte 10.6 sp · coupés au bord : 0
+   petit bouton ×1 « ‹ » 46×46 dp
+   petit bouton ×1 « › » 46×46 dp
+   petit bouton ×1 « Continuer  → » 131×46 dp
+   petit bouton ×1 « Bureau » 150×46 dp
+   petit bouton ×1 « Effectif » 150×46 dp
+   petit bouton ×1 « Tactique » 150×46 dp
+   petit bouton ×1 « Match » 150×46 dp
+   petit bouton ×1 « Calendrier » 150×46 dp
+   petit bouton ×1 « Recrutement » 150×46 dp
+   petit bouton ×1 « Formation » 150×46 dp
+   petit bouton ×1 « Finances » 150×46 dp
+   petit bouton ×1 « Messages » 150×46 dp
+   petit bouton ×1 « Plus » 150×46 dp
+   petit bouton ×1 « Changer de club » 150×46 dp
+   petit texte ×7 [unity-text-element.unity-label 10.6 sp] ex. « TOUCHLINE / RECRUTEMENT »
+   petit texte ×1 [unity-text-element.unity-label 11.6 sp] ex. « Valeur 2,50 M€ · salaire actuel estimé 49 183 €… »
+
