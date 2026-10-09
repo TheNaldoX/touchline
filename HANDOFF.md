@@ -38,6 +38,7 @@ Jeu de gestion de football type Football Manager, Unity **6000.3.24f1**, URP, An
 ## 3. État au 9 octobre 2026
 
 ### Branches et PR
+- Lot local `fix/match-visual-readability` : correction ciblée des sauts de caméra télé aux seuils du cadrage du but ; compilation/captures Unity à réaliser avant livraison. Complément à #38, sans refaire son éclairage ni son ciel.
 - **PR #34, #35 et #36 fusionnées** : main `ae2df218` contient la pile intégrée, les tenues et l'ambiance.
 - **PR #37 `feat/tactical-audit` → `main`** : consignes en deux touches et audit tactique. 699 tests Core réussis ; compilation/captures Unity ciblées validées, revue visuelle faite, test du rapport carrière réussi. APK 0.59/code52 construite et vérifiée, téléphone non vérifié.
 - Git HTTPS fonctionne sur ce PC. Le connecteur GitHub renvoie encore 403 en écriture ; utiliser Git pour les branches et REST avec les identifiants Git en mémoire pour la PR, sans exposer de secret.
@@ -113,6 +114,8 @@ touches 36,9 · passes 81,8 % · possession favori 56 %. **Hors fourchette** : p
   (`gh api repos/TheNaldoX/touchline/pulls -f title=… -f head=… -f base=… -F body=@fichier`).
 
 ## 6. À faire (par priorité)
+
+- Valider le lot caméra `fix/match-visual-readability` : dix nouveaux cas EditMode dans BroadcastFramingTests, films `camera-crossing-before/after` et `camera-crossing-portrait-before/after` (même harness sur les deux versions), puis courte séquence réelle jour/soir. Le mode diagnostic fige les joueurs et impose le ballon : ne pas le présenter comme une preuve des décisions ou animations du match.
 
 1. **#37 : validation locale et Unity terminée** (captures finales Actions 37855587630). APK 0.59/code52 construite et signature vérifiée. Faire tester Victor (gels, fluidité,
    rendu). Si ça rame : réduire post-process, flocage, ombres (`RenderBudget`). Ambiance (#36) : vérifier
@@ -193,3 +196,9 @@ léger zoom sur les grosses occasions, tribune haute qui réagit aussi (aujourd'
 - Signature cryptographique apksigner vérifiée ; certificat SHA256 130917e6d2b4ea2dcca487587dcff03b1356b14e7de39c3e01657097ad57ee13, identique à 0.58. Manifest et bibliothèques libunity/libil2cpp ARM64 contrôlés. Preuve locale ignorée .validation/apk059/verified.json ; aucun APK committé.
 - Validation du lot : 699 tests Core, comparaison 200 matchs identique, audit 2 800 matchs, huit captures Unity finales et six assertions UI, test de non-régression du rapport joueurs libres. Installation, sauvegardes après mise à jour, chauffe, batterie et fluidité sur Fold non testées matériellement. Portraits joueurs absents du dépôt : affichage des initiales inchangé.
 - Prochaine étape : test Fold de cette APK, puis PR moteur distincte pour DefensiveFocus avant contact (preuve de fuite de destination documentée ci-dessus), avec test déterministe et calibration appariée. Rééquilibrage ligne haute, management et interface globale restent à poursuivre. Ne pas fusionner release/0.59 ; ne pas la repousser pour éviter un deuxième build.
+
+### Lot caméra Codex du 9 octobre 2026 — seuils du cadre de but
+- Fait : inclusion progressive du but dans le cadrage sur dix mètres avant les seuils existants ; transitions latérales portrait sur six mètres. Le cadrage du ballon et des couloirs de passe reste une borne minimale, le but est entièrement inclus là où il l'était auparavant. Aucun Core, joueur, animation, lumière ou matériau modifié ; budget triangles/draw calls/textures inchangé, aucun objet alloué par image par cette correction.
+- Diagnostic géométrique indépendant, pas un rendu Unity : sur une trajectoire x23→33 m avec regard quatre mètres derrière, pas de 0,1 m, saut maximal paysage 1,32 de 25,44 à 0,58 m et portrait 0,43 de 15,67 à 0,43 m. Seuil de largeur du regard en portrait : 38,33 à 0,71 m. Ces mesures appliquent les formules du cadrage, sans le lissage d'arène.
+- Vérifications préparées : dix cas EditMode (deux côtés, aller-retour, pas 0,1 et 0,5 m, seuils portrait), conservant la visibilité du ballon et des deux montants. CiMatchFilm reconnaît `camera-crossing` : diagnostic huit secondes à 30 i/s, ballon x20→36→20 imposé, simulation figée, caméra réelle de MatchArena ; affiche déplacement maximal et contrôle ballon visible. Suffixe `portrait` pour 540×1260, sinon 960×728. Mesures d'animation remplacées par un avertissement explicite dans ce mode.
+- Non vérifié à ce stade : compilation Unity, exécution EditMode, vidéos avant/après, matériel Android. Aucun APK ni test de fluidité matérielle revendiqué. PR #38 traite déjà le contre-jour des ralentis, pas de doublon ajouté ici.

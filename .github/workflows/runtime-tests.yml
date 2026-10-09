@@ -1,0 +1,69 @@
+name: Runtime regression tests
+
+on:
+  push:
+    branches: ['test/runtime-*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: write
+
+concurrency:
+  group: touchline-runtime-tests
+  cancel-in-progress: false
+
+jobs:
+  camera:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Libérer de l'espace disque
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          android: false
+          large-packages: false
+      - uses: actions/cache@v4
+        with:
+          path: unity/Touchline/Library
+          key: Library-RuntimeTests-${{ hashFiles('unity/Touchline/Packages/packages-lock.json', 'unity/Touchline/ProjectSettings/ProjectVersion.txt') }}
+          restore-keys: Library-Android-
+      - name: Exécuter les régressions caméra dans Unity
+        uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: unity/Touchline
+          unityVersion: 6000.3.24f1
+          customImage: unityci/editor:ubuntu-6000.3.24f1-android-3
+          testMode: EditMode
+          coverageEnabled: false
+          artifactsPath: runtime-test-results
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: Régressions du cadrage
+          customParameters: -testFilter Touchline.Tests.BroadcastFramingTests;Touchline.Tests.BroadcastGoalGroundTests034
+      - name: Vérifier que des tests ont réellement été exécutés
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          reports = []
+          for path in Path('runtime-test-results').rglob('*.xml'):
+              root = ET.parse(path).getroot()
+              if root.tag == 'test-run':
+                  reports.append(root)
+          assert reports, 'Aucun résultat NUnit'
+          total = sum(int(root.attrib.get('total', 0)) for root in reports)
+          failed = sum(int(root.attrib.get('failed', 0)) for root in reports)
+          assert total >= 10 and failed == 0, f'Résultat incomplet : {total} tests, {failed} échecs'
+          print(f'{total} tests Unity, {failed} échecs')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Runtime-test-results
+          path: runtime-test-results
+          if-no-files-found: warn
