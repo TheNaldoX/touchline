@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Filets : fils continus subdivisés aux mailles pour réagir réellement aux impacts centraux des deux buts, avec déformation locale et retour au repos ; rayon et ressort inchangés.
 - Recrutement : territoires fiables pour 45 clubs hors catalogue de championnats (1 434 joueurs), filtres et missions par pays partagés, sans ajout de ligue ni modification des notes.
 - Négociations : une offre invalide affiche son erreur dans le formulaire sans effacer les montants, la promesse de temps de jeu ni les brouillons de transfert et de prêt.
 - Recrutement : synthèse des besoins tactiques sans double compter les polyvalents, budgets après engagements, rapports et pistes observées, accès directs aux missions, joueurs libres et agents, avec plafonds d'observation cohérents.
