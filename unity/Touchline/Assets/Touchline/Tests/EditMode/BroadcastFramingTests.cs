@@ -48,7 +48,9 @@ namespace Touchline.Tests
         {
             var go=new GameObject("TV context test");try{var c=go.AddComponent<Camera>();c.aspect=aspect;c.fieldOfView=46;
                 BroadcastFraming.Apply(c,new Vector3(8,.6f,5),new Vector3(8,.11f,5),false,false,1,1);
-                for(int x=-1;x<=1;x+=2)for(int z=-1;z<=1;z+=2)Check(c,new Vector3(8+x*18,.6f,5+z*12));
+                // Portrait : la largeur gardée passe de ±12 à ±PortraitLaneHalfWidth m pour des joueurs lisibles ; la longueur (±18 m) reste exigée.
+                float width=aspect<.8f?BroadcastFraming.PortraitLaneHalfWidth:12;
+                for(int x=-1;x<=1;x+=2)for(int z=-1;z<=1;z+=2)Check(c,new Vector3(8+x*18,.6f,5+z*width));
                 if(aspect<.8f)Assert.Greater(Mathf.Abs((c.WorldToViewportPoint(new Vector3(26,0,5))-c.WorldToViewportPoint(new Vector3(-10,0,5))).y),.3f);
             }finally{Object.DestroyImmediate(go);}
         }
@@ -75,6 +77,20 @@ namespace Touchline.Tests
         [Test] public void PortraitTelevisionZoomChangesScaleWhileRetainingTheBall()
         {
             var go=new GameObject("Portrait zoom test");try{var c=go.AddComponent<Camera>();c.aspect=.43f;c.fieldOfView=46;BroadcastFraming.Apply(c,Vector3.zero,Vector3.zero,false,false,1,.8f);float close=c.transform.position.magnitude;Check(c,Vector3.zero);BroadcastFraming.Apply(c,Vector3.zero,Vector3.zero,false,false,1,1.3f);Assert.Greater(c.transform.position.magnitude,close*1.2f);Check(c,Vector3.zero);}finally{Object.DestroyImmediate(go);}
+        }
+        [TestCase(.43f,8f,5f)][TestCase(.43f,-40f,-20f)][TestCase(.43f,40f,25f)]
+        public void PortraitTelevisionShowsStandingPlayersInsteadOfATopDownMap(float aspect,float x,float z)
+        {
+            var go=new GameObject("Portrait player scale");try{var c=go.AddComponent<Camera>();c.aspect=aspect;c.fieldOfView=46;
+                var ball=new Vector3(x,.11f,z);var focus=BroadcastFraming.LiveTarget(ball,true,false);
+                BroadcastFraming.Apply(c,focus,ball,false,true,x>=0?1:-1,.85f);Check(c,ball);
+                Assert.Greater(c.transform.forward.y,-.9f,"Plus de vue presque verticale en portrait");
+                Assert.Greater(Vector3.Dot(c.transform.up,Vector3.right),.5f,"Le but +x reste en haut de l'écran plié");
+                var feet=c.WorldToViewportPoint(ball);var head=c.WorldToViewportPoint(ball+Vector3.up*1.8f);
+                // Ancienne vue du dessus : ~0,003 de la hauteur d'écran (≈ 6 px sur 2520) ; exigé : ≥ 0,015 (≈ 38 px).
+                Assert.Greater(head.y-feet.y,.015f,"Un joueur debout doit apparaître debout et lisible");
+                TestContext.WriteLine($"Joueur de 1,8 m : {(head.y-feet.y)*2520:0} px sur 2520 ; distance {Vector3.Distance(c.transform.position,focus):0.0} m");
+            }finally{Object.DestroyImmediate(go);}
         }
         [TestCase("Entraînement","entrainement")][TestCase("Prêts et agents","PRETS")]
         public void MenuSearchAcceptsUnaccentedQueries(string title,string query)=>Assert.IsTrue(TouchlineApp.DirectoryMatches(title,query));

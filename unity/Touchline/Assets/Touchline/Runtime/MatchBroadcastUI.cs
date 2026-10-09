@@ -10,6 +10,7 @@ namespace Touchline
         VisualElement quietPanel;Image broadcastImage;Label broadcastStatus,quietSituation,matchSignalTitle,matchSignalDetail;VisualElement matchSignal;
         Button broadcastMode,broadcastSpeed,goalReplaySkip,goalReplaySpeed,goalReplayOptions;bool? quietShown;int feedbackSeen;float feedbackUntil;bool feedbackGoal;
         Button[] goalReplayControls;
+        const float TouchTarget=48; // unités UI (≈ dp) : cible tactile minimale des commandes du direct
         readonly Label[] quietHome=new Label[6],quietAway=new Label[6],quietShapes=new Label[2],quietInsights=new Label[3],quietMoments=new Label[3];
         readonly Button[] quietPlayers=new Button[22];
         public static string BroadcastClock(float seconds,float secondsPerMinute=8){int total=Mathf.Clamp(Mathf.FloorToInt(seconds*60/Mathf.Max(.001f,secondsPerMinute)+.001f),0,5400);return (total/60).ToString("00")+":"+(total%60).ToString("00");}
@@ -20,10 +21,10 @@ namespace Touchline
             broadcastStatus=Text(strip,"","broadcast-status");
             broadcastMode=Button(strip,"",MatchViewingOptions);broadcastMode.name="match-broadcast-mode";broadcastMode.tooltip="Choisir les moments clés, temps forts, temps forts étendus ou le match complet";
             broadcastSpeed=Button(strip,"×"+arena.Speed,()=>{int index=Array.IndexOf(MatchArena.LiveSpeeds,arena.Speed);arena.SetLiveSpeed(MatchArena.LiveSpeeds[(index+1)%MatchArena.LiveSpeeds.Length]);});broadcastSpeed.name="match-speed-cycle";broadcastSpeed.tooltip="Vitesse des temps forts : ×1, ×2, ×3, ×5, ×10";
-            goalReplaySkip=Button(strip,"Passer le replay",()=>{arena.SkipGoalReplay();RefreshBroadcastVisibility();});goalReplaySkip.name="match-replay-skip";goalReplaySkip.tooltip="Revenir au direct sans modifier le score ni avancer la rencontre";goalReplaySkip.style.minHeight=45;goalReplaySkip.style.display=DisplayStyle.None;goalReplaySkip.SetEnabled(false);
+            goalReplaySkip=Button(strip,"Passer le replay",()=>{arena.SkipGoalReplay();RefreshBroadcastVisibility();});goalReplaySkip.name="match-replay-skip";goalReplaySkip.tooltip="Revenir au direct sans modifier le score ni avancer la rencontre";goalReplaySkip.style.minHeight=TouchTarget;goalReplaySkip.style.display=DisplayStyle.None;goalReplaySkip.SetEnabled(false);
             goalReplaySpeed=Button(strip,"Replay ×1",()=>{arena.SetGoalReplaySpeed(arena.GoalReplaySpeed<1?1:.5f);RefreshBroadcastVisibility();});goalReplaySpeed.name="match-replay-speed";goalReplaySpeed.tooltip="Vitesse du replay uniquement : ×0,5 ou ×1";
             goalReplayOptions=Button(strip,"Options",MatchViewingOptions);goalReplayOptions.name="match-replay-options";goalReplayOptions.tooltip="Activer ou désactiver les replays automatiques";
-            goalReplayControls=new[]{goalReplaySkip,goalReplaySpeed,goalReplayOptions};foreach(var replayControl in goalReplayControls){replayControl.style.minHeight=45;replayControl.style.minWidth=44;replayControl.style.flexShrink=0;replayControl.style.display=DisplayStyle.None;replayControl.SetEnabled(false);}
+            goalReplayControls=new[]{goalReplaySkip,goalReplaySpeed,goalReplayOptions};foreach(var replayControl in goalReplayControls){replayControl.style.minHeight=TouchTarget;replayControl.style.minWidth=TouchTarget;replayControl.style.flexShrink=0;replayControl.style.display=DisplayStyle.None;replayControl.SetEnabled(false);}
             matchSignal=new VisualElement{name="match-action-signal",pickingMode=PickingMode.Ignore};matchSignal.AddToClassList("match-action-signal");surface.Add(matchSignal);
             matchSignalTitle=Text(matchSignal,"","match-signal-title");matchSignalTitle.pickingMode=PickingMode.Ignore;matchSignalDetail=Text(matchSignal,"","match-signal-detail");matchSignalDetail.pickingMode=PickingMode.Ignore;
             matchSignal.style.display=DisplayStyle.None;feedbackSeen=arena.Simulation.State.events.Count;feedbackUntil=0;feedbackGoal=false;
@@ -61,7 +62,7 @@ namespace Touchline
             var replayCard=Card(body);
             Button replayToggle=null;
             replayToggle=Button(replayCard,"",()=>{arena.SetAutomaticGoalReplays(!arena.AutomaticGoalReplays);replayToggle.text=arena.AutomaticGoalReplays?"Replays automatiques : activés":"Replays automatiques : désactivés";replayToggle.EnableInClassList("primary",arena.AutomaticGoalReplays);RefreshBroadcastVisibility();});
-            replayToggle.name="match-auto-goal-replays";replayToggle.style.minHeight=45;replayToggle.style.whiteSpace=WhiteSpace.Normal;
+            replayToggle.name="match-auto-goal-replays";replayToggle.style.minHeight=TouchTarget;replayToggle.style.whiteSpace=WhiteSpace.Normal;
             replayToggle.text=arena.AutomaticGoalReplays?"Replays automatiques : activés":"Replays automatiques : désactivés";replayToggle.EnableInClassList("primary",arena.AutomaticGoalReplays);
             replayToggle.tooltip="Mémorisé pour les prochains matchs. Désactiver pendant un replay revient immédiatement au direct.";
             Text(replayCard,"Un replay après chaque but. Désactiver revient au direct si un replay est en cours.","muted");
