@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Moteur : déclenchement du pressing séparé de la hauteur de ligne, huit scénarios symétriques de régression et audits appariés ; rapports enrichis avec incertitude des victoires du favori et écart buts–xG.
 - Filets : fils continus subdivisés aux mailles pour réagir réellement aux impacts centraux des deux buts, avec déformation locale et retour au repos ; rayon et ressort inchangés.
 - Recrutement : territoires fiables pour 45 clubs hors catalogue de championnats (1 434 joueurs), filtres et missions par pays partagés, sans ajout de ligue ni modification des notes.
 - Négociations : une offre invalide affiche son erreur dans le formulaire sans effacer les montants, la promesse de temps de jeu ni les brouillons de transfert et de prêt.
