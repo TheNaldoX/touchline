@@ -49,6 +49,10 @@ Jeu de gestion de football type Football Manager, Unity **6000.3.24f1**, URP, An
   (`Runtime/StadiumFlags.cs`), ombres de contact (`Runtime/ContactShadows.cs`), ralenti des buts en
   plan bas à côté du but (`Runtime/GoalReplayCamera.cs`), filet rejoué au ralenti. **À fusionner après
   #35.** Contient aussi `main` (HANDOFF.md) fusionné.
+- **PR `feat/visual-polish` → `main`** : ciel en dégradé (`Runtime/StadiumSky.cs`, dôme qui suit la
+  caméra, coupé en qualité basse), ambiance trois tons, ralenti du soir éclairé de face (projecteurs
+  réorientés pendant le ralenti), montants de but ronds (`StadiumGeometry.GoalFrames`), filet gris
+  clair, second anneau qui réagit aux buts du club. Films `vis-*`.
 - Branches `release/0.xx` : uniquement pour construire un APK (voir §4). Ne pas fusionner.
 - APK le plus récent : **0.57** (= `feat/player-look` + numéro de version), code 50.
 
@@ -125,8 +129,7 @@ touches 36,9 · passes 81,8 % · possession favori 56 %. **Hors fourchette** : p
 1. **Fusionner #35 puis #36** (#34 est fusionnée), construire un APK depuis `main`, faire tester Victor (gels, fluidité,
    rendu). Si ça rame : réduire post-process, flocage, ombres (`RenderBudget`). Ambiance (#36) : vérifier
    sur le Fold qu'un but ne provoque pas d'à-coup (maillage des tribunes réécrit à 20 Hz pendant ~10 s).
-   Ralenti de nuit : le plan bas est à contre-jour (joueurs sombres), à régler (lumière d'appoint ou
-   autre côté du but) si Victor le remarque.
+   Ralenti de nuit : contre-jour corrigé (PR feat/visual-polish), à confirmer sur le Fold.
 2. **Tactique** (demande de Victor) : vérifier que chaque consigne (mentalité, pressing, hauteur de
    ligne, largeur, tempo/jeu direct, rôles) a un effet mesurable dans le bon sens avec
    `tools/Calibration` (tableau consigne → effet), compléter les consignes manquantes avec des
@@ -145,7 +148,8 @@ touches 36,9 · passes 81,8 % · possession favori 56 %. **Hors fourchette** : p
    favori vers 45–55 %.
 
 Idées d'ambiance restantes (priorité basse, animations gelées) : remplaçants et staff sur les bancs,
-léger zoom sur les grosses occasions, tribune haute qui réagit aussi (aujourd'hui fixe).
+léger zoom sur les grosses occasions, variété du public (supporters debout, couleurs), escaliers et
+rambardes des tribunes, nuances de tonte du gazon, vignettage léger pendant les ralentis.
 
 ## 7. Modèle de fin de session (à recopier ici)
 
@@ -156,6 +160,22 @@ léger zoom sur les grosses occasions, tribune haute qui réagit aussi (aujourd'
 - Non vérifié : …
 - Prochaine étape : …
 ```
+
+### Session Claude du 8 octobre 2026 (rendu, PR feat/visual-polish)
+- Fait : ciel en dégradé avec nuages/collines/ville (`StadiumSky`, dôme qui suit la caméra, dessiné
+  en premier sans profondeur, sous le brouillard), ambiance trois tons (`StadiumLighting`),
+  projecteurs réorientés pendant le ralenti du soir (fin du contre-jour), gradins plus clairs le
+  soir (×0,6 au lieu de ×0,5), montants ronds vernis (`StadiumGeometry.GoalFrames`, remplace les
+  LineRenderer), filet gris clair, second anneau qui se lève sur les buts du club.
+- Mesures : appels de rendu +1 (ciel) −1 (deux LineRenderer → un maillage) = 0 ; matières +3
+  (ciel, montants, filet) ; texture +1 (512×256 RGB24 sans mipmap, 384 Ko) ; ~3 k triangles (dôme)
+  + 0,5 k (montants). Qualité basse (mode 0) : ciel et réaction du second anneau coupés. CPU : second
+  anneau ≈ 6 k sommets à 20 Hz pendant ~10 s après un but du club seulement.
+- Films : vis-homegoal(-night), vis-a2(-night), vis-goal-night (premier essai), vis2-homegoal-night,
+  vis2-a2(-night) (horizon du soir corrigé). Avant : atm-*.
+- Non vérifié : téléphone ; tests EditMode Unity (StadiumLookTests) seulement compilés ; silhouette
+  de ville peu visible depuis la caméra télé (cachée par les tribunes, visible surtout en ralenti).
+- Prochaine étape : §6 ; idées de rendu restantes dans la liste d'ambiance ci-dessus.
 
 ### Session Claude du 8 octobre 2026 (ambiance, PR #36)
 - Fait : réactions du public, virage aux couleurs du club, drapeaux, ombres de contact, ralenti en plan
