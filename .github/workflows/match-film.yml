@@ -83,7 +83,7 @@ jobs:
           buildMethod: ${{ steps.name.outputs.method }}
           manualExit: ${{ steps.name.outputs.manual == 'true' }}
           allowDirtyBuild: true
-          customParameters: -force-glcore -touchlineFilm=${{ steps.name.outputs.film }} ${{ steps.name.outputs.extra }}
+          customParameters: -force-glcore -touchlineFilmSeconds=6 -touchlineFilm=${{ steps.name.outputs.film }} ${{ steps.name.outputs.extra }}
 
       - name: Encodage des vidéos et planches
         if: always()
