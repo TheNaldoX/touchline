@@ -1,0 +1,15 @@
+total 2632
+drwxr-xr-x 2 root root   4096 Oct  9 14:47 .
+drwxr-xr-x 3 root root   4096 Oct  9 14:35 ..
+-rw-r--r-- 1 root root   2058 Oct  9 14:47 audit-progress.txt
+-rw-r--r-- 1 root root   2161 Oct  9 14:47 audit.txt
+-rw-r--r-- 1 root root 354694 Oct  9 14:41 deplie-causerie-avant.png
+-rw-r--r-- 1 root root 355169 Oct  9 14:43 deplie-causerie-reaction.png
+-rw-r--r-- 1 root root 356697 Oct  9 14:45 deplie-vestiaire-mi-temps.png
+-rw-r--r-- 1 root root 373918 Oct  9 14:47 deplie-vestiaire-reaction.png
+-rw-r--r-- 1 root root 295264 Oct  9 14:41 plie-causerie-avant.png
+-rw-r--r-- 1 root root 310391 Oct  9 14:43 plie-causerie-reaction.png
+-rw-r--r-- 1 root root 279836 Oct  9 14:44 plie-vestiaire-mi-temps.png
+-rw-r--r-- 1 root root 326668 Oct  9 14:46 plie-vestiaire-reaction.png
+-rw-r--r-- 1 root root   2689 Oct  9 14:47 progress.txt
+-rw-r--r-- 1 root root   1166 Oct  9 14:47 unity-messages.txt

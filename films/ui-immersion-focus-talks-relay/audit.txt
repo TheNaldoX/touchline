@@ -1,0 +1,28 @@
+Audit d'interface Touchline · 1 dp = 2.625 px physiques · seuils : cible tactile 48 dp, texte 12 sp
+
+Parcours ciblé immersion : deux résolutions natives par écran.
+## plie-causerie-avant · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 22 · < 48 dp : 0 · textes 46 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## deplie-causerie-avant · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 22 · < 48 dp : 0 · textes 41 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+Causerie « Rassurer » : sang-froid moyen -0.12 → 0.20
+## plie-causerie-reaction · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 22 · < 48 dp : 0 · textes 47 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## deplie-causerie-reaction · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 22 · < 48 dp : 0 · textes 46 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## plie-vestiaire-mi-temps · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 24 · < 48 dp : 0 · textes 46 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## deplie-vestiaire-mi-temps · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 24 · < 48 dp : 0 · textes 46 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## plie-vestiaire-reaction · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 24 · < 48 dp : 0 · textes 51 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## deplie-vestiaire-reaction · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 24 · < 48 dp : 0 · textes 49 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
