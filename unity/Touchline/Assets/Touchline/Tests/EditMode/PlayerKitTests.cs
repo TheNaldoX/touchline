@@ -57,17 +57,29 @@ namespace Touchline.Tests
             Assert.GreaterOrEqual(hair.Count,6);Assert.GreaterOrEqual(boots.Count,6);Assert.AreEqual(3,styles.Count,"Trois coupes");
             Assert.AreEqual(PlayerView.HairColour(12345u),PlayerView.HairColour(12345u));
         }
-        [Test] public void GoalNetBulgesUnderTheBallThenSettles()
+        [TestCase(-1)] [TestCase(1)] public void GoalNetBulgesUnderTheBallThenSettles(int side)
         {
-            var mesh=StadiumGeometry.GoalNet(1);try{
-                var rest=mesh.vertices;var ripple=new GoalNetRipple(mesh,1);
-                ripple.Advance(new Vector3(52.9f,1,0),true,1f/30);ripple.Advance(new Vector3(53.6f,1,0),true,1f/30); // 21 m/s dans le filet
-                for(int i=0;i<4;i++)ripple.Advance(new Vector3(54f,1,0),true,1f/30);
+            var mesh=StadiumGeometry.GoalNet(side);try{
+                var rest=mesh.vertices;var ripple=new GoalNetRipple(mesh,side);var contact=new Vector3(side*54f,1,0);
+                ripple.Advance(new Vector3(side*52.9f,1,0),true,1f/30);ripple.Advance(new Vector3(side*53.6f,1,0),true,1f/30); // 21 m/s dans le filet
+                for(int i=0;i<4;i++)ripple.Advance(contact,true,1f/30);
                 float near=0,far=0;var moved=mesh.vertices;
-                for(int i=0;i<rest.Length;i++){float d=(moved[i]-rest[i]).magnitude;if((rest[i]-new Vector3(54f,1,0)).magnitude<.5f)near=Mathf.Max(near,d);if(Mathf.Abs(rest[i].z)>3f)far=Mathf.Max(far,d);}
+                for(int i=0;i<rest.Length;i++){float d=(moved[i]-rest[i]).magnitude;if((rest[i]-contact).magnitude<.5f)near=Mathf.Max(near,d);if(Mathf.Abs(rest[i].z)>3f)far=Mathf.Max(far,d);}
                 Assert.Greater(near,.02f,"Le filet se creuse sous le ballon");Assert.AreEqual(0,far,1e-5f,"Le reste du filet ne bouge pas");
-                for(int i=0;i<150;i++)ripple.Advance(new Vector3(54f,1,0),false,1f/30);
+                TestContext.WriteLine($"But {side} : déplacement central {near:0.0000} m, distant {far:0.0000} m");
+                for(int i=0;i<150;i++)ripple.Advance(contact,false,1f/30);
                 moved=mesh.vertices;for(int i=0;i<rest.Length;i++)Assert.AreEqual(0,(moved[i]-rest[i]).magnitude,1e-4f);
+            }finally{Object.DestroyImmediate(mesh);}
+        }
+        [TestCase(-1)] [TestCase(1)] public void NetThreadsHaveLocalDeformationVerticesWithinMobileBudget(int side)
+        {
+            var mesh=StadiumGeometry.GoalNet(side);try{
+                // Per goal budget: shared rings, one renderer/material; no capped mini-beams.
+                Assert.LessOrEqual(mesh.vertexCount,4500);Assert.LessOrEqual(mesh.triangles.Length/3,7500);
+                TestContext.WriteLine($"But {side} : {mesh.vertexCount} sommets, {mesh.triangles.Length/3} triangles");
+                var vertices=mesh.vertices;var triangles=mesh.triangles;
+                for(int i=0;i<triangles.Length;i+=3)for(int edge=0;edge<3;edge++)
+                    Assert.Less(Vector3.Distance(vertices[triangles[i+edge]],vertices[triangles[i+(edge+1)%3]]),.35f,"Pas de fil long sans sommet intermédiaire près du contact");
             }finally{Object.DestroyImmediate(mesh);}
         }
         [Test] public void PitchWearSitsBetweenTurfAndLinesAndFadesOut()
