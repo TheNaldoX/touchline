@@ -19,6 +19,7 @@ Lire AGENTS.md. Ce fichier contient uniquement l’état courant ; l’historiqu
 | Unity assemblage avant correctif sauvegarde |235/235 ciblés, Actions37941735253, source8c59424, artefact11622731251 ; `.validation/claude-relay-native` |
 | Unity correctif sauvegarde |246/246 ciblés, Actions37943332562, source1944eef, artefact11622083022 ; `.validation/claude-relay-savefix-native` |
 | Carrière 1 saison, monde, graine77 |384 clubs jouables, aucun sous18 joueurs ; restauration complète/compacte identique sur22888 joueurs (87,43/5,99Mo). `.validation/claude-relay-season-fixed.txt` |
+| Carrière 5 saisons, monde, graine77 |384 clubs : aucun sous18 joueurs, un au-dessus de40 ; sauvegardes identiques sur27368 joueurs. Salaire médian2450→2977 €/semaine, libres273→1122, cinq clubs au-dessus de70% de salaires/recettes. .validation/claude-relay-five-seasons.txt |
 | Défaut reproduit avant correction |152270 retraité dans l’ancien onze d’un entraîneur sans emploi ; restauration refusée. `.validation/claude-relay-season.txt` |
 | Base sans joueurs fictifs, lot précédent |881 Core et210 Unity ; Actions37926637983, source40e063c, artefact11615140142 ; `.validation/real-catalogue-native` |
 | Rendus séparés Claude |Recrutement37939096762 ; immersion37935969487. Succès technique, revue partielle : causerie hors champ et recommandations obsolètes détectées puis corrigées. |
@@ -26,7 +27,7 @@ Lire AGENTS.md. Ce fichier contient uniquement l’état courant ; l’historiqu
 Calibration :200 matchs/graine1, même catalogue. Avant `tools/Calibration/Reports/pressure-penalties-after-200-seed1.txt`, après `claude-relay-after-200-seed1.txt` dans le même dossier.
 - Buts2,58→2,61 ; tirs24,60→24,72 ; cadrés7,69→7,74 ; touches49,98→49,93 ; favori54,55→52,53% sur99 affiches.
 - Penalties.19 et sorties13,79 inchangés, sous cibles ; xG1,69 pour2,61 buts. Ligne haute encore trop avantageuse. État neutre pas strictement identique à l’ancien moteur ; ne pas affirmer le contraire sur la foi des commentaires de Claude.
-- Carrière de contrôle à scores simplifiés, pas une saison de matchs3D. Pas de nouvelle validation longue de cette intégration, ni test matériel Fold.
+- Carrière de contrôle à scores simplifiés, pas une saison de matchs3D. Contrôle cinq saisons effectué, pas de validation sur plusieurs décennies ni test matériel Fold. Le compteur des transferts IA est un historique plafonné à3000, pas un cumul total.
 
 ## Données et sauvegardes
 
