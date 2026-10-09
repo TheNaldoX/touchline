@@ -75,6 +75,7 @@ Actor best=null;float bestScore=-100;string kind="pass";
  score+=Math.Max(0,ShotQuality(mate)-quality)*28*safety;  
  if(ProtectingLead(p.side)){score+=safety*2;if(forward>12&&safety<.7f)score-=4;}  
  if(candidate=="through")score+=ThroughBonus*(.5f+t.directness);if(candidate=="cross")score+=1.5f+Math.Max(0,ShotQuality(mate,true)-.08f)*14;if(candidate=="cutback")score+=Math.Max(0,ShotQuality(mate)-quality)*20;  
+ if(candidate=="through")score+=LineBreakingPassValue(p,mate,projected,line,safety);
  if(forward> -5&&mate.slot>0){  
  float flank=mate.position.z*dir;  
  if(t.attackFocus=="left")score+=flank>10?3*safety:flank< -10?-1.5f:0;  

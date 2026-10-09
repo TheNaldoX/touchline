@@ -110,7 +110,13 @@ namespace Touchline.Core
         {
             var p = (possession ? withBall : withoutBall)[slot];
             var baseX=-52.5f+p.y*1.05f;
-            var x=possession?baseX+ballX*.38f+(mentality-.5f)*12:baseX*.57f-10+(line-.45f)*27+ballX*.24f;
+            // Board depth is 0–100. The defensive-line instruction moves the
+            // back line fully, midfield progressively, and not the front press.
+            // Otherwise a high line also pushes strikers 16 m forward and gains
+            // an unrelated attacking/pressing advantage in the same instruction.
+            const float BackLineDepth=36f,FrontLineDepth=70f;
+            float lineInfluence=Mathx.Clamp((FrontLineDepth-p.y)/(FrontLineDepth-BackLineDepth),0,1);
+            var x=possession?baseX+ballX*.38f+(mentality-.5f)*12:baseX*.57f-10+(line-.45f)*27*lineInfluence+ballX*.24f;
             if(possession&&slot>0)x=Math.Min(x,ballX+24);
             // Board left is the player's left while facing the opposing goal.
             // Local attack is +X, whose left-hand flank is world +Z. Rotate

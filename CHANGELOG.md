@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Expérimentation non livrable : influence de la ligne limitée par la profondeur des postes et valorisation des appels derrière la défense ; calibration dégradée sur la graine17, exclure de la prochaine APK.
 - Arbitrage : une bousculade sous pression peut donner un penalty dans la surface ; prudence accrue du défenseur conservée, avec tests symétriques des deux mi-temps et comparaison sur deux graines.
 - Tempo : suppression du malus général de dispersion d'une passe préparée ; cadence des décisions, vitesse du ballon et difficulté réelle de réception conservées, avec audit patient/rapide sur 200 affiches identiques.
 - Moteur : déclenchement du pressing séparé de la hauteur de ligne, huit scénarios symétriques de régression et audits appariés ; rapports enrichis avec incertitude des victoires du favori et écart buts–xG.

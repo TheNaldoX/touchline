@@ -37,6 +37,14 @@ Jeu de gestion de football type Football Manager, Unity **6000.3.24f1**, URP, An
 
 ## 3. État au 9 octobre 2026
 
+### EXPÉRIMENTATION REJETÉE POUR LIVRAISON — ligne / appels
+
+- Branche `tune/defensive-line-experiment`, basée sur PR #52. **Ne pas intégrer dans l'APK ni dans main.** 844/844 tests Core passent, mais les résultats ne justifient pas la livraison. Cela prouve des scénarios locaux, pas l'équilibre du jeu.
+- Le décalage de la ligne influence entièrement les défenseurs (y≤36 du tableau), progressivement les milieux, plus les attaquants (y≥70). Deuxième essai : bonus décisionnel pour un appel initialement en jeu, vers une réception libre derrière une ligne hors surface. Treize tests nouveaux ; deux scénarios de passe exploitable étaient ignorés avant.
+- Comparaison finale contre PR #52 : 200 matchs par graine. Graine1 : buts2,58→2,66, favori54,55→56,57 %, touches49,98→50,59, sorties13,79→13,47. Graine17 : buts2,60→2,77, favori57→66 %, touches49,51→50,87, sorties13,37→13,04. Penalties.20 sur les deux après. Régression du contrôle indépendant : variante écartée.
+- Audit ligne200 paires : surcroît tirs ligne haute9,40→2,71 ; buts pour+.67→+.36, mais buts contre−.72→−1,04. Le risque de la ligne haute reste insuffisant ; ne pas se satisfaire du seul nombre de tirs. Étape placement seule aussi testée (rapports distincts) : favori58,59/60 %, pas suffisamment probante.
+- Suite : analyser les occasions effectivement créées derrière les lignes, la longueur minimale du choix `through` (8 m), la lecture/timing de l'appel et la réception avant de changer d'autres coefficients. Conserver la base moteur PR #52 pour la validation commune ; la PR #50 contient séparément les objectifs de direction.
+
 ### Pression dans la surface — arbitrage (travail non livré)
 
 - `fix/pressure-penalties`, base PR #51. Suppression de l'immunité `!ownBox` dans ResolveCarrierPressure ; le risque de faute est multiplié par .35 dans la surface, en plus de la prudence existante sur le duel. Une faute constatée déclenche le penalty au point des 11 mètres, un contact hors surface conserve le coup franc. Six tests couvrent deux équipes/deux périodes et hors surface ; quatre échouaient avant. 831/831 Core.

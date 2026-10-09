@@ -60,5 +60,29 @@ namespace Touchline.Tests
             runner.runBehind=1f;typeof(MatchSimulation).GetMethod("Restart",Flags).Invoke(sim,new object[]{"throw-in",0,new Point(0,34),2f});
             Assert.AreEqual(0f,runner.runBehind,"Un arrêt de jeu met fin à l'appel.");
         }
+
+        [TestCase(0)][TestCase(1)]
+        public void ServeAnOnsideRunnerBreakingAnExposedHighLineInsteadOfCarryingIntoIt(int side)
+        {
+            var sim=Setup(side,0,out var owner,out var runner,out var defender);int dir=sim.Direction(side);
+            owner.position=new Point(dir*14,0);owner.angle=dir*(float)Math.PI/2;
+            runner.position=new Point(dir*28,0);runner.velocity=new Point(dir*6,0);
+            defender.position=new Point(dir*30,12);sim.State.actors[(1-side)*11+3].position=new Point(dir*30,-12);
+            sim.State.ball.position=owner.position;sim.State.turnoverAt=-100;sim.State.clock=600;
+            Assert.AreEqual("through",sim.Decide(owner));
+            Assert.AreEqual(runner.id,sim.State.ball.to);
+            Assert.Greater(sim.State.ball.end.x*dir,30,"La passe exploite l'espace derrière la ligne.");
+        }
+        [TestCase(0)][TestCase(1)]
+        public void OffsideOrSweeperCoverageDoesNotGainAnOpenLineBreakValue(int side)
+        {
+            var sim=Setup(side,0,out var owner,out var runner,out _);int dir=sim.Direction(side);
+            var value=typeof(MatchSimulation).GetMethod("LineBreakingPassValue",Flags);var target=new Point(dir*33,0);
+            Assert.Greater((float)value.Invoke(sim,new object[]{owner,runner,target,30f,1f}),0);
+            runner.position=new Point(dir*31,4);
+            Assert.AreEqual(0f,(float)value.Invoke(sim,new object[]{owner,runner,target,30f,1f}));
+            runner.position=new Point(dir*28,4);sim.State.actors[(1-side)*11].position=target;
+            Assert.AreEqual(0f,(float)value.Invoke(sim,new object[]{owner,runner,target,30f,1f}));
+        }
     }
 }
