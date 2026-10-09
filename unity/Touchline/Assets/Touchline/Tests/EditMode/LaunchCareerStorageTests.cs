@@ -27,7 +27,8 @@ namespace Touchline.Tests
             Assert.IsTrue(loaded.Valid,loaded.Error);Assert.AreEqual(db.players.Length,loaded.Restored.players.Length);
             Assert.IsNotNull(loaded.State.saveBaseline);
         }
-        [TestCase(false)][TestCase(true)] public void LegacyFictionalTransferRestoresWithoutChangingNewCatalogue(bool compact)
+        [TestCase(false,false)][TestCase(true,false)][TestCase(false,true)][TestCase(true,true)]
+        public void LegacyFictionalTransferRestoresWithoutChangingNewCatalogue(bool compact,bool recruited)
         {
             db.leagues=new[]{new LeagueData{id="test",name="Test",country="France"}};
             foreach(var team in db.clubs){team.playable=true;team.annualRevenue=20000000;}
@@ -37,19 +38,19 @@ namespace Touchline.Tests
             var c=new Career{club="a",saveBaseline=SaveBaseline.From(expanded)};
             c.lineup=Career.Select(expanded,c.club,c.tactic);c.EnsureWorld(expanded);
             var bought=expanded.players.First(p=>GeneratedWorld.IsGenerated(p.id)).Copy();
-            bought.team=c.club;bought.wage=789;
-            c.world.rosterChanges.RemoveAll(p=>p.id==bought.id);c.world.rosterChanges.Add(bought);
+            if(recruited){bought.team=c.club;bought.wage=789;
+                c.world.rosterChanges.RemoveAll(p=>p.id==bought.id);c.world.rosterChanges.Add(bought);}
             if(compact)Assert.IsTrue(c.PrepareCompactSave());
             string raw=JsonUtility.ToJson(c);c.RestoreAfterSave();File.WriteAllText(path,raw);
             var loaded=LaunchCareerStorage.Read(path,"Principal",original);
-            Assert.IsTrue(loaded.Valid,loaded.Error);Assert.AreEqual(c.club,loaded.Restored.Find(bought.id).team);
-            Assert.AreEqual(789,loaded.Restored.Find(bought.id).wage);
+            Assert.IsTrue(loaded.Valid,loaded.Error);Assert.AreEqual(bought.team,loaded.Restored.Find(bought.id).team);
+            Assert.AreEqual(bought.wage,loaded.Restored.Find(bought.id).wage);
             Assert.IsFalse(original.players.Any(p=>GeneratedWorld.IsGenerated(p.id)));
             Assert.AreEqual(raw,File.ReadAllText(path),"Reading must not rewrite a personal save.");
             Assert.IsTrue(loaded.State.PrepareCompactSave());
             File.WriteAllText(path,JsonUtility.ToJson(loaded.State));loaded.State.RestoreAfterSave();
             var again=LaunchCareerStorage.Read(path,"Principal",original);
-            Assert.IsTrue(again.Valid,again.Error);Assert.AreEqual(789,again.Restored.Find(bought.id).wage);
+            Assert.IsTrue(again.Valid,again.Error);Assert.AreEqual(bought.wage,again.Restored.Find(bought.id).wage);
         }
         [TestCase(false)][TestCase(true)] public void AttributeVisibilityChoiceSurvivesCareerLoad(bool reveal)
         {

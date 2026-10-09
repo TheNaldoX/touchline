@@ -19,6 +19,8 @@ namespace Touchline
         {
             var world=state?.world;
             bool legacy=world!=null&&((world.rosterChanges?.Any(p=>GeneratedWorld.IsGenerated(p?.id))??false)
+                ||(world.contracts?.Any(c=>GeneratedWorld.IsGenerated(c?.player)||GeneratedWorld.IsGenerated(c?.club))??false)
+                ||(world.aiAccounts?.Any(a=>GeneratedWorld.IsGenerated(a?.club))??false)
                 ||(world.compactFullPlayers?.Any(p=>GeneratedWorld.IsGenerated(p?.id))??false)
                 ||(world.compactRoster?.Any(r=>r!=null&&r.StartsWith("="+GeneratedWorld.IdPrefix,StringComparison.Ordinal))??false)
                 ||(world.compactStrings?.Any(GeneratedWorld.IsGenerated)??false));
