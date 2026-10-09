@@ -65,7 +65,7 @@ namespace Touchline.Core
                 // Against a cross the two nearest defenders attack the flight
                 // itself, like the intended receiver does, instead of standing
                 // on the attacker's body while the ball drops over them.
-                if(!has&&p.slot>0&&b.kind=="cross"&&string.IsNullOrEmpty(b.owner)&&b.side!=p.side&&(firstPress[p.side]==i||coverPress[p.side]==i)&&Point.Distance(p.position,b.end)<14){q=ReceptionTarget(p);p.intent="attack-cross";}
+                if(!has&&p.slot>0&&b.kind=="cross"&&b.elapsed>=0&&string.IsNullOrEmpty(b.owner)&&b.side!=p.side&&(firstPress[p.side]==i||coverPress[p.side]==i)&&Point.Distance(p.position,b.end)<14){q=ReceptionTarget(p);p.intent="attack-cross";}
                 if(free&&firstPress[p.side]==i){q=b.position+b.velocity*Mathx.Clamp(Point.Distance(p.position,b.position)/9,0,.65f);p.intent="loose-ball";}
                 if(protectedBody!=null&&p.side!=protectedBody.side&&p.slot>0)q=ShieldSafePressTarget(p,protectedBody,q);
                 if(protectedKeeper!=null&&p!=protectedKeeper)q=KeeperBodySafeTarget(p,protectedKeeper,q);

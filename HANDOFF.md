@@ -38,6 +38,7 @@ Jeu de gestion de football type Football Manager, Unity **6000.3.24f1**, URP, An
 ## 3. État au 9 octobre 2026
 
 ### Branches et PR
+- Lot `fix/defensive-pass-anticipation` : deux gardes avant contact et 36 régressions Core. Correctif logique vérifié, **ne pas intégrer automatiquement dans une APK** : buts/tirs et avantage du favori augmentent sur les 200 matchs comparables. Voir le compte rendu en fin de fichier.
 - **PR #34, #35 et #36 fusionnées** : main `ae2df218` contient la pile intégrée, les tenues et l'ambiance.
 - **PR #37 `feat/tactical-audit` → `main`** : consignes en deux touches et audit tactique. 699 tests Core réussis ; compilation/captures Unity ciblées validées, revue visuelle faite, test du rapport carrière réussi. APK 0.59/code52 construite et vérifiée, téléphone non vérifié.
 - Git HTTPS fonctionne sur ce PC. Le connecteur GitHub renvoie encore 403 en écriture ; utiliser Git pour les branches et REST avec les identifiants Git en mémoire pour la PR, sans exposer de secret.
@@ -113,6 +114,8 @@ touches 36,9 · passes 81,8 % · possession favori 56 %. **Hors fourchette** : p
   (`gh api repos/TheNaldoX/touchline/pulls -f title=… -f head=… -f base=… -F body=@fichier`).
 
 ## 6. À faire (par priorité)
+
+- Candidat anticipation défensive : conserver séparé tant que les effets d'équilibre (3,25 buts, 29,78 tirs, favori 74,75 %) n'ont pas été examinés ; aucun coefficient compensatoire ajouté. Compilation Unity non réalisée pour ce lot.
 
 1. **#37 : validation locale et Unity terminée** (captures finales Actions 37855587630). APK 0.59/code52 construite et signature vérifiée. Faire tester Victor (gels, fluidité,
    rendu). Si ça rame : réduire post-process, flocage, ombres (`RenderBudget`). Ambiance (#36) : vérifier
@@ -193,3 +196,11 @@ léger zoom sur les grosses occasions, tribune haute qui réagit aussi (aujourd'
 - Signature cryptographique apksigner vérifiée ; certificat SHA256 130917e6d2b4ea2dcca487587dcff03b1356b14e7de39c3e01657097ad57ee13, identique à 0.58. Manifest et bibliothèques libunity/libil2cpp ARM64 contrôlés. Preuve locale ignorée .validation/apk059/verified.json ; aucun APK committé.
 - Validation du lot : 699 tests Core, comparaison 200 matchs identique, audit 2 800 matchs, huit captures Unity finales et six assertions UI, test de non-régression du rapport joueurs libres. Installation, sauvegardes après mise à jour, chauffe, batterie et fluidité sur Fold non testées matériellement. Portraits joueurs absents du dépôt : affichage des initiales inchangé.
 - Prochaine étape : test Fold de cette APK, puis PR moteur distincte pour DefensiveFocus avant contact (preuve de fuite de destination documentée ci-dessus), avec test déterministe et calibration appariée. Rééquilibrage ligne haute, management et interface globale restent à poursuivre. Ne pas fusionner release/0.59 ; ne pas la repousser pour éviter un deuxième build.
+
+### Lot Codex du 9 octobre 2026 — anticipation défensive avant contact
+- Fait sur `fix/defensive-pass-anticipation` : `DefensiveFocus` n'utilise la destination finale que si `ball.elapsed >= 0` ; même garde pour la branche `attack-cross` de `MatchMovement`. Avant contact, le foyer suit le ballon visible. Après contact, le comportement précédent reste disponible. Aucun autre tuning, aucun Runtime ou animation modifié.
+- Preuve de défaut : 24 échecs sur 36 nouveaux cas avant correction (les 12 cas après contact passent déjà). Foyer déplacé de 13 m et cibles défensives déplacées de 12,626 à 20 m en modifiant seulement la destination future. Après correction : 36/36, suite Core complète 735/735. Tests sur passe, profondeur, centre, deux équipes, deux périodes ; bornes -0,18/-0,001 avant contact et 0/+0,12 après contact. Fichiers locaux ignorés `.validation/anticipation-before.txt`, `anticipation-after.txt`, `core-after.txt`.
+- Calibration : même commande `tools/Calibration -- 200 1`, même fichier `release060/.../Resources/Data/database.json`, SHA256 8400910DA9EB2AED5155D8AE760B3983C0F3168072008593BDA152BBCD1BC1AA. Rapports immuables versionnés `tools/Calibration/Reports/defensive-anticipation-before-200-seed1.txt` et `defensive-anticipation-after-200-seed1.txt`. Référence fournie par root, SHA256 01E719A69FA3914D9E0689832FFAF9FA7B80FFCE00DDB651818D86E70F74624C. Deux séries de 200 matchs, zéro erreur.
+- Résultats avant → après : buts 2,83 → 3,25 ; tirs 26,84 → 29,78 ; cadrés 8,42 → 9,46 ; corners 8,88 → 8,24 ; fautes 22,52 → 21,35 ; jaunes 3,96 → 4,10 ; penalties 0,17 → 0,23 ; hors-jeu 3,73 → 3,87 ; touches 36,88 → 36,80 ; passes réussies 81,82 → 81,74 % ; favori net 67,68 → 74,75 % de victoires.
+- Limites : la correction supprime une information future avant le contact, mais n'améliore PAS l'équilibre agrégé de cet échantillon. Buts et tirs dépassent les bornes ; avantage du favori renforcé. La destination exacte reste utilisée après départ, pas de nouveau modèle de perception/réaction. Aucun retuning ajouté pour masquer ces effets. Compilation Unity, revue visuelle et APK non réalisées pour ce lot ; ne pas intégrer automatiquement à 0.60.
+- Prochaine étape : revue du coordinateur et décision sur un lot de rééquilibrage distinct, avec comparaison appariée et contrôle de la ligne haute. Conserver ce candidat et ses preuves séparés en attendant.
