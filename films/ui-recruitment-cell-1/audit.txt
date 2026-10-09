@@ -1,0 +1,48 @@
+Audit d'interface Touchline · 1 dp = 2.625 px physiques · seuils : cible tactile 48 dp, texte 12 sp
+
+Parcours ciblé cellule de recrutement : recruteurs et affectation, recommandations, personnalité/intérêt dans le rapport, intégration des recrues, intérêt en négociation ; deux résolutions natives, données synthétiques en mémoire.
+Cible étrangère 231388 (86, Espagne), cible locale 288897 ; deux recrues synthétiques (259743, 245243) ; recruteur ajouté staff-free-2.
+## plie-cellule-recommandations · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 23 · < 48 dp : 0 · textes 44 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## plie-cellule-integration · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 21 · < 48 dp : 0 · textes 41 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## plie-cellule-recruteurs · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 18 · < 48 dp : 0 · textes 34 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## plie-cellule-affectation · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 20 · < 48 dp : 0 · textes 47 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+plie : note A niveau 86–99 ambition 12–16 adaptabilité 5–9 · Comparable à Amine Gouiri (un peu au-dessus) · intérêt Pas intéressé
+## plie-cellule-rapport · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 17 · < 48 dp : 0 · textes 36 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## plie-cellule-negociation · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 18 · < 48 dp : 0 · textes 53 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## deplie-cellule-recommandations · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 31 · < 48 dp : 0 · textes 70 · < 12 sp : 3 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×3 [unity-text-element.unity-label 11.0 sp] ex. « ESPACE MANAGER »
+
+## deplie-cellule-integration · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 34 · < 48 dp : 0 · textes 63 · < 12 sp : 3 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×3 [unity-text-element.unity-label 11.0 sp] ex. « ESPACE MANAGER »
+
+## deplie-cellule-recruteurs · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 24 · < 48 dp : 0 · textes 43 · < 12 sp : 3 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×3 [unity-text-element.unity-label 11.0 sp] ex. « ESPACE MANAGER »
+
+## deplie-cellule-affectation · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 26 · < 48 dp : 0 · textes 56 · < 12 sp : 3 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×3 [unity-text-element.unity-label 11.0 sp] ex. « ESPACE MANAGER »
+
+deplie : note A niveau 86–99 ambition 12–16 adaptabilité 5–9 · Comparable à Amine Gouiri (un peu au-dessus) · intérêt Pas intéressé
+## deplie-cellule-rapport · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 23 · < 48 dp : 0 · textes 48 · < 12 sp : 3 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×3 [unity-text-element.unity-label 11.0 sp] ex. « ESPACE MANAGER »
+
+## deplie-cellule-negociation · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 24 · < 48 dp : 0 · textes 66 · < 12 sp : 3 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×3 [unity-text-element.unity-label 11.0 sp] ex. « ESPACE MANAGER »
+
