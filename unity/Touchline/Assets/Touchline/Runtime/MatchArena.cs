@@ -156,7 +156,7 @@ namespace Touchline
             // visual attachment that could hide a missed control or a rebound.
             bool setPiece=m.restart>0&&(m.phase=="penalty"||m.phase=="corner"||m.phase=="free-kick"&&ball.position.x*Simulation.Direction(m.restartSide)>20);
             bool portrait=MatchCamera.aspect<.8f;
-            var target=tactical?new Vector3(0,.6f,0):new Vector3(Mathf.Clamp(ball.position.x*.90f,-46,46),.6f,Mathf.Clamp(ball.position.z*(portrait?.72f:setPiece?.46f:.58f),portrait?-25:-19,portrait?25:19));
+            var target=tactical?new Vector3(0,.6f,0):BroadcastFraming.LiveTarget(ball.position,portrait,setPiece);
             // A loaded match already has an action location. Establish it on
             // the first visible frame instead of panning in from midfield.
             if(!cameraHasFocus||returning||cutCamera){focus=target;velocity=Vector3.zero;cameraReset=true;cameraHasFocus=true;}
