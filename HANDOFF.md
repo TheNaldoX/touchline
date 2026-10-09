@@ -4,11 +4,11 @@ Lire AGENTS.md. Ce fichier contient uniquement l’état courant ; l’historiqu
 
 ## Lot graphique demandé explicitement — en cours
 
-- Branche feat/match-surface-motion-polish, PR68, code c69f7653f15497e81ac6f7127f450f1f7fb586ad, base PR67/APK0.62. Demande utilisateur : gros travail graphique/textures/fluidité. Aucune modification Core/simulation.
+- Branche feat/match-surface-motion-polish, PR68, code a61533a4ff1a696e408c2644b624fd9a6a67b20e (production c69f765), base PR67/APK0.62. Demande utilisateur : gros travail graphique/textures/fluidité. Aucune modification Core/simulation.
 - Pelouse : texture RGB2048×1024 avec mipmaps (~8MiB GPU), bruit de surface non répétitif et UV continus sur les bandes/ombre ; même nombre de passes/matériaux. Texture CPU libérée après upload. Tonte moins contrastée, gazon mat.
 - Maillots : grain textile et panneaux discrets intégrés à la texture partagée ; matières mates. Pas de photo ou mocap importée.
 - Animations : le mixeur basculait instantanément gauche/droite en pas chassés ; interpolation exponentielle des deux poids, tests30/60/120Hz et pause. Autres contacts/trajectoires inchangés.
-- Core923/923 (.validation/visual-polish-core.txt). Unity37973104291 en cours ; session70726 script validate-visual-polish.ps1 enchaîne après succès films graphics-polish-day puis graphics-polish-night sur c69f765 et récupère les images. Revoir effectivement les deux films et les résultats natifs. Nouveaux tests Runtime StadiumLook/PlayerKit/LocomotionFacing. Une seule Unity, aucune modification Assets pendant validation/rendu. Aucun test Fold, aucune promesse de performance réelle.
+- Core923/923 (.validation/visual-polish-core.txt). Unity37973104291 :302/303, tous les nouveaux tests passent ; ancien test de rotation obsolète (plafond600°/s déjà en production) corrigé et testé petits/grands angles. Nouvelle Unity37974503873 en cours ; session23132 script validate-visual-polish.ps1 enchaîne après succès films graphics-polish-day puis graphics-polish-night sur a61533a et récupère les images. Revoir effectivement les deux films et les résultats natifs. Nouveaux tests Runtime StadiumLook/PlayerKit/LocomotionFacing. Une seule Unity, aucune modification Assets pendant validation/rendu. Aucun test Fold, aucune promesse de performance réelle.
 - Lot précédent PR67 : Core923/923, Unity277/277 (37962815505), tests neutres corrigés ; deux essais de passes retirés pour régressions (rapports .validation/through-target-* et through-onside-*). Défense haute toujours trop avantageuse.
 ## Reprise immédiate — 9 octobre 2026
 
