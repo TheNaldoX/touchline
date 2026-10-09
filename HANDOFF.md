@@ -37,6 +37,8 @@ Jeu de gestion de football type Football Manager, Unity **6000.3.24f1**, URP, An
 
 ## 3. État au 9 octobre 2026
 
+- Lot `fix/negotiation-form-feedback` : erreur contractuelle affichée dans le formulaire conservé (salaire, prime, rôle, prêt), avec défilement/focus vers le message. Le succès conserve ApplyLife/Save/Build ; aucun changement Core. Harness `ui-negotiation-focus-*` ajouté à CiUiScreens : salaire nul, indemnité de prêt négative, absence de débit/offre sur refus, conservation des deux brouillons et renvoi corrigé ; variante `-before` pour reproduire la destruction initiale. Validation Unity/captures à lancer par le coordinateur ; aucun test Fold matériel revendiqué.
+
 ### Branches et PR
 - **Session autonome du 9 octobre, jusqu'à 08:30 Paris** : recrutement sur `feat/recruitment-hub` (basée sur #37), caméra dans `.worktrees/match-visual` / `fix/match-visual-readability`. PR #38 `feat/visual-polish` découverte, déjà validée par son auteur ; éviter de refaire ciel/contre-jour/montants/tribunes. Ne pas fusionner automatiquement. Réserve APK à 07:15 au plus tard ou quota hebdomadaire 90 % utilisé. Quota lu à 02:55 : 13 % utilisé.
 - Lot local `fix/match-visual-readability` : correction ciblée des sauts de caméra télé aux seuils du cadrage du but ; compilation/captures Unity à réaliser avant livraison. Complément à #38, sans refaire son éclairage ni son ciel.
