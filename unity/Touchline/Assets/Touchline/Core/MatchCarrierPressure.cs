@@ -19,6 +19,7 @@ namespace Touchline.Core
         public const float CarrierPressureShielded=.4f;   // part du risque quand le corps du porteur s'interpose
         public const float CarrierPressureOwnBox=.35f;    // facteur de risque dans la surface du presseur : il retient son geste
         public const float CarrierPressureFoulShare=.12f; // part des duels de pression sifflés (joueurs égaux, agressivité 60)
+        public const float CarrierPressureAreaFoulFactor=.35f; // risque de faute réduit dans la surface, jamais supprimé
         const float CarrierPressureFoulCaution=.06f;      // part de ces fautes sanctionnées d'un carton
         const float CarrierPressurePokeSpeed=2.5f,CarrierPressurePokeExtra=3f; // m/s : vitesse du ballon chipé, de 2,5 à 5,5
 
@@ -93,13 +94,16 @@ namespace Touchline.Core
             bool ownBox=carrier.position.x*dir>36&&Math.Abs(carrier.position.z)<20.16f;
             float foul=Mathx.Clamp(CarrierPressureFoulShare+(Skill(presser,"aggression")-60)*.003f+(CarrierControl(carrier)-Skill(presser,"standingTackle"))*.002f,.05f,.45f);
             if(presser.yellows>0)foul*=BookedCarefulness;
-            // Dans sa surface, le défenseur retient son geste : pas de faute ici.
-            if(m.professionalRules&&!ownBox&&Random()<foul){
+            // The defender is more careful in his area, not immune to a foul.
+            if(ownBox)foul*=CarrierPressureAreaFoulFactor;
+            if(m.professionalRules&&Random()<foul){
                 presser.duelCooldown=2;m.metrics[presser.side].fouls++;
                 Emit("foul",presser.side,presser.id,Data(presser).name+" bouscule le porteur pour lui prendre le ballon.");
                 if(Random()<CarrierPressureFoulCaution)Caution(presser.id);
                 BeginContactFall(carrier,presser,true);
-                Restart("free-kick",carrier.side,carrier.position,3);return true;
+                if(ownBox)Restart("penalty",carrier.side,new Point(dir*41.5f,0),3);
+                else Restart("free-kick",carrier.side,carrier.position,3);
+                return true;
             }
             var away=b.position-carrier.position;var toward=presser.position-carrier.position;
             var direction=Deflect((toward.Normalized+away.Normalized*.5f).Normalized,PokeSpread);

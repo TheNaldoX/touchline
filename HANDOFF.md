@@ -37,6 +37,13 @@ Jeu de gestion de football type Football Manager, Unity **6000.3.24f1**, URP, An
 
 ## 3. État au 9 octobre 2026
 
+### Pression dans la surface — arbitrage (travail non livré)
+
+- `fix/pressure-penalties`, base PR #51. Suppression de l'immunité `!ownBox` dans ResolveCarrierPressure ; le risque de faute est multiplié par .35 dans la surface, en plus de la prudence existante sur le duel. Une faute constatée déclenche le penalty au point des 11 mètres, un contact hors surface conserve le coup franc. Six tests couvrent deux équipes/deux périodes et hors surface ; quatre échouaient avant. 831/831 Core.
+- Avant/après sur 200 matchs graines1 et17, rapports `pressure-penalties-*`. Graine1 : buts2,46→2,58, penalties.17→.19, tirs24,31→24,60, touches49,92→49,98, sorties13,74→13,79, favori54,55→54,55 %. Graine17 indépendante : buts2,56→2,60, penalties.16→.20, touches49,61→49,51, sorties13,40→13,37, favori61→57 %. Calibration encore incomplète : sorties basses, faible précision statistique des penalties, ligne haute à poursuivre. Aucun surajustement pour atteindre exactement .20 sur une graine.
+- Causes UI externes identifiées dans les journaux de Claude : recrutement film/ui-recruitment-depth-1 ne compile pas, ScoutingWorkspaceUI.cs117/118 utilise Position.Absolute masqué par la méthode TouchlineApp.Position ; qualifier UnityEngine.UIElements.Position. Runtime-cam-bench2 :107/112, échecs limités à StadiumAtmosphereTests (banc compté comme public vide,53992 vertices pour limite53000, vêtement à hauteur8,008 pour borne8). Ne pas intégrer ces lots comme validés.
+- La branche recrutement de Claude prépare huit ligues fictives, rapports détaillés et clubs rivaux ; lire ses fichiers au lieu de refaire cette extension. Toujours aucune fusion main/test matériel/nouvelle APK ; deux captures UI externes restent actives.
+
 ### Tempo — exécution des passes (travail non livré)
 
 - `fix/tempo-pass-execution`, base moteur PR #49. Le terme `tempo*2` de dispersion devient une incertitude de base de 1 m avant pondération (valeur historique à tempo .5). La cadence, la vitesse du ballon, le ciblage du partenaire en mouvement et les difficultés de réception ne changent pas. Six tests symétriques passe/profondeur/renversement échouent avant, passent après ; 825/825 Core sur cette branche (sans les dix tests de direction de la PR #50).
