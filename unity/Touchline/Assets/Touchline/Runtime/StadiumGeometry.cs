@@ -26,13 +26,30 @@ namespace Touchline
         public static Mesh Stand(int side,bool seats)
         {
             var mesh=new Builder();
-            for(int row=0;row<9;row++){
-                if(!seats){mesh.Box(new Vector3(0,row*.65f,side*(39+row*1.1f)),new Vector3(119,.6f,1.2f));continue;}
+            for(int row=0;row<StandRows;row++){
+                if(!seats){mesh.Box(new Vector3(0,row*StandRowRise,side*(StandFront+row*StandRowDepth)),new Vector3(119,.6f,1.2f));
+                    // Escalier des allées : une demi-marche par rang entre deux blocs de sièges.
+                    for(int aisle=1;aisle<StandBlocks;aisle++)mesh.Box(new Vector3(AisleX(aisle),row*StandRowRise+TreadTop+StandRowRise*.25f,side*(StandFront+row*StandRowDepth+StairDepth*.5f)),new Vector3(StairWidth,StandRowRise*.5f,StairDepth));
+                    continue;}
                 // Clear aisles break the continuous colour bars into believable seating blocks.
-                for(int block=0;block<6;block++)mesh.Box(new Vector3(-47+block*18.8f,row*.65f+.45f,side*(39+row*1.1f)),new Vector3(17.1f,.35f,.68f));
+                for(int block=0;block<StandBlocks;block++)mesh.Box(new Vector3(-47+block*18.8f,row*StandRowRise+.45f,side*(StandFront+row*StandRowDepth)),new Vector3(17.1f,.35f,.68f));
+            }
+            if(!seats){
+                // Main courante au bord de la tribune (poteaux tous les RailPostSpacing m) et rampes des allées.
+                float front=side*(StandFront-.62f);mesh.Beam(new Vector3(-59.5f,RailHeight,front),new Vector3(59.5f,RailHeight,front),RailWidth);
+                for(float x=-59.5f;x<=59.6f;x+=RailPostSpacing)mesh.Beam(new Vector3(x,0,front),new Vector3(x,RailHeight,front),RailWidth);
+                for(int aisle=1;aisle<StandBlocks;aisle++){float x=AisleX(aisle)+StairWidth*.5f;mesh.Beam(new Vector3(x,TreadTop+RailHeight,side*(StandFront-.3f)),new Vector3(x,(StandRows-1)*StandRowRise+TreadTop+RailHeight,side*(StandFront+(StandRows-1)*StandRowDepth+.3f)),RailWidth);}
             }
             return mesh.Build(seats?"Combined seats":"Combined terraces");
         }
+        const int StandRows=9,StandBlocks=6;                       // rangs et blocs de sièges des tribunes latérales
+        const float StandFront=39f,StandRowDepth=1.1f,StandRowRise=.65f,TreadTop=.3f; // m : premier rang, profondeur, hauteur, dessus de la marche
+        const float StairWidth=1.1f,StairDepth=.55f;               // m : demi-marche dans l'allée de 1,7 m
+        public const float RailHeight=1f,RailWidth=.045f,RailPostSpacing=8.5f; // m : main courante
+        static float AisleX(int aisle)=>-47+aisle*18.8f-9.4f;      // m : milieu de l'allée entre deux blocs
+        // Bancs (TechnicalArea) : centre en x, profondeur du siège, dessus du siège, pas entre places.
+        public const float BenchX=11f,BenchSeatZ=37.7f,BenchSeatTop=.35f,BenchSeatPitch=1.05f;
+        public const int BenchSeats=6; // places entre les accoudoirs de chaque banc
         // Tribune d'en face (côté -Z, face à la caméra télé) : second anneau, toit et
         // mur du fond masquent le vide au-dessus des gradins. Côté caméra (+Z), rien
         // de haut : la caméra regarde par-dessus.
@@ -72,7 +89,7 @@ namespace Touchline
             else{Slab(-SurroundHalfX,SurroundHalfX,shadeEdge,SurroundHalfZ);Slab(shadeEndX,SurroundHalfX,-SurroundHalfZ,shadeEdge);}
             return mesh.Build(shaded?"Grass surround in roof shadow":"Grass stadium surround");
         }
-        public static Mesh EndStand(int side){var mesh=new Builder();for(int row=0;row<10;row++)mesh.Box(new Vector3(side*(60+row*1.15f),row*.7f,0),new Vector3(1.2f,.65f,88));return mesh.Build("Goal end terrace");}
+        public static Mesh EndStand(int side){var mesh=new Builder();for(int row=0;row<10;row++)mesh.Box(new Vector3(side*(60+row*1.15f),row*.7f,0),new Vector3(1.2f,.65f,88));float front=side*59.3f;mesh.Beam(new Vector3(front,RailHeight,-44),new Vector3(front,RailHeight,44),RailWidth);for(float z=-44;z<=44.1f;z+=RailPostSpacing*1.1f)mesh.Beam(new Vector3(front,0,z),new Vector3(front,RailHeight,z),RailWidth);return mesh.Build("Goal end terrace");} // main courante devant le virage
         // Panneaux publicitaires : un seul maillage, une seule matière. La face côté
         // terrain porte des panneaux qui alternent les couleurs des deux clubs ; leurs
         // motifs viennent de l'atlas généré (StadiumAtmosphere.BoardAtlas).
@@ -107,7 +124,7 @@ namespace Touchline
             var mesh=new Builder();
             // Low benches on the broadcast side never obstruct the pitch or touchline.
             for(int side=-1;side<=1;side+=2){
-                float x=side*11;mesh.Box(new Vector3(x,.26f,37.7f),new Vector3(8.2f,.18f,.55f));mesh.Box(new Vector3(x,.65f,38.05f),new Vector3(8.2f,.7f,.12f));
+                float x=side*BenchX;mesh.Box(new Vector3(x,.26f,BenchSeatZ),new Vector3(8.2f,.18f,.55f));mesh.Box(new Vector3(x,.65f,38.05f),new Vector3(8.2f,.7f,.12f));
                 for(int seat=-3;seat<=3;seat++)mesh.Box(new Vector3(x+seat*1.05f,.65f,37.65f),new Vector3(.07f,.6f,.55f));
                 mesh.Box(new Vector3(side*3,.48f,37.5f),new Vector3(1.8f,.8f,.85f));
             }

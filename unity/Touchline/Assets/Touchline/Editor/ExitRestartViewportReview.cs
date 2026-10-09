@@ -57,7 +57,7 @@ namespace Touchline.Editor {
     var focus=(Vector3)typeof(MatchArena).GetField("focus",flags).GetValue(arena);
     bool tactical=(bool)typeof(MatchArena).GetField("tactical",flags).GetValue(arena);var bp=arena.BallDisplayPosition;bool portrait=arena.MatchCamera.aspect<.8f;
     bool setPiece=m.restart>0&&(m.phase=="penalty"||m.phase=="corner"||m.phase=="free-kick"&&bp.x*arena.Simulation.Direction(m.restartSide)>20);
-    var expected=tactical?new Vector3(0,.6f,0):new Vector3(Mathf.Clamp(bp.x*.90f,-46,46),.6f,Mathf.Clamp(bp.z*(portrait?.72f:setPiece?.46f:.58f),portrait?-25:-19,portrait?25:19));
+    var expected=tactical?new Vector3(0,.6f,0):BroadcastFraming.LiveTarget(bp,portrait,setPiece);
     // MatchArena constrains the tracking centre to retain the ball after
     // resetting it, especially for a throw-in beyond the +/-19 m centre clamp.
     if(!tactical){expected.x=Mathf.Clamp(expected.x,bp.x-20,bp.x+20);expected.z=Mathf.Clamp(expected.z,bp.z-13,bp.z+13);}
