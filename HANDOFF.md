@@ -5,7 +5,7 @@ Lire AGENTS.md. Ce fichier contient uniquement l’état courant ; l’historiqu
 ## Session autonome autorisée — 17 h 19 à 18 h 49 Paris
 
 - Demande utilisateur : améliorer IA/décisions, graphismes/animations, UI, événements aléatoires à choix, finances/budgets et contenu original cohérent. Fin le9 octobre à16:49UTC ; réserver après18h25Paris aux validations. Automatisation touchline-am-liorations-jusqu-au-6-octobre réactivée toutes les10min, avec cette échéance et désactivation finale.
-- Unity : tests runtime37955944893 sur f959fe0 (code36360b6) réussis275/275, artefact11628751153 récupéré (.validation/budget-visibility-native), après rendu37953810119 réussi. Aucune instance active. Tests précédents37952223643 réussis273/273, artefact11627385676 récupéré (.validation/recruitment-context-native).
+- Unity : tests runtime37955944893 sur f959fe0 (code36360b6) réussis275/275, artefact11628751153 récupéré (.validation/budget-visibility-native), après rendu37953810119 réussi. Build APK0.62/code55 réussi : Actions37957302244, source029274fa50c345808567c6aa6ef986768db87880, branche feat/apk-062-validated-career, PR66. Assets figés ; une seule Unity. Seuls version et nom de fichier changent après validations. Récupérer artefact APK puis verify-apk.ps1 (VersionCode55, VersionName0.62.0-preview.1), signature/hash/ARM64 avant livraison. Ne pas relancer Core inchangé. Tests précédents37952223643 réussis273/273, artefact11627385676 récupéré (.validation/recruitment-context-native).
 - Diagnostic finances commencé : ProfessionalManagement.TransferBudget déduit achats engagés, réserve de trésorerie, plafond12% des recettes et obligations des prêts ; WageBudget séparé. Examiner leur présentation et les engagements avant de changer les règles. CareerFinancialTransactions assure les contreparties des transferts : ne pas créer de recettes sans paiement.
 - Événements : recherche des classes Event/Incident non concluante ; inspecter CareerManagement et les messages/décisions existants avant de créer un système en doublon. Nouveaux choix à coûts proportionnés au club, effets bornés, aléatoire à graine et persistance testée.
 
@@ -60,6 +60,12 @@ Calibration :200 matchs/graine1, même catalogue. Avant `tools/Calibration/Repor
 
 ## Dernière APK livrée
 
+- APK0.62/code55 vérifiée : artifacts/Touchline-Unity-0.62-preview.apk,73909010octets ; source029274fa50c345808567c6aa6ef986768db87880, Actions37957302244, artefact11630113444, PR66.
+- SHA256 76C88DEC6F177C9AEC3AD46FA0CB68702C893C4685AFDBBFA16D2B4BA1588EB7. Signature stable et ARM64 vérifiés (.validation/apk062-proof.json). Aucun essai Fold. Core921/921, Unity275/275, huit captures revues.
+- Aucun nouveau lot graphique/événements ; ligne haute et sorties de but non résolues. Aucune Unity active après build. Main non fusionnée.
+
+### APK précédente conservée
+
 - `artifacts/Touchline-Unity-0.61-preview.apk`,0.61.0-preview.1/code54,73774374octets.
 - Source62579583792280aa8ee7c996d1b47a1e0f88f838 ; Actions37921391496 ; artefact11613111834 ; PR #60.
 - SHA256 :503A848CD608C1B01CAB236CC7F4A8E88E5F45582AE01F29BDE0E59C5CF8817D.
@@ -90,5 +96,3 @@ Calibration :200 matchs/graine1, même catalogue. Avant `tools/Calibration/Repor
 - Exception UnityEditor.Search/QuickSearch au démarrage des rendus existants : pas de pile Touchline ; ne pas la confondre avec une erreur CS du jeu.
 
 Historique complet de la passation avant condensation : `git show 8c59424:HANDOFF.md`. Détails et preuves des lots précédents dans leurs PR ; ne relire que le sujet nécessaire.
-
-

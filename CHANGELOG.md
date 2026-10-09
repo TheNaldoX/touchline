@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- APK 0.62/code55 : regroupe les lots validés de recrutement, immersion tactique, sauvegardes et budget ; numéro de version distinct, anciennes APK préservées.
 - Finances : détail des réserves, achats engagés, obligations de prêts et marges salariales, avec explication du plafond limitant les transferts.
 - Recrutement contextualisé par poste, budget et comparaison interne ; conseils tactiques avec pistes à tester et estimation des occasions recalibrée séparément des tirs.
 - Recrutement : bilans et adaptation rattachés au club recruteur, historique conservé après changement de club et progression propre à chaque arrivée.
