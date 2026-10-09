@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Finances : détail des réserves, achats engagés, obligations de prêts et marges salariales, avec explication du plafond limitant les transferts.
 - Recrutement contextualisé par poste, budget et comparaison interne ; conseils tactiques avec pistes à tester et estimation des occasions recalibrée séparément des tirs.
 - Recrutement : bilans et adaptation rattachés au club recruteur, historique conservé après changement de club et progression propre à chaque arrivée.
 - Reprise de Claude : cellule de recrutement/immersion tactique, recommandations obsolètes filtrées, sauvegardes sans emploi réparées et boutons de causerie repliables ; passation condensée pour limiter les lectures répétées.

@@ -4,6 +4,13 @@ using System.Linq;
 
 namespace Touchline.Core
 {
+    // Read-only explanation of the board's two spending limits; all amounts are euros.
+    public sealed class ClubBudgetSummary
+    {
+        public long cash, reserve, committedPurchases, loanObligations, policyRemaining, cashRemaining, transferAvailable;
+        public long monthlyPayroll, monthlyReservedWages, monthlyWageLimit, monthlyWageRoom;
+        public string limitingFactor;
+    }
     [Serializable] public class Employment { public string player,club,parent,role="rotation";public int until,parentUntil,loanUntil,retirement=-1,joined,appearancesAtSigning,wageChangeDay;public long wage,appearanceBonus,releaseClause,originalWage,nextWage;public bool estimated=true,aiRelease,loanAppearanceTracking,loanAppearanceHistoryEstimated;public PlayingTimeUsage playingTime;public MarketTerms terms;public LoanContractConditions parentConditions,purchaseConditions;public bool parentConditionsUnavailable;public string conditionsSource; }
     [Serializable] public class ScoutReport { public string player,club,scout,mission;public int started,due,confidence,judging,lastObserved,depth;public float estimate,potential,uncertainty,potentialUncertainty;public string advice; }
     [Serializable] public class TransferOffer { public string player,seller,status="pending",role;public int due,years,attempts;public long fee,wage,bonus,clause;public bool loan,renewal,precontract;public int joinDay;public string destination;public MarketTerms terms; }
@@ -35,6 +42,19 @@ namespace Touchline.Core
         void InitializeEmployment(Database db){ImportFreeAgents(db);EnsureStaffMarket(db);foreach(var p in db.Squad(club))Contract(db,p.id);GenerateSponsors();}
         public long WageBudget=>GrossWageCeiling(FinanceLeague,life.revenue,(life.staff?.members.Sum(s=>s.wage)??0)*52);
         public long TransferBudget=>Math.Max(0,Math.Min(life.cash-life.revenue/40-CommittedPurchases,life.revenue*12/100-world.transferSpent-(world.contracts.Where(c=>c.club==club&&c.parent!=null).Sum(c=>c.terms?.obligationFee??0))));
+        public ClubBudgetSummary BudgetSummary(Database db)
+        {
+            var b=new ClubBudgetSummary();if(life==null||world==null||db==null)return b;
+            b.cash=life.cash;b.reserve=life.revenue/40;b.committedPurchases=CommittedPurchases;
+            b.loanObligations=world.contracts.Where(c=>c.club==club&&c.parent!=null).Sum(c=>c.terms?.obligationFee??0);
+            b.cashRemaining=Math.Max(0,b.cash-b.reserve-b.committedPurchases);
+            b.policyRemaining=Math.Max(0,life.revenue*12/100-world.transferSpent-b.loanObligations);
+            b.transferAvailable=TransferBudget;
+            b.monthlyPayroll=MonthlySalary(Payroll(db));b.monthlyReservedWages=MonthlySalary(ReservedWages);
+            b.monthlyWageLimit=MonthlySalary(WageBudget);b.monthlyWageRoom=RecruitmentWageRoom(db);
+            b.limitingFactor=b.cashRemaining<b.policyRemaining?"Trésorerie après engagements":b.cashRemaining>b.policyRemaining?"Enveloppe accordée par la direction":"Trésorerie et enveloppe de la direction";
+            return b;
+        }
         public int Knowledge(string id)
         {
             if(revealAttributes||life.players.Any(p=>p.id==id))return 100;

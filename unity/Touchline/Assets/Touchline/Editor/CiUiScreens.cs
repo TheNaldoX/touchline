@@ -364,6 +364,11 @@ namespace Touchline.Editor
                     if(Path.GetFileName(Output).Contains("-context")){
                         list.Add(()=>{var comparison=Root.Q("recruit-hub-comparison-"+reportedPlayer);if(comparison==null||comparison.resolvedStyle.whiteSpace!=WhiteSpace.Normal)throw new Exception("Comparaison absente ou texte non repliable");Root.Q<ScrollView>("recruit-hub").ScrollTo(comparison);});
                         list.Add(()=>Capture(screen.tag+"-comparaison-contextuelle"));
+                        if(Path.GetFileName(Output).Contains("-budget")){
+                            list.Add(()=>Call("Navigate","Finances"));
+                            list.Add(()=>{var budget=Root.Q("finance-budget-explanation");if(budget==null)throw new Exception("Explication du budget absente");budget.GetFirstAncestorOfType<ScrollView>().ScrollTo(budget);});
+                            list.Add(()=>Capture(screen.tag+"-budget-explique"));
+                        }
                         continue;
                     }
                     if(Path.GetFileName(Output).Contains("-scroll"))continue;

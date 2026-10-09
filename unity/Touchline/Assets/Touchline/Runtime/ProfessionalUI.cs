@@ -141,6 +141,14 @@ namespace Touchline
         void FinancePage()
         {
             var s=Scroll(content);Heading(s,"Les moyens de votre ambition");var w=Career.world;var metrics=Row(s,"metric-grid");Metric(metrics,"TRÉSORERIE",Money(Career.life.cash),"Disponible");Metric(metrics,"DETTE",Money(w.debt),"Avances du propriétaire");Metric(metrics,"SALAIRES",Money(Core.Career.MonthlySalary(Career.Payroll(Database))),"Chaque mois");Metric(metrics,"TRANSFERTS",Money(Career.TransferBudget),"Plafond de dépenses");
+            var budget=Career.BudgetSummary(Database);var limits=Card(s);limits.name="finance-budget-explanation";
+            Text(limits,"Ce que vous pouvez engager","section-title");
+            Text(limits,"Trésorerie : "+Money(budget.cash)+" · réserve de fonctionnement : "+Money(budget.reserve)+" · achats déjà engagés : "+Money(budget.committedPurchases),"muted");
+            Text(limits,"Après ces engagements : "+Money(budget.cashRemaining)+". Enveloppe restante de la direction : "+Money(budget.policyRemaining)+".","muted");
+            Text(limits,"Disponible pour les transferts : "+Money(budget.transferAvailable)+" · limite actuelle : "+budget.limitingFactor+".","muted");
+            Text(limits,"Obligations d’achat de prêts : "+Money(budget.loanObligations)+", déjà incluses dans les limites ci-dessus ; ne pas les déduire à nouveau.","footnote");
+            Text(limits,"Marge salariale : "+Money(budget.monthlyWageRoom)+" / mois, après "+Money(budget.monthlyPayroll)+" de salaires actuels et "+Money(budget.monthlyReservedWages)+" réservés aux arrivées signées.","muted");
+            Text(limits,"La trésorerie n’est pas une autorisation de tout dépenser. Les deux plafonds s’appliquent ensemble ; ce bilan n’est pas une prévision complète de trésorerie.","footnote");
             var employment=Career.AnnualEmploymentCosts(Database);var payroll=Card(s);Text(payroll,"Le coût du personnel","section-title");
             Text(payroll,"Joueurs · brut : "+Money(employment.playersGross/12)+" / mois · cotisations projetées : "+Money(employment.playerContributions/12));
             Text(payroll,"Staff sous contrat · brut : "+Money(employment.staffGross/12)+" / mois · cotisations projetées : "+Money(employment.staffContributions/12));
