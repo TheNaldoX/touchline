@@ -31,7 +31,7 @@ Jeu de gestion de football type Football Manager, Unity **6000.3.24f1**, URP, An
 - `Editor/` : build, films CI, captures UI.
 - `Tests/EditMode/` : tests Unity (ceux qui dépendent de Runtime sont listés dans
   `tools/CoreTests/excluded-tests.props`).
-- Outils .NET (sans Unity) : `tools/CoreTests` (`dotnet run -c Release`, 689 tests),
+- Outils .NET (sans Unity) : `tools/CoreTests` (`dotnet run -c Release`, 808 tests sur le candidat 0.60),
   `tools/Calibration` (`dotnet run -c Release -- 200 1` = 200 matchs, graine 1),
   `tools/SeasonSim` (plusieurs saisons, `--report`, `--dump`).
 
@@ -52,6 +52,8 @@ Jeu de gestion de football type Football Manager, Unity **6000.3.24f1**, URP, An
 - **APK 0.60 construite et vérifiée à 08:06** : Actions 37890028910, artefact 11598592932 ; `artifacts/Touchline-Unity-0.60-preview.apk`, 73122936 octets, package `fr.personal.touchline.unity`, ARM64 Unity/IL2CPP. SHA256 `D3F66AC9AAAAA2E19B63092712627D49C559EB3F3133FA6050556509AC082564`. Certificat SHA256 `130917e6d2b4ea2dcca487587dcff03b1356b14e7de39c3e01657097ad57ee13`, identique à 0.59. Ancienne APK intacte, SHA256 `9629488FFE63E2C47EB67B57038E91F8BCCB5B6668851D96A9FE9BD799C45DD6`. Aucun téléphone ADB connecté ; aucune installation matérielle prétendue.
 - Après le build, diagnostic caméra portrait **37891803454 réussi** sur 0a398c2 (Assets identiques à l'APK) : 8 s / 240 images, ballon dans la zone utile à chaque image ; déplacement maximal 0,778 m/image à 30 i/s. Planches et image native relues. Ballon imposé, joueurs figés : ce n'est pas une simulation naturelle ni une mesure des FPS. Vue portrait encore très plongeante, joueurs petits ; compromis distance/zoom à travailler. Comparaisons natives avant/après et diagnostic paysage non exécutés, 37 tests caméra passés et film normal disponibles.
 - Tous les lots sont arrêtés, APK livrée et preuves consignées. Pour la suite : isoler les causes du gain de ligne haute et du tempo (hauteur, seuil de pressing, cadence, vitesse et dispersion séparément), revoir petits textes/flèches secondaires et arrondis mensuels, vérifier sources des évaluations/salaires, profiler sur Fold. Ne pas retuner uniquement pour faire rentrer des moyennes dans les bornes.
+- Le dossier principal est maintenant sur `release/0.60`, avec tous les changements intégrés ; `.worktrees/release060` est détaché et conservé. Les commits après le build ne changent que HANDOFF. Aucun APK, keystore ni fichier généré Unity n'est suivi par Git.
+- Session close le 9 octobre à 08:30 Paris ; automatisation `touchline-am-liorations-jusqu-au-6-octobre` passée à PAUSED et état vérifié. Aucun job Unity restant. Dernier quota lu à 08:10 : 65 % hebdomadaire utilisé, sans achat ni utilisation du crédit de réinitialisation.
 
 ### Historique des lots (statuts intermédiaires)
 
