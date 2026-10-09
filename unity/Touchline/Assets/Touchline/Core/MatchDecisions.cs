@@ -189,7 +189,7 @@ Actor best=null;float bestScore=-100;string kind="pass";
  // along the ground: its error is scaled by LongBallError.
  // Tempo already changes decision cadence and ball speed (hence reception
  // difficulty). Do not also worsen an otherwise identical prepared pass.
- float error=(1-skill/105)*(Random()-.5f)*(Math.Min(14,d*.30f)+pressure*2+BasePassExecutionUncertainty)*(kind=="switch"||d>30&&kind!="cross"?LongBallError:1);  
+ float error=(1-skill/105)*(Random()-.5f)*(Math.Min(14,d*.30f)+pressure*2+BasePassExecutionUncertainty)*(kind=="switch"||d>30&&kind!="cross"?LongBallError:1);
  var end=PassTarget(from,to,kind)+new Point(error,error*(Random()<.5f?-1:1));
  // A lofted long ball is judged on its length: weight it wrongly and it
  // sails long (more often than short) and can carry over the touchline.
