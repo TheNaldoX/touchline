@@ -34,9 +34,14 @@ namespace Touchline
                 uint mix=sample*2654435761u;
                 // Virage populaire : trois habits neutres sur quatre passent aux couleurs du club.
                 if(homeEnd&&clothing>1&&(mix>>30)!=0)clothing=(int)((mix>>29)&1);
+                // Tribunes latérales : quelques maillots du club au milieu des habits neutres.
+                else if(!homeEnd&&!visiting&&clothing>1&&((mix>>22)&7)==0)clothing=(int)((mix>>25)&1);
                 int first=builder.VertexCount;
-                builder.Person(position,towardPitch,height,clothing,5+(int)((sample>>25)&1),sample,detailed);
-                if(homeEnd&&(mix>>27&3)<HomeEndScarfQuarters)builder.Scarf(position,towardPitch,height,(int)((mix>>26)&1));
+                // Virage populaire, au-delà des deux premiers rangs : un supporter sur quatre debout.
+                bool standing=homeEnd&&!detailed&&((mix>>22)&3)==0;var torso=standing?position+Vector3.up*(StandingHip-SeatHeight):position;
+                if(standing)builder.Standing(position-Vector3.up*SeatHeight,towardPitch,StandingHip,height,clothing,5+(int)((sample>>25)&1),sample);
+                else builder.Person(position,towardPitch,height,clothing,5+(int)((sample>>25)&1),sample,detailed);
+                if(homeEnd&&(mix>>27&3)<HomeEndScarfQuarters)builder.Scarf(torso,towardPitch,height,(int)((mix>>26)&1));
                 builder.EndPerson(first,position,visiting);
             }
             for(int side=-1;side<=1;side+=2){
@@ -49,8 +54,23 @@ namespace Touchline
                     Add(new Vector3(side*(60+row*1.15f),row*.7f+.39f,z),new Vector3(-side,0,0),side==1&&block==3,row<2,side==HomeEndSide);
                 }
             }
+            // Bancs : remplaçants (survêtement du club) et un membre du staff assis, entraîneur debout devant.
+            for(int side=-1;side<=1;side+=2){
+                bool away=side>0;int kit=away?AwayBenchClothing:HomeBenchClothing;
+                for(int seat=0;seat<StadiumGeometry.BenchSeats;seat++){
+                    uint sample=Next();var position=new Vector3(side*StadiumGeometry.BenchX+(seat-(StadiumGeometry.BenchSeats-1)*.5f)*StadiumGeometry.BenchSeatPitch,StadiumGeometry.BenchSeatTop,StadiumGeometry.BenchSeatZ+BenchBackOffset);
+                    int first=builder.VertexCount;builder.Person(position,Vector3.back,.46f+((sample>>16)&7)*.01f,seat==StadiumGeometry.BenchSeats-1?StaffClothing:kit,5+(int)((sample>>25)&1),sample,true);builder.EndPerson(first,position,away);
+                }
+                uint coach=Next();var feet=new Vector3(side*(StadiumGeometry.BenchX-StadiumGeometry.BenchSeats*.5f*StadiumGeometry.BenchSeatPitch-CoachSideOffset),0,CoachZ);
+                int start=builder.VertexCount;builder.Standing(feet,Vector3.back,StandingHip,.5f,StaffClothing,5+(int)((coach>>25)&1),coach);builder.EndPerson(start,feet+Vector3.up*StandingHip,away);
+            }
             rig=builder.Rig();return builder.Build();
         }
+        const float SeatHeight=.39f;       // m : hanches au-dessus de la marche (Add place les sièges à +0,39 m dans les virages)
+        const float StandingHip=.88f;      // m : hauteur des hanches d'un supporter debout
+        const int HomeBenchClothing=0,AwayBenchClothing=4,StaffClothing=2; // matières de Palette : club recevant, visiteur, sombre
+        const float BenchBackOffset=.05f;  // m : buste un peu en arrière du milieu du siège
+        const float CoachZ=37f,CoachSideOffset=1.2f; // m : entraîneur debout entre panneaux (36,5) et banc, à côté du banc
         public const int HomeEndSide=-1;          // virage des supporters du club recevant (x < 0)
         const uint HomeEndScarfQuarters=1;        // quarts du virage populaire qui portent une écharpe
         public const float ScarfRaise=.5f;        // m : écharpe tendue au-dessus de la tête (célébration)
@@ -143,6 +163,13 @@ namespace Touchline
                 // Face avant : sens horaire vu du terrain.
                 if(Vector3.Dot(Vector3.Cross(vertices[start+1]-vertices[start],vertices[start+2]-vertices[start]),normal)>0)Quad(material,start,start+1,start+2,start+3);
                 else Quad(material,start,start+3,start+2,start+1);
+            }
+            // Silhouette debout : deux jambes en cartes, buste et tête simples (comme les rangs éloignés).
+            public void Standing(Vector3 feet,Vector3 facing,float hip,float torso,int clothing,int skin,uint variation)
+            {
+                var right=Vector3.Cross(Vector3.up,facing);var normal=(facing+Vector3.up*.12f).normalized;
+                for(int side=-1;side<=1;side+=2){var x=right*(side*.075f);Card(2,normal,feet+x-right*.045f,feet+x+right*.045f,feet+x+right*.05f+Vector3.up*hip,feet+x-right*.05f+Vector3.up*hip);}
+                Person(feet+Vector3.up*hip,facing,torso,clothing,skin,variation,false);
             }
             void Triangle(int material,int a,int b,int c){triangles[material].Add(a);triangles[material].Add(b);triangles[material].Add(c);}
             void Quad(int material,int a,int b,int c,int d){Triangle(material,a,b,c);Triangle(material,a,c,d);}
