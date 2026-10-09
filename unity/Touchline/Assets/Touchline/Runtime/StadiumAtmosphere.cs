@@ -20,6 +20,10 @@ namespace Touchline
         public static Mesh Crowd(string home,string away,float occupancy=DefaultOccupancy)=>Crowd(home,away,occupancy,out _);
         // rig : découpage du maillage par supporter (pour CrowdReaction), sans objet par spectateur.
         public static Mesh Crowd(string home,string away,float occupancy,out CrowdRig rig)
+            =>BuildCrowd(home,away,occupancy,false,out rig);
+        public static Mesh CrowdWithBenches(string home,string away,float occupancy,out CrowdRig rig)
+            =>BuildCrowd(home,away,occupancy,true,out rig);
+        static Mesh BuildCrowd(string home,string away,float occupancy,bool includeBenches,out CrowdRig rig)
         {
             occupancy=float.IsNaN(occupancy)||float.IsInfinity(occupancy)?0:Mathf.Clamp01(occupancy);
             uint state=2166136261;foreach(char c in (home??"")+"|"+(away??"")){state^=c;state*=16777619;}
@@ -45,8 +49,12 @@ namespace Touchline
                 builder.EndPerson(first,position,visiting);
             }
             for(int side=-1;side<=1;side+=2){
-                for(int row=0;row<9;row++)for(int block=0;block<6;block++)for(int seat=0;seat<14;seat++){
-                    float x=-47+block*18.8f-7.8f+seat*1.2f;
+                // One fewer background seat per side block pays for the standing
+                // figures and benches while preserving the 53k-triangle budget.
+                const int SideSeatsPerBlock=13;
+                const float SeatPitch=1.2f; // metres; wider aisles leave room for the stair railings
+                for(int row=0;row<9;row++)for(int block=0;block<6;block++)for(int seat=0;seat<SideSeatsPerBlock;seat++){
+                    float x=-47+block*18.8f-(SideSeatsPerBlock-1)*SeatPitch*.5f+seat*SeatPitch;
                     Add(new Vector3(x,row*.65f+.61f,side*(39+row*1.1f)),new Vector3(0,0,-side),false,row<2);
                 }
                 for(int row=0;row<10;row++)for(int block=0;block<4;block++)for(int seat=0;seat<15;seat++){
@@ -55,7 +63,7 @@ namespace Touchline
                 }
             }
             // Bancs : remplaçants (survêtement du club) et un membre du staff assis, entraîneur debout devant.
-            for(int side=-1;side<=1;side+=2){
+            if(includeBenches)for(int side=-1;side<=1;side+=2){
                 bool awayBench=side>0;int kit=awayBench?AwayBenchClothing:HomeBenchClothing;
                 for(int seat=0;seat<StadiumGeometry.BenchSeats;seat++){
                     uint sample=Next();var position=new Vector3(side*StadiumGeometry.BenchX+(seat-(StadiumGeometry.BenchSeats-1)*.5f)*StadiumGeometry.BenchSeatPitch,StadiumGeometry.BenchSeatTop,StadiumGeometry.BenchSeatZ+BenchBackOffset);

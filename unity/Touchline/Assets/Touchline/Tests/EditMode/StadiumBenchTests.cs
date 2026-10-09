@@ -7,7 +7,7 @@ namespace Touchline.Tests
     {
         [Test] public void BenchesSeatSubstitutesAndStaffWithAStandingCoachInTheSameCrowdMesh()
         {
-            var mesh=StadiumAtmosphere.Crowd("176","160",StadiumAtmosphere.DefaultOccupancy,out var rig);
+            var mesh=StadiumAtmosphere.CrowdWithBenches("176","160",StadiumAtmosphere.DefaultOccupancy,out var rig);
             try{
                 Assert.Less(mesh.vertexCount,65535);Assert.AreEqual(StadiumAtmosphere.MaterialCount,mesh.subMeshCount,"Aucune matière ni appel de rendu en plus");
                 var v=mesh.vertices;
@@ -22,6 +22,17 @@ namespace Touchline.Tests
                     Assert.AreEqual(StadiumGeometry.BenchSeats,seated,"Banc complet (remplaçants + staff)");Assert.AreEqual(1,coaches,"Un entraîneur debout");
                 }
             }finally{Object.DestroyImmediate(mesh);}
+        }
+        [Test] public void ClosedStandsStillKeepTheBenchesWithoutExceedingTheSharedGeometryBudget()
+        {
+            var empty=StadiumAtmosphere.CrowdWithBenches("176","160",0,out var rig);
+            var full=StadiumAtmosphere.CrowdWithBenches("176","160",1,out _);
+            try{
+                Assert.AreEqual(2*(StadiumGeometry.BenchSeats+1),rig.People);
+                foreach(var p in empty.vertices){Assert.Greater(p.z,36.6f);Assert.Less(p.y,2f);}
+                Assert.Less(full.vertexCount,65535);Assert.Less(full.triangles.Length/3,53000);
+                Assert.AreEqual(StadiumAtmosphere.MaterialCount,full.subMeshCount);
+            }finally{Object.DestroyImmediate(empty);Object.DestroyImmediate(full);}
         }
         [Test] public void SomeHomeEndSupportersStandWithLegsReachingTheirStep()
         {

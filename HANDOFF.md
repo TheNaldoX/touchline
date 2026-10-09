@@ -37,6 +37,14 @@ Jeu de gestion de football type Football Manager, Unity **6000.3.24f1**, URP, An
 
 ## 3. État au 9 octobre 2026
 
+### Reprise de la finition de Claude (non livrée)
+
+- Branche `fix/claude-visual-validation`, basée sur `film/cam-bench2-goal` f5431af (caméra portrait52°, ergonomie, salaires, bancs et tribunes). Ne contient pas encore les corrections moteur PR49/51/52 ni les objectifs PR50. Expérience PR53 explicitement exclue de toute livraison.
+- Claude : rendu de nuit37900271544 réussi, planche relue ; runtime37900265486 échoue107/112 : les bancs étaient comptés comme supporters même à occupation nulle, triangles53992>53000, silhouettes debout au-delà de8m. Ce n'était pas cinq erreurs de compilation.
+- Correction : API Crowd conserve le public seul ; CrowdWithBenches assemble public + bancs dans le même mesh/sept matériaux pour MatchArena. 13 sièges au lieu de14 dans chaque bloc latéral (108 silhouettes de fond de moins) pour financer les nouvelles poses et bancs sans relever le budget53000 triangles. Test renforcé occupation0 : bancs toujours présents, aucun public, budget commun maintenu. Borne verticale des spectateurs relevée de8 à8,5m pour les hanches debout rehaussées de0,49m.
+- 818/818 Core sur cette branche (808 initiaux +10 conversions de salaire). Nouveau test stade natif à lancer. Arrondi de Claude conserve la semaine stockée et les mensuels multiples de10 ; les montants quelconques restent approximés à la précision hebdomadaire. Pas de nouvelle donnée de contrat prétendue exacte.
+- Compilation/tests natifs et captures à valider avant de déclarer ce lot prêt. Le téléphone n'est pas connecté ; aucune performance Fold revendiquée. Recrutement Claude bc55851 à reprendre séparément : deux CS0119 Position.Absolute à qualifier dans ScoutingWorkspaceUI.
+
 ### Livraison 0.60 — état consolidé du 9 octobre
 
 - Sources intégrées `0a398c2a18a77b78d2cd145a0b35cb3ef013f7b5`, build sur `43d852b50b62f67eb4ae7df3607a43df2d4f1376` (documentation seulement ensuite), `release/0.60`, version `0.60.0-preview.1` / code 53. PR #37–#46 intégrées, aucune fusion automatique dans main. Cette section prévaut sur les essais historiques ci-dessous. PR de livraison #47, à ne pas fusionner en remplacement des lots individuels.
