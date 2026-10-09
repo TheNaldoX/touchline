@@ -83,14 +83,15 @@ namespace Touchline.Tests
                 Assert.Less(Vector3.Distance(new Vector3(20.4f,0,30.4f),view.transform.position),.0001f);
             }finally{Object.DestroyImmediate(go);}
         }
-        [Test] public void KickKeepsExistingContactOrientationRatherThanLocomotionTurnRate()
+        [TestCase(.1f)] [TestCase(1f)] public void KickKeepsContactOrientationWithinExistingTurnLimit(float angle)
         {
             var go=new GameObject("Contact facing preserved");try{
                 var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="contact",heightCm=182},0,9,Color.blue);
                 var actor=new Actor{id="contact",slot=9,action="run",angle=0};view.Render(actor,1,.016f);
-                actor.action="kick";actor.angle=1;actor.actionTime=.5f;
+                actor.action="kick";actor.angle=angle;actor.actionTime=.5f;
                 view.Render(actor,1,.016f);
-                float expected=Mathf.Rad2Deg*(1-Mathf.Exp(-.016f*16));
+                const float contactTurnDegreesPerSecond=600f; // Existing PlayerView gesture rotation cap.
+                float expected=Mathf.Min(angle*Mathf.Rad2Deg*(1-Mathf.Exp(-.016f*16)),contactTurnDegreesPerSecond*.016f);
                 Assert.AreEqual(expected,view.transform.eulerAngles.y,.02f);
             }finally{Object.DestroyImmediate(go);}
         }
