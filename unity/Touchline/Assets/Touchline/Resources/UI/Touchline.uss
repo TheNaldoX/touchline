@@ -1252,3 +1252,10 @@ Button.prematch-selected { background-color: rgb(26,66,61); border-width: 1px; b
 .narrow .recruit-hub .recruit-hub-amount { font-size: 20px; }
 .narrow .recruit-hub .recruit-hub-metric { padding: 9px; }
 .narrow .recruit-hub .recruit-hub-pipeline > Button { flex-basis: 45%; flex-grow: 1; }
+
+/* Keep compact filters legible and retain 48 dp touch targets at unfolded scale. */
+.recruit-workspace .recruit-search-tools > Button, .recruit-workspace .recruit-player-actions > Button, .recruit-workspace .recruit-advanced-button, .recruit-workspace .scout-actions > Button { min-height: 50px; height: 50px; }
+.recruit-workspace .recruit-filters > DropdownField { min-height: 50px; height: 50px; }
+.recruit-workspace .recruit-filters .unity-base-field__input { min-width: 0; font-size: 13px; padding-left: 5px; padding-right: 3px; }
+.recruit-workspace .unity-base-popup-field__arrow { width: 12px; min-width: 12px; margin-left: 3px; margin-right: 0; -unity-background-image-tint-color: rgb(183, 205, 218); }
+.recruit-workspace .recruit-filters .unity-base-popup-field__text { margin-left: 0; margin-right: 0; }
