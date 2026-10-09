@@ -300,3 +300,5 @@ rambardes des tribunes, nuances de tonte du gazon, vignettage léger pendant les
 - Prochaine étape : intégrer le correctif, lancer les 98 tests Unity puis vérifier le film de but de chaque côté avant publication de l'APK.
 
 - Vérification recrutement 37880450007 : dix captures finales relues, onglets/mission/rapports accessibles. Deux assertions de défilement échouent ; le scénario ciblait le haut d’une carte et vérifiait son bouton bas, sans image d’échec. Scénario corrigé pour viser Fiche après restauration différée, capturer avant assertion et journaliser les limites. Aucun défaut de dimensionnement Runtime établi à ce stade ; validation ciblée scroll requise. Unity98/98 sur source intégrée2771e61 ; Core intégré808/808.
+
+- CI film : seule la vue follow est facultative, broadcast/frame-0000.jpg est désormais obligatoire pour un film ; les parcours UI restent exemptés. Aucun Assets modifié. Contrôle réel attendu dans les films suivants.
