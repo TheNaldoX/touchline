@@ -330,8 +330,11 @@ namespace Touchline
                 if(contact&&!footLocked[i]){var shown=Vector3.Lerp(p,footLockPoint[i],footLockWeight[i]);footLocked[i]=true;footLockPoint[i]=new Vector3(shown.x,p.y,shown.z);footLockWeight[i]=1;}
                 var drift=footLockPoint[i]-p;drift.y=0;
                 if(footLocked[i]&&contact&&(drift.magnitude>FootLockRelease||drift.magnitude>FootStepTrigger&&footStep[1-i]<=0)){
-                    // The solver may not reach an old anchor; start from the last visible foot, not that unreachable point.
-                    footStepFrom[i]=previousFeet[i];footStep[i]=Mathf.Epsilon;footLocked[i]=false;footLockWeight[i]=0;
+                    // Preserve reachable anchors; only recover from the visible foot when IK cannot reach the old support.
+                    var hip=Limb(side).upperLeg;var knee=Limb(side).lowerLeg;
+                    float reach=Vector3.Distance(hip.position,knee.position)+Vector3.Distance(knee.position,p)-.005f; // m: same reach margin as SolveLeg
+                    var anchor=new Vector3(footLockPoint[i].x,p.y,footLockPoint[i].z);
+                    footStepFrom[i]=Vector3.Distance(hip.position,anchor)>reach?previousFeet[i]:footLockPoint[i];footStep[i]=Mathf.Epsilon;footLocked[i]=false;footLockWeight[i]=0;
                     var holdRotation=foot.rotation;SolveLeg(side,new Vector3(footStepFrom[i].x,p.y,footStepFrom[i].z));foot.rotation=holdRotation;continue;
                 }
                 if(footLocked[i]&&!contact)footLocked[i]=false;
