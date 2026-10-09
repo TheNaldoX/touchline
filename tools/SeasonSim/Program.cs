@@ -10,6 +10,7 @@
 using System;using System.Collections.Generic;using System.Globalization;using System.IO;using System.Linq;using System.Reflection;using System.Text.Json;using Touchline.Core;
 static class P{
  static string FindDatabase(){foreach(var start in new[]{Environment.CurrentDirectory,AppContext.BaseDirectory}){var d=new DirectoryInfo(start);while(d!=null){var f=Path.Combine(d.FullName,"unity","Touchline","Assets","Touchline","Resources","Data","database.json");if(File.Exists(f))return f;d=d.Parent;}}throw new FileNotFoundException("database.json introuvable");}
+ static bool withGenerated;
  static readonly CultureInfo FR=CultureInfo.GetCultureInfo("fr-FR");
  static string M(long v)=>(v/1e6).ToString("0.0",FR)+" M€";
  static int Main(string[] a){
@@ -18,6 +19,9 @@ static class P{
   bool saveCheck=a.Contains("--savecheck");string dbText=File.ReadAllText(FindDatabase());
   // --savecheck : base lue comme dans Unity (JsonUtility simulé), pour comparer les formats de sauvegarde à l'identique.
   var db=saveCheck?UnityEngine.JsonUtility.FromJson<Database>(dbText):JsonSerializer.Deserialize<Database>(dbText,new JsonSerializerOptions{IncludeFields=true});
+  // Comme le jeu : ligues fictives générées au chargement (--no-generated pour la base seule).
+  var genWatch=System.Diagnostics.Stopwatch.StartNew();withGenerated=!a.Contains("--no-generated");int generatedPlayers=withGenerated?GeneratedWorld.Expand(db):0;
+  Console.WriteLine($"Base : {db.leagues.Length} ligues, {db.clubs.Length} clubs, {db.players.Length} joueurs ({generatedPlayers} générés en {genWatch.ElapsedMilliseconds} ms)");
   // Comme le jeu : empreinte prise sur la base elle-même, avant que la carrière la modifie.
   SaveBaseline baseline=saveCheck?SaveBaseline.From(db):null;
   var c=new Career{club=club,saveBaseline=baseline};c.lineup=Career.Select(db,club,c.tactic);c.EnsureLife(db);
@@ -84,7 +88,7 @@ static class P{
   Console.WriteLine($"\nFormat complet : {full.Length/1e6:0.00} Mo ({tFull} ms) — format compact : {compact.Length/1e6:0.00} Mo ({tCompact} ms, compactage inclus)");
   if(!packed){Console.WriteLine("ÉCHEC : compactage non appliqué");return 1;}
   if(J(c)!=full){Console.WriteLine("ÉCHEC : l'état en mémoire a changé après la sauvegarde");return 1;}
-  Database Load(string text,out Career state){state=UnityEngine.JsonUtility.FromJson<Career>(text);var pristine=UnityEngine.JsonUtility.FromJson<Database>(dbText);if(!CareerSaveRestore.TryRestore(pristine,state,out var restored)){var probe=UnityEngine.JsonUtility.FromJson<Career>(text);var p2=UnityEngine.JsonUtility.FromJson<Database>(dbText);try{probe.ExpandCompactSave(p2);probe.RestoreWorld(p2);Console.WriteLine("lineup: "+string.Join(",",probe.lineup.Select(id=>id+"="+p2.Find(id)?.team))+" club "+probe.club);}catch(Exception e){Console.WriteLine(e);}throw new Exception("Restauration refusée");}return restored;}
+  Database Load(string text,out Career state){state=UnityEngine.JsonUtility.FromJson<Career>(text);var pristine=UnityEngine.JsonUtility.FromJson<Database>(dbText);if(withGenerated)GeneratedWorld.Expand(pristine);if(!CareerSaveRestore.TryRestore(pristine,state,out var restored)){var probe=UnityEngine.JsonUtility.FromJson<Career>(text);var p2=UnityEngine.JsonUtility.FromJson<Database>(dbText);if(withGenerated)GeneratedWorld.Expand(p2);try{probe.ExpandCompactSave(p2);probe.RestoreWorld(p2);Console.WriteLine("lineup: "+string.Join(",",probe.lineup.Select(id=>id+"="+p2.Find(id)?.team))+" club "+probe.club);}catch(Exception e){Console.WriteLine(e);}throw new Exception("Restauration refusée");}return restored;}
   sw.Restart();var dbOld=Load(full,out var oldState);long lOld=sw.ElapsedMilliseconds;sw.Restart();var dbNew=Load(compact,out var newState);long lNew=sw.ElapsedMilliseconds;
   Console.WriteLine($"Chargement (désérialisation + restauration) : complet {lOld} ms, compact {lNew} ms");
   int diffs=0;string a1=J(oldState),a2=J(newState);if(a1!=a2){diffs++;int i=0;while(i<a1.Length&&i<a2.Length&&a1[i]==a2[i])i++;Console.WriteLine($"ÉCHEC carrière différente à {i} : …{a1.Substring(Math.Max(0,i-120),Math.Min(240,a1.Length-Math.Max(0,i-120)))}\n  vs …{a2.Substring(Math.Max(0,i-120),Math.Min(240,a2.Length-Math.Max(0,i-120)))}");}

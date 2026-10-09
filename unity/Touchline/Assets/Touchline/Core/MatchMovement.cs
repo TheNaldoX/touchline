@@ -47,7 +47,9 @@ namespace Touchline.Core
                     // Un porteur dans son propre tiers défensif est pressé par le
                     // joueur le plus proche dès que l'équipe presse un minimum.
                     bool highPress=focusX>HighPressZone&&t.pressing>=HighPressMinPressing;
-                    bool trigger=focusX< -28+t.line*55||Space(focus,p.side,true)<4||free||highPress;
+                    // The engagement zone belongs to pressing intensity. Line height
+                    // already positions the block; raising it must not also order a press.
+                    bool trigger=focusX< -28+t.pressing*55||Space(focus,p.side,true)<4||free||highPress;
                     bool closeDelay=recovering&&Point.Distance(p.position,focus)<7;
                     // Ballon perdu haut : le plus proche presse aussitôt au lieu de se replier.
                     bool press=trigger&&(!recovering||closeDelay||highPress)||transition&&t.counterPress;

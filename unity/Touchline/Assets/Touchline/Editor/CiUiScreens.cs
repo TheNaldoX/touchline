@@ -50,6 +50,8 @@ namespace Touchline.Editor
         static bool FocusedRecruitment=>Path.GetFileName(Output).StartsWith("ui-recruitment-focus-",StringComparison.Ordinal);
         static bool FocusedLoan=>Path.GetFileName(Output).StartsWith("ui-loan-focus-",StringComparison.Ordinal);
         static bool FocusedNegotiation=>Path.GetFileName(Output).StartsWith("ui-negotiation-focus-",StringComparison.Ordinal);
+        static bool FocusedBoard=>Path.GetFileName(Output).StartsWith("ui-board-focus-",StringComparison.Ordinal);
+        static bool FocusedDepth=>Path.GetFileName(Output).StartsWith("ui-recruitment-depth",StringComparison.Ordinal);
         const int FocusedStepFrames=3;
         static TouchlineApp App=>TouchlineApp.Instance;
         static UIDocument Document=>App.GetComponent<UIDocument>();
@@ -74,10 +76,12 @@ namespace Touchline.Editor
 
         static List<Action> BuildSteps()
         {
+            if(FocusedBoard)return BuildFocusedBoardSteps();
             if(FocusedTactics)return BuildFocusedTacticSteps();
             if(FocusedRecruitment)return BuildFocusedRecruitmentSteps();
             if(FocusedLoan)return BuildFocusedLoanSteps();
             if(FocusedNegotiation)return BuildFocusedNegotiationSteps();
+            if(FocusedDepth)return BuildFocusedDepthSteps();
             var list=new List<Action>();
             list.Add(()=>{App.Career.EnsureWorld(App.Database);});
             foreach(var s in Screens){
@@ -113,6 +117,32 @@ namespace Touchline.Editor
                 list.Add(()=>{Capture(screen.tag+"-regie");Call("CloseModal");SetField("tacticalTab","Composition");Call("Navigate","Tactique");});
                 list.Add(()=>{Capture(screen.tag+"-match-tactique");Click("Avec ballon");});
                 list.Add(()=>{Capture(screen.tag+"-match-consignes");SetField("tacticalTab","Composition");Call("Navigate","Match");});
+            }
+            return list;
+        }
+
+        static List<Action> BuildFocusedBoardSteps()
+        {
+            var list=new List<Action>();
+            list.Add(()=>App.Career.EnsureWorld(App.Database));
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Carrière");});
+                list.Add(()=>{
+                    if(Root.Q("board-season-objective")==null)throw new Exception("Objectif de direction absent");
+                    Capture(screen.tag+"-objectif-direction");
+                });
+            }
+            list.Add(()=>{
+                var c=App.Career;var objective=c.EnsureBoardObjective(App.Database);
+                foreach(var f in c.world.fixtures.Where(f=>f.league==objective.division&&(f.home==c.club||f.away==c.club)).Take(6)){
+                    f.played=true;f.hg=f.home==c.club?0:2;f.ag=f.away==c.club?0:2;
+                }
+                c.life.day+=30;c.ReviewBoardObjective(App.Database);
+                audit.AppendLine("Bilan direction : six défaites de championnat synthétiques, carrière de validation uniquement.");
+            });
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Carrière");});
+                list.Add(()=>Capture(screen.tag+"-bilan-direction"));
             }
             return list;
         }
@@ -341,6 +371,50 @@ namespace Touchline.Editor
             return list;
         }
 
+        // film/ui-recruitment-depth… : report cards with ranges/grades, sort, generated league market, comparison.
+        static List<Action> BuildFocusedDepthSteps()
+        {
+            audit.AppendLine("Parcours ciblé profondeur du recrutement : cartes de rapport (fourchettes, note A–E, forces/faiblesses, concurrence), tri, ligue générée Suède, comparaison ; deux résolutions natives, carrière en mémoire.");
+            var list=new List<Action>();string generated=null,real=null;
+            list.Add(()=>{
+                var safe=typeof(TouchlineApp).GetProperty("VisualValidation",BindingFlags.Instance|BindingFlags.NonPublic);
+                if(safe==null||!(bool)safe.GetValue(App))throw new Exception("La validation doit isoler les sauvegardes personnelles");
+                var c=App.Career;c.EnsureWorld(App.Database);c.revealAttributes=false;
+                if(!App.Database.leagues.Any(l=>GeneratedWorld.IsGeneratedLeague(l)))throw new Exception("Ligues générées absentes du catalogue chargé");
+                var g=App.Database.players.First(p=>p.team.StartsWith("fic-swe1-",StringComparison.Ordinal)&&p.age>=20&&!p.Goalkeeper);generated=g.id;
+                var r=App.Database.players.First(p=>p.team!=c.club&&p.team!="free"&&p.team!="retired"&&!p.team.StartsWith("academy-")&&!GeneratedWorld.IsGenerated(p.team)&&p.age>=18&&!p.Goalkeeper);real=r.id;
+                int day=c.life.day;
+                c.world.reports.Add(new ScoutReport{player=generated,club=c.club,scout="Cellule de test",started=day-20,due=day-1,lastObserved=day-1,confidence=90,judging=12,depth=1,estimate=60,potential=66,uncertainty=4,potentialUncertainty=7,advice="Rapport de contrôle."});
+                c.world.reports.Add(new ScoutReport{player=real,club=c.club,scout="Cellule de test",started=day-200,due=day-190,lastObserved=day-190,confidence=90,judging=16,estimate=70,potential=72,uncertainty=2,potentialUncertainty=5,advice="Rapport ancien de contrôle."});
+                if(!c.shortlist.Contains(generated))c.ToggleShortlist(generated);if(!c.shortlist.Contains(real))c.ToggleShortlist(real);
+                c.rivalBids.Add(new RivalBid{player=real,club=App.Database.clubs.First(t=>t.id!=c.club&&t.id!=r.team&&t.playable).id,seller=r.team,day=day,decision=day+10,fee=r.value,wage=r.wage});
+                audit.AppendLine("Joueur fictif "+generated+" ("+g.team+"), joueur réel "+real+" avec rapport ancien et offre rivale fictive de test.");
+            });
+            foreach(var s in Screens){
+                var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);SetField("scoutReportFilter","Tous");SetField("recruitmentTab","Rapports");Call("Navigate","Recrutement");});
+                list.Add(()=>{
+                    foreach(var id in new[]{generated,real}){if(Root.Q("scout-grade-"+id)==null||Root.Q("scout-range-ability-"+id)==null)throw new Exception("Carte de rapport incomplète : "+id);}
+                    if(Root.Q("scout-rival-"+real)==null)throw new Exception("Concurrence non affichée");
+                    var card=App.Career.ScoutReportCard(App.Database,generated);var old=App.Career.ScoutReportCard(App.Database,real);
+                    audit.AppendLine(screen.tag+" : fictif note "+card.grade+" niveau "+card.ability+" potentiel "+card.potential+" familiarité "+card.familiarityLabel+" ; ancien note "+old.grade+" niveau "+old.ability+" à actualiser="+old.stale);
+                    Capture(screen.tag+"-profondeur-rapports");
+                    var target=Root.Q("scout-report-"+generated);target.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(target);
+                });
+                list.Add(()=>{Capture(screen.tag+"-profondeur-carte-fictive");Root.Q<DropdownField>("scout-report-sort").value="Note";});
+                list.Add(()=>{Capture(screen.tag+"-profondeur-tri-note");Call("OpenRecruitmentMarket","Tous","Tous");Root.Q<Foldout>("recruit-advanced").value=true;Root.Q<DropdownField>("recruit-country").value="Suède";});
+                list.Add(()=>{
+                    var rows=Root.Q<ListView>("recruit-list")?.itemsSource;
+                    if(rows==null||!rows.Cast<PlayerData>().Any(p=>p.team.StartsWith("fic-swe1-",StringComparison.Ordinal)))throw new Exception("Le territoire Suède doit inclure la ligue générée");
+                    Root.Q<Foldout>("recruit-advanced").value=false;
+                    audit.AppendLine(screen.tag+" : Suède "+rows.Count+" profils, dont "+rows.Cast<PlayerData>().Count(p=>GeneratedWorld.IsGenerated(p.team))+" fictifs.");
+                    Capture(screen.tag+"-profondeur-marche-suede");Call("ComparePlayer",generated);
+                });
+                list.Add(()=>{if(Root.Q("player-comparison")==null)throw new Exception("Comparaison absente");Capture(screen.tag+"-profondeur-comparaison");Call("CloseModal");});
+            }
+            return list;
+        }
+
         static List<Action> BuildFocusedLoanSteps()
         {
             audit.AppendLine("Parcours ciblé : droits du prêteur, fiche, contrat de prêt et ancien accord. Carrière de validation en mémoire ; six captures natives, pas de sauvegarde personnelle ni d’achat exécuté.");
@@ -399,7 +473,7 @@ namespace Touchline.Editor
             float now=Time.realtimeSinceStartup;if(startedAt<0){startedAt=now;Application.logMessageReceived+=(m,st,t)=>{if(log.Length<200000)log.AppendLine(t+": "+m+(t==LogType.Exception?"\n"+st:""));};}
             if(TouchlineApp.Instance==null){if(now-startedAt>BootTimeoutSeconds)Finish("TouchlineApp absent");return;}
             if(now-startedAt>RunTimeoutSeconds){Finish("délai dépassé à l'étape "+stage);return;}
-            if(++frames<(FocusedTactics||FocusedRecruitment||FocusedLoan||FocusedNegotiation?FocusedStepFrames:StepFrames)||now-stepAt<StepSeconds)return;frames=0;stepAt=now;
+            if(++frames<(FocusedTactics||FocusedRecruitment||FocusedLoan||FocusedNegotiation||FocusedBoard||FocusedDepth?FocusedStepFrames:StepFrames)||now-stepAt<StepSeconds)return;frames=0;stepAt=now;
             steps??=BuildSteps();
             if(stage<0)stage=0;
             if(stage>=steps.Count){Finish(failures==0?null:failures+" étape(s) en échec");return;}

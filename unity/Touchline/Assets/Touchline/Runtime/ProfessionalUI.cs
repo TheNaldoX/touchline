@@ -160,7 +160,7 @@ namespace Touchline
         void ManagerPage()
         {
             var s=Scroll(content);Heading(s,"Votre parcours");Text(s,Career.manager+" · "+Career.world.managerStatus,"display-title");Text(s,"Réputation : "+Career.life.reputation.ToString("0")+" · Confiance du conseil : "+Career.life.boardTrust.ToString("0")+" %");Text(s,"Propriétaire : "+Career.world.owner,"muted");
-            ShowJobOffers(s);
+            ShowBoardObjective(s);ShowJobOffers(s);
             if(Career.world.managerStatus=="dismissed"){Text(s,"De nouveaux postes deviennent accessibles sept jours après votre départ.");foreach(var c in Database.clubs.Where(c=>c.id!=Career.club&&c.playable&&c.annualRevenue<=Career.life.revenue*1.5).Take(20))Button(s,"Postuler · "+c.name,()=>RunDecision(()=>Career.TakeJob(Database,c.id)));}
             Heading(s,"Archives des saisons");foreach(var h in Career.world.honours.Where(h=>h.club==Career.club).Reverse())Text(s,h.year+" · "+Career.CompetitionName(Database,h.competition));
         }

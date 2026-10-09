@@ -99,5 +99,53 @@ namespace Touchline.Tests
             typeof(MatchSimulation).GetMethod("Move",Private).Invoke(sim,null);
             Assert.AreEqual("press",first.intent);
         }
+
+        [TestCase(0,.2f)][TestCase(0,.8f)][TestCase(1,.2f)][TestCase(1,.8f)]
+        public void RaisingTheLineDoesNotOrderExtraPressing(int side,float line)
+        {
+            var sim=Setup(side,70,70,out var carrier,out var first,out var second);
+            sim.Tactic(1-side).pressing=.2f;sim.Tactic(1-side).line=line;
+            sim.Tactic(1-side).counterPress=false;sim.State.turnoverAt=-100;
+            first.position=first.previous=new Point(sim.Direction(side)*8,0);
+            second.position=second.previous=new Point(30,30);
+            sim.State.ball.position=carrier.position;
+            typeof(MatchSimulation).GetMethod("Move",Private).Invoke(sim,null);
+            Assert.AreNotEqual("press",first.intent,"Une ligne haute ne change pas la consigne de pressing.");
+        }
+
+        [TestCase(0,.2f)][TestCase(0,.8f)][TestCase(1,.2f)][TestCase(1,.8f)]
+        public void IntensivePressingCanEngageAtHalfwayWithEitherLine(int side,float line)
+        {
+            var sim=Setup(side,70,70,out var carrier,out var first,out var second);
+            sim.Tactic(1-side).pressing=.8f;sim.Tactic(1-side).line=line;
+            sim.Tactic(1-side).counterPress=false;sim.State.turnoverAt=-100;
+            first.position=first.previous=new Point(sim.Direction(side)*8,0);
+            second.position=second.previous=new Point(30,30);
+            sim.State.ball.position=carrier.position;
+            typeof(MatchSimulation).GetMethod("Move",Private).Invoke(sim,null);
+            Assert.AreEqual("press",first.intent);
+        }
+
+        [TestCase(0,1,true)][TestCase(1,1,true)][TestCase(0,2,true)][TestCase(1,2,true)]
+        [TestCase(0,1,false)][TestCase(1,2,false)]
+        public void CarrierPressureFoulUsesTheCorrectRestartInsideAndOutsideTheBox(int side,int period,bool inBox)
+        {
+            var sim=Setup(side,95,50,out var carrier,out var first,out _);sim.State.period=period;
+            int dir=sim.Direction(side);carrier.position=carrier.previous=new Point(dir*(inBox?39:30),2);
+            first.position=first.previous=carrier.position+new Point(dir*.9f,.1f);
+            var resolve=typeof(MatchSimulation).GetMethod("ResolveCarrierPressure",Private);
+            bool found=false;
+            // Repeated seeded close-pressure contests, not added probability in a match.
+            for(int i=0;i<100000&&!found;i++){
+                carrier.controlTime=0;carrier.action="idle";carrier.actionTime=0;
+                first.duelCooldown=0;first.action="idle";first.actionTime=0;
+                sim.State.ball=new BallState{owner=carrier.id,side=side,position=carrier.position+new Point(dir*.4f,0),height=.11f};
+                resolve.Invoke(sim,new object[]{carrier});found=sim.State.metrics[1-side].fouls>0;
+            }
+            Assert.IsTrue(found,"La surface ne rend pas les bousculades légales.");
+            Assert.AreEqual(inBox?"penalty":"free-kick",sim.State.phase);
+            Assert.AreEqual(side,sim.State.restartSide);
+            Assert.AreEqual(1,sim.State.metrics[1-side].fouls);
+        }
     }
 }

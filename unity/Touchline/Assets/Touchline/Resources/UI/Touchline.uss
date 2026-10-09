@@ -54,7 +54,7 @@ TextField, DropdownField, Slider { min-height: 53px; margin: 8px; color: rgb(216
 .navigation > Button { min-height: 48px; max-height: 56px; flex-grow: 0; margin: 3px 4px; padding-left: 14px; -unity-text-align: middle-left; background-color: rgba(0,0,0,0); border-width: 0; color: rgb(155,176,197); font-size: 16px; }
 .navigation > Button.active { background-color: rgb(31,61,62); color: rgb(151,245,215); border-left-width: 3px; border-left-color: rgb(125,235,204); }
 .navigation > Button.unread-nav { border-right-width: 3px; border-right-color: rgb(228,192,109); }
-.nav-caption { font-size: 11px; letter-spacing: 1px; color: rgb(107,131,155); padding: 16px 12px; white-space: normal; }
+.nav-caption { font-size: 12px; letter-spacing: 1px; color: rgb(107,131,155); padding: 16px 12px; white-space: normal; }
 .content { background-color: rgb(11,19,31); border-radius: 14px; padding: 22px; min-width: 0; min-height: 0; }
 .scroll { min-height: 0; flex-grow: 1; }
 .scroll > .unity-scroll-view__content-viewport { min-height: 0; }
@@ -63,7 +63,7 @@ Button:hover { background-color: rgb(38,60,77); }
 Button.primary { background-color: rgb(131,230,200); color: rgb(12,39,36); border-width: 0; -unity-font-style: bold; padding: 12px 24px; }
 Button.primary:hover { background-color: rgb(167,248,223); }
 .header Button.primary { min-width: 166px; min-height: 50px; }
-.eyebrow { font-size: 11px; letter-spacing: 1.6px; color: rgb(126,163,181); margin-bottom: 8px; white-space: normal; }
+.eyebrow { font-size: 12px; letter-spacing: 1.6px; color: rgb(126,163,181); margin-bottom: 8px; white-space: normal; }
 .heading { font-size: 31px; margin-top: 2px; margin-bottom: 20px; }
 .body-text { white-space: normal; font-size: 16px; margin-bottom: 10px; color: rgb(211,222,232); }
 .muted { white-space: normal; font-size: 14px; color: rgb(140,161,181); margin-bottom: 8px; }
@@ -125,7 +125,7 @@ Button.primary:hover { background-color: rgb(167,248,223); }
 .compact .metric-card { width: 46%; min-width: 130px; }
 .compact .wide-card, .compact .facility-card { width: 100%; min-width: 0; }
 .compact .pitch { width: 350px; height: 470px; margin: 12px 0; }
-.compact .token { width: 77px; height: 59px; min-height: 59px; font-size: 11px; }
+.compact .token { width: 77px; height: 59px; min-height: 59px; font-size: 12px; }
 .compact .tactic-settings { max-width: none; min-width: 260px; padding: 8px; }
 .compact .modal-panel { width: 95%; padding: 16px; }
 .column, .tactic-settings { flex-direction: column; align-items: stretch; }
@@ -149,7 +149,7 @@ Button.primary:hover { background-color: rgb(167,248,223); }
 /* Viewport-based layout: leave the screen to the club, not the shell. */
 .header, .compact .header { min-height: 62px; padding: 6px 12px; margin-bottom: 8px; border-radius: 10px; flex-wrap: nowrap; }
 .header .brand { font-size: 25px; margin-right: 12px; }
-.header .eyebrow { font-size: 11px; margin-bottom: 1px; }
+.header .eyebrow { font-size: 12px; margin-bottom: 1px; }
 .header .club-title { font-size: 18px; }
 .header .header-actions { flex-wrap: nowrap; flex-grow: 0; }
 .header .date-label { font-size: 13px; }
@@ -210,9 +210,9 @@ Button.primary:hover { background-color: rgb(167,248,223); }
 .tactic-player.selected-player { border-color: rgb(131,230,200); border-width: 2px; background-color: rgb(30,73,63); }
 .tactic-player.drop-player { border-color: rgb(255,217,127); border-width: 3px; background-color: rgb(82,77,37); }
 .tactic-player.unavailable-player { border-color: rgb(226,125,125); }
-.player-position { font-size: 11px; color: rgb(174,219,197); margin: 0; }
+.player-position { font-size: 12px; color: rgb(174,219,197); margin: 0; }
 .player-name { font-size: 12px; -unity-font-style: bold; margin: 1px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 72px; }
-.player-condition { font-size: 11px; color: rgb(151,208,176); margin: 0; }
+.player-condition { font-size: 12px; color: rgb(151,208,176); margin: 0; }
 .tactics-bench { flex-grow: 1; flex-basis: 0; min-width: 310px; padding-top: 6px; }
 .selected-post { padding: 10px; margin: 0 0 6px 0; }
 .selected-post .section-title { font-size: 17px; margin-bottom: 4px; }
@@ -227,9 +227,9 @@ Button.primary:hover { background-color: rgb(167,248,223); }
 .bench-handle Label { font-size: 25px; color: rgb(131,230,200); }
 .bench-copy { flex-grow: 1; flex-shrink: 1; min-width: 0; }
 .bench-name { font-size: 14px; white-space: normal; margin: 2px 0; }
-.bench-detail { font-size: 11px; color: rgb(151,174,190); white-space: normal; margin: 2px 0; }
+.bench-detail { font-size: 12px; color: rgb(151,174,190); white-space: normal; margin: 2px 0; }
 .bench-player Button { min-height: 48px; min-width: 68px; padding: 4px 7px; font-size: 12px; }
-.bench-player .status-warning { font-size: 11px; margin: 2px 0; }
+.bench-player .status-warning { font-size: 12px; margin: 2px 0; }
 .tactic-drag-ghost { position: absolute; width: 130px; min-height: 48px; padding: 8px; background-color: rgba(132,229,201,.95); color: rgb(12,35,31); border-radius: 8px; white-space: normal; -unity-text-align: middle-center; -unity-font-style: bold; font-size: 13px; }
 .instruction-card { padding: 12px; }
 .instruction-card .section-title { font-size: 17px; margin-bottom: 5px; }
@@ -267,8 +267,8 @@ Button.primary:hover { background-color: rgb(167,248,223); }
 .short-wide .tactics-title .tactics-tools > Button { font-size: 12px; padding: 4px 7px; }
 .short-wide .tactics-board { width: 390px; }
 .short-wide .tactic-player { width: 64px; height: 44px; min-height: 44px; }
-.short-wide .player-name { font-size: 11px; max-width: 60px; }
-.short-wide .player-position { font-size: 11px; }
+.short-wide .player-name { font-size: 12px; max-width: 60px; }
+.short-wide .player-position { font-size: 12px; }
 .short-wide .player-condition { display: none; }
 .short-wide .selected-post { padding: 8px; }
 .short-wide .selected-post > .muted { display: none; }
@@ -278,7 +278,7 @@ Button.primary:hover { background-color: rgb(167,248,223); }
 
 .match-viewport { flex-grow: 1; flex-basis: 0; height: 0; min-height: 80px; flex-shrink: 1; width: 100%; background-color: rgb(26,57,39); border-radius: 6px; overflow: hidden; }
 .match-name-layer { position: absolute; overflow: hidden; }
-.match-name { font-size: 11px; -unity-font-style: bold; -unity-text-align: middle-center; color: rgb(249,252,253); background-color: rgba(6,14,22,0.86); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 5px; padding-right: 5px; padding-top: 0; padding-bottom: 0; margin: 0; border-radius: 3px; border-bottom-width: 2px; }
+.match-name { font-size: 12px; -unity-font-style: bold; -unity-text-align: middle-center; color: rgb(249,252,253); background-color: rgba(6,14,22,0.86); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 5px; padding-right: 5px; padding-top: 0; padding-bottom: 0; margin: 0; border-radius: 3px; border-bottom-width: 2px; }
 .match-name-home { border-bottom-color: rgb(143,222,204); }
 .match-name-away { border-bottom-color: rgb(242,174,118); }
 .match-name-carrier { color: rgb(235,255,167); background-color: rgba(8,20,22,0.96); }
@@ -287,7 +287,7 @@ Button.primary:hover { background-color: rgb(167,248,223); }
 .header { border-radius: 7px; }
 .history-button { min-width: 48px; min-height: 48px; padding: 0 8px; margin: 0 2px; font-size: 27px; background-color: rgba(0,0,0,0); border-width: 0; }
 .nav-crest { width: 32px; height: 38px; margin: 0 12px 0 10px; flex-shrink: 0; }
-.nav-group { font-size: 11px; color: rgb(94,127,149); letter-spacing: 1px; margin: 9px 12px 3px; }
+.nav-group { font-size: 12px; color: rgb(94,127,149); letter-spacing: 1px; margin: 9px 12px 3px; }
 .navigation > Button { font-size: 14px; margin: 1px 3px; }
 .navigation > Button.active { border-radius: 5px; }
 .card { border-radius: 8px; }
@@ -299,7 +299,7 @@ Button.primary { background-color: rgb(131,230,200); color: rgb(12,39,36); }
 .reduce-motion Button:active { scale: 1 1; }
 .club-directory { max-width: 900px; }
 .club-directory > TextField { min-height: 48px; margin: 4px 0 10px; }
-.directory-caption { font-size: 11px; color: rgb(132,176,184); letter-spacing: 1px; margin: 14px 4px 6px; }
+.directory-caption { font-size: 12px; color: rgb(132,176,184); letter-spacing: 1px; margin: 14px 4px 6px; }
 .directory-grid { justify-content: flex-start; align-items: stretch; }
 .directory-entry { width: 30%; min-height: 52px; margin: 4px; flex-grow: 1; -unity-text-align: middle-left; padding: 8px 12px; }
 .narrow .directory-entry { width: 46%; min-width: 0; font-size: 13px; white-space: normal; }
@@ -327,7 +327,7 @@ Button.primary { background-color: rgb(131,230,200); color: rgb(12,39,36); }
 .profile-hero { flex-wrap: nowrap; align-items: center; justify-content: flex-start; margin: 8px 0 12px; flex-shrink: 0; }
 .profile-portrait { width: 112px; height: 112px; flex-shrink: 0; background-color: rgb(20,43,58); border-radius: 8px; overflow: hidden; align-items: center; justify-content: center; margin-right: 16px; }
 .portrait-initials { font-size: 34px; color: rgb(120,157,175); }
-.portrait-missing { font-size: 11px; color: rgb(133,156,175); }
+.portrait-missing { font-size: 12px; color: rgb(133,156,175); }
 .profile-identity { flex-grow: 1; min-width: 0; flex-shrink: 1; }
 .profile-club { color: rgb(135,228,202); font-size: 17px; -unity-font-style: bold; margin-bottom: 5px; }
 .profile-identity .muted { margin-bottom: 3px; font-size: 13px; }
@@ -367,12 +367,12 @@ Button.primary { background-color: rgb(131,230,200); color: rgb(12,39,36); }
 .attribute-low { color: rgb(190,202,215); }
 .narrow .player-profile { padding: 12px; width: 97%; max-height: 96%; }
 .narrow .profile-portrait { width: 80px; height: 96px; margin-right: 10px; }
-.narrow .profile-tabs > Button { font-size: 11px; padding: 4px; }
+.narrow .profile-tabs > Button { font-size: 12px; padding: 4px; }
 .narrow .attribute-group { width: 100%; min-width: 0; }
 .narrow .profile-fact-label { width: 48%; flex-shrink: 1; white-space: normal; }
 .narrow .profile-fact-value { width: 50%; -unity-text-align: middle-right; }
 .narrow .profile-metric { width: 30%; min-width: 0; margin-right: 3px; padding: 7px; }
-.narrow .profile-metric .eyebrow { font-size: 11px; letter-spacing: 0; }
+.narrow .profile-metric .eyebrow { font-size: 12px; letter-spacing: 0; }
 .narrow .profile-metric-value { font-size: 15px; }
 .short-wide .profile-portrait { width: 76px; height: 76px; }
 .short-wide .profile-hero { margin: 3px 0 6px; }
@@ -383,6 +383,10 @@ Button.primary { background-color: rgb(131,230,200); color: rgb(12,39,36); }
 TextField:focus .unity-base-field__input { border-color: rgb(131,230,200); }
 .unity-toggle__checkmark { width: 24px; height: 24px; border-radius: 5px; border-width: 1px; border-color: rgb(85,121,137); background-color: rgb(24,44,56); }
 Toggle:checked .unity-toggle__checkmark { background-color: rgb(77,143,129); }
+/* Flèches des listes déroulantes et des volets : plus grandes et plus claires partout (14 px, gris clair). */
+.unity-base-popup-field__arrow { width: 14px; height: 14px; min-width: 14px; -unity-background-image-tint-color: rgb(183, 205, 218); }
+.unity-foldout__checkmark { width: 16px; height: 16px; min-width: 16px; -unity-background-image-tint-color: rgb(183, 205, 218); }
+.broadcast-strip > Button { min-width: 48px; }
 Button:focus { border-color: rgb(131,230,200); border-width: 1px; }
 Button:disabled { opacity: .45; }
 
@@ -452,10 +456,10 @@ Button:disabled { opacity: .45; }
 .narrow.live-match .scoreboard > .score { width: 46%; min-width: 0; flex-shrink: 1; font-size: 17px; white-space: normal; -unity-text-align: middle-center; margin: 0; }
 .narrow .interlude-team { padding: 6px; margin: 3px; }
 .narrow .interlude-team .section-title { font-size: 13px; }
-.narrow .interlude-team .muted { font-size: 11px; }
-.narrow .interlude-player { font-size: 11px; padding: 4px; }
+.narrow .interlude-team .muted { font-size: 12px; }
+.narrow .interlude-player { font-size: 12px; padding: 4px; }
 .narrow .broadcast-strip { padding: 2px 6px; }
-.narrow .broadcast-status { font-size: 11px; }
+.narrow .broadcast-status { font-size: 12px; }
 .squad-title { flex-shrink: 0; }
 .squad-search { margin: 4px 0; flex-shrink: 0; }
 .squad-search .unity-base-field__label { min-width: 95px; }
@@ -470,7 +474,7 @@ Button:disabled { opacity: .45; }
 .squad-row-copy { flex-grow: 1; flex-basis: 0; min-width: 0; }
 .squad-row-name { font-size: 16px; -unity-font-style: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .squad-row-detail { font-size: 12px; color: rgb(146,169,184); }
-.squad-row-status { font-size: 11px; color: rgb(125,215,188); }
+.squad-row-status { font-size: 12px; color: rgb(125,215,188); }
 .squad-row-fitness { width: 76px; margin: 0 14px; flex-shrink: 0; }
 .squad-row-condition { font-size: 16px; -unity-text-align: middle-right; }
 .squad-row-fitness > ProgressBar { height: 7px; margin-top: 6px; }
@@ -483,7 +487,7 @@ Button:disabled { opacity: .45; }
 .narrow .squad-player-row { padding: 7px 5px; }
 .narrow .squad-row-portrait { width: 38px; height: 52px; margin-right: 8px; }
 .narrow .squad-row-name { font-size: 13px; }
-.narrow .squad-row-detail { font-size: 11px; }
+.narrow .squad-row-detail { font-size: 12px; }
 .narrow .squad-row-fitness { width: 44px; margin: 0 7px; }
 .narrow .squad-row-condition { font-size: 13px; }
 .narrow .squad-filters .unity-base-field__input { font-size: 12px; }
@@ -624,7 +628,7 @@ Button:disabled { opacity: .45; }
 .narrow .squad-title { align-items: flex-start; }
 .narrow .squad-title-actions { width: 100%; justify-content: flex-start; margin-bottom: 7px; }
 .narrow .squad-title-actions > Button { flex-grow: 1; }
-.narrow .squad-reset { font-size: 11px; padding: 4px 6px; }
+.narrow .squad-reset { font-size: 12px; padding: 4px 6px; }
 .narrow .recruit-search-tools .unity-base-field { flex-direction: row; align-items: center; }
 .narrow .recruit-search-tools .unity-base-field__label { min-width: 0; width: 65px; font-size: 11px; margin-bottom: 0; }
 .narrow .recruit-portrait { width: 32px; height: 49px; margin-right: 7px; }
@@ -637,7 +641,7 @@ Button:disabled { opacity: .45; }
 .narrow .comparison-identity .section-title { font-size: 13px; }
 .narrow .comparison-stat-label, .narrow .comparison-stat-value { font-size: 11px; }
 .narrow .comparison-pickers .unity-base-field__input { font-size: 11px; }
-.narrow .profile-actions > Button { flex-grow: 1; min-width: 0; font-size: 11px; padding: 5px 7px; }
+.narrow .profile-actions > Button { flex-grow: 1; min-width: 0; font-size: 12px; padding: 5px 7px; }
 
 /* Scroll indicators must not inherit the padding and panel of form inputs. */
 .unity-scroller .unity-base-slider { margin: 0; padding: 0; min-width: 0; min-height: 0; }
@@ -652,7 +656,7 @@ Button:disabled { opacity: .45; }
 .provenance-link { align-self: flex-start; min-height: 48px; margin-top: 6px; white-space: normal; }
 .narrow .provenance-card { padding: 9px; }
 .narrow .profile-tabs { flex-wrap: wrap; }
-.narrow .profile-tabs > Button { min-width: 0; font-size: 11px; padding-left: 7px; padding-right: 7px; }
+.narrow .profile-tabs > Button { min-width: 0; font-size: 12px; padding-left: 7px; padding-right: 7px; }
 
 /* Calendar: month overview, selected-day agenda and focused summer booking dialogs. */
 .calendar-heading { justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -675,15 +679,15 @@ Button:disabled { opacity: .45; }
 .calendar-month-nav > #calendar-today { min-width: 84px; font-size: 12px; padding: 3px 6px; }
 .calendar-month-title { flex-grow: 1; -unity-text-align: middle-center; font-size: 19px; -unity-font-style: bold; }
 .calendar-weekdays { flex-wrap: nowrap; margin-top: 8px; margin-bottom: 4px; }
-.calendar-weekdays > Label { width: 14.285%; margin: 0; -unity-text-align: middle-center; font-size: 11px; color: #91a5b0; }
+.calendar-weekdays > Label { width: 14.285%; margin: 0; -unity-text-align: middle-center; font-size: 12px; color: #91a5b0; }
 .calendar-grid { flex-wrap: wrap; margin: 0; }
 .calendar-day, .calendar-day-empty { width: 14.285%; min-width: 0; height: 52px; margin: 0; padding: 5px 1px; border-radius: 0; border-width: 1px; border-color: #1a2b37; }
-.calendar-day { white-space: normal; -unity-text-align: middle-center; font-size: 11px; color: #aabac4; background-color: #101e2a; }
+.calendar-day { white-space: normal; -unity-text-align: middle-center; font-size: 12px; color: #aabac4; background-color: #101e2a; }
 .calendar-day-match { border-bottom-width: 3px; border-bottom-color: #9bdfc9; color: #e9f7f2; background-color: #19343a; }
 .calendar-day-camp { border-top-width: 3px; border-top-color: #c8b66b; }
 .calendar-day-today { -unity-font-style: bold; color: #aaf5d9; }
 .calendar-day-selected { border-width: 2px; border-color: #9fefd0; background-color: #294b50; }
-.calendar-legend { font-size: 11px; color: #99b4b9; margin-top: 9px; white-space: normal; }
+.calendar-legend { font-size: 12px; color: #99b4b9; margin-top: 9px; white-space: normal; }
 .calendar-event { padding: 10px; margin-top: 5px; margin-bottom: 8px; }
 .calendar-event-title { font-size: 15px; -unity-font-style: bold; white-space: normal; }
 .calendar-upcoming { align-items: stretch; margin-bottom: 12px; }
@@ -713,7 +717,7 @@ Button:disabled { opacity: .45; }
 .narrow .calendar-filters .unity-base-field__label { min-width: 68px; margin-bottom: 0; }
 .narrow .calendar-month, .narrow .calendar-agenda { flex-basis: 100%; width: 100%; margin-right: 0; }
 .narrow .calendar-agenda { margin-top: 10px; }
-.narrow .calendar-day { height: 56px; font-size: 11px; }
+.narrow .calendar-day { height: 56px; font-size: 12px; }
 .narrow .calendar-day-empty { height: 56px; }
 .narrow .calendar-month { padding: 8px; }
 .narrow .calendar-upcoming-card { flex-basis: 100%; margin-right: 0; }
@@ -872,7 +876,7 @@ Button:disabled { opacity: .45; }
 .launch-brand-image { width: 310px; height: 56px; max-width: 60%; flex-shrink: 1; }
 .short-wide .launch-brand-image { width: 260px; height: 44px; }
 .narrow .launch-brand-image { width: 290px; height: 58px; max-width: 100%; }
-.launch-kicker { color: rgb(127, 158, 176); font-size: 11px; letter-spacing: 1.4px; }
+.launch-kicker { color: rgb(127, 158, 176); font-size: 12px; letter-spacing: 1.4px; }
 .launch-home-scroll { flex-grow: 1; min-height: 0; }
 .launch-home { align-items: stretch; justify-content: space-between; flex-wrap: nowrap; min-height: 400px; }
 .launch-hero { flex-grow: 1; width: 47%; min-width: 250px; margin-right: 30px; padding: 24px 12px; justify-content: center; }
@@ -890,7 +894,7 @@ Button:disabled { opacity: .45; }
 .launch-action-title { font-size: 18px; -unity-font-style: bold; color: rgb(220, 236, 235); margin-bottom: 5px; white-space: normal; }
 .launch-action-detail { font-size: 13px; color: rgb(146, 171, 189); white-space: normal; }
 .launch-footer { flex-shrink: 0; min-height: 28px; margin-top: 12px; }
-.launch-footer Label { margin: 0; font-size: 11px; }
+.launch-footer Label { margin: 0; font-size: 12px; }
 .launch-page-heading { flex-shrink: 0; justify-content: flex-start; margin-bottom: 12px; }
 .launch-page-heading > Button { min-height: 48px; margin: 0 20px 0 0; }
 .launch-page-heading .section-title { margin: 0; }

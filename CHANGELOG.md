@@ -3,6 +3,12 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Arbitrage : une bousculade sous pression peut donner un penalty dans la surface ; prudence accrue du défenseur conservée, avec tests symétriques des deux mi-temps et comparaison sur deux graines.
+- Tempo : suppression du malus général de dispersion d'une passe préparée ; cadence des décisions, vitesse du ballon et difficulté réelle de réception conservées, avec audit patient/rapide sur 200 affiches identiques.
+- Direction : objectifs saisonniers persistants selon les moyens, l'effectif et la situation héritée, bilans mensuels explicitant la confiance, et carte de suivi dans Carrière.
+- Moteur : déclenchement du pressing séparé de la hauteur de ligne, huit scénarios symétriques de régression et audits appariés ; rapports enrichis avec incertitude des victoires du favori et écart buts–xG.
+- Finition Fold/stade : reprise de la caméra portrait, des tailles tactiles, de l'arrondi des salaires et des bancs de Claude ; public séparé logiquement des remplaçants, escaliers/rambardes et budget géométrique conservé.
+- Recrutement : 116 clubs et 2 784 joueurs fictifs observables, rapports gradués et incertains, concurrence entre clubs ; correction de l’affichage Unity et protection des transferts lors d’un changement de poste.
 - Filets : fils continus subdivisés aux mailles pour réagir réellement aux impacts centraux des deux buts, avec déformation locale et retour au repos ; rayon et ressort inchangés.
 - Recrutement : territoires fiables pour 45 clubs hors catalogue de championnats (1 434 joueurs), filtres et missions par pays partagés, sans ajout de ligue ni modification des notes.
 - Négociations : une offre invalide affiche son erreur dans le formulaire sans effacer les montants, la promesse de temps de jeu ni les brouillons de transfert et de prêt.

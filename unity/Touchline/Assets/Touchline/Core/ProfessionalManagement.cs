@@ -5,7 +5,7 @@ using System.Linq;
 namespace Touchline.Core
 {
     [Serializable] public class Employment { public string player,club,parent,role="rotation";public int until,parentUntil,loanUntil,retirement=-1,joined,appearancesAtSigning,wageChangeDay;public long wage,appearanceBonus,releaseClause,originalWage,nextWage;public bool estimated=true,aiRelease,loanAppearanceTracking,loanAppearanceHistoryEstimated;public PlayingTimeUsage playingTime;public MarketTerms terms;public LoanContractConditions parentConditions,purchaseConditions;public bool parentConditionsUnavailable;public string conditionsSource; }
-    [Serializable] public class ScoutReport { public string player,club,scout,mission;public int started,due,confidence,judging,lastObserved;public float estimate,potential,uncertainty,potentialUncertainty;public string advice; }
+    [Serializable] public class ScoutReport { public string player,club,scout,mission;public int started,due,confidence,judging,lastObserved,depth;public float estimate,potential,uncertainty,potentialUncertainty;public string advice; }
     [Serializable] public class TransferOffer { public string player,seller,status="pending",role;public int due,years,attempts;public long fee,wage,bonus,clause;public bool loan,renewal,precontract;public int joinDay;public string destination;public MarketTerms terms; }
     [Serializable] public class YouthPath { public string player,mentor,focus="balanced",group="academy";public int minutes,lastReview,loanAppearances,loanReviewedThrough=-1;public float progress; public string trainingLoad="standard"; public int trainingSessions,seniorMinutes,trackedLoanMinutes,lastAcademyDay=-1; }
     [Serializable] public class CommercialDeal { public string name,slot,status="offer";public int years=2,until,counterDay;public long annual,asking; }
@@ -176,6 +176,7 @@ namespace Touchline.Core
         }
         void ManagementDay(Database db)
         {
+            EnsureBoardObjective(db);
             ImportFreeAgents(db);
             ProcessAiEmployment(db);
             MarketDay(db);
@@ -202,8 +203,8 @@ namespace Touchline.Core
             WarnThinSquad(db);
             if(life.day%7==0){foreach(var d in world.sponsors.Where(s=>s.status=="signed"&&s.until>life.day))Account(d.annual/52,"Partenariat • "+d.name);if(world.debt>0)Account(-world.debt/1000,"Intérêts de dette estimés");}
             foreach(var d in world.sponsors.Where(d=>d.status=="signed"&&d.until<=life.day)){d.status="expired";Mail("Direction commerciale","Partenariat terminé",d.name+" arrive à échéance. Un emplacement est à nouveau disponible.");}
-            if(life.day>=world.reviewDay){world.reviewDay=life.day+30;var division=world.divisions.FirstOrDefault(d=>d.clubs.Contains(club));var table=division==null?new List<Standing>():Table(division.id);var own=table.FirstOrDefault(t=>t.club==club);
-                if(own!=null&&own.played>=5){int expected=division.clubs.OrderByDescending(id=>Strength(db,id)).ToList().IndexOf(club)+1,actual=table.IndexOf(own)+1;life.boardTrust=Mathx.Clamp(life.boardTrust+(expected-actual)*.7f,0,100);}
+            if(life.day>=world.reviewDay){world.reviewDay=life.day+30;
+                ReviewBoardObjective(db);
                 if(life.cash<0){world.debt+=-life.cash;Account(-life.cash,"Avance de trésorerie du propriétaire • dette");life.boardTrust=Math.Max(0,life.boardTrust-8);}
                 if(life.boardTrust<25&&world.managerStatus=="employed"){world.managerStatus="dismissed";world.jobDay=life.day;Mail("Présidence","Fin de votre mandat","Le conseil met fin à votre contrat. Consultez les postes disponibles pour poursuivre votre carrière.",null,"jobs");}
                 if(life.day>90&&Roll()<.015f){world.owner="Consortium "+(world.year+world.serial%17);bool invest=Roll()<.6f;Account(invest?life.revenue/20:0,"Rachat • apport du nouveau propriétaire");life.boardTrust=Mathx.Clamp(life.boardTrust-5,0,100);Mail("Présidence","Changement de propriétaire",world.owner+" reprend le club. "+(invest?"Un apport de fonds est annoncé, avec des attentes renforcées.":"La priorité reste l’équilibre financier. Aucun apport immédiat."));}

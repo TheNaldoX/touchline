@@ -11,7 +11,17 @@ namespace Touchline.Core
         public List<StaffMember> staffMarket=new List<StaffMember>();
         public List<StaffOffer> staffOffers=new List<StaffOffer>();
         static uint StableIdentity(string id){uint hash=2166136261;foreach(char c in id)hash=unchecked((hash^c)*16777619);return hash;}
-        public static long MonthlySalary(long weekly)=>(long)Math.Round(weekly*52m/12m);
+        // Les salaires sont stockés par semaine (entier) ; un montant mensuel saisi est converti par
+        // WeeklySalary. Plusieurs mensuels (≈ 4,3 €) donnent la même semaine : l'affichage choisit le plus
+        // « rond » d'entre eux (10 000 plutôt que 10 001), donc tout mensuel multiple de 10 € revient à
+        // l'identique et WeeklySalary(MonthlySalary(w)) == w reste vrai pour toute semaine.
+        static readonly long[] SalaryDisplaySteps={100000,10000,1000,100,10}; // € : arrondis préférés, du plus rond au plus fin
+        public static long MonthlySalary(long weekly)
+        {
+            decimal exact=weekly*52m/12m;
+            foreach(long step in SalaryDisplaySteps){long round=(long)Math.Round(exact/step)*step;if(WeeklySalary(round)==weekly)return round;}
+            return (long)Math.Round(exact);
+        }
         public static long WeeklySalary(long monthly)=>(long)Math.Round(monthly*12m/52m);
         public void EnsureStaffMarket(Database db)
         {
