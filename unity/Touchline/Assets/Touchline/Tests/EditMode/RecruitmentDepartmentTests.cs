@@ -157,6 +157,45 @@ namespace Touchline.Tests
             Assert.AreEqual(90, restored.signings.Single().settleDays); Assert.AreEqual(.05f, restored.signings.Single().penalty, 1e-6);
         }
 
+        [Test] public void LegacySigningStaysWithFormerClubAfterDepartureAndSave()
+        {
+            c.signings.Add(new SigningRecord{player="p3",day=c.life.day,settleDays=90,penalty=.05f});
+            Assert.Less(c.SettlingModifier("p3"),0);
+            c.approaches.Add(new JobApproach{club="c1",until=c.life.day+1});
+            c.AnswerApproach(db,"c1",true);
+            Assert.AreEqual("c0",c.signings.Single().club);
+            Assert.AreEqual("c1",c.club);
+            var restored=JsonUtility.FromJson<Career>(JsonUtility.ToJson(c));
+            Assert.AreEqual(0,restored.SettlingModifier("p3"));
+            Assert.AreEqual(0,restored.RecruitmentReview(db).Count);
+            Assert.AreEqual(1,restored.signings.Count,"History is preserved, not deleted.");
+            restored.club="c0";
+            Assert.Less(restored.SettlingModifier("p3"),0);
+            Assert.AreEqual(1,restored.RecruitmentReview(db).Count);
+        }
+
+        [Test] public void RepeatSigningReviewUsesEachArrivalsOwnProgress()
+        {
+            c.life.day=200;
+            c.signings.Add(new SigningRecord{player="p3",club=c.club,day=10,settleDays=90,penalty=.05f});
+            c.signings.Add(new SigningRecord{player="p3",club=c.club,day=190,settleDays=100,penalty=.02f});
+            c.signings.Add(new SigningRecord{player="p3",club="c1",day=195,settleDays=100,penalty=.05f});
+            var reviews=c.RecruitmentReview(db);
+            Assert.AreEqual(2,reviews.Count);
+            Assert.AreEqual(1,reviews.Single(r=>r.record.day==10).progress);
+            Assert.AreEqual(.1f,reviews.Single(r=>r.record.day==190).progress,1e-6);
+            Assert.AreEqual(-.018f,c.SettlingModifier("p3"),1e-6,"A more recent arrival at another club cannot replace this club's record.");
+        }
+
+        [Test] public void FormerClubArrivalDoesNotSendSettledMailAtCurrentClub()
+        {
+            c.life.day=100;
+            c.signings.Add(new SigningRecord{player="p3",club="c1",day=1,settleDays=45,penalty=.05f});
+            typeof(Career).GetMethod("SigningsDay",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(c,new object[]{db});
+            Assert.IsTrue(c.signings.Single().settled);
+            Assert.IsFalse(c.life.messages.Any(m=>m.subject=="Intégration terminée"));
+        }
+
         [Test] public void DeadlineDayAcceleratesRivalBidsWithinTheWindow()
         {
             int Day(int y, int m, int d) => (int)(new DateTime(y, m, d) - Career.Epoch).TotalDays;
