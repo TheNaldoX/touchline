@@ -168,16 +168,20 @@ namespace Touchline.Editor
                         var candidate=Root.Q("recruit-hub-candidate-"+reportedPlayer);
                         if(candidate==null)throw new Exception("Le profil observé doit figurer dans les pistes connues");
                         var scroll=Root.Q<ScrollView>("recruit-hub");
-                        float offset=scroll.scrollOffset.y+candidate.worldBound.yMin-scroll.contentViewport.worldBound.yMin;
-                        scroll.scrollOffset=new Vector2(0,Mathf.Clamp(offset,0,scroll.verticalScroller.highValue));
-                        audit.AppendLine("Piste : défilement "+scroll.scrollOffset.y+" / "+scroll.verticalScroller.highValue);
+                        var profile=Root.Q<Button>("recruit-hub-profile-"+reportedPlayer);
+                        if(profile==null)throw new Exception("Bouton de fiche absent de la piste");
+                        // Target the actual action, not the top of a potentially tall card.
+                        // Run after the navigation's deferred scroll restoration (35 ms).
+                        scroll.schedule.Execute(()=>scroll.ScrollTo(profile)).StartingIn(100);
                     });
                     list.Add(()=>{
                         var scroll=Root.Q<ScrollView>("recruit-hub");var profile=Root.Q<Button>("recruit-hub-profile-"+reportedPlayer);
-                        if(profile==null||!profile.worldBound.Overlaps(scroll.contentViewport.worldBound))throw new Exception("La piste connue reste hors du défilement visible");
+                        audit.AppendLine("Piste : offset="+scroll.scrollOffset.y+" / "+scroll.verticalScroller.highValue+" viewport="+scroll.contentViewport.worldBound+" contenu="+scroll.contentContainer.worldBound+" fiche="+profile?.worldBound);
                         Capture(screen.tag+"-recrutement-pistes");
+                        if(profile==null||!profile.worldBound.Overlaps(scroll.contentViewport.worldBound))throw new Exception("La piste connue reste hors du défilement visible");
                         Root.Q<ScrollView>("recruit-hub").scrollOffset=Vector2.zero;
                     });
+                    if(Path.GetFileName(Output).Contains("-scroll"))continue;
                     list.Add(()=>{
                         var search=Root.Query<Button>().ToList().First(b=>b.name!=null&&b.name.StartsWith("recruit-hub-search-",StringComparison.Ordinal));
                         role=search.name.Substring("recruit-hub-search-".Length);
