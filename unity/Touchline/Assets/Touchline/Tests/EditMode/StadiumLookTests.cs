@@ -14,6 +14,30 @@ namespace Touchline.Tests
             }
             var texture=PitchTurf.Grain();try{Assert.AreEqual(PitchTurf.Size,texture.width);Assert.AreEqual(TextureWrapMode.Repeat,texture.wrapMode);}finally{Object.DestroyImmediate(texture);}
         }
+        [Test] public void CachedMicrograinMatchesDirectTurfSampling()
+        {
+            var texture=PitchTurf.FieldTexture(true);try{
+                foreach(int x in new[]{0,137,1000,2047})foreach(int y in new[]{0,333,1023}){
+                    float px=((x+.5f)/PitchTurf.FieldWidth*2-1)*PitchTurf.HalfLength,pz=((y+.5f)/PitchTurf.FieldHeight*2-1)*PitchTurf.HalfWidth;
+                    Color expected=(Color32)PitchTurf.FieldPixel(px,pz),actual=texture.GetPixel(x,y);
+                    Assert.AreEqual(expected.r,actual.r,.004f);Assert.AreEqual(expected.g,actual.g,.004f);Assert.AreEqual(expected.b,actual.b,.004f);
+                }
+            }finally{Object.DestroyImmediate(texture);}
+        }
+        [Test] public void FullPitchDetailIsNonRepeatingAndAlignedAcrossShadeBoundary()
+        {
+            Assert.AreNotEqual(PitchTurf.FieldPixel(4,7),PitchTurf.FieldPixel(4+PitchTurf.GrainTile,7));
+            foreach(bool shaded in new[]{false,true}){
+                var mesh=PitchTurf.Surface(shaded,3,20);
+                try{var vertices=mesh.vertices;var uv=mesh.uv;for(int i=0;i<vertices.Length;i++)Assert.AreEqual(PitchTurf.FieldUv(vertices[i]),uv[i]);}
+                finally{Object.DestroyImmediate(mesh);}
+            }
+            var texture=PitchTurf.FieldTexture();try{
+                Assert.AreEqual(2048,texture.width);Assert.AreEqual(1024,texture.height);
+                Assert.Greater(texture.mipmapCount,1);Assert.AreEqual(TextureWrapMode.Clamp,texture.wrapMode);
+                Assert.IsFalse(texture.isReadable,"CPU pixel buffer released after upload");
+            }finally{Object.DestroyImmediate(texture);}
+        }
         [Test] public void UpperTierSupportersSitInTheFarStandUnderTheRoof()
         {
             var mesh=StadiumAtmosphere.UpperCrowd("176","160",1);

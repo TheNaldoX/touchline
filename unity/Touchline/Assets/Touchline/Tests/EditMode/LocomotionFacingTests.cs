@@ -6,6 +6,15 @@ namespace Touchline.Tests
 {
     public class LocomotionFacingTests
     {
+        [TestCase(30)] [TestCase(60)] [TestCase(120)]
+        public void StrafeReversalBlendsContinuouslyAtDifferentFrameRates(int fps)
+        {
+            float right=1,first=PlayerView.StrafeBlend(1,0,1f/fps);
+            Assert.Greater(first,.7f,"No instant left/right pose swap");Assert.Less(first,1);
+            for(int i=0;i<fps;i++){float next=PlayerView.StrafeBlend(right,0,1f/fps);Assert.That(next,Is.InRange(0f,right));right=next;}
+            Assert.AreEqual(Mathf.Exp(-8),right,.00001f);
+            Assert.AreEqual(right,PlayerView.StrafeBlend(right,1,0),"Paused pose stays fixed");
+        }
         [TestCase(30)][TestCase(60)][TestCase(120)]
         public void ReversalBuildsMomentumAndSettlesWithoutOvershoot(int fps)
         {
@@ -74,14 +83,15 @@ namespace Touchline.Tests
                 Assert.Less(Vector3.Distance(new Vector3(20.4f,0,30.4f),view.transform.position),.0001f);
             }finally{Object.DestroyImmediate(go);}
         }
-        [Test] public void KickKeepsExistingContactOrientationRatherThanLocomotionTurnRate()
+        [TestCase(.1f)] [TestCase(1f)] public void KickKeepsContactOrientationWithinExistingTurnLimit(float angle)
         {
             var go=new GameObject("Contact facing preserved");try{
                 var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="contact",heightCm=182},0,9,Color.blue);
                 var actor=new Actor{id="contact",slot=9,action="run",angle=0};view.Render(actor,1,.016f);
-                actor.action="kick";actor.angle=1;actor.actionTime=.5f;
+                actor.action="kick";actor.angle=angle;actor.actionTime=.5f;
                 view.Render(actor,1,.016f);
-                float expected=Mathf.Rad2Deg*(1-Mathf.Exp(-.016f*16));
+                const float contactTurnDegreesPerSecond=600f; // Existing PlayerView gesture rotation cap.
+                float expected=Mathf.Min(angle*Mathf.Rad2Deg*(1-Mathf.Exp(-.016f*16)),contactTurnDegreesPerSecond*.016f);
                 Assert.AreEqual(expected,view.transform.eulerAngles.y,.02f);
             }finally{Object.DestroyImmediate(go);}
         }

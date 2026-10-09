@@ -8,7 +8,7 @@ namespace Touchline
     public sealed class MatchViewport : MonoBehaviour
     {
         MatchArena arena;Image surface;RenderTexture texture;readonly MatchTouchGesture gesture=new MatchTouchGesture();
-        MatchPlayerLabels names;
+        MatchPlayerLabels names;int requestedMsaa;
         MatchBallLocator locator;
         MatchRestartCut restartCut;
         public MatchPlayerLabels PlayerLabels=>names;
@@ -50,9 +50,9 @@ namespace Touchline
             if(!Bound||arena==null||arena.QuietPresentation){names?.Hide();locator?.Hide();restartCut?.Hide();return;}var size=surface.contentRect.size;
             if(size.x<8||size.y<8||float.IsNaN(size.x)||float.IsNaN(size.y)){names.Hide();locator?.Hide();restartCut?.Hide();return;}
             float density=TouchlineApp.Instance.GetComponent<UIDocument>().panelSettings.scale;
-            float ratio=Mathf.Min(density,1600f/size.x,1000f/size.y);
-            int width=Mathf.Max(16,Mathf.RoundToInt(size.x*ratio)),height=Mathf.Max(16,Mathf.RoundToInt(size.y*ratio));
-            if(texture==null||texture.width!=width||texture.height!=height){Release();texture=new RenderTexture(width,height,24,RenderTextureFormat.ARGB32){name="Touchline match viewport",filterMode=FilterMode.Bilinear};var descriptor=texture.descriptor;descriptor.msaaSamples=2;texture.antiAliasing=Mathf.Max(1,SystemInfo.GetRenderTextureSupportedMSAASampleCount(descriptor));texture.Create();surface.image=texture;}
+            int quality=PlayerPrefs.GetInt("render-quality",1),samples=RenderBudget.MsaaSamples(quality);
+            var resolution=RenderBudget.ViewportSize(quality,size.x,size.y,density);int width=resolution.x,height=resolution.y;
+            if(texture==null||texture.width!=width||texture.height!=height||requestedMsaa!=samples){Release();requestedMsaa=samples;texture=new RenderTexture(width,height,24,RenderTextureFormat.ARGB32){name="Touchline match viewport",filterMode=FilterMode.Bilinear};var descriptor=texture.descriptor;descriptor.msaaSamples=samples;texture.antiAliasing=Mathf.Max(1,SystemInfo.GetRenderTextureSupportedMSAASampleCount(descriptor));texture.Create();surface.image=texture;}
             else if(!texture.IsCreated()){texture.Create();surface.MarkDirtyRepaint();}
             arena.MatchCamera.targetTexture=texture;
             arena.MatchCamera.aspect=width/(float)height;arena.ReframeCamera();
