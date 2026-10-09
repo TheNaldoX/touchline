@@ -44,6 +44,10 @@ namespace Touchline
             var plan=new DropdownField("Charge",choices,life.training=="rest"?0:life.training=="heavy"?2:1){name="manager-training-load"};training.Add(plan);
             plan.SetEnabled(employed&&!delegated&&!(Career.match!=null&&!Career.match.finished)&&life.managerBanUntil<=life.day);
             plan.RegisterValueChangedCallback(_=>RunDecision(()=>{if(Career.match!=null&&!Career.match.finished)throw new InvalidOperationException("Terminez la rencontre.");if(life.managerBanUntil>life.day)throw new InvalidOperationException("L’adjoint gère la charge pendant votre suspension.");life.training=plan.index==0?"rest":plan.index==2?"heavy":"balanced";}));
+            var focuses=Core.Career.TrainingFocuses.Select(Core.Career.TrainingFocusLabel).ToList();var focus=new DropdownField("Thème",focuses,Mathf.Max(0,Array.IndexOf(Core.Career.TrainingFocuses,Career.TrainingFocus))){name="manager-training-focus"};training.Add(focus);
+            focus.SetEnabled(employed&&!delegated&&!(Career.match!=null&&!Career.match.finished)&&life.managerBanUntil<=life.day);
+            focus.RegisterValueChangedCallback(_=>RunDecision(()=>Career.SetTrainingFocus(Core.Career.TrainingFocuses[focus.index])));
+            Career.TrackPreparation();Text(training,"Familiarité "+Career.tactic.formation+" : "+Mathf.RoundToInt(Career.TacticalFamiliarity())+" % · cohésion du onze : "+Mathf.RoundToInt(Career.Cohesion(Career.lineup))+" % · "+Core.Career.TrainingFocusHint(Career.TrainingFocus),"muted").name="manager-preparation";
             Text(training,delegated?"Le staff ajuste la charge selon la condition et le prochain match. Reprenez cette responsabilité dans la délégation.":delegationRequested?"Aucun préparateur ne peut appliquer cette délégation. Vous pouvez régler la charge ici en attendant de recruter un préparateur.":"Récupération : retrouver de la fraîcheur. Intensif : davantage de travail, avec un risque de blessure accru.","muted");
             var trainingActions=Row(training,"manager-card-actions");Button(trainingActions,"Staff et délégation",()=>Navigate("Staff et délégation"));Button(trainingActions,"Santé",()=>Navigate("Santé"));
 

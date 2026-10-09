@@ -20,6 +20,12 @@ namespace Touchline.Core
         const float AiTransferShare = .12f;        // share of revenue an AI club may spend on one target
         const float AiScoutErrorMax = 6, AiScoutErrorMin = 2; // rating points of AI misjudgement (small → big club)
         const int AlertContractDays = 180;         // six months: pre-contract window
+        const int DeadlineDays = 7;                // last days of a window: daily rival activity
+        const float DeadlineBidFactor = 2;         // rival bids twice as likely in those days
+
+        /// <summary>Last day of the open transfer window (31 January or 1 September), or -1 when closed.</summary>
+        public int WindowCloseDay => !WindowOpen ? -1 : DayOf(Date.Month == 1 ? new DateTime(Date.Year, 1, 31) : new DateTime(Date.Year, 9, 1));
+        public bool DeadlinePeriod => WindowOpen && WindowCloseDay - life.day < DeadlineDays;
 
         [NonSerialized] Dictionary<string, float> aiStrengths; [NonSerialized] int aiStrengthDay = -1; [NonSerialized] PlayerData[] aiStrengthSource;
         float AiStrength(Database db, string id)
@@ -88,7 +94,8 @@ namespace Touchline.Core
                 if (contract != null && contract.until > life.day && contract.until - life.day <= AlertContractDays && RecruitmentAlert("contract:" + id + ":" + contract.until))
                     Mail("Cellule recrutement", "Fin de contrat en vue", p.name + " arrive en fin de contrat le " + Epoch.AddDays(contract.until).ToString("dd/MM/yyyy") + ". Un précontrat est envisageable, sans indemnité, si le joueur accepte votre projet.", id, "scout");
             }
-            if (life.day % 7 != 0) return;
+            bool deadline = DeadlinePeriod;
+            if (life.day % 7 != 0 && !deadline) return;
             var tracked = shortlist.Concat(world.offers.Where(o => OfferForManagedClub(o) && (o.status == "pending" || o.status == "counter") && !o.renewal).Select(o => o.player)).Distinct().ToArray();
             foreach (var id in tracked)
             {
@@ -97,10 +104,10 @@ namespace Touchline.Core
                 if (shortlist.Contains(id) && RecruitmentAlert("interest:" + id + ":" + world.year))
                     Mail("Cellule recrutement", "Concurrence sur une cible", ClubLabel(db, rival.id) + " suit aussi " + p.name + (starter ? " et le voit comme titulaire." : " pour sa rotation.") + " Une offre rivale reste possible pendant les fenêtres de transfert.", id, "scout");
                 if (!WindowOpen || rivalBids.Any(b => b.player == id && b.status == "open")) continue;
-                float chance = starter ? RivalBidChanceStarter : RivalBidChanceRotation;
+                float chance = (starter ? RivalBidChanceStarter : RivalBidChanceRotation) * (deadline ? DeadlineBidFactor : 1);
                 // Stable draw: does not consume the career's random stream.
                 if (StableIdentity("rival-bid/" + id + "/" + rival.id + "/" + life.day) % 1000 >= chance * 1000) continue;
-                var bid = new RivalBid { player = id, club = rival.id, seller = p.team, day = life.day, decision = life.day + RivalDecisionDays, fee = (long)(p.value * RivalFeePremium), wage = (long)(p.wage * RivalWageRise) };
+                var bid = new RivalBid { player = id, club = rival.id, seller = p.team, day = life.day, decision = Math.Min(life.day + RivalDecisionDays, WindowCloseDay), fee = (long)(p.value * RivalFeePremium), wage = (long)(p.wage * RivalWageRise) };
                 rivalBids.Add(bid); foreach (var old in rivalBids.Where(b => b.status != "open").Take(Math.Max(0, rivalBids.Count - MaxRivalBids)).ToArray()) rivalBids.Remove(old);
                 Mail("Cellule recrutement", "Offre concurrente", ClubLabel(db, rival.id) + " a proposé environ " + bid.fee.ToString("N0") + " € pour " + p.name + ". Le club vendeur décidera vers le " + Epoch.AddDays(bid.decision).ToString("dd/MM") + " ; seul un accord signé de votre part l’arrête.", id, "transfer");
             }

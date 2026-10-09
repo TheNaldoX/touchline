@@ -59,7 +59,7 @@ namespace Touchline.Core
         public long StaffReleaseCost(StaffMember s)=>s.club==null?0:s.wage*Math.Max(0,(s.until-life.day+6)/7);
         public AgentEstimate PlayerAgent(Database db,string id,bool loan=false)
         {
-            var p=db.Find(id)??throw new ArgumentException("Joueur inconnu.");bool own=p.team==club;float uncertainty=Knowledge(id)>=90?.12f:.3f;long fee=own||p.team=="free"?0:(long)(p.value*(loan?.12:1.05));long monthly=MonthlySalary((long)(p.wage*(own?1.08:loan?1:1.12)));
+            var p=db.Find(id)??throw new ArgumentException("Joueur inconnu.");bool own=p.team==club;float uncertainty=Knowledge(id)>=90?.12f:.3f;long fee=own||p.team=="free"?0:(long)(p.value*(loan?.12:1.05));long monthly=MonthlySalary(own||loan?(long)(p.wage*(own?1.08:1)):Math.Max((long)(p.wage*1.12),PlayerTransferInterest(db,id).requiredWeeklyWage));
             return new AgentEstimate{feeLow=(long)(fee*(1-uncertainty)),feeHigh=(long)(fee*(1+uncertainty)),monthlyLow=loan?MonthlySalary(p.wage):(long)(monthly*.95),monthlyHigh=loan?MonthlySalary(p.wage):(long)(monthly*1.15),message=loan?"Son salaire intégral reste celui du contrat parent. Négocions votre pourcentage de prise en charge, l’indemnité et le temps de jeu.":own?"Discutons de son avenir et du temps de jeu promis.":p.rating>Strength(db,club)+8?"Le projet sportif est un obstacle : le salaire seul ne suffira pas.":"Mon joueur écoutera votre projet. Ces fourchettes sont indicatives ; l’accord du club reste distinct du contrat personnel."};
         }
         public AgentEstimate StaffAgent(string id)
@@ -79,7 +79,7 @@ namespace Touchline.Core
         public void SignStaffContract(Database db,string id)
         {
             OffPitch();EnsureStaffMarket(db);var o=staffOffers.LastOrDefault(x=>x.staff==id&&x.club==club&&x.status=="accepted"&&x.due+7>=life.day);if(o==null)throw new InvalidOperationException("Aucun accord valable.");var s=staffMarket.First(x=>x.id==id);if(s.club!=o.employer)throw new InvalidOperationException("L’employeur a changé : reprenez les discussions.");
-            bool renewal=life.staff.members.Any(m=>m.id==id);if(!renewal&&life.staff.members.Any(m=>m.role==s.role))throw new InvalidOperationException("Libérez le poste avant d’embaucher son remplaçant.");
+            bool renewal=life.staff.members.Any(m=>m.id==id);if(!renewal&&life.staff.members.Count(m=>m.role==s.role)>=(s.role=="scout"?ScoutSlots:1))throw new InvalidOperationException(s.role=="scout"?"La cellule de recrutement est complète ("+ScoutSlots+" recruteurs pour votre budget). Libérez un poste avant d’embaucher.":"Libérez le poste avant d’embaucher son remplaçant.");
             long payroll=life.staff.members.Where(m=>m.id!=id).Sum(m=>m.wage)+o.wage;if(payroll>Math.Max(1500,life.revenue/52/40))throw new InvalidOperationException("Le budget salarial du staff est insuffisant.");
             Charge(o.compensation+o.wage*2,"Contrat staff • "+s.name);s.club=club;s.wage=o.wage;s.until=life.day+365*o.years;o.status="signed";if(!renewal)life.staff.members.Add(s);Mail("Secrétariat","Contrat du staff signé",s.name+" : "+MonthlySalary(s.wage).ToString("N0")+" € par mois.",null,"staff");
         }

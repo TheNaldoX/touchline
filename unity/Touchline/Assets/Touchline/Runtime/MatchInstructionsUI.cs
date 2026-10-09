@@ -18,6 +18,7 @@ namespace Touchline
             QuickInstruction(body,MatchInstruction.Width,"Largeur offensive",new[]{"Étroite","Normale","Large"},"Écarter le jeu ouvre les couloirs et éloigne les soutiens.");
             QuickInstruction(body,MatchInstruction.Tempo,"Rythme",new[]{"Patient","Normal","Rapide"},"Décider plus vite exige davantage de précision technique.");
             QuickInstruction(body,MatchInstruction.Directness,"Passes",new[]{"Courtes","Mixtes","Directes"},"Jouer plus long accélère la progression mais expose aux interceptions.");
+            TouchlineShoutsCard(body);
             // The unfolded layout scales one UI unit to about .97 dp: 50 units
             // retain the 48 dp touch target in both native Fold layouts.
             panel.Query<UnityEngine.UIElements.Button>().ForEach(button=>button.style.minHeight=50);

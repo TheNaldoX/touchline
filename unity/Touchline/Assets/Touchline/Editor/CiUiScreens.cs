@@ -53,6 +53,8 @@ namespace Touchline.Editor
         static bool FocusedBoard=>Path.GetFileName(Output).StartsWith("ui-board-focus-",StringComparison.Ordinal);
         static bool FocusedDepth=>Path.GetFileName(Output).StartsWith("ui-recruitment-depth",StringComparison.Ordinal);
         static bool FocusedCareer=>Path.GetFileName(Output).StartsWith("ui-career-review-",StringComparison.Ordinal);
+        static bool FocusedCell=>Path.GetFileName(Output).StartsWith("ui-recruitment-cell-",StringComparison.Ordinal);
+        static bool FocusedImmersion=>Path.GetFileName(Output).StartsWith("ui-immersion-focus-",StringComparison.Ordinal);
         const int FocusedStepFrames=3;
         static TouchlineApp App=>TouchlineApp.Instance;
         static UIDocument Document=>App.GetComponent<UIDocument>();
@@ -77,7 +79,9 @@ namespace Touchline.Editor
 
         static List<Action> BuildSteps()
         {
+            if(FocusedImmersion)return BuildFocusedImmersionSteps();
             if(FocusedCareer)return BuildCareerReviewSteps();
+            if(FocusedCell)return BuildFocusedCellSteps();
             if(FocusedBoard)return BuildFocusedBoardSteps();
             if(FocusedTactics)return BuildFocusedTacticSteps();
             if(FocusedRecruitment)return BuildFocusedRecruitmentSteps();
@@ -120,6 +124,43 @@ namespace Touchline.Editor
                 list.Add(()=>{Capture(screen.tag+"-match-tactique");Click("Avec ballon");});
                 list.Add(()=>{Capture(screen.tag+"-match-consignes");SetField("tacticalTab","Composition");Call("Navigate","Match");});
             }
+            return list;
+        }
+
+        // Immersion : préparation, briefing adverse, causeries, cris depuis la touche,
+        // vestiaire de mi-temps, lecture de l'adjoint et consigne individuelle.
+        static List<Action> BuildFocusedImmersionSteps()
+        {
+            audit.AppendLine("Parcours ciblé immersion : deux résolutions natives par écran.");
+            bool talksOnly=Path.GetFileName(Output).StartsWith("ui-immersion-focus-talks-",StringComparison.Ordinal);
+            var list=new List<Action>();var first=Screens[0];
+            void Both(string tag,Action prepare){foreach(var s in Screens){var screen=s;list.Add(()=>Resize(screen.width,screen.height));list.Add(()=>prepare?.Invoke());list.Add(()=>Capture(screen.tag+"-"+tag));}}
+            list.Add(()=>{App.Career.EnsureWorld(App.Database);Resize(first.width,first.height);Call("Navigate","Club");});
+            if(!talksOnly)Both("preparation",()=>{Call("Navigate","Club");var focus=Root.Q("manager-training-focus");if(focus==null)throw new Exception("Thème d'entraînement absent");Root.Q<ScrollView>()?.ScrollTo(focus);});
+            list.Add(()=>{Resize(first.width,first.height);App.Career.life.day=App.Career.life.nextFixture;Call("Navigate","Match");});
+            list.Add(()=>Click("Entrer sur le terrain"));
+            list.Add(()=>{if(App.Career.match?.mindset==null||App.Career.match.mindset.Length!=2)throw new Exception("État mental absent du match de carrière");SetField("introAutomatic",false);Call("IntroGo",1);});
+            if(!talksOnly)Both("briefing",()=>{var card=Root.Q("immersion-opponent");if(card==null)throw new Exception("Rapport adverse absent");Root.Q<ScrollView>("prematch-scroll").ScrollTo(card);});
+            list.Add(()=>Call("IntroGo",4));
+            Both("causerie-avant",()=>{var card=Root.Q("team-talk");if(card==null)throw new Exception("Causerie absente");Root.Q<ScrollView>("prematch-scroll").ScrollTo(card);});
+            list.Add(()=>{var b=Root.Q<Button>("team-talk-calm");var view=Root.Q<ScrollView>("prematch-scroll");if(b==null||b.resolvedStyle.whiteSpace!=WhiteSpace.Normal||!b.worldBound.Overlaps(view.contentViewport.worldBound))throw new Exception("Choix de causerie hors champ ou libellé non repliable");});
+            list.Add(()=>{float before=App.Career.match.mindset[0].composure.Average();Click("team-talk-calm");float after=App.Career.match.mindset[0].composure.Average();if(after<=before)throw new Exception("Causerie sans effet");audit.AppendLine("Causerie « Rassurer » : sang-froid moyen "+before.ToString("0.00",CultureInfo.InvariantCulture)+" → "+after.ToString("0.00",CultureInfo.InvariantCulture));});
+            Both("causerie-reaction",()=>{var card=Root.Q("team-talk");if(card!=null)Root.Q<ScrollView>("prematch-scroll").ScrollTo(card);});
+            list.Add(()=>{Resize(first.width,first.height);if(Root.Q<Button>("prematch-kickoff")!=null)Click("prematch-kickoff");});
+            if(!talksOnly){
+            list.Add(()=>{Arena.Paused=true;Arena.Simulation.Advance(20*App.Career.match.SecondsPerMinute);Click("match-instructions-open");});
+            Both("cris-touche",()=>{var card=Root.Q("touchline-shouts");if(card==null)throw new Exception("Cris depuis la touche absents");Root.Q("match-instructions").Q<ScrollView>().ScrollTo(card);});
+            list.Add(()=>{Click("shout-press");if(App.Career.match.events.Last().kind!="shout")throw new Exception("Cri non enregistré");audit.AppendLine("Cri « Pressez ! » enregistré, retour au match.");});
+            }
+            list.Add(()=>{var sim=Arena.Simulation;sim.Advance(sim.State.HalfDuration);if(!sim.State.halfTime)throw new Exception("Mi-temps non atteinte");Call("MatchAnalysis");});
+            Both("vestiaire-mi-temps",null);
+            list.Add(()=>Click("team-talk-encourage"));
+            Both("vestiaire-reaction",null);
+            if(talksOnly)return list;
+            list.Add(()=>Click("Adjoint"));
+            Both("adjoint-lecture",null);
+            list.Add(()=>{Call("CloseModal");SetField("tacticalTab","Composition");SetField("selectedSlot",1);Call("Navigate","Tactique");});
+            Both("consigne-individuelle",()=>{var field=Root.Q("tactics-player-instruction");if(field==null)throw new Exception("Consigne individuelle absente");});
             return list;
         }
 
@@ -440,6 +481,65 @@ namespace Touchline.Editor
             return list;
         }
 
+        // film/ui-recruitment-cell… : scouting department, assignment, recommendations, report personality/interest,
+        // signings' settling and the negotiation's interest line. Synthetic in-memory data, never a personal save.
+        static List<Action> BuildFocusedCellSteps()
+        {
+            audit.AppendLine("Parcours ciblé cellule de recrutement : recruteurs et affectation, recommandations, personnalité/intérêt dans le rapport, intégration des recrues, intérêt en négociation ; deux résolutions natives, données synthétiques en mémoire.");
+            var list=new List<Action>();string target=null,local=null,extraKey=null;
+            list.Add(()=>{
+                var safe=typeof(TouchlineApp).GetProperty("VisualValidation",BindingFlags.Instance|BindingFlags.NonPublic);
+                if(safe==null||!(bool)safe.GetValue(App))throw new Exception("La validation doit isoler les sauvegardes personnelles");
+                var c=App.Career;var db=App.Database;c.EnsureWorld(db);c.revealAttributes=false;c.match=null;c.world.managerStatus="employed";c.EnsureStaffMarket(db);
+                string home=ScoutingGeography.Country(db,db.clubs.First(x=>x.id==c.club));
+                string abroad=home=="Espagne"?"Italie":"Espagne";
+                var abroadClubs=new HashSet<string>(ScoutingGeography.ClubIds(db,abroad));var homeClubs=new HashSet<string>(ScoutingGeography.ClubIds(db,home));
+                bool Usable(PlayerData p)=>p.team!=c.club&&p.age>=20&&p.age<=28&&!p.Goalkeeper&&p.wage>0;
+                var t=db.players.Where(p=>abroadClubs.Contains(p.team)&&Usable(p)).OrderByDescending(p=>p.rating).First();target=t.id;
+                var l=db.players.Where(p=>homeClubs.Contains(p.team)&&Usable(p)).OrderByDescending(p=>p.rating).First();local=l.id;
+                if(c.ScoutSlots<2)throw new Exception("Le club de validation doit pouvoir employer deux recruteurs");
+                var extra=c.staffMarket.First(m=>m.role=="scout"&&m.club==null);extra.club=c.club;extra.wage=Math.Max(extra.wage,400);extra.until=c.life.day+700;c.life.staff.members.Add(extra);extraKey=extra.id;
+                c.AssignScout(db,c.ScoutingDepartment(db).First(x=>x.chief).key,"needs");c.AssignScout(db,extraKey,"territory",abroad);
+                c.scoutRegions.Add(new ScoutRegionKnowledge{staff=extraKey,country=abroad,level=46});
+                int day=c.life.day;
+                c.world.reports.Add(new ScoutReport{player=target,club=c.club,scout=extra.name,mission="assign-"+extraKey,started=day-25,due=day-2,lastObserved=day-2,confidence=90,judging=extra.judging,depth=1,estimate=t.rating+t.development,potential=Math.Max(t.potential,t.rating),uncertainty=2.4f,potentialUncertainty=6.7f,advice="Rapport de contrôle."});
+                c.world.reports.Add(new ScoutReport{player=local,club=c.club,scout=c.Staff("scout").name,started=day-40,due=day-20,lastObserved=day-20,confidence=90,judging=c.Staff("scout").judging,estimate=l.rating+l.development,potential=Math.Max(l.potential,l.rating),uncertainty=2.4f,potentialUncertainty=5.4f,advice="Rapport de contrôle."});
+                c.scoutRecommendations.Add(local);c.scoutRecommendations.Add(target);
+                var own=db.Squad(c.club).Where(p=>!p.Goalkeeper).OrderByDescending(p=>p.rating).Take(2).ToArray();
+                c.signings.Add(new SigningRecord{player=own[0].id,from="test",fromCountry=abroad,day=day-30,settleDays=120,penalty=.05f,knowledge=90,estimate=own[0].rating+own[0].development-2,actual=own[0].rating+own[0].development});
+                c.signings.Add(new SigningRecord{player=own[1].id,from="test",fromCountry=home,day=day-200,settleDays=45,penalty=.02f,knowledge=0,actual=own[1].rating+own[1].development,settled=true});
+                audit.AppendLine("Cible étrangère "+target+" ("+t.team+", "+abroad+"), cible locale "+local+" ; deux recrues synthétiques ("+own[0].id+", "+own[1].id+") ; recruteur ajouté "+extraKey+".");
+            });
+            foreach(var s in Screens){
+                var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);SetField("recruitmentTab","Synthèse");Call("Navigate","Recrutement");});
+                list.Add(()=>{
+                    if(Root.Q("recruit-hub-recommendation-"+target)==null)throw new Exception("Recommandation de la cellule absente");
+                    if(Root.Q("recruit-hub-signings")==null)throw new Exception("Intégration des recrues absente");
+                    var section=Root.Q("recruit-hub-recommendations");section.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(section);
+                });
+                list.Add(()=>{Capture(screen.tag+"-cellule-recommandations");var section=Root.Q("recruit-hub-signings");section.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(section);});
+                list.Add(()=>{Capture(screen.tag+"-cellule-integration");SetField("recruitmentTab","Missions");Call("Navigate","Recrutement");});
+                list.Add(()=>{var panel=Root.Q("scout-department");panel?.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(panel);});
+                list.Add(()=>{Capture(screen.tag+"-cellule-chef");var member=Root.Q("scout-member-"+extraKey);member?.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(member);});
+                list.Add(()=>{
+                    if(Root.Q("scout-department")==null||Root.Q("scout-member-"+extraKey)==null||Root.Q("scout-skill-potential-"+extraKey)==null)throw new Exception("Cellule de recrutement incomplète");
+                    var assignment=Root.Q<Label>("scout-assignment-"+extraKey);if(assignment==null||!assignment.text.Contains("Exploration"))throw new Exception("Affectation non affichée");
+                    Capture(screen.tag+"-cellule-recruteurs");Click("scout-assign-"+extraKey);
+                });
+                list.Add(()=>{if(Root.Q("scout-assignment-dialog")==null||Root.Q("scout-assignment-hint")==null)throw new Exception("Dialogue d’affectation absent");Capture(screen.tag+"-cellule-affectation");Call("CloseModal");SetField("scoutReportFilter","Tous");SetField("recruitmentTab","Rapports");Call("Navigate","Recrutement");});
+                list.Add(()=>{
+                    foreach(var name in new[]{"scout-personality-","scout-interest-","scout-comparable-"})if(Root.Q(name+target)==null)throw new Exception("Rapport incomplet : "+name+target);
+                    var card=App.Career.ScoutReportCard(App.Database,target);
+                    audit.AppendLine(screen.tag+" : note "+card.grade+" niveau "+card.ability+" ambition "+card.ambition+" adaptabilité "+card.adaptability+" · "+card.comparable+" · intérêt "+card.interest);
+                    var report=Root.Q("scout-report-"+target);report.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(report);
+                });
+                list.Add(()=>{Capture(screen.tag+"-cellule-rapport");Call("TransferDialog",target);});
+                list.Add(()=>{if(Root.Q("negotiation-interest")==null)throw new Exception("Intérêt du joueur absent de la négociation");Capture(screen.tag+"-cellule-negociation");Call("CloseModal");});
+            }
+            return list;
+        }
+
         static List<Action> BuildFocusedLoanSteps()
         {
             audit.AppendLine("Parcours ciblé : droits du prêteur, fiche, contrat de prêt et ancien accord. Carrière de validation en mémoire ; six captures natives, pas de sauvegarde personnelle ni d’achat exécuté.");
@@ -498,7 +598,7 @@ namespace Touchline.Editor
             float now=Time.realtimeSinceStartup;if(startedAt<0){startedAt=now;Application.logMessageReceived+=(m,st,t)=>{if(log.Length<200000)log.AppendLine(t+": "+m+(t==LogType.Exception?"\n"+st:""));};}
             if(TouchlineApp.Instance==null){if(now-startedAt>BootTimeoutSeconds)Finish("TouchlineApp absent");return;}
             if(now-startedAt>RunTimeoutSeconds){Finish("délai dépassé à l'étape "+stage);return;}
-            if(++frames<(FocusedTactics||FocusedRecruitment||FocusedLoan||FocusedNegotiation||FocusedBoard||FocusedDepth||FocusedCareer?FocusedStepFrames:StepFrames)||now-stepAt<StepSeconds)return;frames=0;stepAt=now;
+            if(++frames<(FocusedTactics||FocusedRecruitment||FocusedLoan||FocusedNegotiation||FocusedBoard||FocusedDepth||FocusedCareer||FocusedImmersion?FocusedStepFrames:StepFrames)||now-stepAt<StepSeconds)return;frames=0;stepAt=now;
             steps??=BuildSteps();
             if(stage<0)stage=0;
             if(stage>=steps.Count){Finish(failures==0?null:failures+" étape(s) en échec");return;}
