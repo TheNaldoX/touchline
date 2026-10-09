@@ -2,16 +2,14 @@
 
 Lire AGENTS.md. État courant uniquement ; historique dans Git et les PR. Claude et Codex alternent, jamais simultanément.
 
-## Lot courant : graphismes et fluidité — PR #68
+## Lot courant : visibilité nocturne et appuis — PR #69
 
-- Branche `feat/match-surface-motion-polish`, base PR67/APK0.62 ; code validé `61e8bfb3591ea53ef0781d79388991622773c2c9`. Aucun changement Core/simulation.
-- Pelouse RGB2048×1024+mipmaps (~8MiB GPU), détails non répétitifs, UV continus ombre/tonte ; moins de contraste, matières mates. Grain pré-calculé, tampon CPU libéré après upload, pas de passe supplémentaire. Maillots : tissu procédural et panneaux discrets dans la texture partagée.
-- Pas chassés : fondu des poids gauche/droite au lieu du basculement instantané ; contrôles30/60/120Hz et pause. Pas de nouvelle mocap.
-- Qualité maximale : suppression du plafond commun1600×1000 ; mode maximal jusqu'à2160px par axe/2,6Mpx, aspect/densité préservés, MSAA4× avec repli matériel. Résolution adaptative conservée ; coût GPU accru, aucune mesure Fold.
-- Core923/923 : `.validation/visual-polish-core.txt`. Unity313/313 ciblés réussis, aucune erreur/alerte CS trouvée : Actions37975543320, artefact11638527992, `.validation/visual-polish-native-final`. Premier run302/303 : ancien test de rotation corrigé pour respecter le plafond600°/s déjà présent ; tous les nouveaux tests passaient.
-- Films jour37976831352 et nuit37979409379 réussis sur61e8bfb ; vues large/rapprochée et deux séquences de neuf images revues. Terrain/équipes/ballon visibles, continuité UV ; gros plans nocturnes encore sombres, public simple. Runtime sans erreur Touchline. Glissement p95=0,40m/s mais pics au contrôle/préparation et maximum12,04m/s en course : non résolus, pas de comparaison appariée avant/après. Preuves `.validation/film-graphics-polish-{day,night}`.
-- **APK0.63/code56 construite et vérifiée**, build37982451316, source9d0246f02304700ff8894dbd7b0511049e2cb27e (seule différence Assets depuis61e8bfb : version/code/nom APK). Artefact11642358317, signature/version/ARM64/hash contrôlés. Session36004 terminée ; aucune Unity active.
-- PR68 attachée au chat. Corps final PR dans `.validation/pr68-delivered.json`. Lot graphique livré en APK0.63, pas fusionné dans main.
+- Session autorisée le9octobre22h12–23h42 Paris (fin21h42UTC), graphismes/animation. Automatisation réactivée jusqu'à cette échéance ; la désactiver au bilan. Aucun agent supplémentaire. À23h20 privilégier validation/passation, aucun nouveau lot après23h42.
+- Branche `fix/night-fill-foot-release`, base PR68/0.63, code4602c9c726ded01f97a44e5cf65649467c8d0acf. Lumière ambiante latérale nuit .30/.31/.34→.46/.48/.53, rebond sol .10/.16/.10→.14/.20/.14 ; ciel/projecteur inchangés, aucune lumière supplémentaire.
+- Appuis : FootCanPlant distingue un pied descendant/posé d'un pied déjà montant ; évite sa capture en début de balancement, y compris après pas de replacement. Tests30/60/120Hz, tailles, pause. Aucune modification Core.
+- Core923/923 `.validation/night-support-core.txt`. Unity37985773041 en cours. **Session39006**, script `.validation/validate-night-support.ps1`, attend/tests/téléchargement puis film `night-support-night` sur4602c9c, récupération. Une seule Unity ; **Assets figés** pendant tests/rendu.
+- Revoir le film et comparer aux mêmes images/métriques de `.validation/film-graphics-polish-night` : graine731,départ95s,durée15s,30fps. Rejeter la correction d'appuis si régression visible ou mesures dégradées. Pas de succès présumé, pas de FPS Android revendiqué. PR69 attachée, corps initial `.validation/pr-night-support.json`.
+- 0.63 précédente : Core923/923, Unity313/313 (37975543320), films jour37976831352/nuit37979409379 revus. Sources61e8bfb, release9d0246f. Glissement p95=.40m/s,max12.04m/s ; nuit sombre. Pelouse/matières/résolution améliorées et pas chassés interpolés dans PR68. Preuves `.validation/visual-polish-native-final`, `film-graphics-polish-day`, `film-graphics-polish-night`.
 
 ## Dernière APK livrée
 
@@ -36,6 +34,6 @@ Lire AGENTS.md. État courant uniquement ; historique dans Git et les PR. Claude
 - `runtime-tests.yml` : workflow_dispatch, filtre ciblé. `match-film.yml` : push `film/<nom>`, suffixe-night ; vidéos dans branche `films`. Films Mesa à pas fixe ≠ FPS Android. `build-android.yml` : manuel ou release/**, versions/noms dans Editor/ProjectBuilder.cs.
 - Helpers ignorés `.validation/` : github-api.ps1, watch-run.ps1 (attente45s), download-artifact.ps1, fetch-film.ps1, verify-apk.ps1. Git réseau/mutations peuvent nécessiter escalade. Dépôt partiel : fetch explicite des branches utiles.
 - Exception UnityEditor.Search/QuickSearch préexistante dans les rendus ; distinguer des erreurs Touchline. Shaders runtime dans Resources, postProcessData requis. Qualifier HumanBone/Position en cas de collision. Ne pas utiliser apostrophes typographiques dans les chaînes PowerShell entre apostrophes simples.
-- Demander retour Fold0.63 : option Rendu3D/Qualité, nuit, fluidité, après-but, pliage. Limites graphiques : gros plans nocturnes sombres, public simple, pics de glissement résiduels. Ensuite reprendre ligne haute/sorties/penalties avec200 matchs appariés ; management long terme et UI. Automatisation historique PAUSED, ne pas la réactiver sans demande.
+- Demander retour Fold0.63 : option Rendu3D/Qualité, nuit, fluidité, après-but, pliage. Limites graphiques : gros plans nocturnes sombres, public simple, pics de glissement résiduels. Ensuite reprendre ligne haute/sorties/penalties avec200 matchs appariés ; management long terme et UI. Automatisation ACTIVE pour cette session uniquement ; désactiver à la fin.
 
 Historique détaillé avant condensation : `git show bb8f233:HANDOFF.md`, PR et preuves locales.
