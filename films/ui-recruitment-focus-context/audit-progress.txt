@@ -1,0 +1,24 @@
+Parcours ciblé recrutement : navigation, postes, missions, joueurs libres et rapports ; deux résolutions natives. Aucune sauvegarde personnelle.
+## plie-recrutement-synthese · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 21 · < 48 dp : 0 · textes 37 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+Piste : offset=1083.407 / 1286.355 viewport=(x:19.84, y:271.23, width:358.59, height:610.75) contenu=(x:19.84, y:-812.17, width:358.59, height:1897.11) fiche=(x:32.81, y:832.01, width:55.31, height:49.97)
+## plie-recrutement-pistes · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 20 · < 48 dp : 0 · textes 41 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## plie-comparaison-contextuelle · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 21 · < 48 dp : 0 · textes 42 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## deplie-recrutement-synthese · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 25 · < 48 dp : 0 · textes 52 · < 12 sp : 3 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×3 [unity-text-element.unity-label 11.0 sp] ex. « ESPACE MANAGER »
+
+Piste : offset=485.3334 / 907.4286 viewport=(x:200.00, y:205.71, width:597.71, height:525.71) contenu=(x:200.00, y:-279.62, width:597.71, height:1433.14) fiche=(x:412.57, y:681.52, width:55.24, height:49.90)
+## deplie-recrutement-pistes · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 26 · < 48 dp : 0 · textes 61 · < 12 sp : 3 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×3 [unity-text-element.unity-label 11.0 sp] ex. « ESPACE MANAGER »
+
+## deplie-comparaison-contextuelle · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 27 · < 48 dp : 0 · textes 59 · < 12 sp : 3 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×3 [unity-text-element.unity-label 11.0 sp] ex. « ESPACE MANAGER »
+

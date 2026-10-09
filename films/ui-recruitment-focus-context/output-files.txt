@@ -1,0 +1,13 @@
+total 2572
+drwxr-xr-x 2 root root   4096 Oct  9 15:28 .
+drwxr-xr-x 3 root root   4096 Oct  9 15:27 ..
+-rw-r--r-- 1 root root   2289 Oct  9 15:28 audit-progress.txt
+-rw-r--r-- 1 root root   2392 Oct  9 15:28 audit.txt
+-rw-r--r-- 1 root root 542682 Oct  9 15:28 deplie-comparaison-contextuelle.png
+-rw-r--r-- 1 root root 501466 Oct  9 15:28 deplie-recrutement-pistes.png
+-rw-r--r-- 1 root root 503869 Oct  9 15:28 deplie-recrutement-synthese.png
+-rw-r--r-- 1 root root 342388 Oct  9 15:27 plie-comparaison-contextuelle.png
+-rw-r--r-- 1 root root 369829 Oct  9 15:27 plie-recrutement-pistes.png
+-rw-r--r-- 1 root root 333515 Oct  9 15:27 plie-recrutement-synthese.png
+-rw-r--r-- 1 root root    871 Oct  9 15:28 progress.txt
+-rw-r--r-- 1 root root   1166 Oct  9 15:28 unity-messages.txt
