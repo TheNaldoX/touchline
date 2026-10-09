@@ -20,7 +20,11 @@ namespace Touchline.Core
                 freeAgents=original.freeAgents,freeAgentCatalogVersion=original.freeAgentCatalogVersion
             };
             try{state.ExpandCompactSave(original);state.RestoreWorld(candidate);state.SynchronizePlayerAges(candidate);}catch(ArgumentException){return false;}
-            if(!state.lineup.All(id=>candidate.Find(id)?.team==state.club))return false;
+            // An unemployed manager retains a historical XI; retirement or a transfer
+            // must not make the career unreadable. Active matches keep strict ownership.
+            bool historical=state.world?.managerStatus=="unemployed"&&string.IsNullOrEmpty(state.world.activeFixture)
+                &&(state.match==null||string.IsNullOrEmpty(state.match.home)&&string.IsNullOrEmpty(state.match.away)&&(state.match.actors==null||state.match.actors.Length==0));
+            if(!state.lineup.All(id=>candidate.Find(id)!=null&&(historical||candidate.Find(id).team==state.club)))return false;
             restored=candidate;return true;
         }
     }
