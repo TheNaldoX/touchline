@@ -109,7 +109,7 @@ namespace Touchline.Core
             float baseline=db.Squad(club).OrderByDescending(x=>x.rating+x.development).Take(11).Select(x=>x.rating+x.development).DefaultIfEmpty(65).Average();
             string level=r.estimate>baseline+5?"Peut renforcer immédiatement votre onze.":r.estimate>=baseline-5?"Peut entrer dans la rotation actuelle.":"Niveau estimé en retrait du onze actuel.";
             string development=p.age<23?" Prévoir du temps de jeu régulier et un plan individuel.":p.age>31?" Contrat court conseillé ; surveiller la charge physique.":" Vérifier l’adaptation au rôle et au collectif.";
-            string finance=MonthlySalary(p.wage)>MonthlySalary(Math.Max(1,WageBudget-Payroll(db)))?" Le salaire actuel dépasse votre marge salariale.":" Vérifier indemnité, salaire mensuel et primes avec l’agent.";
+            string finance=MonthlySalary(p.wage)>RecruitmentWageRoom(db)?" Le salaire actuel dépasse votre marge salariale après engagements.":" Vérifier indemnité, salaire mensuel et primes avec l’agent.";
             return level+development+finance;
         }
         public float AssessedLevel(Database db,string id,bool potential=false)

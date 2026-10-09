@@ -28,7 +28,6 @@ namespace Touchline.Core
     public partial class Career
     {
         const int RecruitmentContractHorizon = 180; // days: prepare renewals or replacements six months ahead.
-        const int RecruitmentReportFreshDays = 120; // same freshness window as ReportKnowledge.
 
         bool RecruitmentAvailable(PlayerData p)
         {
@@ -40,6 +39,22 @@ namespace Touchline.Core
         long RecruitmentWageRoom(Database db) => MonthlySalary(Math.Max(0, WageBudget - Payroll(db) - ReservedWages));
         static int RecruitmentReportAge(ScoutReport r, int day) => Math.Max(0, day - (r.lastObserved > 0 ? r.lastObserved : r.due));
 
+        public bool RecruitmentReportNeedsRefresh(ScoutReport report) => report != null && report.confidence >= 90 && Knowledge(report.player) < 90;
+
+        public bool RecruitmentOfferNeedsDecision(Database db, TransferOffer offer)
+        {
+            if (offer == null || !string.IsNullOrEmpty(offer.destination) && offer.destination != club) return false;
+            var player = db.Find(offer.player);
+            if (player == null || PlayingCareerEnded(player)) return false;
+            if (!string.IsNullOrEmpty(world.contracts.FirstOrDefault(c => c.player == player.id)?.parent)) return false;
+            if (offer.status == "sale") return player.team == club && offer.due >= life.day;
+            // A previous counter-offer is history once a newer negotiation exists.
+            var latest = world.offers.LastOrDefault(o => o.player == offer.player && o.status != "sale" && o.status != "sold"
+                && (string.IsNullOrEmpty(o.destination) || o.destination == club));
+            if (!ReferenceEquals(latest, offer) || player.team != offer.seller) return false;
+            return offer.status == "counter" || offer.status == "accepted" && offer.due + 7 >= life.day;
+        }
+
         public RecruitmentOverviewData RecruitmentOverview(Database db)
         {
             var result = new RecruitmentOverviewData();
@@ -50,10 +65,9 @@ namespace Touchline.Core
                 .GroupBy(r => r.player).Select(g => g.OrderByDescending(r => r.started).First())
                 .Where(r => Scoutable(db.Find(r.player))).ToArray();
             result.observations = reports.Count(r => r.confidence < 90);
-            result.reportsReady = reports.Count(r => r.confidence >= 90 && RecruitmentReportAge(r, life.day) <= RecruitmentReportFreshDays);
-            result.reportsStale = reports.Count(r => r.confidence >= 90 && RecruitmentReportAge(r, life.day) > RecruitmentReportFreshDays);
-            result.actionableOffers = world.offers.Count(o => (string.IsNullOrEmpty(o.destination) || o.destination == club)
-                && (o.status == "accepted" && o.due + 7 >= life.day || o.status == "sale" && o.due >= life.day));
+            result.reportsReady = reports.Count(r => r.confidence >= 90 && !RecruitmentReportNeedsRefresh(r));
+            result.reportsStale = reports.Count(RecruitmentReportNeedsRefresh);
+            result.actionableOffers = world.offers.Count(o => RecruitmentOfferNeedsDecision(db, o));
 
             var roles = (tactic?.withoutBall ?? Array.Empty<Slot>()).Select(s => FootballPositions.Canonical(s.role)).ToArray();
             // Two layers: starting places first, then one rotation place per starter. Every
@@ -123,7 +137,7 @@ namespace Touchline.Core
                 if (!revealAttributes && (knowledge < 40 || report.estimate <= 0)) continue;
                 int age = report == null ? 0 : RecruitmentReportAge(report, life.day);
                 var item = new RecruitmentRecommendation { player = p.id, knowledge = knowledge, reportAge = age,
-                    stale = !revealAttributes && age > RecruitmentReportFreshDays, levelKnown = true,
+                    stale = RecruitmentReportNeedsRefresh(report), levelKnown = true,
                     assessedLevel = revealAttributes ? p.rating + p.development : report.estimate,
                     estimatedFee = p.team == "free" ? 0 : Math.Max(0, p.value), currentMonthlyWage = MonthlySalary(Math.Max(0, p.wage)) };
                 item.affordable = item.estimatedFee <= transfer && item.currentMonthlyWage <= wage;

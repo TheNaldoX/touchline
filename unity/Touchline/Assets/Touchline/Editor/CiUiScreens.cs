@@ -148,7 +148,7 @@ namespace Touchline.Editor
         {
             bool reference=Path.GetFileName(Output).EndsWith("-before",StringComparison.Ordinal);
             audit.AppendLine("Parcours ciblé recrutement : navigation, postes, missions, joueurs libres et rapports ; deux résolutions natives. Aucune sauvegarde personnelle.");
-            var list=new List<Action>();string role=null,reportedPlayer=null;long cash=0;int missions=0;
+            var list=new List<Action>();string role=null,searchRole=null,reportedPlayer=null;long cash=0;int missions=0;
             list.Add(()=>{
                 var safe=typeof(TouchlineApp).GetProperty("VisualValidation",BindingFlags.Instance|BindingFlags.NonPublic);
                 if(safe==null||!(bool)safe.GetValue(App))throw new Exception("La validation doit isoler les sauvegardes personnelles");
@@ -163,16 +163,26 @@ namespace Touchline.Editor
                 if(!reference){
                     list.Add(()=>{
                         Capture(screen.tag+"-recrutement-synthese");
-                        var search=Root.Query<Button>().ToList().First(b=>b.name!=null&&b.name.StartsWith("recruit-hub-search-",StringComparison.Ordinal));
-                        role=search.name.Substring("recruit-hub-search-".Length);Click(search.name);
+                        var candidate=Root.Q("recruit-hub-candidate-"+reportedPlayer);
+                        if(candidate==null)throw new Exception("Le profil observé doit figurer dans les pistes connues");
+                        Root.Q<ScrollView>("recruit-hub").ScrollTo(candidate);
                     });
                     list.Add(()=>{
-                        if(Root.Q<DropdownField>("recruit-role")?.value!=role||Root.Q<ListView>("recruit-list")==null)throw new Exception("Le besoin ne filtre pas le marché au bon poste");
+                        Capture(screen.tag+"-recrutement-pistes");
+                        Root.Q<ScrollView>("recruit-hub").scrollOffset=Vector2.zero;
+                    });
+                    list.Add(()=>{
+                        var search=Root.Query<Button>().ToList().First(b=>b.name!=null&&b.name.StartsWith("recruit-hub-search-",StringComparison.Ordinal));
+                        role=search.name.Substring("recruit-hub-search-".Length);
+                        searchRole=role switch{"LM"=>"LW","RM"=>"RW","LWB"=>"LB","RWB"=>"RB","CF"=>"ST","SS"=>"ST",_=>role};Click(search.name);
+                    });
+                    list.Add(()=>{
+                        if(Root.Q<DropdownField>("recruit-role")?.value!=searchRole||Root.Q<ListView>("recruit-list")==null)throw new Exception("Le besoin ne filtre pas le marché au bon poste");
                         Capture(screen.tag+"-recrutement-marche");Click("recruit-tab-Synthèse");
                     });
                     list.Add(()=>{cash=App.Career.life.cash;missions=App.Career.world.scoutMissions.Count;Click("recruit-hub-mission-"+role);});
                     list.Add(()=>{
-                        if(Root.Q<DropdownField>("scout-mission-role")?.value!=role||App.Career.life.cash!=cash||App.Career.world.scoutMissions.Count!=missions)throw new Exception("Préparation mission : poste ou engagement financier incorrect");
+                        if(Root.Q<DropdownField>("scout-mission-role")?.value!=searchRole||App.Career.life.cash!=cash||App.Career.world.scoutMissions.Count!=missions)throw new Exception("Préparation mission : poste ou engagement financier incorrect");
                         Capture(screen.tag+"-recrutement-mission");Call("CloseModal");Click("recruit-hub-free");
                         audit.AppendLine("Besoin → marché au bon poste ; mission préremplie sans dépense avant confirmation : "+screen.tag);
                     });

@@ -58,7 +58,7 @@ namespace Touchline
         {
             var tools=Row(parent,"scout-actions");foreach(var label in new[]{"Tous","En cours","Terminés","À actualiser","Ma sélection"}){var button=Button(tools,label,()=>{scoutReportFilter=label;Build();});button.AddToClassList(scoutReportFilter==label?"active":"scout-filter");}
             var reports=Career.world.reports.Where(r=>(string.IsNullOrEmpty(r.club)||r.club==Career.club)&&Database.Find(r.player)!=null);
-            if(scoutReportFilter=="En cours")reports=reports.Where(r=>r.confidence<90);else if(scoutReportFilter=="Terminés")reports=reports.Where(r=>r.confidence>=90);else if(scoutReportFilter=="À actualiser")reports=reports.Where(r=>r.confidence>=90&&Career.Knowledge(r.player)<90);else if(scoutReportFilter=="Ma sélection")reports=reports.Where(r=>Career.shortlist.Contains(r.player));
+            if(scoutReportFilter=="En cours")reports=reports.Where(r=>r.confidence<90);else if(scoutReportFilter=="Terminés")reports=reports.Where(r=>r.confidence>=90);else if(scoutReportFilter=="À actualiser")reports=reports.Where(Career.RecruitmentReportNeedsRefresh);else if(scoutReportFilter=="Ma sélection")reports=reports.Where(r=>Career.shortlist.Contains(r.player));
             var found=reports.OrderByDescending(r=>r.started).ToArray();Text(parent,found.Length+" rapports · évaluations relatives à votre effectif · les observations anciennes perdent de leur précision","muted");
             if(found.Length==0)Text(parent,"Aucun rapport dans cette catégorie. Envoyez une mission ou observez un joueur depuis Marché.","empty-state");
             foreach(var report in found.Take(80))
