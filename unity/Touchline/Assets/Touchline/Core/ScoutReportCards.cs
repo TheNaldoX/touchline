@@ -15,7 +15,9 @@ namespace Touchline.Core
     // stored except ScoutReport.depth (number of completed observations).
     public sealed class ScoutReportCardData
     {
-        public string player, grade = "?", gradeReason, fit, familiarityLabel, territory, rival;
+        public string player, grade = "?", gradeReason, fit, familiarityLabel, territory, rival, comparable, interest;
+        public TraitAssessment ambition, adaptability;
+        public List<string> interestReasons = new List<string>();
         public int knowledge, reportAge, depth, judging, observedDay = -1;
         public bool stale, generated, exact, pending;
         public float familiarity = 1;
@@ -67,7 +69,8 @@ namespace Touchline.Core
             // The player's own completed report does not count as knowledge of his territory.
             var own = ReportFor(p.id); if (own != null && own.confidence >= 90 && known > 0) known--;
             float bonus = Staff("scout").judging >= 15 ? .1f : 0;
-            return Mathx.Clamp(ForeignFamiliarity + FamiliarityPerReport * known + bonus, 0, 1);
+            // A scout of the department who knows this territory brings his own knowledge.
+            return Mathx.Clamp(Math.Max(ForeignFamiliarity + FamiliarityPerReport * known + bonus, DepartmentFamiliarity(territory)), 0, 1);
         }
         public static string FamiliarityLabel(float value) => value >= .85f ? "excellente" : value >= .6f ? "bonne" : value >= .4f ? "partielle" : "faible";
 
@@ -107,15 +110,29 @@ namespace Touchline.Core
                 float width = CardWidth(card.knowledge, card.judging, card.familiarity, card.depth);
                 card.ability = Around(level, AssessmentBias(id, "card-ability", started), width, 1);
                 // Potential is harder to read, especially for young players.
-                float potentialWidth = width * 1.5f + (p.age < 21 ? 4 : p.age < 24 ? 2 : 0);
+                // The scout's judging of potential (report.potentialUncertainty) may differ from his judging of ability.
+                float potentialFactor = report != null && report.uncertainty > 0 && report.potentialUncertainty > PotentialUncertaintyOffset ? Mathx.Clamp((report.potentialUncertainty - PotentialUncertaintyOffset) / report.uncertainty, .5f, 2) : 1;
+                float potentialWidth = width * 1.5f * potentialFactor + (p.age < 21 ? 4 : p.age < 24 ? 2 : 0);
                 card.potential = card.knowledge >= 65 ? Around(Math.Max(level, p.potential), AssessmentBias(id, "card-potential", started), potentialWidth, card.ability.low) : default;
             }
             if (card.knowledge >= 40) DescribeProfile(db, p, card);
             Grade(db, p, card, overview);
             card.rival = RecruitmentRivalStatus(db, id);
+            card.ambition = AssessedTrait(db, id, Ambition); card.adaptability = AssessedTrait(db, id, Adaptability);
+            if (card.ability.known && !card.exact) card.comparable = ComparableSquadPlayer(db, p, card.ability.Middle);
+            if (p.team != club && card.knowledge >= 40) { var interest = PlayerTransferInterest(db, id); card.interest = interest.label; card.interestReasons = interest.reasons; }
             return card;
         }
 
+        /// <summary>"Comparable à …": the squad player of the same line whose level is closest to the estimate.</summary>
+        string ComparableSquadPlayer(Database db, PlayerData p, float level)
+        {
+            string line = Group(p);
+            var match = db.Squad(club).Where(x => x.id != p.id && Group(x) == line).OrderBy(x => Math.Abs(x.rating + x.development - level)).ThenBy(x => x.id, StringComparer.Ordinal).FirstOrDefault();
+            if (match == null) return null;
+            float gap = level - (match.rating + match.development);
+            return "Comparable à " + match.name + (gap >= 2 ? " (un peu au-dessus)" : gap <= -2 ? " (un peu en dessous)" : " (niveau proche)");
+        }
         static readonly Dictionary<string, string> AttributeLabels = new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["gkDiving"] = "plongeon", ["gkHandling"] = "prise de balle", ["gkKicking"] = "jeu au pied", ["gkPositioning"] = "placement", ["gkReflexes"] = "réflexes",

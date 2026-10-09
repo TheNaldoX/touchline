@@ -24,6 +24,7 @@ namespace Touchline
             Text(header,"Recherches par poste et marché, puis observation détaillée. Un meilleur recruteur travaille plus vite et réduit l’incertitude. Les dépenses sont fixées avant le départ ; le reliquat vous est rendu.","footnote");
             var actions=Row(header,"scout-actions");var create=Button(actions,"+ Nouvelle mission",NewScoutingMission);create.name="scout-new-mission";create.AddToClassList("primary");create.SetEnabled(scout.wage>0);Button(actions,"Gérer les recruteurs",()=>Navigate("Staff et délégation"));
             if(scout.wage<=0)Text(header,"Poste vacant : les observations sont suspendues jusqu’à l’embauche d’un recruteur.","notice");
+            ScoutingDepartmentPanel(parent);
             var missions=(Career.world.scoutMissions??new List<ScoutMission>()).Where(m=>m.club==Career.club).OrderByDescending(m=>m.started).Take(20).ToArray();
             if(missions.Length==0)Text(parent,"Aucune mission. Définissez le poste, le profil, la nationalité et votre budget ; votre staff vous proposera les candidats.","empty-state");
             foreach(var m in missions)
@@ -129,6 +130,7 @@ namespace Touchline
                 if(data.weaknesses.Count>0)Text(card,"Points faibles : "+string.Join(", ",data.weaknesses),"body-text").name="scout-weaknesses-"+p.id;
                 if(!string.IsNullOrEmpty(data.fit))Text(card,data.fit,"body-text");
             }
+            PersonalityAndInterest(card,p,data);
             string age=data.observedDay<0?"":data.reportAge==0?"rapport du jour":"rapport de "+data.reportAge+" j";
             Text(card,"Connaissance "+data.knowledge+" %"+(age==""?"":" · "+age)+(data.stale?" · à actualiser":"")+" · territoire "+(data.territory??"—")+" : connaissance "+data.familiarityLabel+(data.depth>0?" · "+(data.depth+1)+" observations":""),"footnote");
             if(!string.IsNullOrEmpty(data.rival))Text(card,"Concurrence : "+data.rival,"scout-status").name="scout-rival-"+p.id;

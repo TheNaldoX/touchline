@@ -85,6 +85,7 @@ namespace Touchline
                 HubAction(actions,"Comparer","recruit-hub-compare-"+player.id,()=>ComparePlayer(player.id));
                 HubAction(actions,"Agent","recruit-hub-agent-"+player.id,()=>TransferDialog(player.id));
             }
+            DepartmentRecommendationsPanel(columns);SigningsReviewPanel(parent);
             HubAction(parent,"Gérer les recruteurs","recruit-hub-staff",()=>Navigate("Staff et délégation"));
         }
         static Button HubAction(VisualElement parent,string label,string name,Action action)

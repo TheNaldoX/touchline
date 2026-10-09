@@ -19,7 +19,8 @@ namespace Touchline.Core
     public partial class Career
     {
         public long ObservationCost=>Math.Max(500,life.revenue/100000);
-        public int ActiveObservations=>world?.reports.Count(r=>(string.IsNullOrEmpty(r.club)||r.club==club)&&r.confidence<90)??0;
+        // Department assignments have their own capacity per scout (ScoutingDepartment.cs).
+        public int ActiveObservations=>world?.reports.Count(r=>(string.IsNullOrEmpty(r.club)||r.club==club)&&r.confidence<90&&!IsAssignmentReport(r))??0;
         public ScoutReport ReportFor(string id)=>world?.reports?.Where(r=>r.player==id&&(string.IsNullOrEmpty(r.club)||r.club==club)).OrderByDescending(r=>r.started).FirstOrDefault();
         int ReportKnowledge(ScoutReport r){int age=Math.Max(0,life.day-(r.lastObserved>0?r.lastObserved:r.due));return r.confidence<40?r.confidence:Math.Max(40,r.confidence-Math.Max(0,age-120)/7);}
         void EnsureScouting()
@@ -30,15 +31,17 @@ namespace Touchline.Core
         }
         bool Scoutable(PlayerData p)=>p!=null&&p.team!=club&&p.team!="retired"&&!string.IsNullOrEmpty(p.team)&&!p.team.StartsWith("academy-",StringComparison.Ordinal);
         void RequireScout(){if(Staff("scout").wage<=0)throw new InvalidOperationException("Le poste de recruteur est vacant. Embauchez un responsable dans Staff et délégation.");}
+        const float PotentialUncertaintyOffset=3; // rating points (1–99) always added to the potential error
         static float AssessmentBias(string id,string key,int day)=>((StableIdentity(id+"/"+key+"/"+day)%2001)/1000f-1);
-        void StartObservation(Database db,PlayerData p,ScoutMission mission)
+        void StartObservation(Database db,PlayerData p,ScoutMission mission,StaffMember observer=null,string assignment=null)
         {
-            var scout=Staff("scout");int judging=Math.Max(1,Math.Min(20,scout.judging));
+            var scout=observer??Staff("scout");int judging=Math.Max(1,Math.Min(20,scout.judging));int potentialJudging=Math.Max(1,Math.Min(20,ScoutPotentialJudging(scout)));
             // A renewed report keeps the count of completed observations: each one narrows the ranges.
             int depth=world.reports.Where(r=>r.player==p.id&&(string.IsNullOrEmpty(r.club)||r.club==club)&&r.confidence>=90).Select(r=>r.depth+1).DefaultIfEmpty(0).Max();
             world.reports.RemoveAll(r=>r.player==p.id&&(string.IsNullOrEmpty(r.club)||r.club==club));
-            float uncertainty=1.5f+(20-judging)*.22f;
-            world.reports.Add(new ScoutReport{player=p.id,club=club,scout=scout.name,mission=mission?.id,judging=judging,depth=depth,started=life.day,due=life.day+Math.Max(5,19-judging/2)+(int)(Roll()*3),estimate=Mathx.Clamp(p.rating+p.development+AssessmentBias(p.id,"ability",life.day)*uncertainty,1,99),potential=Mathx.Clamp(p.potential+AssessmentBias(p.id,"potential",life.day)*(uncertainty+3),1,99),uncertainty=uncertainty,potentialUncertainty=uncertainty+3});
+            // Potential is read with its own judging; the +3 keeps potential harder to read than ability.
+            float uncertainty=1.5f+(20-judging)*.22f,potentialUncertainty=1.5f+(20-potentialJudging)*.22f+PotentialUncertaintyOffset;
+            world.reports.Add(new ScoutReport{player=p.id,club=club,scout=scout.name,mission=assignment??mission?.id,judging=judging,depth=depth,started=life.day,due=life.day+Math.Max(5,19-judging/2)+(int)(Roll()*3),estimate=Mathx.Clamp(p.rating+p.development+AssessmentBias(p.id,"ability",life.day)*uncertainty,1,99),potential=Mathx.Clamp(p.potential+AssessmentBias(p.id,"potential",life.day)*potentialUncertainty,1,99),uncertainty=uncertainty,potentialUncertainty=potentialUncertainty});
         }
         public ScoutMission CreateScoutMission(Database db,string role,string nationality,int minAge,int maxAge,long maxFee,long maxMonthlyWage,string priority,long budget,string country="Tous")
         {
@@ -66,6 +69,7 @@ namespace Touchline.Core
             if(world==null)return;EnsureScouting();
             foreach(var m in world.scoutMissions.Where(m=>m.club==club&&(m.status=="active"||m.status=="finishing")).ToArray()){m.status="stopped";RefundScoutMission(m);}
             world.reports.RemoveAll(r=>r.club==club&&r.confidence<90);
+            scoutAssignments?.Clear();scoutRecommendations?.Clear();
         }
         public IEnumerable<PlayerData> ScoutCandidates(Database db,ScoutMission m)
         {
@@ -86,12 +90,14 @@ namespace Touchline.Core
             foreach(var r in world.reports.Where(r=>r.club==club&&r.confidence<90).ToArray())
             {
                 var p=db.Find(r.player);if(!Scoutable(p)){world.reports.Remove(r);continue;}
-                if(vacant){r.started++;r.due++;continue;}
+                // A department report keeps progressing with its own scout, even without a chief scout.
+                if(vacant&&ReportScout(r)==null){r.started++;r.due++;continue;}
                 r.confidence=Math.Min(90,Math.Max(0,(life.day-r.started)*90/Math.Max(1,r.due-r.started)));
                 if(r.confidence<90)continue;
                 if(r.judging<=0){r.judging=Math.Max(1,scout.judging);r.scout=scout.name;r.uncertainty=1.5f+(20-r.judging)*.22f;r.potentialUncertainty=r.uncertainty+3;r.estimate=Mathx.Clamp(p.rating+p.development+AssessmentBias(p.id,"ability",r.started)*r.uncertainty,1,99);r.potential=Mathx.Clamp(p.potential+AssessmentBias(p.id,"potential",r.started)*r.potentialUncertainty,1,99);}
                 r.lastObserved=life.day;r.advice=ScoutingAdvice(db,p,r);
                 Mail(r.scout??scout.name,"Rapport disponible",p.name+" : "+r.advice+" Les étoiles sont relatives à votre effectif ; le potentiel reste incertain.",p.id,"scout");
+                OnScoutReportCompleted(db,p,r);
             }
             foreach(var m in world.scoutMissions.Where(m=>m.club==club&&(m.status=="active"||m.status=="finishing")).ToArray())
             {
@@ -106,6 +112,10 @@ namespace Touchline.Core
                 if(m.status=="finishing"&&!world.reports.Any(r=>r.club==club&&r.mission==m.id&&r.confidence<90)){m.status="complete";ScoutMail(scout.name,"Mission de recrutement terminée",m.found+" profil(s) observé(s) dans cette recherche. Consultez Rapports, comparez les profils puis vérifiez les attentes avec leurs agents.");}
             }
             RecruitmentRivalsDay(db);
+            ScoutingDepartmentDay(db);
+            // Must run before ManagementDay resolves the pending offers of the day.
+            TransferWillingnessDay(db);
+            SigningsDay(db);
         }
         string ScoutingAdvice(Database db,PlayerData p,ScoutReport r)
         {
