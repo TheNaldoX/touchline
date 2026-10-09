@@ -68,7 +68,9 @@ namespace Touchline.Editor
                 if(cameraCrossing){PlayerPrefs.SetInt("match-camera-mode",0);PlayerPrefs.SetFloat("match-camera-zoom",.85f);}
                 var root=new GameObject("CI match film");var arena=root.AddComponent<MatchArena>();arena.Initialize(db,sim);PlayerView.UseMecanim=Arg("-touchlineMecanim","1")=="1";arena.Speed=1;arena.Paused=false;arena.Broadcast.SetMode(MatchViewingMode.Full);
                 if(cameraCrossing){arena.Paused=true;arena.SetAutomaticGoalReplays(false);if(arena.TacticalCamera)arena.CameraMode();}
-                int width=cameraCrossing&&name.Contains("portrait")?540:Width,height=cameraCrossing?(name.Contains("portrait")?1260:728):Height;
+                // « portrait » dans le nom : format du Fold plié (540×1260), aussi pour un match normal.
+                bool portraitFilm=name.Contains("portrait");
+                int width=portraitFilm?540:Width,height=portraitFilm?1260:cameraCrossing?728:Height;
                 var target=new RenderTexture(width,height,24){antiAliasing=4};target.Create(); // même MSAA que TouchlineURP (4×)
                 arena.MatchCamera.targetTexture=target;arena.MatchCamera.aspect=(float)width/height;
                 {var probe=new GameObject("Probe camera").AddComponent<Camera>();probe.enabled=false;probe.clearFlags=CameraClearFlags.SolidColor;probe.backgroundColor=Color.red;probe.cullingMask=0;probe.targetTexture=target;
