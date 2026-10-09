@@ -2,7 +2,16 @@
 
 Lire AGENTS.md. État courant uniquement ; historique dans Git et les PR. Claude et Codex alternent, jamais simultanément.
 
-## Lot courant : pied des passes capturées — PR #70
+## Lot courant : contact des passes capturées — PR #71
+
+- Branche `fix/pass-ball-alignment`, base PR70, commit219225d. Ajustement IK de la jambe de passe vers actionTarget/actionHeight autour de l’impact (.18s), fondu .14s, correction bornée35cm ; points invalides sous le bassin ignorés. Aucun Core, ballon ou déplacement racine modifié.
+-44/44 tests ciblés réussis : `.validation/pass-contact-targeted-valid-point.xml`. Les6 nouveaux cas de contact (tailles/pieds/fréquences) échouent tous sur151089f, preuve `.validation/pass-contact-before.xml`, passent après avec écart <5,5cm. Quatre anciens tests de contact de passe auparavant rouges passent aussi.
+- Capture prototype `pass-ball-contact-review` revue, passes droite frames496–543, gauche544–591 ; ballon témoin statique, ne pas prétendre que ce diagnostic valide la trajectoire de match. Planche `.validation/pass-contact-review.jpg`.
+- Suite complète terminée : **1963/2265 réussis,302 échecs**, quatre anciens InsidePass corrigés, aucun nouvel échec ; `.validation/pass-contact-comparison.json` et XML `pass-contact-all.xml`. Pas de validation globale verte.
+- Films appariés `pass-contact-before-match-night` (runtime151089f) / `pass-contact-match-night` (219225d), graine731,95–110s,30Hz : statistiques hors kick identiques. Métrique pied bas globale .09→.10m/s, p95 .41→.46 ; kick .02→.63/p95 .01→4.82, car la jambe de frappe descend vers le ballon. Six pics kick≥4m/s concernent tous le pied fort (Højbjerg droit, Aguerd/Kondogbia gauche), pas le pied de soutien. Ne pas prétendre réduire globalement les glissements. Neuf images successives et comparaison frame257 revues.
+- Avant/après vidéo `artifacts/Touchline-pass-contact-before-after-2026-10-10.mp4`, planche `.validation/pass-contact-before-after.jpg`. Runtime final restauré depuis Git après baseline ; aucune Unity active. Nettoyage imports seulement, sauvegardes/APK préservées. PR71 en brouillon, aucune APK nouvelle, automatisation PAUSED.
+
+## Lot précédent : pied des passes capturées — PR #70
 
 - Branche `fix/mecanim-pass-contact`, base PR69, commit `fc41266`. Les gauchers utilisaient Soccer Pass (pied droit) : sélection du clip miroir existant pour passes/passages en profondeur/cutbacks. Aucun Core, durée, instant de contact ou fondu changé.
 - Tests ciblés34/34 ; nouveau test6 combinaisons pied/style vérifie clip, jambe de suivi devant appui et position simulée inchangée. Baseline f7495c5 :3 gauchers échouent/3 droitiers passent ; après :6 passent. XML `.validation/preferred-pass-foot-{targeted,baseline}.xml`.
