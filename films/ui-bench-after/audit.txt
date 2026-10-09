@@ -1,0 +1,119 @@
+Audit d'interface Touchline · 1 dp = 2.625 px physiques · seuils : cible tactile 48 dp, texte 12 sp
+ÉCHEC : délai dépassé à l'étape 50
+
+## plie-bureau · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 18 · < 48 dp : 0 · textes 32 · < 12 sp : 6 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×6 [unity-text-element.unity-label 11.0 sp] ex. « BUREAU / LUNDI 15 JUIN »
+
+## plie-effectif · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 18 · < 48 dp : 0 · textes 60 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## plie-tactique · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 15 · < 48 dp : 0 · textes 56 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## plie-tactique-avec-ballon · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 14 · < 48 dp : 0 · textes 30 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## plie-calendrier · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 45 · < 48 dp : 0 · textes 64 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## plie-messages · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 17 · < 48 dp : 3 · textes 39 · < 12 sp : 6 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit bouton ×3 « Lire » 43×48 dp
+   petit texte ×6 [unity-text-element.unity-label 11.0 sp] ex. « 15 juin »
+
+## plie-plus · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 39 · < 48 dp : 3 · textes 68 · < 12 sp : 6 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit bouton ×3 « Lire » 43×48 dp
+   petit texte ×6 [unity-text-element.unity-label 11.0 sp] ex. « 15 juin »
+
+## plie-accueil · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 5 · < 48 dp : 0 · textes 13 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## deplie-bureau · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 27 · < 48 dp : 0 · textes 55 · < 12 sp : 15 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×15 [unity-text-element.unity-label 11.0 sp] ex. « ESPACE MANAGER »
+
+## deplie-effectif · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 23 · < 48 dp : 0 · textes 64 · < 12 sp : 3 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×3 [unity-text-element.unity-label 11.0 sp] ex. « ESPACE MANAGER »
+
+## deplie-tactique · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 21 · < 48 dp : 0 · textes 65 · < 12 sp : 3 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×3 [unity-text-element.unity-label 11.0 sp] ex. « ESPACE MANAGER »
+
+## deplie-tactique-avec-ballon · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 19 · < 48 dp : 0 · textes 64 · < 12 sp : 3 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×3 [unity-text-element.unity-label 11.0 sp] ex. « ESPACE MANAGER »
+
+## deplie-calendrier · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 51 · < 48 dp : 0 · textes 74 · < 12 sp : 3 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×3 [unity-text-element.unity-label 11.0 sp] ex. « ESPACE MANAGER »
+
+## deplie-messages · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 23 · < 48 dp : 3 · textes 51 · < 12 sp : 9 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit bouton ×3 « Lire » 43×48 dp
+   petit texte ×9 [unity-text-element.unity-label 11.0 sp] ex. « ESPACE MANAGER »
+
+## deplie-plus · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 42 · < 48 dp : 3 · textes 76 · < 12 sp : 9 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit bouton ×3 « Lire » 43×48 dp
+   petit texte ×9 [unity-text-element.unity-label 11.0 sp] ex. « ESPACE MANAGER »
+
+## deplie-accueil · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 5 · < 48 dp : 0 · textes 17 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+Jusqu’au match : 67 jour(s) en une touche
+## plie-jour-de-match · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 14 · < 48 dp : 1 · textes 25 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+   petit bouton ×1 « × » 44×48 dp
+
+## plie-avant-match · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 14 · < 48 dp : 1 · textes 25 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+   petit bouton ×1 « × » 44×48 dp
+
+## plie-presentation · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 16 · < 48 dp : 0 · textes 37 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## plie-match-pause · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 11 · < 48 dp : 0 · textes 19 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## plie-consignes-rapides · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 25 · < 48 dp : 0 · textes 42 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+Pressing intense en deux touches : tactique liée, retour au direct, pause et vitesse préservées.
+## plie-match-direct · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 11 · < 48 dp : 0 · textes 18 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+Mentalité offensive en une touche : 0.75 · pause False
+## plie-banc · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 23 · < 48 dp : 0 · textes 53 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## plie-regie · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 15 · < 48 dp : 0 · textes 39 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## plie-match-tactique · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 16 · < 48 dp : 1 · textes 60 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+   petit bouton ×1 « × » 44×48 dp
+
+## plie-match-consignes · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 17 · < 48 dp : 1 · textes 35 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+   petit bouton ×1 « × » 44×48 dp
+
+## deplie-match-pause · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 11 · < 48 dp : 0 · textes 18 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## deplie-consignes-rapides · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 43 · < 48 dp : 0 · textes 86 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+Pressing intense en deux touches : tactique liée, retour au direct, pause et vitesse préservées.
+## deplie-match-direct · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 11 · < 48 dp : 0 · textes 22 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+Mentalité offensive en une touche : 0.75 · pause False
+## deplie-banc · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 21 · < 48 dp : 0 · textes 50 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## deplie-regie · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 15 · < 48 dp : 0 · textes 42 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
