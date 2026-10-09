@@ -5,7 +5,7 @@ Lire AGENTS.md. Ce fichier contient uniquement l’état courant ; l’historiqu
 ## Session autonome autorisée — 17 h 19 à 18 h 49 Paris
 
 - Demande utilisateur : améliorer IA/décisions, graphismes/animations, UI, événements aléatoires à choix, finances/budgets et contenu original cohérent. Fin le9 octobre à16:49UTC ; réserver après18h25Paris aux validations. Automatisation touchline-am-liorations-jusqu-au-6-octobre réactivée toutes les10min, avec cette échéance et désactivation finale.
-- Unity actuelle : rendu37950676810. Session26334 attend puis déclenche runtime-tests ; ne pas lancer une seconde Unity, ne pas toucher Assets avant la fin de ces jobs.
+- Unity actuelle : tests37952223643 sur4623ddf, démarrés après réussite du rendu37950676810. Session26334 terminée. Ne pas toucher Assets avant la fin des tests.
 - Diagnostic finances commencé : ProfessionalManagement.TransferBudget déduit achats engagés, réserve de trésorerie, plafond12% des recettes et obligations des prêts ; WageBudget séparé. Examiner leur présentation et les engagements avant de changer les règles. CareerFinancialTransactions assure les contreparties des transferts : ne pas créer de recettes sans paiement.
 - Événements : recherche des classes Event/Incident non concluante ; inspecter CareerManagement et les messages/décisions existants avant de créer un système en doublon. Nouveaux choix à coûts proportionnés au club, effets bornés, aléatoire à graine et persistance testée.
 
@@ -25,7 +25,7 @@ Lire AGENTS.md. Ce fichier contient uniquement l’état courant ; l’historiqu
 - Recommandations triées par budget puis besoins du système, comparaison au titulaire/référent et adéquation tactique connue. Conseils avec essai, compromis et indicateurs ; tempo formulé comme hypothèse.
 - Core919/919. Deux graines ×200 avant/après, rapports recruitment-context-* dans tools/Calibration/Reports. Statistiques hors xG identiques ; xG1,69/1,72→2,50/2,52 pour2,61/2,69 buts. Correction de l’estimation seulement, coefficient interne1,65 ; pas validé sur données réelles.
 - Ligne haute NON résolue : essai de déplacement différencié retiré (buts/penalties dégradés). Retard de lecture défensive retiré après régressions ; runs flight-read invalides, conflit de compilation .NET, ne pas les citer. Penalties0,19/0,26 ; sorties13,79/13,46 restent inchangés.
-- Rendu UI en cours Actions37950676810 /62eb8a4, film/ui-recruitment-focus-context. Attendre, récupérer les captures et les revoir. Monitor séquentiel prévu pour déclencher les tests Unity seulement après réussite du rendu. Ne pas modifier Assets pendant ces jobs. Aucun APK nouveau.
+- Rendu37950676810 réussi, récupéré dans .validation/film-ui-recruitment-focus-context. Revue des deux captures comparaison : DÉFAUT visible, texte doré non replié déborde, trois colonnes trop étroites en déplié. Corriger Touchline.uss ligne1247 (.recruit-hub-assessment : white-space normal, largeur contrainte) et revoir colonnes1238 ; scénario doit vérifier le texte replié, audit actuel ne voit pas ce débordement. Quatre autres captures encore à revoir. Tests natifs37952223643 en cours, Assets figés jusque-là. Aucun APK nouveau.
 
 ## Preuves disponibles
 
