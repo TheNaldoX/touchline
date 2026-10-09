@@ -115,6 +115,8 @@ namespace Touchline
                     // Kick Soccerball frappe du pied gauche, Kick Soccerball (1) du droit.
                     // Frappe en pleine course (élan) : Strike Forward Jog, sinon frappe arrêtée selon le pied fort.
                     clip=actor.actionKind=="shot"?(mecanimPoseSpeed>=RunningStrikeSpeed&&MecanimClips.ContainsKey(RunningStrikeClip)?RunningStrikeClip:leftFootedNow?"Kick Soccerball":"Kick Soccerball (1)"):actor.actionKind=="cross"||actor.actionKind=="switch"||actor.actionKind=="clearance"?"Chip":"Soccer Pass";
+                    // The short-pass capture is right-footed; its mirrored clip keeps left-footed players consistent.
+                    if(clip=="Soccer Pass"&&leftFootedNow&&MecanimClips.ContainsKey("Soccer Pass (miroir)"))clip="Soccer Pass (miroir)";
                     if(actor.slot==0&&MecanimClips.ContainsKey("Goalkeeper Drop Kick")&&actor.actionKind=="clearance")clip="Goalkeeper Drop Kick";
                     simContact=.18f;break;
                 case "header":clip="Header";simContact=actor.actionContactTime>0?actor.actionContactTime:.12f;break;
