@@ -2,7 +2,14 @@
 
 Lire AGENTS.md. État courant uniquement ; historique dans Git et les PR. Claude et Codex alternent, jamais simultanément.
 
-## Lot courant : visibilité nocturne et appuis — PR #69
+## Lot courant : pied des passes capturées — PR #70
+
+- Branche `fix/mecanim-pass-contact`, base PR69, commit `fc41266`. Les gauchers utilisaient Soccer Pass (pied droit) : sélection du clip miroir existant pour passes/passages en profondeur/cutbacks. Aucun Core, durée, instant de contact ou fondu changé.
+- Tests ciblés34/34 ; nouveau test6 combinaisons pied/style vérifie clip, jambe de suivi devant appui et position simulée inchangée. Baseline f7495c5 :3 gauchers échouent/3 droitiers passent ; après :6 passent. XML `.validation/preferred-pass-foot-{targeted,baseline}.xml`.
+- Clips bruts droit/gauche revus dans `unity/Touchline/build/film/preferred-foot-clips-review` (frames10–57/58–105), planche `.validation/preferred-foot-review.jpg`. Capture prototype sans ballon, pas une preuve de contact ni de FPS Android. Vidéo comparative `artifacts/Touchline-passing-feet-review-2026-10-09.mp4`.
+- Suite complète terminée : **1953/2259 réussis, les mêmes306 échecs préexistants, aucun nouveau**. `.validation/preferred-pass-foot-all.xml`, comparaison `.validation/preferred-pass-foot-comparison.json`. Aucun processus Unity actif après validation. PR70 reste en brouillon à cause de la dette globale ; aucune APK nouvelle, automatisation toujours PAUSED. Prochaine priorité : écarts géométriques pied–ballon sous Mecanim, distincts du choix de pied corrigé ici.
+
+## Lot précédent : visibilité nocturne et appuis — PR #69
 
 - Branche `fix/night-fill-foot-release`, base PR68/0.63 ; PR69 en brouillon. Session du 9 octobre 22h12–23h42 Paris terminée, aucun agent supplémentaire, aucun Core modifié. Automatisation désactivée au bilan.
 - Éclairage nocturne latéral renforcé, sans lumière supplémentaire ni changement du ciel/projecteur. Images locales appariées à4s : maillot clair +28,3%, sombre +10,0%, pelouse +1,6% (luminance écran sRGB, pas mesure photométrique). Vue proche finale revue.

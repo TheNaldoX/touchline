@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Animation des passes courtes, en profondeur et en retrait : les gauchers utilisent le geste miroir du pied gauche, avec le même timing de contact que les droitiers.
 - Visibilité nocturne : lumière ambiante latérale renforcée sans projecteur supplémentaire ; pas de replacement Mecanim démarrés depuis le pied réellement affiché plutôt qu’un ancien appui inaccessible.
 - APK0.63/code56, rendu match : pelouse détaillée non répétitive, tonte moins contrastée, tissu des maillots et matières mates ; transitions gauche/droite des pas chassés interpolées selon le temps ; qualité maximale réellement plus détaillée, MSAA4× et résolution bornée à2,6Mpx.
 - Validation du moteur : comparaison neutre renforcée sur trois graines, actions et positions, sans compter les messages informatifs de l’adjoint comme des actions de jeu.

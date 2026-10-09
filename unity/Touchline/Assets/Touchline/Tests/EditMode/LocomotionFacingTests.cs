@@ -6,6 +6,23 @@ namespace Touchline.Tests
 {
     public class LocomotionFacingTests
     {
+        [TestCase(false,"pass")] [TestCase(true,"pass")]
+        [TestCase(false,"through")] [TestCase(true,"through")]
+        [TestCase(false,"cutback")] [TestCase(true,"cutback")]
+        public void CapturedShortPassUsesPreferredFoot(bool left,string kind)
+        {
+            bool before=PlayerView.UseMecanim;var root=new GameObject("Preferred passing foot");
+            try{
+                PlayerView.UseMecanim=true;
+                var view=root.AddComponent<PlayerView>();view.Build(new PlayerData{id="passing-foot",heightCm=182,preferredFoot=left?"Left":"Right"},0,9,Color.blue);
+                Assert.IsTrue(PlayerView.MecanimReady,"Imported football clips are required for this regression");
+                var actor=new Actor{id="passing-foot",slot=9,action="kick",actionKind=kind,actionSequence=1,actionTime=.64f};
+                for(int i=0;i<12;i++){actor.actionTime=.64f-i/60f;view.Render(actor,1,1f/60,new Vector3(0,.11f,.42f));}
+                Assert.AreEqual(left?"Soccer Pass (miroir)":"Soccer Pass",view.MecanimGestureClip);
+                Assert.Greater(view.FootPosition(left).z,view.FootPosition(!left).z,"The preferred foot must follow through in front of the support foot");
+                Assert.AreEqual(Vector3.zero,root.transform.position,"The presentation must not displace the simulated player");
+            }finally{Object.DestroyImmediate(root);PlayerView.UseMecanim=before;}
+        }
         [TestCase(160)] [TestCase(182)] [TestCase(200)]
         public void ReplacementStepStartsAtVisibleFootInsteadOfUnreachableAnchor(int height)
         {
