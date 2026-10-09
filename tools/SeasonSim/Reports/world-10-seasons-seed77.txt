@@ -1,6 +1,10 @@
+Source intégrée : ee663cc6e9beae18b21d47b40db747a647852d7c ; 9 octobre 2026.
+Commande : SeasonSim 10 176 --world --report --worldseed 77 --savecheck
+Diagnostic monde par scores simplifiés, pas des matchs complets. Temps mesurés sur PC.
+
 Club : Marseille — 10 saison(s), matchs du club tirés au sort
 
-0 matchs joués par le club, 533 s
+0 matchs joués par le club, 190 s
 
 | Saison | Jour | Trésorerie club | Effectif | Force top 14 | Âge moyen | Salaire médian (monde) | Transferts IA cumulés |
 |---|---|---|---|---|---|---|---|
@@ -34,7 +38,7 @@ Monde 2036 : 11458 joueurs, âge moyen 26,0, note moyenne 64,2, ≥80 : 435, ≤
 Clubs IA endettés : 126 / 384 (clubs jouables ; début 0), dette médiane des endettés 2,7 M€.
 Salaires joueurs / recettes : médiane 35 % → 37 %, clubs au-dessus de 70 % : 0 → 4.
 Résultat annuel moyen / recettes (clubs IA) : 10 % -4 %, médiane 2 %, 90 % 5 % ; en perte : 142 / 384.
-Joueurs sans club : 0 → 0.
+Joueurs sans club : 273 → 1278.
 Plus forte progression : Jong AZ +7,2, RB Salzburg +6,8, Jong Ajax +6,7
 Plus forte baisse : Rayo Vallecano -4,1, Hamburg SV -3,9, Blackburn Rovers -3,8
 
@@ -97,3 +101,8 @@ Corrélation de rang de force début → fin (premières divisions) : médiane 0
 Progression annuelle moyenne de la note par âge : ≤20 +2,63, 21–23 +1,40, 24–26 +0,29, 27–29 +0,00, 30–32 -0,70, ≥33 -1,07
 Plus gros effectifs : Lorient 45 (réf. 27, prêtés 0, ≤21 ans 11, sans contrat au club 0, générés 23) ; Bolton Wanderers 44 (réf. 27, prêtés 0, ≤21 ans 10, sans contrat au club 0, générés 29) ; Cercle Brugge KSV 44 (réf. 31, prêtés 0, ≤21 ans 11, sans contrat au club 1, générés 22) ; Grimsby Town 42 (réf. 30, prêtés 0, ≤21 ans 13, sans contrat au club 1, générés 34) ; Parma 40 (réf. 31, prêtés 0, ≤21 ans 9, sans contrat au club 0, générés 24)
 Trésorerie nette / recettes en fin : 5 % -40 %, médiane 33 %, 95 % 83 % ; au-dessus de 200 % : 0, sous -100 % : 3 / 384.
+Compactage seul : 316 ms
+
+Format complet : 119,94 Mo (885 ms) — format compact : 20,65 Mo (1168 ms, compactage inclus)
+Chargement (désérialisation + restauration) : complet 2054 ms, compact 1542 ms
+Rechargement identique : carrière et 34619 joueurs, ancien format = format compact.
