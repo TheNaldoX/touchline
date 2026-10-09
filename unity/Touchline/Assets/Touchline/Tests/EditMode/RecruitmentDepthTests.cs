@@ -30,7 +30,7 @@ namespace Touchline.Tests
         {
             var a = new Database{leagues = new LeagueData[0], clubs = new ClubData[0], players = new PlayerData[0]};
             var b = new Database{leagues = new LeagueData[0], clubs = new ClubData[0], players = new PlayerData[0]};
-            Assert.AreEqual(2784, GeneratedWorld.Expand(a)); Assert.AreEqual(0, GeneratedWorld.Expand(a)); GeneratedWorld.Expand(b);
+            Assert.AreEqual(2784, AppendFrozen(a)); Assert.AreEqual(0, AppendFrozen(a)); AppendFrozen(b);
             Assert.AreEqual(GeneratedWorld.Fingerprint(a), GeneratedWorld.Fingerprint(b));
             // Saves only store changed players: version 1 output must never change.
             Assert.AreEqual(FrozenFingerprintV1, GeneratedWorld.Fingerprint(a), "Générateur v1 modifié : créer une version 2 au lieu de changer v1.");
@@ -41,10 +41,25 @@ namespace Touchline.Tests
             Assert.AreEqual(a.players.Length, a.players.Select(p => p.id).Distinct().Count());
             Assert.IsTrue(a.players.All(p => p.source.StartsWith("touchline:generated") && p.assessment.Contains("fictif") && p.attributes.Length == 40));
         }
-        const ulong FrozenFingerprintV1 = 9164199268431662725UL;
+        const ulong FrozenFingerprintV1 = GeneratedWorld.FrozenFingerprintV1;
+        static Database Frozen()=>JsonUtility.FromJson<Database>(Resources.Load<TextAsset>("Data/generated-world-v1").text);
+        static int AppendFrozen(Database target)=>GeneratedWorld.AppendFrozen(target,Frozen());
+        [Test] public void CorruptFrozenCatalogueIsRejectedBeforeChangingTheWorld()
+        {
+            var snapshot=Frozen();snapshot.players[0].wage++;
+            int count=db.players.Length;Assert.Throws<InvalidOperationException>(()=>GeneratedWorld.AppendFrozen(db,snapshot));
+            Assert.AreEqual(count,db.players.Length);
+        }
+        [Test] public void FrozenLoadsHaveIndependentMutablePlayersAndKeepRealData()
+        {
+            var real=db.players[0];AppendFrozen(db);var fresh=Frozen();
+            var fictional=db.Find(fresh.players[0].id);fictional.wage++;
+            Assert.AreNotEqual(fictional.wage,fresh.players[0].wage);Assert.AreSame(real,db.players[0]);
+            Assert.AreEqual(FrozenFingerprintV1,GeneratedWorld.Fingerprint(Frozen()));
+        }
         [Test] public void GeneratedPlayersFollowLeagueLevelPositionsAndAges()
         {
-            var w = new Database{leagues = new LeagueData[0], clubs = new ClubData[0], players = new PlayerData[0]}; GeneratedWorld.Expand(w);
+            var w = new Database{leagues = new LeagueData[0], clubs = new ClubData[0], players = new PlayerData[0]}; AppendFrozen(w);
             var league = w.clubs.GroupBy(x => x.league).ToDictionary(g => g.Key, g => g.Select(x => x.id).ToHashSet());
             float Mean(string id) => w.players.Where(p => league[id].Contains(p.team)).Average(p => p.rating);
             Assert.Greater(Mean("fic.pol.1"), Mean("fic.aut.2") + 4);
@@ -61,7 +76,7 @@ namespace Touchline.Tests
         }
         [Test] public void GeneratedLeaguesAreScoutableTerritoriesWithoutFixtures()
         {
-            GeneratedWorld.Expand(db); c.world = null; c.EnsureWorld(db);
+            AppendFrozen(db); c.world = null; c.EnsureWorld(db);
             Assert.IsFalse(c.world.fixtures.Any(f => GeneratedWorld.IsGenerated(f.home) || GeneratedWorld.IsGenerated(f.away)));
             Assert.IsTrue(ScoutingGeography.Countries(db).Contains("Suède"));
             var clubs = ScoutingGeography.ClubIds(db, "Suède").ToArray(); Assert.AreEqual(16, clubs.Length);
@@ -69,7 +84,7 @@ namespace Touchline.Tests
         }
         [Test] public void SimulatedTableIsDeterministicAndComplete()
         {
-            GeneratedWorld.Expand(db);
+            AppendFrozen(db);
             var first = GeneratedWorld.SimulatedTable(db, "fic.irl.1", 2026); var again = GeneratedWorld.SimulatedTable(db, "fic.irl.1", 2026);
             Assert.AreSame(first, again); Assert.AreEqual(10, first.Count); Assert.IsTrue(first.All(r => r.played == 18));
             Assert.AreEqual(first.Sum(r => r.goalsFor), first.Sum(r => r.goalsAgainst));

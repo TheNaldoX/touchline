@@ -9,12 +9,14 @@ namespace Touchline.Core
     // Nothing here describes a real club or person: names are assembled from
     // syllables, levels/values follow distributions measured on the shipped
     // database (rating offsets per position group, value/wage by rating).
-    // The output of version 1 is FROZEN (see GeneratedWorldTests checksum):
-    // saves only store changed players, so regenerated players must match.
+    // Shipped version 1 is frozen in Data/generated-world-v1.json. Runtime loads
+    // that snapshot: transcendental math below is a content-authoring tool,
+    // not a portable save baseline across .NET, Mono and Android IL2CPP.
     // Change the rules only behind a new version and a new id prefix.
     public static class GeneratedWorld
     {
         public const int Version = 1;
+        public const ulong FrozenFingerprintV1 = 9164199268431662725UL;
         public const string IdPrefix = "fic-", LeaguePrefix = "fic.";
         public const string ProvenanceNote = "Club et joueurs fictifs générés par Touchline (graine fixe). Aucune donnée réelle : noms, niveaux, valeurs et salaires sont inventés.";
         const int SquadSize = 24;
@@ -105,7 +107,18 @@ namespace Touchline.Core
             public T Pick<T>(T[] values) => values[Range(values.Length)];
         }
 
-        /// <summary>Adds the generated leagues once (idempotent). Returns the number of players added.</summary>
+        /// <summary>Append a freshly deserialized, verified snapshot without regenerating floating-point content.</summary>
+        public static int AppendFrozen(Database db,Database snapshot)
+        {
+            if(db==null||snapshot?.players==null||snapshot.clubs==null||snapshot.leagues==null)throw new ArgumentException("Catalogue fictif absent.");
+            if(snapshot.players.Length!=2784||snapshot.clubs.Length!=116||snapshot.leagues.Length!=8||Fingerprint(snapshot)!=FrozenFingerprintV1)
+                throw new InvalidOperationException("Le catalogue fictif v1 ne correspond pas à sa version figée.");
+            if(db.leagues.Any(IsGeneratedLeague))return 0;
+            if(db.players.Any(p=>IsGenerated(p.id))||db.clubs.Any(c=>IsGenerated(c.id)))throw new InvalidOperationException("Catalogue fictif partiel.");
+            db.leagues=db.leagues.Concat(snapshot.leagues).ToArray();db.clubs=db.clubs.Concat(snapshot.clubs).ToArray();db.players=db.players.Concat(snapshot.players).ToArray();
+            return snapshot.players.Length;
+        }
+        /// <summary>Authoring only: create content for export. Game loads the frozen snapshot through AppendFrozen.</summary>
         public static int Expand(Database db)
         {
             if (db?.players == null || db.clubs == null || db.leagues == null) return 0;

@@ -11,7 +11,7 @@ namespace Touchline
         public static Database Load()
         {
             var db=JsonUtility.FromJson<Database>(Resources.Load<TextAsset>("Data/database").text);
-            GeneratedWorld.Expand(db);
+            GeneratedWorld.AppendFrozen(db,JsonUtility.FromJson<Database>(Resources.Load<TextAsset>("Data/generated-world-v1").text));
             return db;
         }
     }

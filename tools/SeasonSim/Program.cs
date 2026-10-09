@@ -11,16 +11,23 @@ using System;using System.Collections.Generic;using System.Globalization;using S
 static class P{
  static string FindDatabase(){foreach(var start in new[]{Environment.CurrentDirectory,AppContext.BaseDirectory}){var d=new DirectoryInfo(start);while(d!=null){var f=Path.Combine(d.FullName,"unity","Touchline","Assets","Touchline","Resources","Data","database.json");if(File.Exists(f))return f;d=d.Parent;}}throw new FileNotFoundException("database.json introuvable");}
  static bool withGenerated;
+ static int AppendGenerated(Database db)=>GeneratedWorld.AppendFrozen(db,UnityEngine.JsonUtility.FromJson<Database>(File.ReadAllText(Path.Combine(Path.GetDirectoryName(FindDatabase()),"generated-world-v1.json"))));
  static readonly CultureInfo FR=CultureInfo.GetCultureInfo("fr-FR");
  static string M(long v)=>(v/1e6).ToString("0.0",FR)+" M€";
  static int Main(string[] a){
+  if(a.Length==2&&a[0]=="--export-generated"){
+   if(File.Exists(a[1]))throw new IOException("Le catalogue existe déjà : ne pas remplacer une version figée.");
+   var generated=new Database{leagues=Array.Empty<LeagueData>(),clubs=Array.Empty<ClubData>(),players=Array.Empty<PlayerData>()};GeneratedWorld.Expand(generated);
+   if(GeneratedWorld.Fingerprint(generated)!=GeneratedWorld.FrozenFingerprintV1)throw new InvalidOperationException("Exporter depuis le runtime de référence v1.");
+   File.WriteAllText(a[1],UnityEngine.JsonUtility.ToJson(generated));Console.WriteLine("Catalogue v1 exporté et vérifié.");return 0;
+  }
   int seasons=a.Length>0&&int.TryParse(a[0],out var s)?s:3;string club=a.Length>1&&!a[1].StartsWith("--")?a[1]:"176";bool engine=a.Contains("--engine"),worldOnly=a.Contains("--world");
   int si=Array.IndexOf(a,"--seed");uint seed=si>=0?uint.Parse(a[si+1]):1;
   bool saveCheck=a.Contains("--savecheck");string dbText=File.ReadAllText(FindDatabase());
   // --savecheck : base lue comme dans Unity (JsonUtility simulé), pour comparer les formats de sauvegarde à l'identique.
   var db=saveCheck?UnityEngine.JsonUtility.FromJson<Database>(dbText):JsonSerializer.Deserialize<Database>(dbText,new JsonSerializerOptions{IncludeFields=true});
   // Comme le jeu : ligues fictives générées au chargement (--no-generated pour la base seule).
-  var genWatch=System.Diagnostics.Stopwatch.StartNew();withGenerated=!a.Contains("--no-generated");int generatedPlayers=withGenerated?GeneratedWorld.Expand(db):0;
+  var genWatch=System.Diagnostics.Stopwatch.StartNew();withGenerated=!a.Contains("--no-generated");int generatedPlayers=withGenerated?AppendGenerated(db):0;
   Console.WriteLine($"Base : {db.leagues.Length} ligues, {db.clubs.Length} clubs, {db.players.Length} joueurs ({generatedPlayers} générés en {genWatch.ElapsedMilliseconds} ms)");
   // Comme le jeu : empreinte prise sur la base elle-même, avant que la carrière la modifie.
   SaveBaseline baseline=saveCheck?SaveBaseline.From(db):null;
@@ -88,7 +95,7 @@ static class P{
   Console.WriteLine($"\nFormat complet : {full.Length/1e6:0.00} Mo ({tFull} ms) — format compact : {compact.Length/1e6:0.00} Mo ({tCompact} ms, compactage inclus)");
   if(!packed){Console.WriteLine("ÉCHEC : compactage non appliqué");return 1;}
   if(J(c)!=full){Console.WriteLine("ÉCHEC : l'état en mémoire a changé après la sauvegarde");return 1;}
-  Database Load(string text,out Career state){state=UnityEngine.JsonUtility.FromJson<Career>(text);var pristine=UnityEngine.JsonUtility.FromJson<Database>(dbText);if(withGenerated)GeneratedWorld.Expand(pristine);if(!CareerSaveRestore.TryRestore(pristine,state,out var restored)){var probe=UnityEngine.JsonUtility.FromJson<Career>(text);var p2=UnityEngine.JsonUtility.FromJson<Database>(dbText);if(withGenerated)GeneratedWorld.Expand(p2);try{probe.ExpandCompactSave(p2);probe.RestoreWorld(p2);Console.WriteLine("lineup: "+string.Join(",",probe.lineup.Select(id=>id+"="+p2.Find(id)?.team))+" club "+probe.club);}catch(Exception e){Console.WriteLine(e);}throw new Exception("Restauration refusée");}return restored;}
+  Database Load(string text,out Career state){state=UnityEngine.JsonUtility.FromJson<Career>(text);var pristine=UnityEngine.JsonUtility.FromJson<Database>(dbText);if(withGenerated)AppendGenerated(pristine);if(!CareerSaveRestore.TryRestore(pristine,state,out var restored)){var probe=UnityEngine.JsonUtility.FromJson<Career>(text);var p2=UnityEngine.JsonUtility.FromJson<Database>(dbText);if(withGenerated)AppendGenerated(p2);try{probe.ExpandCompactSave(p2);probe.RestoreWorld(p2);Console.WriteLine("lineup: "+string.Join(",",probe.lineup.Select(id=>id+"="+p2.Find(id)?.team))+" club "+probe.club);}catch(Exception e){Console.WriteLine(e);}throw new Exception("Restauration refusée");}return restored;}
   sw.Restart();var dbOld=Load(full,out var oldState);long lOld=sw.ElapsedMilliseconds;sw.Restart();var dbNew=Load(compact,out var newState);long lNew=sw.ElapsedMilliseconds;
   Console.WriteLine($"Chargement (désérialisation + restauration) : complet {lOld} ms, compact {lNew} ms");
   int diffs=0;string a1=J(oldState),a2=J(newState);if(a1!=a2){diffs++;int i=0;while(i<a1.Length&&i<a2.Length&&a1[i]==a2[i])i++;Console.WriteLine($"ÉCHEC carrière différente à {i} : …{a1.Substring(Math.Max(0,i-120),Math.Min(240,a1.Length-Math.Max(0,i-120)))}\n  vs …{a2.Substring(Math.Max(0,i-120),Math.Min(240,a2.Length-Math.Max(0,i-120)))}");}
