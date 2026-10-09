@@ -27,7 +27,7 @@ static class P{
   // --savecheck : base lue comme dans Unity (JsonUtility simulé), pour comparer les formats de sauvegarde à l'identique.
   var db=saveCheck?UnityEngine.JsonUtility.FromJson<Database>(dbText):JsonSerializer.Deserialize<Database>(dbText,new JsonSerializerOptions{IncludeFields=true});
   // Comme le jeu : ligues fictives générées au chargement (--no-generated pour la base seule).
-  var genWatch=System.Diagnostics.Stopwatch.StartNew();withGenerated=!a.Contains("--no-generated");int generatedPlayers=withGenerated?AppendGenerated(db):0;
+  var genWatch=System.Diagnostics.Stopwatch.StartNew();withGenerated=a.Contains("--legacy-generated");int generatedPlayers=withGenerated?AppendGenerated(db):0;
   Console.WriteLine($"Base : {db.leagues.Length} ligues, {db.clubs.Length} clubs, {db.players.Length} joueurs ({generatedPlayers} générés en {genWatch.ElapsedMilliseconds} ms)");
   // Comme le jeu : empreinte prise sur la base elle-même, avant que la carrière la modifie.
   SaveBaseline baseline=saveCheck?SaveBaseline.From(db):null;

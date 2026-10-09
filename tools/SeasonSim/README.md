@@ -16,6 +16,9 @@ jouer ou d'avancer). Compter ~1 minute par saison.
 
 Options de diagnostic :
 
+- La base initiale contient uniquement le catalogue importé. `--legacy-generated` réactive
+  l'ancienne extension fictive de la 0.61 pour les diagnostics de compatibilité seulement.
+
 - `pwsh -File tools/SeasonSim/Test-FreeAgentReport.ps1` (depuis la racine) vérifie,
   sans simuler de saison, que le résumé des joueurs libres correspond au tableau
   détaillé du monde initialisé. `-Dotnet chemin/vers/dotnet` permet un SDK local.

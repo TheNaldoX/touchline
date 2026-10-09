@@ -178,7 +178,6 @@ namespace Touchline
             var pristine=TouchlineCatalogue.Load();
             var entry=LaunchCareerStorage.Read(selected.Path,selected.Label,pristine);
             if(!entry.Valid){RefreshLaunchSaves();BuildLaunchMenu();Message(entry.Error??"La sauvegarde n’est plus disponible.");return;}
-            entry.State.saveBaseline=SaveBaseline.From(pristine);
             var oldCareer=Career;var oldDatabase=Database;bool oldSelected=careerSelected;string oldPage=page;
             try{
                 if(selected.Path==SavePath){validatedPrimary=true;primaryValidatedAt=entry.WrittenUtc;}

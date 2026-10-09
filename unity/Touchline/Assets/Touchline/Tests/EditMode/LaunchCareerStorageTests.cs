@@ -12,6 +12,42 @@ namespace Touchline.Tests
         string directory,path;Database db;
         [SetUp] public void Setup(){directory=Path.GetFullPath(Path.Combine(Application.dataPath,"../../../artifacts/unity/launch-menu-unit",Guid.NewGuid().ToString("N")));Directory.CreateDirectory(directory);path=Path.Combine(directory,"career.json");db=new Database{clubs=new[]{new ClubData{id="a",name="A",league="test"},new ClubData{id="b",name="B",league="test"}},players=Enumerable.Range(0,22).Select(i=>new PlayerData{id="p"+i,name="P"+i,team=i<11?"a":"b",position=i%11==0?"GB":"MIL",rating=75}).ToArray(),leagues=new LeagueData[0],fixtures=new Fixture[0]};}
         Career State()=>new Career{club="a",manager="Validation",lineup=Enumerable.Range(0,11).Select(i=>"p"+i).ToArray(),life=new ClubLife{day=12}};
+        [Test] public void NewCatalogueContainsImportedPlayersWithoutFictionalExtension()
+        {
+            var fresh=TouchlineCatalogue.Load();
+            Assert.AreEqual(21815,fresh.players.Length);
+            Assert.IsFalse(fresh.players.Any(p=>GeneratedWorld.IsGenerated(p.id)));
+            Assert.IsFalse(fresh.clubs.Any(c=>GeneratedWorld.IsGenerated(c.id)));
+            Assert.IsTrue(fresh.players.All(p=>p.source.StartsWith("https://www.espn.com/",StringComparison.Ordinal)));
+        }
+        [Test] public void RealCareerDoesNotLoadLegacyExtension()
+        {
+            var c=State();File.WriteAllText(path,JsonUtility.ToJson(c));
+            var loaded=LaunchCareerStorage.Read(path,"Principal",db);
+            Assert.IsTrue(loaded.Valid,loaded.Error);Assert.AreEqual(db.players.Length,loaded.Restored.players.Length);
+            Assert.IsNotNull(loaded.State.saveBaseline);
+        }
+        [TestCase(false)][TestCase(true)] public void LegacyFictionalTransferRestoresWithoutChangingNewCatalogue(bool compact)
+        {
+            var original=TouchlineCatalogue.Load();var expanded=TouchlineCatalogue.Load();
+            GeneratedWorld.AppendFrozen(expanded,JsonUtility.FromJson<Database>(Resources.Load<TextAsset>("Data/generated-world-v1").text));
+            var c=new Career{club="176",saveBaseline=SaveBaseline.From(expanded)};
+            c.lineup=Career.Select(expanded,c.club,c.tactic);c.EnsureWorld(expanded);
+            var bought=expanded.players.First(p=>GeneratedWorld.IsGenerated(p.id)).Copy();
+            bought.team=c.club;bought.wage=789;
+            c.world.rosterChanges.RemoveAll(p=>p.id==bought.id);c.world.rosterChanges.Add(bought);
+            if(compact)Assert.IsTrue(c.PrepareCompactSave());
+            string raw=JsonUtility.ToJson(c);c.RestoreAfterSave();File.WriteAllText(path,raw);
+            var loaded=LaunchCareerStorage.Read(path,"Principal",original);
+            Assert.IsTrue(loaded.Valid,loaded.Error);Assert.AreEqual(c.club,loaded.Restored.Find(bought.id).team);
+            Assert.AreEqual(789,loaded.Restored.Find(bought.id).wage);
+            Assert.IsFalse(original.players.Any(p=>GeneratedWorld.IsGenerated(p.id)));
+            Assert.AreEqual(raw,File.ReadAllText(path),"Reading must not rewrite a personal save.");
+            Assert.IsTrue(loaded.State.PrepareCompactSave());
+            File.WriteAllText(path,JsonUtility.ToJson(loaded.State));loaded.State.RestoreAfterSave();
+            var again=LaunchCareerStorage.Read(path,"Principal",original);
+            Assert.IsTrue(again.Valid,again.Error);Assert.AreEqual(789,again.Restored.Find(bought.id).wage);
+        }
         [TestCase(false)][TestCase(true)] public void AttributeVisibilityChoiceSurvivesCareerLoad(bool reveal)
         {
             db.Find("p12").attributes=new[]{new AttributeValue{key="shortPassing",value=75}};

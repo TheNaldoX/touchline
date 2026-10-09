@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Base de départ : retrait des 2 784 joueurs et 116 clubs fictifs ajoutés en 0.61 ; anciennes carrières conservées avec leur catalogue compatible, sans réécriture au chargement.
 - Android 0.61/code54 livré et signé : candidat intégré moteur, direction, relations et recrutement, avec catalogue fictif figé et sauvegardes compatibles ; réserves de calibration et test Fold conservées.
 - Validation UI : dates cohérentes des défaites synthétiques, reprise ciblée des écrans de presse et diagnostics par étape.
 - Catalogue fictif : chargement d’un jeu de données v1 figé et vérifié, identique pour .NET/Unity/Android, au lieu de régénérer une base dont l’empreinte variait selon le runtime.
