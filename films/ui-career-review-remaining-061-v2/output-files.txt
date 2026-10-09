@@ -1,0 +1,13 @@
+total 2124
+drwxr-xr-x 2 root root   4096 Oct  9 10:47 .
+drwxr-xr-x 3 root root   4096 Oct  9 10:45 ..
+-rw-r--r-- 1 root root   1870 Oct  9 10:47 audit-progress.txt
+-rw-r--r-- 1 root root   1973 Oct  9 10:47 audit.txt
+-rw-r--r-- 1 root root 416304 Oct  9 10:47 deplie-actualites-club.png
+-rw-r--r-- 1 root root 375330 Oct  9 10:47 deplie-demande-depart.png
+-rw-r--r-- 1 root root 382360 Oct  9 10:46 deplie-presse-resultat.png
+-rw-r--r-- 1 root root 342887 Oct  9 10:46 plie-actualites-club.png
+-rw-r--r-- 1 root root 302661 Oct  9 10:46 plie-demande-depart.png
+-rw-r--r-- 1 root root 321453 Oct  9 10:45 plie-presse-resultat.png
+-rw-r--r-- 1 root root   1193 Oct  9 10:47 progress.txt
+-rw-r--r-- 1 root root   1166 Oct  9 10:47 unity-messages.txt

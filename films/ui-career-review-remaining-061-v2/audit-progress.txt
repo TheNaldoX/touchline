@@ -1,0 +1,23 @@
+Conférence après défaite et demande de départ synthétiques ; aucune sauvegarde personnelle.
+## plie-presse-resultat · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 10 · < 48 dp : 0 · textes 24 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## plie-demande-depart · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 16 · < 48 dp : 0 · textes 47 · < 12 sp : 2 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×2 [unity-text-element.unity-label 11.0 sp] ex. « Initiales »
+
+## plie-actualites-club · 1080×2520 px · échelle 2.62 · 1 unité UI = 1.00 dp · largeur logique 412 · hauteur 961
+   boutons visibles 11 · < 48 dp : 0 · textes 27 · < 12 sp : 0 · plus petit texte 12.0 sp · coupés au bord : 0
+
+## deplie-presse-resultat · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 14 · < 48 dp : 0 · textes 34 · < 12 sp : 3 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×3 [unity-text-element.unity-label 11.0 sp] ex. « ESPACE MANAGER »
+
+## deplie-demande-depart · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 21 · < 48 dp : 0 · textes 58 · < 12 sp : 4 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×4 [unity-text-element.unity-label 11.0 sp] ex. « ESPACE MANAGER »
+
+## deplie-actualites-club · 2184×1968 px · échelle 2.63 · 1 unité UI = 1.00 dp · largeur logique 832 · hauteur 750
+   boutons visibles 17 · < 48 dp : 0 · textes 37 · < 12 sp : 3 · plus petit texte 11.0 sp · coupés au bord : 0
+   petit texte ×3 [unity-text-element.unity-label 11.0 sp] ex. « ESPACE MANAGER »
+
