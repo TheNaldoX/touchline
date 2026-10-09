@@ -53,7 +53,9 @@ namespace Touchline
                     try{lastTalkReactions=Career.GiveTeamTalk(Database,chosen,talkRecipient);lastTalkError=null;Save();}
                     catch(Exception e){lastTalkError=e.Message;}
                     refresh();});
-                b.name="team-talk-"+tone;b.tooltip=TeamTalks.Hint(tone);b.style.minHeight=ImmersionTouchTarget;b.style.flexGrow=1;b.style.flexBasis=Length.Percent(30);
+                // Two columns leave room for French labels on the folded screen.
+                b.name="team-talk-"+tone;b.tooltip=TeamTalks.Hint(tone);b.style.minHeight=ImmersionTouchTarget;b.style.flexGrow=1;b.style.flexBasis=Length.Percent(45);
+                b.style.minWidth=0;b.style.flexShrink=1;b.style.whiteSpace=WhiteSpace.Normal;b.style.height=StyleKeyword.Auto;
                 b.SetEnabled(talkRecipient!=null||!groupDone);
             }
             Text(card,talkRecipient==null?"Un message au groupe par moment ; trois échanges individuels au plus. La réaction dépend du score, de l’enjeu, du caractère et de la confiance de chacun.":"Un échange individuel porte davantage, en bien comme en mal.","footnote");

@@ -132,26 +132,31 @@ namespace Touchline.Editor
         static List<Action> BuildFocusedImmersionSteps()
         {
             audit.AppendLine("Parcours ciblé immersion : deux résolutions natives par écran.");
+            bool talksOnly=Path.GetFileName(Output).StartsWith("ui-immersion-focus-talks-",StringComparison.Ordinal);
             var list=new List<Action>();var first=Screens[0];
             void Both(string tag,Action prepare){foreach(var s in Screens){var screen=s;list.Add(()=>Resize(screen.width,screen.height));list.Add(()=>prepare?.Invoke());list.Add(()=>Capture(screen.tag+"-"+tag));}}
             list.Add(()=>{App.Career.EnsureWorld(App.Database);Resize(first.width,first.height);Call("Navigate","Club");});
-            Both("preparation",()=>{Call("Navigate","Club");var focus=Root.Q("manager-training-focus");if(focus==null)throw new Exception("Thème d'entraînement absent");Root.Q<ScrollView>()?.ScrollTo(focus);});
+            if(!talksOnly)Both("preparation",()=>{Call("Navigate","Club");var focus=Root.Q("manager-training-focus");if(focus==null)throw new Exception("Thème d'entraînement absent");Root.Q<ScrollView>()?.ScrollTo(focus);});
             list.Add(()=>{Resize(first.width,first.height);App.Career.life.day=App.Career.life.nextFixture;Call("Navigate","Match");});
             list.Add(()=>Click("Entrer sur le terrain"));
             list.Add(()=>{if(App.Career.match?.mindset==null||App.Career.match.mindset.Length!=2)throw new Exception("État mental absent du match de carrière");SetField("introAutomatic",false);Call("IntroGo",1);});
-            Both("briefing",()=>{var card=Root.Q("immersion-opponent");if(card==null)throw new Exception("Rapport adverse absent");Root.Q<ScrollView>("prematch-scroll").ScrollTo(card);});
+            if(!talksOnly)Both("briefing",()=>{var card=Root.Q("immersion-opponent");if(card==null)throw new Exception("Rapport adverse absent");Root.Q<ScrollView>("prematch-scroll").ScrollTo(card);});
             list.Add(()=>Call("IntroGo",4));
             Both("causerie-avant",()=>{var card=Root.Q("team-talk");if(card==null)throw new Exception("Causerie absente");Root.Q<ScrollView>("prematch-scroll").ScrollTo(card);});
+            list.Add(()=>{var b=Root.Q<Button>("team-talk-calm");var view=Root.Q<ScrollView>("prematch-scroll");if(b==null||b.resolvedStyle.whiteSpace!=WhiteSpace.Normal||!b.worldBound.Overlaps(view.contentViewport.worldBound))throw new Exception("Choix de causerie hors champ ou libellé non repliable");});
             list.Add(()=>{float before=App.Career.match.mindset[0].composure.Average();Click("team-talk-calm");float after=App.Career.match.mindset[0].composure.Average();if(after<=before)throw new Exception("Causerie sans effet");audit.AppendLine("Causerie « Rassurer » : sang-froid moyen "+before.ToString("0.00",CultureInfo.InvariantCulture)+" → "+after.ToString("0.00",CultureInfo.InvariantCulture));});
             Both("causerie-reaction",()=>{var card=Root.Q("team-talk");if(card!=null)Root.Q<ScrollView>("prematch-scroll").ScrollTo(card);});
             list.Add(()=>{Resize(first.width,first.height);if(Root.Q<Button>("prematch-kickoff")!=null)Click("prematch-kickoff");});
+            if(!talksOnly){
             list.Add(()=>{Arena.Paused=true;Arena.Simulation.Advance(20*App.Career.match.SecondsPerMinute);Click("match-instructions-open");});
             Both("cris-touche",()=>{var card=Root.Q("touchline-shouts");if(card==null)throw new Exception("Cris depuis la touche absents");Root.Q("match-instructions").Q<ScrollView>().ScrollTo(card);});
             list.Add(()=>{Click("shout-press");if(App.Career.match.events.Last().kind!="shout")throw new Exception("Cri non enregistré");audit.AppendLine("Cri « Pressez ! » enregistré, retour au match.");});
+            }
             list.Add(()=>{var sim=Arena.Simulation;sim.Advance(sim.State.HalfDuration);if(!sim.State.halfTime)throw new Exception("Mi-temps non atteinte");Call("MatchAnalysis");});
             Both("vestiaire-mi-temps",null);
             list.Add(()=>Click("team-talk-encourage"));
             Both("vestiaire-reaction",null);
+            if(talksOnly)return list;
             list.Add(()=>Click("Adjoint"));
             Both("adjoint-lecture",null);
             list.Add(()=>{Call("CloseModal");SetField("tacticalTab","Composition");SetField("selectedSlot",1);Call("Navigate","Tactique");});
