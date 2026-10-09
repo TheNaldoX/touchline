@@ -6,6 +6,16 @@ namespace Touchline.Tests
 {
     public class LocomotionFacingTests
     {
+        [TestCase(30, .88f)] [TestCase(60, 1f)] [TestCase(120, 1.1f)]
+        public void RisingSwingIsNotMistakenForLanding(int fps,float scale)
+        {
+            float dt=1f/fps,height=.09f*scale;
+            Assert.IsFalse(PlayerView.FootCanPlant(height,height-.6f*scale*dt,dt,scale),"Rising ankle must stay free through the low part of its swing");
+            Assert.IsTrue(PlayerView.FootCanPlant(height,height+.6f*scale*dt,dt,scale),"Descending ankle can establish support");
+            Assert.IsTrue(PlayerView.FootCanPlant(height,height,dt,scale),"Resting support remains valid");
+            Assert.IsFalse(PlayerView.FootCanPlant(.20f*scale,.22f*scale,dt,scale),"Airborne foot cannot plant");
+            Assert.IsFalse(PlayerView.FootCanPlant(height,height,0,scale),"Pause cannot acquire a new support");
+        }
         [TestCase(30)] [TestCase(60)] [TestCase(120)]
         public void StrafeReversalBlendsContinuouslyAtDifferentFrameRates(int fps)
         {
