@@ -313,30 +313,25 @@ namespace Touchline
         const float FootLockBlend=12f;      // 1/s : sortie du verrouillage quand la pose lève le pied
         readonly Vector3[] footLockPoint=new Vector3[2];readonly bool[] footLocked=new bool[2];readonly float[] footLockWeight=new float[2];
         readonly float[] footStep=new float[2];readonly Vector3[] footStepFrom=new Vector3[2];
-        readonly float[] previousRawFootHeight=new float[2];
-        // A low ankle is not necessarily a planted foot: do not catch the rising swing.
-        const float PlantVerticalTolerance=.12f; // m/s, small idle/breathing motion allowed
-        public static bool FootCanPlant(float height,float previousHeight,float dt,float scale)
-            =>dt>0&&height<FootContactHeight*scale&&(height-previousHeight)/dt<=PlantVerticalTolerance*scale;
         void MecanimFootLock(float dt,bool reset)
         {
             for(int i=0;i<2;i++){
                 string side=Sides[i];var foot=Limb(side).foot;var p=foot.position;
-                bool canPlant=FootCanPlant(p.y,previousRawFootHeight[i],dt,transform.localScale.y);previousRawFootHeight[i]=p.y;
                 if(reset){footLocked[i]=false;footLockWeight[i]=0;footStep[i]=0;continue;}
                 bool contact=p.y<FootContactHeight*transform.localScale.y;
                 if(footStep[i]>0){
                     // Pas de replacement : du point posé vers la place du pied dans la pose, en arc.
                     footStep[i]=Mathf.Min(1,footStep[i]+dt/FootStepDuration);float eased=Mathf.SmoothStep(0,1,footStep[i]);
                     var stepTarget=Vector3.Lerp(new Vector3(footStepFrom[i].x,p.y,footStepFrom[i].z),p,eased);stepTarget.y=p.y+Mathf.Sin(footStep[i]*Mathf.PI)*FootStepLift*transform.localScale.y;
-                    if(footStep[i]>=1){footStep[i]=0;footLocked[i]=contact&&canPlant;footLockPoint[i]=p;footLockWeight[i]=footLocked[i]?1:0;}
+                    if(footStep[i]>=1){footStep[i]=0;footLocked[i]=contact;footLockPoint[i]=p;footLockWeight[i]=contact?1:0;}
                     var stepRotation=foot.rotation;SolveLeg(side,stepTarget);foot.rotation=stepRotation;continue;
                 }
                 // Verrouillage immédiat sur la position affichée du pied (pas de saut, pas de glissement d'entrée).
-                if(contact&&canPlant&&!footLocked[i]){var shown=Vector3.Lerp(p,footLockPoint[i],footLockWeight[i]);footLocked[i]=true;footLockPoint[i]=new Vector3(shown.x,p.y,shown.z);footLockWeight[i]=1;}
+                if(contact&&!footLocked[i]){var shown=Vector3.Lerp(p,footLockPoint[i],footLockWeight[i]);footLocked[i]=true;footLockPoint[i]=new Vector3(shown.x,p.y,shown.z);footLockWeight[i]=1;}
                 var drift=footLockPoint[i]-p;drift.y=0;
                 if(footLocked[i]&&contact&&(drift.magnitude>FootLockRelease||drift.magnitude>FootStepTrigger&&footStep[1-i]<=0)){
-                    footStepFrom[i]=footLockPoint[i];footStep[i]=Mathf.Epsilon;footLocked[i]=false;footLockWeight[i]=0;
+                    // The solver may not reach an old anchor; start from the last visible foot, not that unreachable point.
+                    footStepFrom[i]=previousFeet[i];footStep[i]=Mathf.Epsilon;footLocked[i]=false;footLockWeight[i]=0;
                     var holdRotation=foot.rotation;SolveLeg(side,new Vector3(footStepFrom[i].x,p.y,footStepFrom[i].z));foot.rotation=holdRotation;continue;
                 }
                 if(footLocked[i]&&!contact)footLocked[i]=false;
