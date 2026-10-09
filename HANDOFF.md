@@ -4,12 +4,12 @@ Lire AGENTS.md. Ce fichier contient uniquement l’état courant ; l’historiqu
 
 ## Reprise immédiate — 9 octobre 2026
 
-- Branche : `fix/claude-handoff-validation`, PR #62 ; dernier code1944eef. Base : `fix/real-starting-catalogue`4469c84 / PR #61.
+- Branche : `fix/claude-handoff-validation`, PR #62 ; dernier code5feca04. Base : `fix/real-starting-catalogue`4469c84 / PR #61.
 - Claude et Codex alternent, jamais simultanément. Victor a réinitialisé ses limites et demandé de poursuivre. Il demande aussi une méthode économe : contexte court, lectures ciblées, lots stabilisés avant Unity, attentes scriptées.
 - Claude a laissé deux lots, maintenant assemblés : `film/ui-recruitment-cell-2`9983765 (cellule de recrutement) et `film/ui-immersion-focus-1`b3cbf11 (immersion tactique). Un conflit CiUiScreens résolu en conservant les deux parcours.
 - Fonctionnalités : missions par recruteur, connaissance régionale, intérêt du joueur, personnalité simulée, adaptation des recrues ; préparation collective, causeries, cris, consignes individuelles et observations de l’adjoint.
 - Corrections de reprise : recommandations devenues inaccessibles filtrées ; Resize et ScrollTo séparés dans le scénario de captures ; carrière sans emploi rechargeable même si un ancien titulaire a quitté le club ou pris sa retraite. Les contrôles des matchs actifs et joueurs introuvables restent stricts.
-- Validation native du dernier correctif lancée sur1944eef via `runtime-tests.yml`. Attendre ce résultat avant tout nouveau Unity. Ensuite revoir les captures d’immersion corrigées (`film/ui-immersion-focus-*`). Pas de nouvelle APK ni fusion main à ce stade.
+- Validation native1944eef réussie246/246 (Actions37943332562). Puis correction visuelle : boutons de causerie sur deux colonnes, retour à la ligne et hauteur automatique. Rendu ciblé huit captures en cours, Actions37944380106 / `film/ui-immersion-focus-talks-relay` /5feca04. Attendre puis regarder les images avant livraison. Pas de nouvelle APK ni fusion main.
 
 ## Preuves disponibles
 
@@ -17,6 +17,7 @@ Lire AGENTS.md. Ce fichier contient uniquement l’état courant ; l’historiqu
 |---|---|
 | Core assemblage + correctif sauvegarde |913/913 ; `.validation/claude-relay-core-savefix.txt` |
 | Unity assemblage avant correctif sauvegarde |235/235 ciblés, Actions37941735253, source8c59424, artefact11622731251 ; `.validation/claude-relay-native` |
+| Unity correctif sauvegarde |246/246 ciblés, Actions37943332562, source1944eef, artefact11622083022 ; `.validation/claude-relay-savefix-native` |
 | Carrière 1 saison, monde, graine77 |384 clubs jouables, aucun sous18 joueurs ; restauration complète/compacte identique sur22888 joueurs (87,43/5,99Mo). `.validation/claude-relay-season-fixed.txt` |
 | Défaut reproduit avant correction |152270 retraité dans l’ancien onze d’un entraîneur sans emploi ; restauration refusée. `.validation/claude-relay-season.txt` |
 | Base sans joueurs fictifs, lot précédent |881 Core et210 Unity ; Actions37926637983, source40e063c, artefact11615140142 ; `.validation/real-catalogue-native` |
@@ -57,7 +58,7 @@ Calibration :200 matchs/graine1, même catalogue. Avant `tools/Calibration/Repor
 
 ## Pièges et prochaines étapes
 
-1. Finir la validation du correctif de sauvegarde et revoir les captures de causerie ; compléter PR #62, puis produire un candidat APK distinct si les contrôles passent.
+1. Revoir les huit captures de causerie (sauvegarde déjà validée) ; compléter PR #62, puis produire un candidat APK distinct si les contrôles passent.
 2. Test Fold réel : fluidité, gels, après-but, nuit, navigation et pliage. Main n’est pas fusionnée ; ne pas contourner ce point de validation.
 3. Calibration : ligne haute, sorties, penalties, xG ; audit des consignes sur graines appariées, pas de réglage pour satisfaire une seule graine.
 4. Revoir adaptation/recrutement après changement de club et équilibre sur plusieurs saisons. Puis lisibilité portrait et petits libellés11sp.
