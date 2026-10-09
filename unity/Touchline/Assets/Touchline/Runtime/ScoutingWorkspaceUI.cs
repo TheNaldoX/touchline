@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Touchline.Core;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Touchline
@@ -56,25 +57,84 @@ namespace Touchline
             void UpdateBlocked()=>blocked.style.display=wage.value<=0?DisplayStyle.Flex:DisplayStyle.None;
             wage.RegisterValueChangedCallback(_=>{UpdateWageHint();UpdateBlocked();});UpdateWageHint();UpdateBlocked();
         }
+        static readonly string[] ReportSorts={"Récents","Note","Niveau estimé","Âge","Rapport le plus ancien"};
+        string scoutReportSort="Récents";
+        // Overview reused by every card of one screen: its assignment pass is the costly part.
+        RecruitmentOverviewData overviewCache;string overviewKey;
+        RecruitmentOverviewData CachedRecruitmentOverview()
+        {
+            string key=Career.club+"/"+Career.life.day+"/"+Database.players.Length+"/"+Career.tactic?.formation+"/"+Database.Squad(Career.club).Count;
+            if(overviewCache==null||overviewKey!=key){overviewKey=key;overviewCache=Career.RecruitmentOverview(Database);}
+            return overviewCache;
+        }
+        static int GradeRank(string grade)=>grade=="A"?0:grade=="B"?1:grade=="C"?2:grade=="D"?3:grade=="E"?4:5;
         void ScoutingReports(VisualElement parent)
         {
-            var tools=Row(parent,"scout-actions");foreach(var label in new[]{"Tous","En cours","Terminés","À actualiser","Ma sélection"}){var button=Button(tools,label,()=>{scoutReportFilter=label;Build();});button.AddToClassList(scoutReportFilter==label?"active":"scout-filter");}
-            var reports=Career.world.reports.Where(r=>(string.IsNullOrEmpty(r.club)||r.club==Career.club)&&Database.Find(r.player)!=null);
+            var tools=Row(parent,"scout-actions");foreach(var label in new[]{"Tous","En cours","Terminés","À actualiser","Ma sélection","Notes A–B"}){var button=Button(tools,label,()=>{scoutReportFilter=label;Build();});button.name="scout-filter-"+label;button.AddToClassList(scoutReportFilter==label?"active":"scout-filter");}
+            var sort=new DropdownField("Trier",ReportSorts.ToList(),Math.Max(0,Array.IndexOf(ReportSorts,scoutReportSort))){name="scout-report-sort"};parent.Add(sort);sort.RegisterValueChangedCallback(e=>{scoutReportSort=e.newValue;Build();});
+            var reports=Career.world.reports.Where(r=>(string.IsNullOrEmpty(r.club)||r.club==Career.club)&&Database.Find(r.player)!=null).GroupBy(r=>r.player).Select(g=>g.OrderByDescending(r=>r.started).First());
             if(scoutReportFilter=="En cours")reports=reports.Where(r=>r.confidence<90);else if(scoutReportFilter=="Terminés")reports=reports.Where(r=>r.confidence>=90);else if(scoutReportFilter=="À actualiser")reports=reports.Where(Career.RecruitmentReportNeedsRefresh);else if(scoutReportFilter=="Ma sélection")reports=reports.Where(r=>Career.shortlist.Contains(r.player));
-            var found=reports.OrderByDescending(r=>r.started).ToArray();Text(parent,found.Length+" rapports · évaluations relatives à votre effectif · les observations anciennes perdent de leur précision","muted");
+            var overview=CachedRecruitmentOverview();
+            var cards=reports.Select(r=>(report:r,card:Career.ScoutReportCard(Database,r.player,overview))).ToList();
+            if(scoutReportFilter=="Notes A–B")cards=cards.Where(x=>x.card.grade=="A"||x.card.grade=="B").ToList();
+            var ordered=scoutReportSort=="Note"?cards.OrderBy(x=>GradeRank(x.card.grade)).ThenByDescending(x=>x.card.ability.Middle):scoutReportSort=="Niveau estimé"?cards.OrderByDescending(x=>x.card.ability.known?x.card.ability.Middle:-1):scoutReportSort=="Âge"?cards.OrderBy(x=>Database.Find(x.report.player).age):scoutReportSort=="Rapport le plus ancien"?cards.OrderByDescending(x=>x.card.reportAge):cards.OrderByDescending(x=>x.report.started);
+            var found=ordered.ThenBy(x=>x.report.player,StringComparer.Ordinal).ToArray();
+            Text(parent,found.Length+" rapports · fourchettes et notes relatives à votre effectif · un rapport ancien redevient incertain","muted");
             if(found.Length==0)Text(parent,"Aucun rapport dans cette catégorie. Envoyez une mission ou observez un joueur depuis Marché.","empty-state");
-            foreach(var report in found.Take(80))
+            foreach(var (report,data) in found.Take(80))
             {
-                var p=Database.Find(report.player);int knowledge=Career.Knowledge(p.id);var card=Card(parent,"scout-report-card");card.name="scout-report-"+p.id;
-                Text(card,p.name+" · "+p.age+" ans · "+FrenchFootballPositions.List(p.positions??new[]{p.position}),"section-title");Text(card,ClubName(p.team)+" · "+(report.scout??"Recruteur")+" · jugement "+(report.judging>0?report.judging.ToString():"non renseigné")+" / 20","muted");
-                var progress=new ProgressBar{lowValue=0,highValue=90,value=knowledge,title="Connaissance · "+knowledge+" %"};card.Add(progress);
-                if(report.confidence<90)Text(card,"Observation en cours · rapport attendu le "+Core.Career.Epoch.AddDays(report.due).ToString("dd MMM",French),"scout-status");
-                if(knowledge>=40){Text(card,Stars(Career.AssessedLevel(Database,p.id),ClubRatingBaseline())+" · niveau estimé pour votre club","profile-stars");Text(card,knowledge>=65?Stars(Career.AssessedLevel(Database,p.id,true),ClubRatingBaseline())+" · potentiel incertain":"Potentiel encore à préciser","muted");}
-                Text(card,report.advice??"Le recruteur affine son avis. Les attributs se précisent progressivement.","scout-report-advice");Text(card,"Valeur "+Money(p.value)+" · salaire actuel estimé "+Money(Core.Career.MonthlySalary(p.wage))+" / mois","footnote");
-                var actions=Row(card,"scout-actions");Button(actions,"Fiche et attributs",()=>PlayerProfile(p.id));Button(actions,"Comparer à mon effectif",()=>ComparePlayer(p.id));Button(actions,Career.shortlist.Contains(p.id)?"★ Retirer de ma sélection":"☆ Suivre ce joueur",()=>RunDecision(()=>Career.ToggleShortlist(p.id)));
-                if(report.confidence>=90&&knowledge<90)Button(actions,"Actualiser le rapport",()=>RunDecision(()=>Career.Scout(Database,p.id)));Button(actions,"Contacter l’agent",()=>TransferDialog(p.id));
+                var p=Database.Find(report.player);var card=Card(parent,"scout-report-card");card.name="scout-report-"+p.id;
+                var head=Row(card,"scout-report-head");head.style.alignItems=Align.Center;GradeBadge(head,data.grade).name="scout-grade-"+p.id;
+                var identity=new VisualElement();identity.style.flexShrink=1;identity.style.flexGrow=1;head.Add(identity);
+                Text(identity,p.name+" · "+p.age+" ans · "+FrenchFootballPositions.List(p.positions??new[]{p.position}),"section-title");
+                Text(identity,ClubName(p.team)+(data.generated?" · club fictif (ligue générée)":"")+" · "+(report.scout??"Recruteur")+" · jugement "+(data.judging>0?data.judging.ToString():"?")+" / 20","muted");
+                if(data.pending)Text(card,"Observation en cours · rapport attendu le "+Core.Career.Epoch.AddDays(report.due).ToString("dd MMM",French),"scout-status");
+                ReportCardBody(card,p,data);
+                var actions=Row(card,"scout-actions");Button(actions,"Fiche",()=>PlayerProfile(p.id));Button(actions,"Comparer",()=>ComparePlayer(p.id));Button(actions,Career.shortlist.Contains(p.id)?"★ Suivi":"☆ Suivre",()=>RunDecision(()=>Career.ToggleShortlist(p.id))).name="scout-follow-"+p.id;
+                if(report.confidence>=90&&data.knowledge<90)Button(actions,"Actualiser",()=>RunDecision(()=>Career.Scout(Database,p.id))).name="scout-refresh-"+p.id;
+                Button(actions,"Contacter l’agent",()=>TransferDialog(p.id));
             }
-            if(found.Length>80)Text(parent,"Les 80 rapports les plus récents sont affichés. Utilisez Ma sélection pour garder vos priorités visibles.","footnote");
+            if(found.Length>80)Text(parent,"Les 80 premiers rapports sont affichés. Utilisez le tri ou Ma sélection pour garder vos priorités visibles.","footnote");
+        }
+        static readonly Dictionary<string,string> GradeColors=new Dictionary<string,string>{{"A","#2e7d32"},{"B","#558b2f"},{"C","#9e7c0c"},{"D","#c25e00"},{"E","#b71c1c"}};
+        Label GradeBadge(VisualElement parent,string grade)
+        {
+            var badge=new Label(grade);badge.AddToClassList("scout-grade");parent.Add(badge);
+            badge.style.minWidth=40;badge.style.height=40;badge.style.marginRight=10;badge.style.unityTextAlign=TextAnchor.MiddleCenter;badge.style.fontSize=22;badge.style.unityFontStyleAndWeight=FontStyle.Bold;badge.style.color=Color.white;
+            badge.style.borderTopLeftRadius=8;badge.style.borderTopRightRadius=8;badge.style.borderBottomLeftRadius=8;badge.style.borderBottomRightRadius=8;
+            badge.style.backgroundColor=GradeColors.TryGetValue(grade,out var hex)&&ColorUtility.TryParseHtmlString(hex,out var color)?color:new Color(.45f,.47f,.5f);
+            badge.tooltip="Note de recrutement A–E : comparaison prudente avec votre titulaire au même poste, besoins, âge, budget et incertitude.";
+            return badge;
+        }
+        const float RangeBarLow=40,RangeBarHigh=95; // rating scale shown by the bars (1–99 values)
+        // Range bar; the yellow tick marks the average level of your current eleven.
+        void RangeBar(VisualElement parent,string label,ScoutRange range,float reference,string name)
+        {
+            var row=Row(parent,"scout-range-row");row.name=name;row.style.alignItems=Align.Center;
+            var caption=Text(row,label+" "+range,"scout-range-label");caption.style.minWidth=140;
+            var track=new VisualElement();track.style.flexGrow=1;track.style.height=12;track.style.backgroundColor=new Color(.5f,.5f,.55f,.25f);track.style.minWidth=90;row.Add(track);
+            float Pos(float v)=>Mathf.Clamp01((v-RangeBarLow)/(RangeBarHigh-RangeBarLow))*100;
+            if(range.known){var fill=new VisualElement();fill.style.position=Position.Absolute;fill.style.top=0;fill.style.bottom=0;fill.style.left=Length.Percent(Pos(range.low));fill.style.width=Length.Percent(Mathf.Max(1.5f,Pos(range.high)-Pos(range.low)));fill.style.backgroundColor=new Color(.25f,.6f,.95f);track.Add(fill);}
+            if(reference>0){var tick=new VisualElement();tick.style.position=Position.Absolute;tick.style.top=-3;tick.style.bottom=-3;tick.style.width=3;tick.style.left=Length.Percent(Pos(reference));tick.style.backgroundColor=new Color(.95f,.75f,.2f);track.Add(tick);}
+        }
+        void ReportCardBody(VisualElement card,PlayerData p,ScoutReportCardData data)
+        {
+            if(!data.ability.known)Text(card,data.gradeReason??"Niveau à observer.","scout-report-advice");
+            else
+            {
+                RangeBar(card,"Niveau",data.ability,ClubRatingBaseline(),"scout-range-ability-"+p.id);
+                if(data.potential.known)RangeBar(card,"Potentiel",data.potential,0,"scout-range-potential-"+p.id);else Text(card,"Potentiel : à préciser (connaissance ≥ 65 %)","footnote");
+                Text(card,data.gradeReason,"scout-report-advice");
+                if(data.strengths.Count>0)Text(card,"Points forts : "+string.Join(", ",data.strengths),"body-text").name="scout-strengths-"+p.id;
+                if(data.weaknesses.Count>0)Text(card,"Points faibles : "+string.Join(", ",data.weaknesses),"body-text").name="scout-weaknesses-"+p.id;
+                if(!string.IsNullOrEmpty(data.fit))Text(card,data.fit,"body-text");
+            }
+            string age=data.observedDay<0?"":data.reportAge==0?"rapport du jour":"rapport de "+data.reportAge+" j";
+            Text(card,"Connaissance "+data.knowledge+" %"+(age==""?"":" · "+age)+(data.stale?" · à actualiser":"")+" · territoire "+(data.territory??"—")+" : connaissance "+data.familiarityLabel+(data.depth>0?" · "+(data.depth+1)+" observations":""),"footnote");
+            if(!string.IsNullOrEmpty(data.rival))Text(card,"Concurrence : "+data.rival,"scout-status").name="scout-rival-"+p.id;
+            if(data.generated){var club=Database.clubs.FirstOrDefault(c=>c.id==p.team);var table=club==null?null:GeneratedWorld.SimulatedTable(Database,club.league,Career.world.year);int rank=table==null?-1:table.FindIndex(r=>r.club==club.id);
+                Text(card,(rank>=0?"Classement simulé : "+(rank+1)+"e / "+table.Count+" · ":"")+"données fictives générées, aucune personne réelle","footnote");}
+            Text(card,"Valeur "+Money(p.value)+" · salaire actuel estimé "+Money(Core.Career.MonthlySalary(p.wage))+" / mois","footnote");
         }
         static string MissionPriorityLabel(string value)=>value=="prospect"?"Développement des jeunes":value=="free"?"Joueurs libres":value=="value"?"Coût maîtrisé":"Renfort immédiat";
         static string MissionStatusLabel(string value)=>value=="complete"?"Terminée":value=="stopped"?"Arrêtée":value=="finishing"?"Derniers rapports en cours":"Recherche active";

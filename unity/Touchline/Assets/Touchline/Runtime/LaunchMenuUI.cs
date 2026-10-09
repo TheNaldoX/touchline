@@ -158,7 +158,7 @@ namespace Touchline
             var oldCareer=Career;var oldDatabase=Database;bool oldSelected=careerSelected;
             try{
                 if(!validatedPrimary&&File.Exists(SavePath))ValidatePrimaryBeforeReplacement();
-                var db=JsonUtility.FromJson<Database>(Resources.Load<TextAsset>("Data/database").text);
+                var db=TouchlineCatalogue.Load();
                 var state=new Career{club=launchDraftClub,manager=launchDraftManager.Trim(),revealAttributes=launchDraftReveal,saveBaseline=SaveBaseline.From(db)};state.lineup=Core.Career.Select(db,state.club,state.tactic);state.EnsureLife(db);if(!VisualValidation)state.EnsureWorld(db);
                 Database=db;Career=state;historyClub=null;careerSelected=true;launchMenuVisible=false;Save();
                 if(!lastCareerSaveSucceeded)throw new IOException("La nouvelle carrière n’a pas pu être enregistrée.");
@@ -167,7 +167,7 @@ namespace Touchline
         }
         void ValidatePrimaryBeforeReplacement()
         {
-            var original=launchCatalogue??JsonUtility.FromJson<Database>(Resources.Load<TextAsset>("Data/database").text);
+            var original=launchCatalogue??TouchlineCatalogue.Load();
             var prior=LaunchCareerStorage.Read(SavePath,"Sauvegarde principale",original);validatedPrimary=prior.Valid;primaryValidatedAt=prior.WrittenUtc;
             // prior's full state/world is not cached or retained by the menu.
         }
@@ -175,7 +175,7 @@ namespace Touchline
         {
             if(selected==null)return;
             // Read again at the explicit choice, so stale menu previews are never trusted.
-            var pristine=JsonUtility.FromJson<Database>(Resources.Load<TextAsset>("Data/database").text);
+            var pristine=TouchlineCatalogue.Load();
             var entry=LaunchCareerStorage.Read(selected.Path,selected.Label,pristine);
             if(!entry.Valid){RefreshLaunchSaves();BuildLaunchMenu();Message(entry.Error??"La sauvegarde n’est plus disponible.");return;}
             entry.State.saveBaseline=SaveBaseline.From(pristine);
