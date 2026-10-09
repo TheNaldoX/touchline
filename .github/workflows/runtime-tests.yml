@@ -56,10 +56,15 @@ jobs:
               if root.tag == 'test-run':
                   reports.append(root)
           assert reports, 'Aucun résultat NUnit'
-          total = sum(int(root.attrib.get('total', 0)) for root in reports)
-          failed = sum(int(root.attrib.get('failed', 0)) for root in reports)
-          assert total >= 10 and failed == 0, f'Résultat incomplet : {total} tests, {failed} échecs'
-          print(f'{total} tests Unity, {failed} échecs')
+          cases = {case.attrib['fullname']: case.attrib.get('result')
+                   for root in reports for case in root.iter('test-case')}
+          assert len(cases) == 37, f'Résultat incomplet : {len(cases)} cas sur 37 attendus'
+          unsuccessful = {name: result for name, result in cases.items() if result != 'Passed'}
+          assert not unsuccessful, f'Cas non réussis : {unsuccessful}'
+          for method, count in [('EnteringTheLastThird', 8), ('PortraitDelivery', 2)]:
+              actual = sum(method in name for name in cases)
+              assert actual == count, f'Régression absente : {method}, {actual}/{count}'
+          print(f'{len(cases)} cas Unity réussis, dont les dix nouvelles régressions')
           PY
       - uses: actions/upload-artifact@v4
         if: always()
