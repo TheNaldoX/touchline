@@ -38,6 +38,7 @@ Jeu de gestion de football type Football Manager, Unity **6000.3.24f1**, URP, An
 ## 3. État au 8 octobre 2026 (dernière session Claude)
 
 ### Branches et PR
+- Correctif local `fix/goal-net-contact` : topologie du filet segmentée pour réparer l'échec Unity `GoalNetBulgesUnderTheBallThenSettles`. Core 689/689 sur cette base ; tests graphiques supplémentaires à exécuter avant intégration/livraison.
 - **PR #34 `integ/0.56` → `main`** : fusion de toute la pile (PR #21 à #33). **À fusionner en premier**,
   puis fermer #21–#33 et #20 (release/0.47, déjà couvert).
 - **PR #35 `feat/player-look` → `integ/0.56`** : tenues de club, flocage nom/numéro, cheveux,
@@ -189,3 +190,11 @@ rambardes des tribunes, nuances de tonte du gazon, vignettage léger pendant les
 - Non vérifié : téléphone ; tests EditMode Unity (CrowdLifeTests) jamais exécutés, seulement compilés
   par les films ; ombres de contact peu visibles au premier essai (renforcées, voir atm-a2).
 - Prochaine étape : §6.
+
+### Correctif Codex du 9 octobre 2026 — contact au centre du filet
+- Défaut rapporté par la suite Unity intégrée : 94/95 tests réussis ; déplacement central du filet nul. Les fils avaient uniquement des sommets aux extrémités, hors de la zone d'impact centrale, malgré leur passage visuel sous le ballon.
+- Correction ciblée : `StadiumGeometry.GoalNet` utilise des fils tubulaires carrés continus à anneaux partagés. Subdivision aux intersections des mailles existantes (25 colonnes, 8 rangs, 6 profondeurs ; intervalles ~0,30 m). Aucun bouchon entre segments ; GoalNetRipple, rayon 1,1 m, ressort et amortissement inchangés.
+- Budget calculé à partir des boucles : par but 94 fils, 902 segments, 3 984 sommets / 7 216 triangles, contre 2 256 / 1 128 auparavant. Pour les deux buts : +3 456 sommets / +12 176 triangles, zéro nouveau draw call, matériau ou texture. Le traitement dynamique parcourt davantage de sommets pendant les mouvements du filet seulement ; coût nul au repos conservé. Aucun benchmark Android revendiqué.
+- Tests : l'ancien test de déformation/zone distante fixe/retour au repos couvre désormais les deux buts. Deux cas supplémentaires vérifient les arêtes <0,35 m et le budget <4 500 sommets / <7 500 triangles par but. Mesures de déplacement et comptage écrites dans TestContext. La suite intégrée devrait passer de 95 à 98 cas. La zone centrale testée reste centrée en (±54,1,0), rayon0,5 m : elle n'inclut ni toit ni filet latéral.
+- Validation locale : Core 689/689 réussis sur cette base PR38 ; aucun Core modifié. Diff sans erreur d'espacement. Tests Unity et revue visuelle restant au coordinateur, aucun Unity/push lancé ici. Approximation indépendante du ressort : déplacement central attendu ~0,049 m, pas présentée comme une mesure Unity.
+- Prochaine étape : intégrer le correctif, lancer les 98 tests Unity puis vérifier le film de but de chaque côté avant publication de l'APK.
