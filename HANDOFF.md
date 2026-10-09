@@ -6,7 +6,7 @@ Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dan
 
 - Branche `fix/keeper-claim-readiness`, base PR72/cbfb053. Mecanim conserve sa pose et ses appuis ; correction progressive des bras pour la préparation de prise aérienne. Annulation interpolée jusqu’au retour réel des mains, déplacement racine accompagné. Aucun Core ni ballon modifié.
 -19/19 tests KeeperClaimAnticipation réussis, dont6 nouveaux cas statique/course à30/60/120Hz. Trois anciens tests de mains trop basses corrigés. Essai intermédiaire de retour en course échouait de35–48cm, correction validée (`keeper-claim-moving-{before,after}.xml`).
-- Capture synthétique AVANT revue : `build/film/keeper-claim-before`,21 images ; mains à hauteur de taille malgré ballon aérien. Capture APRÈS et suite complète encore à effectuer. Ne pas revendiquer une prise entière, une nouvelle mocap ou une performance Android.
+- Capture synthétique AVANT revue : `build/film/keeper-claim-before`,21 images ; mains à hauteur de taille malgré ballon aérien. Capture APRÈS revue (`keeper-claim-after`), mains préparées et appuis visuellement inchangés. Vidéo `artifacts/Touchline-keeper-readiness-before-after-2026-10-10.mp4` : avant à gauche/après à droite, diagnostic0,35s ralenti4×. Suite complète1975/2274,299 échecs préexistants, aucun nouveau, trois anciens corrigés ; `.validation/keeper-claim-comparison.json`. Aucune Unity active. Ne pas revendiquer une prise entière, une nouvelle mocap ou une performance Android.
 
 ## Lot recrutement — PR72
 
@@ -30,6 +30,8 @@ Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dan
 - Ces PR restent en brouillon : dette globale d’animations et Fold non testé. Prochaine enquête concrète : `KeeperClaimAnticipationTests`, mains trop basses avant prise aérienne ; le retour anticipé Mecanim dans PlayerView court-circuite la préparation procédurale. Reproduire visuellement avant correction, ne pas simplement imposer l’ancienne pose.
 
 ## Données / carrière / systèmes existants
+
+- Vérification publique du10/10 : réponse ESPN OM dans `.validation/espn-marseille-roster-live.json` :30 joueurs contre24 au catalogue,24 communs. Six jeunes manquants (Koum, Clement, Bang Na, Doubal, Slimani, El Kadmiri), présence corroborée sur https://www.om.fr/en/reserve-team . Non importés : consolider postes, dates de naissance et provenance des évaluations ; ne pas traiter des statistiques absentes comme zéro. ESPN indique25juillet2007 pour El Kadmiri, autres sources25juin : divergence à résoudre avant import. Staff Ferrier/Nouri/Lancet/Farrugia déjà présents, ne pas dupliquer.
 
 -21815 joueurs importés,715 clubs,36 ligues. Aucun fictif au catalogue initial ; newgens à partir2027. Portraits non présents dans le dépôt, initiales affichées.
 - Audit interne `.validation/catalogue-source-audit.json` :9174 ont provenance d’effectif directement dans database ; le sidecar couvre les21815 identités,12921 URLs de référence de notes. Ne pas confondre absence du champ embarqué et absence de source. Audit de couverture seulement, pas vérification publique récente ni certification des salaires. `.validation/catalogue-integrity-audit.json` : aucun ID dupliqué, club invalide, niveau hors1–99, potentiel inférieur au niveau ni salaire négatif.
