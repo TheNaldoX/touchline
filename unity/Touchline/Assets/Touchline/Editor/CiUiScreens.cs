@@ -223,6 +223,14 @@ namespace Touchline.Editor
                     if(App.Career.revealAttributes)throw new Exception("Le parcours a désactivé le masquage des attributs");
                     audit.AppendLine("Rapport observé accessible, option d'attributs masqués préservée : "+screen.tag);
                 });
+                if(!reference){
+                    list.Add(()=>{
+                        var report=Root.Q("scout-report-"+reportedPlayer);
+                        var agent=report.Query<Button>().ToList().Single(b=>b.text=="Contacter l’agent");
+                        report.GetFirstAncestorOfType<ScrollView>().ScrollTo(agent);
+                    });
+                    list.Add(()=>Capture(screen.tag+"-recrutement-rapport-actions"));
+                }
             }
             return list;
         }
