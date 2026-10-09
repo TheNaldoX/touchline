@@ -87,7 +87,7 @@ namespace Touchline
                 var head=Row(card,"scout-report-head");head.style.alignItems=Align.Center;GradeBadge(head,data.grade).name="scout-grade-"+p.id;
                 var identity=new VisualElement();identity.style.flexShrink=1;identity.style.flexGrow=1;head.Add(identity);
                 Text(identity,p.name+" · "+p.age+" ans · "+FrenchFootballPositions.List(p.positions??new[]{p.position}),"section-title");
-                Text(identity,ClubName(p.team)+(data.generated?" · club fictif (ligue générée)":"")+" · "+(report.scout??"Recruteur")+" · jugement "+(data.judging>0?data.judging.ToString():"?")+" / 20","muted");
+                Text(identity,ClubName(p.team)+(GeneratedWorld.IsGenerated(p.team)?" · club fictif (ligue générée)":"")+" · "+(report.scout??"Recruteur")+" · jugement "+(data.judging>0?data.judging.ToString():"?")+" / 20","muted");
                 if(data.pending)Text(card,"Observation en cours · rapport attendu le "+Core.Career.Epoch.AddDays(report.due).ToString("dd MMM",French),"scout-status");
                 ReportCardBody(card,p,data);
                 var actions=Row(card,"scout-actions");Button(actions,"Fiche",()=>PlayerProfile(p.id));Button(actions,"Comparer",()=>ComparePlayer(p.id));Button(actions,Career.shortlist.Contains(p.id)?"★ Suivi":"☆ Suivre",()=>RunDecision(()=>Career.ToggleShortlist(p.id))).name="scout-follow-"+p.id;
@@ -133,7 +133,7 @@ namespace Touchline
             Text(card,"Connaissance "+data.knowledge+" %"+(age==""?"":" · "+age)+(data.stale?" · à actualiser":"")+" · territoire "+(data.territory??"—")+" : connaissance "+data.familiarityLabel+(data.depth>0?" · "+(data.depth+1)+" observations":""),"footnote");
             if(!string.IsNullOrEmpty(data.rival))Text(card,"Concurrence : "+data.rival,"scout-status").name="scout-rival-"+p.id;
             if(data.generated){var club=Database.clubs.FirstOrDefault(c=>c.id==p.team);var table=club==null?null:GeneratedWorld.SimulatedTable(Database,club.league,Career.world.year);int rank=table==null?-1:table.FindIndex(r=>r.club==club.id);
-                Text(card,(rank>=0?"Classement simulé : "+(rank+1)+"e / "+table.Count+" · ":"")+"données fictives générées, aucune personne réelle","footnote");}
+                Text(card,(rank>=0?"Classement simulé : "+(rank+1)+"e / "+table.Count+" · ":"")+(GeneratedWorld.IsGenerated(p.id)?"joueur fictif généré, aucune personne réelle":"club fictif ; identité du joueur issue de la base importée"),"footnote");}
             Text(card,"Valeur "+Money(p.value)+" · salaire actuel estimé "+Money(Core.Career.MonthlySalary(p.wage))+" / mois","footnote");
         }
         static string MissionPriorityLabel(string value)=>value=="prospect"?"Développement des jeunes":value=="free"?"Joueurs libres":value=="value"?"Coût maîtrisé":"Renfort immédiat";
