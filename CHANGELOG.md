@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Recrutement : territoires fiables pour 45 clubs hors catalogue de championnats (1 434 joueurs), filtres et missions par pays partagés, sans ajout de ligue ni modification des notes.
 - Recrutement : synthèse des besoins tactiques sans double compter les polyvalents, budgets après engagements, rapports et pistes observées, accès directs aux missions, joueurs libres et agents, avec plafonds d'observation cohérents.
 - Caméra de match : entrée progressive du but dans le cadre, sans recul brutal au passage du dernier tiers ou lors des centres en portrait ; ballon et couloirs de passe restent cadrés.
 - Contrats : un joueur emprunté ne peut plus devenir la propriété du club via une prolongation gratuite ; les anciens accords sont bloqués et la fiche dirige vers les clauses du prêt, avec achat payant conservé.
