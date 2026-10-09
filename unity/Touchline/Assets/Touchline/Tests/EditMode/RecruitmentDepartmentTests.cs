@@ -42,7 +42,7 @@ namespace Touchline.Tests
 
         [Test] public void AssignedScoutReportsOverDaysLearnsTerritoryAndRecommends()
         {
-            foreach (var p in db.players.Where(p => p.team == "c5" && !p.Goalkeeper)) p.rating = 82; // clearly above our eleven
+            foreach (var p in db.players.Where(p => p.team == "c5" && !p.Goalkeeper)) p.rating = 72; // above our eleven, still reachable
             var scout = ExtraScout(15); string key = scout.id; long cash = c.life.cash;
             int before = c.RegionKnowledge(key, "Espagne");
             c.AssignScout(db, key, "territory", "Espagne");
@@ -54,6 +54,7 @@ namespace Touchline.Tests
             Assert.IsTrue(c.life.ledger.Any(e => e.label.StartsWith("Cellule de recrutement") && e.amount < 0), "les déplacements sont facturés");
             Assert.Greater(c.RegionKnowledge(key, "Espagne"), before);
             Assert.IsTrue(c.DepartmentRecommendations(db).Count > 0, "la cellule recommande les profils notés A ou B");
+            Assert.IsTrue(c.DepartmentRecommendations(db).All(id => !c.PlayerTransferInterest(db, id).refuses), "pas de recommandation d’un joueur qui refuse le club");
             Assert.IsTrue(c.life.messages.Any(m => m.subject == "Recommandation de la cellule"));
             Assert.AreEqual(1, c.ScoutingDepartment(db).Single(s => s.key == key).assignment.reports > 0 ? 1 : 0);
         }

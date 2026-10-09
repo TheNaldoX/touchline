@@ -481,6 +481,8 @@ namespace Touchline.Editor
                 });
                 list.Add(()=>{Capture(screen.tag+"-cellule-recommandations");var section=Root.Q("recruit-hub-signings");section.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(section);});
                 list.Add(()=>{Capture(screen.tag+"-cellule-integration");SetField("recruitmentTab","Missions");Call("Navigate","Recrutement");});
+                list.Add(()=>{var panel=Root.Q("scout-department");panel?.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(panel);});
+                list.Add(()=>{Capture(screen.tag+"-cellule-chef");var member=Root.Q("scout-member-"+extraKey);member?.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(member);});
                 list.Add(()=>{
                     if(Root.Q("scout-department")==null||Root.Q("scout-member-"+extraKey)==null||Root.Q("scout-skill-potential-"+extraKey)==null)throw new Exception("Cellule de recrutement incomplète");
                     var assignment=Root.Q<Label>("scout-assignment-"+extraKey);if(assignment==null||!assignment.text.Contains("Exploration"))throw new Exception("Affectation non affichée");

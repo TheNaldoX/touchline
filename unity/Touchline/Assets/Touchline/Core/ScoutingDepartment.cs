@@ -173,7 +173,7 @@ namespace Touchline.Core
         void ScoutingDepartmentDay(Database db)
         {
             if (world.managerStatus != "employed" || scoutAssignments == null || scoutAssignments.Count == 0) return;
-            EnsureDepartment(db); var scouts = DepartmentScouts().ToDictionary(ScoutKey);
+            EnsureDepartment(db); var scouts = DepartmentScouts().GroupBy(ScoutKey).ToDictionary(g => g.Key, g => g.First());
             scoutAssignments.RemoveAll(a => !scouts.ContainsKey(a.staff));
             foreach (var a in scoutAssignments.ToArray())
             {
@@ -202,7 +202,8 @@ namespace Touchline.Core
                 k.level = (int)Math.Min(100, k.level + RegionGainPerReport * (.5f + ScoutAdaptability(scout) / 20f));
             }
             var card = ScoutReportCard(db, p.id);
-            if ((card.grade == "A" || card.grade == "B") && !scoutRecommendations.Contains(p.id))
+            // The chief scout only recommends a profile who would at least listen to the club.
+            if ((card.grade == "A" || card.grade == "B") && !scoutRecommendations.Contains(p.id) && !PlayerTransferInterest(db, p.id).refuses)
             {
                 scoutRecommendations.Add(p.id); if (scoutRecommendations.Count > MaxScoutRecommendations) scoutRecommendations.RemoveAt(0);
                 Mail(Staff("scout").name, "Recommandation de la cellule", p.name + " (" + p.age + " ans, " + ClubLabel(db, p.team) + ") : note " + card.grade + ". " + card.gradeReason + ". Observé par " + scout.name + ".", p.id, "scout");
