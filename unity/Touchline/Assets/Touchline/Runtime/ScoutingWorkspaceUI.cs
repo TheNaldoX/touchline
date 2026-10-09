@@ -38,7 +38,7 @@ namespace Touchline
             var panel=Modal("Mission de recrutement");panel.name="scout-mission-dialog";panel.AddToClassList("scout-mission-dialog");var body=Scroll(panel);Text(body,"28 jours de recherche · au plus quatre profils · trois observations simultanées dans la cellule.","muted");
             var fields=Row(body,"scout-form");
             var role=new DropdownField("Poste",ScoutingRoles(),recruitRole){name="scout-mission-role",formatListItemCallback=FrenchFootballPositions.Label,formatSelectedValueCallback=FrenchFootballPositions.Label};fields.Add(role);
-            var country=new DropdownField("Territoire du club",ScoutingTerritories(),"Tous"){name="scout-mission-country"};fields.Add(country);
+            var territories=ScoutingTerritories();var country=new DropdownField("Territoire du club",territories,territories.Contains(recruitCountry)?recruitCountry:"Tous"){name="scout-mission-country"};fields.Add(country);
             var nationality=new DropdownField("Nationalité",ScoutingNationalities(),recruitNationality){name="scout-mission-nationality"};fields.Add(nationality);
             var priority=new DropdownField("Priorité",new List<string>{"Renfort immédiat","Développement des jeunes","Joueurs libres","Coût maîtrisé"},0){name="scout-mission-priority"};fields.Add(priority);
             var min=new IntegerField("Âge minimum"){value=Math.Max(16,recruitMinAge),name="scout-mission-min-age"};fields.Add(min);var max=new IntegerField("Âge maximum"){value=Math.Min(45,recruitMaxAge),name="scout-mission-max-age"};fields.Add(max);
