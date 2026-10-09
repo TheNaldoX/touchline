@@ -42,7 +42,7 @@ namespace Touchline.Core
             return position == group ? .86f : .65f;
         }
     }
-    [Serializable] public class ClubData { public string id, name, league, color, logo, financeSource,stadium,stadiumSource,capacitySource,sourceSeason,rosterSource,rosterAsOf,referenceSeason,referenceFinanceSource; public long annualRevenue,referenceRevenue;public int stadiumCapacity; public bool playable,reserve; public ClubData Copy()=>(ClubData)MemberwiseClone(); }
+    [Serializable] public class ClubData { public string id, name, league, country,countrySource,countryAsOf, color, logo, financeSource,stadium,stadiumSource,capacitySource,sourceSeason,rosterSource,rosterAsOf,referenceSeason,referenceFinanceSource; public long annualRevenue,referenceRevenue;public int stadiumCapacity; public bool playable,reserve; public ClubData Copy()=>(ClubData)MemberwiseClone(); }
     [Serializable] public class LeagueData { public string id, name, country, format, calendarSource,rulesSource,rulesNote; public int tier=1; public bool scoutingOnly; }
     [Serializable] public class Database
     {

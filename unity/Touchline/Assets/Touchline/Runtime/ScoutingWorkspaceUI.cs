@@ -16,7 +16,7 @@ namespace Touchline
         }
         static List<string> ScoutingRoles()=>new List<string>{"Tous","GB","DEF","MIL","ATT","GK","CB","LB","RB","DM","CM","AM","LW","RW","ST"};
         List<string> ScoutingNationalities()=>new[]{"Tous"}.Concat(Database.players.Select(p=>p.nationality).Where(n=>!string.IsNullOrWhiteSpace(n)).Distinct().OrderBy(n=>n)).ToList();
-        List<string> ScoutingTerritories()=>new[]{"Tous"}.Concat((Database.leagues??Array.Empty<LeagueData>()).Select(l=>l.country).Where(c=>!string.IsNullOrWhiteSpace(c)).Distinct().OrderBy(c=>c)).ToList();
+        List<string> ScoutingTerritories()=>new[]{"Tous"}.Concat(ScoutingGeography.Countries(Database)).ToList();
         void ScoutingMissions(VisualElement parent)
         {
             var scout=Career.Staff("scout");var header=Card(parent,"scout-summary");Text(header,"Votre réseau d’observation","section-title");Text(header,scout.name+" · jugement "+scout.judging+" / 20 · "+Career.ActiveObservations+" / 3 observations en cours","muted");
@@ -38,7 +38,7 @@ namespace Touchline
             var panel=Modal("Mission de recrutement");panel.name="scout-mission-dialog";panel.AddToClassList("scout-mission-dialog");var body=Scroll(panel);Text(body,"28 jours de recherche · au plus quatre profils · trois observations simultanées dans la cellule.","muted");
             var fields=Row(body,"scout-form");
             var role=new DropdownField("Poste",ScoutingRoles(),recruitRole){name="scout-mission-role",formatListItemCallback=FrenchFootballPositions.Label,formatSelectedValueCallback=FrenchFootballPositions.Label};fields.Add(role);
-            var country=new DropdownField("Territoire (championnats)",ScoutingTerritories(),"Tous"){name="scout-mission-country"};fields.Add(country);
+            var country=new DropdownField("Territoire du club",ScoutingTerritories(),"Tous"){name="scout-mission-country"};fields.Add(country);
             var nationality=new DropdownField("Nationalité",ScoutingNationalities(),recruitNationality){name="scout-mission-nationality"};fields.Add(nationality);
             var priority=new DropdownField("Priorité",new List<string>{"Renfort immédiat","Développement des jeunes","Joueurs libres","Coût maîtrisé"},0){name="scout-mission-priority"};fields.Add(priority);
             var min=new IntegerField("Âge minimum"){value=Math.Max(16,recruitMinAge),name="scout-mission-min-age"};fields.Add(min);var max=new IntegerField("Âge maximum"){value=Math.Min(45,recruitMaxAge),name="scout-mission-max-age"};fields.Add(max);
@@ -47,7 +47,7 @@ namespace Touchline
             var wage=new LongField("Salaire maximal / mois (€)"){value=recruitMaxMonthly>0?recruitMaxMonthly:monthlyRoom/2,name="scout-mission-wage"};fields.Add(wage);
             var observations=new IntegerField("Observations financées (1–4)"){value=4,name="scout-mission-observations"};fields.Add(observations);
             var budget=Text(body,"","scout-status");budget.name="scout-mission-budget";void UpdateBudget()=>budget.text="Enveloppe prépayée : "+Money(Career.ObservationCost*Math.Max(1,Math.Min(4,observations.value)))+" · "+Money(Career.ObservationCost)+" par profil";observations.RegisterValueChangedCallback(_=>UpdateBudget());UpdateBudget();
-            Text(body,"Territoire : clubs des championnats couverts dans ce pays. Nationalité : filtre indépendant. Pour les joueurs libres, choisissez Tous les territoires. Les profils disponibles ne constituent pas des effectifs mondiaux exhaustifs. Les joueurs de moins de 18 ans peuvent être observés, leur transfert reste limité dans la simulation.","footnote");
+            Text(body,"Territoire : clubs rattachés à ce pays, y compris hors des championnats jouables. Nationalité : filtre indépendant. Pour les joueurs libres, choisissez Tous les territoires. Les profils disponibles ne constituent pas des effectifs mondiaux exhaustifs. Les joueurs de moins de 18 ans peuvent être observés, leur transfert reste limité dans la simulation.","footnote");
             var wageHint=Text(body,"","footnote");wageHint.name="scout-mission-wage-hint";
             if(monthlyRoom<=0)Text(body,"Aucune marge salariale après les engagements réservés. Vous pouvez préparer une liste pour plus tard ou étudier un prêt avec prise en charge partielle. Un joueur libre demande aussi un salaire.","notice");
             var start=Button(panel,"Envoyer le recruteur",()=>{try{if(observations.value<1||observations.value>4)throw new InvalidOperationException("Financez de une à quatre observations.");Career.CreateScoutMission(Database,role.value,nationality.value,min.value,max.value,fee.value,wage.value,new[]{"ready","prospect","free","value"}[priority.index],Career.ObservationCost*observations.value,country.value);Save();recruitmentTab="Missions";Build();}catch(Exception e){Message(e.Message);}});start.name="scout-mission-send";start.AddToClassList("primary");
