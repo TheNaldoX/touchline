@@ -109,6 +109,9 @@ namespace Touchline.Core
         void ResolveRivalBid(Database db, RivalBid bid)
         {
             var p = db.Find(bid.player); var team = db.clubs.FirstOrDefault(c => c.id == bid.club);
+            // An offer prepared before a manager move is no authorization to buy
+            // or sell on the human manager's behalf at their new club.
+            if (bid.club == club || bid.seller == club) { bid.status = "lapsed"; return; }
             if (p == null || team == null || p.team != bid.seller || OurAgreement(bid.player) || HasActiveLoan(bid.player) || world.offers.Any(o => o.player == bid.player && o.status == "sale")) { bid.status = "lapsed"; return; }
             if (!WindowOpen || AiStrength(db, bid.seller) <= 0 || db.Squad(bid.seller).Count <= 22) { bid.status = "refused"; NotifyRivalOutcome(db, bid, p, false); return; }
             long squadWages = db.Squad(team.id).Sum(x => x.wage);

@@ -150,6 +150,18 @@ namespace Touchline.Tests
             c.world.offers.Add(new TransferOffer{player = "p40", seller = "c1", destination = "c0", status = "accepted", due = c.life.day + 5, fee = 100000, wage = 600, years = 2, role = "rotation"});
             Days(2); Assert.AreEqual("lapsed", c.rivalBids.Single().status); Assert.AreEqual("c1", db.Find("p40").team);
         }
+        [TestCase("c1")]
+        [TestCase("c5")]
+        public void MovingToABiddingClubDoesNotAuthorizeAnAutomaticTransfer(string newClub)
+        {
+            OpenWindow();
+            var bid = new RivalBid{player="p40",club="c5",seller="c1",decision=c.life.day,fee=100000,wage=550};
+            c.rivalBids.Add(bid); c.club=newClub;
+            typeof(Career).GetMethod("ResolveRivalBid",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance).Invoke(c,new object[]{db,bid});
+            Assert.AreEqual("lapsed",bid.status);
+            Assert.AreEqual("c1",db.Find("p40").team);
+            Assert.IsFalse(c.world.aiTransfers.Any(t=>t.player=="p40"));
+        }
         [Test] public void ExpiringContractAlertIsSentOnceForShortlistedPlayer()
         {
             var contract = c.Contract(db, "p40"); contract.until = c.life.day + 100; c.ToggleShortlist("p40");

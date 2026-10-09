@@ -114,8 +114,8 @@ namespace Touchline
             var caption=Text(row,label+" "+range,"scout-range-label");caption.style.minWidth=140;
             var track=new VisualElement();track.style.flexGrow=1;track.style.height=12;track.style.backgroundColor=new Color(.5f,.5f,.55f,.25f);track.style.minWidth=90;row.Add(track);
             float Pos(float v)=>Mathf.Clamp01((v-RangeBarLow)/(RangeBarHigh-RangeBarLow))*100;
-            if(range.known){var fill=new VisualElement();fill.style.position=Position.Absolute;fill.style.top=0;fill.style.bottom=0;fill.style.left=Length.Percent(Pos(range.low));fill.style.width=Length.Percent(Mathf.Max(1.5f,Pos(range.high)-Pos(range.low)));fill.style.backgroundColor=new Color(.25f,.6f,.95f);track.Add(fill);}
-            if(reference>0){var tick=new VisualElement();tick.style.position=Position.Absolute;tick.style.top=-3;tick.style.bottom=-3;tick.style.width=3;tick.style.left=Length.Percent(Pos(reference));tick.style.backgroundColor=new Color(.95f,.75f,.2f);track.Add(tick);}
+            if(range.known){var fill=new VisualElement();fill.style.position=UnityEngine.UIElements.Position.Absolute;fill.style.top=0;fill.style.bottom=0;fill.style.left=Length.Percent(Pos(range.low));fill.style.width=Length.Percent(Mathf.Max(1.5f,Pos(range.high)-Pos(range.low)));fill.style.backgroundColor=new Color(.25f,.6f,.95f);track.Add(fill);}
+            if(reference>0){var tick=new VisualElement();tick.style.position=UnityEngine.UIElements.Position.Absolute;tick.style.top=-3;tick.style.bottom=-3;tick.style.width=3;tick.style.left=Length.Percent(Pos(reference));tick.style.backgroundColor=new Color(.95f,.75f,.2f);track.Add(tick);}
         }
         void ReportCardBody(VisualElement card,PlayerData p,ScoutReportCardData data)
         {
