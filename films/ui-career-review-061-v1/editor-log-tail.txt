@@ -1,0 +1,120 @@
+	RebuildCommonClasses (37ms)
+	RebuildNativeTypeToScriptingClass (9ms)
+	initialDomainReloadingComplete (27ms)
+	LoadAllAssembliesAndSetupDomain (122ms)
+		LoadAssemblies (72ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (98ms)
+			TypeCache.Refresh (4ms)
+				TypeCache.ScanAssembly (0ms)
+			BuildScriptInfoCaches (68ms)
+			ResolveRequiredComponents (24ms)
+	FinalizeReload (772ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (419ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (29ms)
+			SetLoadedEditorAssemblies (5ms)
+			BeforeProcessingInitializeOnLoad (137ms)
+			ProcessInitializeOnLoadAttributes (170ms)
+			ProcessInitializeOnLoadMethodAttributes (69ms)
+			AfterProcessingInitializeOnLoad (8ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (34ms)
+Asset Pipeline Refresh (id=c6292ab037817424baa462834abcd6a7): Total: 1.501 seconds - Initiated by StopAssetImportingV2(ForceSynchronousImport | ForceDomainReload)
+	Summary:
+		Imports: total=0 (actual=0, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=839 ms
+		Asset DB Callback time: managed=22 ms, native=0 ms
+		Scripting: domain reloads=1, domain reload time=638 ms, compile time=1 ms, other=0 ms
+		Project Asset Count: scripts=716, non-scripts=2300
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 0
+	InvokeCustomDependenciesCallbacks: 0.001ms
+	InvokePackagesCallback: 0.828ms
+	ApplyChangesToAssetFolders: 0.182ms
+	Scan: 0.001ms
+	OnSourceAssetsModified: 0.001ms
+	CategorizeAssetsWithTransientArtifact: 0.003ms
+	ProcessAssetsWithTransientArtifactChanges: 2.764ms
+	CategorizeAssets: 35.981ms
+	ImportOutOfDateAssets: 775.941ms (772.039ms without children)
+		CompileScripts: 1.091ms
+		CollectScriptTypesHashes: 1.338ms
+		ReloadNativeAssets: 0.863ms
+		UnloadImportedAssets: 0.051ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.277ms
+		InitializingProgressBar: 0.000ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.283ms
+	PostProcessAllAssets: 22.493ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.127ms
+	UnloadStreamsBegin: 0.341ms
+	PersistCurrentRevisions: 0.082ms
+	UnloadStreamsEnd: 0.000ms
+	GenerateScriptTypeHashes: 3.663ms
+	Untracked: 662.489ms
+
+Loaded scene 'Temp/__Backupscenes/0.backup'
+	Deserialize:            0.796 ms
+	Integration:            2067.392 ms
+	Integration of assets:  0.001 ms
+	Thread Wait Time:       0.022 ms
+	Total Operation Time:   2068.210 ms
+[UnityConnectServicesConfig] Service configuration:
+    "servicesConfigBaseUrl": "",
+    "disableServicesWindow": false,
+    "disableUserLogin": false,
+    "entitlementCacheTimeoutInSeconds": 60,
+    "clientConnectTimeoutSec": 5,
+    "clientHandshakeTimeoutSec": 10,
+    "clientResolveEntitlementsTimeoutSec": 30,
+    "clientUpdateLicenseTimeoutSec": 30,
+    "licensingServiceBaseUrl": "",
+    "enableProxyAutoconfig": "false"
+
+[MODES] ModeService[default].LoadModes
+[Licensing::Client] Successfully resolved entitlement details
+Start Indexing on Editor startup
+ArgumentOutOfRangeException: Index was out of range. Must be non-negative and less than the size of the collection.
+Parameter name: index
+  at System.Collections.Generic.List`1[T].get_Item (System.Int32 index) [0x00009] in <1d26c8856bcb48938402e0be7f5cc174>:0 
+  at UnityEditor.Search.SearchDatabase+<EnumerateAll>d__83.MoveNext () [0x00106] in /home/bokken/build/output/unity/unity/Modules/QuickSearch/Editor/Indexing/SearchDatabase.cs:453 
+  at System.Linq.Enumerable.TryGetFirst[TSource] (System.Collections.Generic.IEnumerable`1[T] source, System.Boolean& found) [0x00045] in <33953ffc026d46eb8cea4e584475e250>:0 
+  at System.Linq.Enumerable.First[TSource] (System.Collections.Generic.IEnumerable`1[T] source) [0x00000] in <33953ffc026d46eb8cea4e584475e250>:0 
+  at UnityEditor.Search.SearchDatabase.GetDefaultSearchDatabase () [0x00001] in /home/bokken/build/output/unity/unity/Modules/QuickSearch/Editor/Indexing/SearchDatabase.cs:428 
+  at UnityEditor.Search.SearchInit.IndexationOnStartup () [0x0000c] in /home/bokken/build/output/unity/unity/Modules/QuickSearch/Editor/SearchInit.cs:109 
+  at UnityEditor.EditorApplication.Internal_CallDelayFunctions () [0x0002c] in /home/bokken/build/output/unity/unity/Editor/Mono/EditorApplication.cs:407 
+
+(Filename: /home/bokken/build/output/unity/unity/Modules/QuickSearch/Editor/Indexing/SearchDatabase.cs Line: 453)
+
+Created GICache directory at /root/.cache/unity3d/GiCache. Took: 0.013s, timestamps: [241.279 - 241.291]
+TrimDiskCacheJob: Current cache size 0mb
+Exception: Conférence contextuelle absente
+  at Touchline.Editor.CiUiScreens+<>c__DisplayClass52_2.<BuildCareerReviewSteps>b__4 () [0x00056] in /github/workspace/unity/Touchline/Assets/Touchline/Editor/CiUiScreens.cs:164 
+  at Touchline.Editor.CiUiScreens.Tick () [0x00154] in /github/workspace/unity/Touchline/Assets/Touchline/Editor/CiUiScreens.cs:503 
+UnityEngine.DebugLogHandler:Internal_LogException_Injected(Exception, IntPtr)
+UnityEngine.DebugLogHandler:Internal_LogException(Exception, Object)
+UnityEngine.DebugLogHandler:LogException(Exception, Object)
+UnityEngine.Logger:LogException(Exception, Object)
+UnityEngine.Debug:LogException(Exception)
+Touchline.Editor.CiUiScreens:Tick() (at Assets/Touchline/Editor/CiUiScreens.cs:504)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions() (at /home/bokken/build/output/unity/unity/Editor/Mono/EditorApplication.cs:392)
+
+(Filename: Assets/Touchline/Editor/CiUiScreens.cs Line: 504)
+
+Exception: Choix de départ absents
+  at Touchline.Editor.CiUiScreens+<>c__DisplayClass52_2.<BuildCareerReviewSteps>b__5 () [0x00059] in /github/workspace/unity/Touchline/Assets/Touchline/Editor/CiUiScreens.cs:165 
+  at Touchline.Editor.CiUiScreens.Tick () [0x00154] in /github/workspace/unity/Touchline/Assets/Touchline/Editor/CiUiScreens.cs:503 
+UnityEngine.DebugLogHandler:Internal_LogException_Injected(Exception, IntPtr)
+UnityEngine.DebugLogHandler:Internal_LogException(Exception, Object)
+UnityEngine.DebugLogHandler:LogException(Exception, Object)
+UnityEngine.Logger:LogException(Exception, Object)
+UnityEngine.Debug:LogException(Exception)
+Touchline.Editor.CiUiScreens:Tick() (at Assets/Touchline/Editor/CiUiScreens.cs:504)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions() (at /home/bokken/build/output/unity/unity/Editor/Mono/EditorApplication.cs:392)
+
+(Filename: Assets/Touchline/Editor/CiUiScreens.cs Line: 504)
+
