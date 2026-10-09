@@ -36,19 +36,19 @@ namespace Touchline.Core
             if(us.pressuredLosses>=PressuredLossesAlert&&theirs.pressing>=HighPressThreshold)
                 Add("press-exposed",5,ExposedFullBacks(ours)?"Ils pressent haut et nos latéraux montés sont exposés : "+us.pressuredLosses+" ballons perdus sous pression. Jouez plus direct ou gardez un latéral.":"Ils pressent haut : "+us.pressuredLosses+" ballons perdus sous pression. Des passes plus directes contourneraient ce pressing.");
             if(them.throughBalls>=ThroughBallsAlert&&ours.line>=HighLineThreshold)
-                Add("line-exposed",5,"Ils attaquent l’espace dans le dos de notre ligne haute : "+them.throughBalls+" passes en profondeur. Baisser la ligne réduirait ce risque.");
+                Add("line-exposed",5,"Ils attaquent l’espace dans le dos de notre ligne haute : "+them.throughBalls+" passes en profondeur. Essayez de baisser la ligne d’un cran ; surveillez les appels adverses et nos récupérations hautes pour juger le compromis.");
             if(them.crosses>=CrossesAlert)
-                Add("crosses",4,"Leurs centres se multiplient ("+them.crosses+") : resserrer la largeur défensive ou bloquer les couloirs.");
+                Add("crosses",4,"Leurs centres se multiplient ("+them.crosses+"). Essayez de garder un latéral en couverture pour limiter les livraisons ; surveillez ensuite les centres concédés, sans dégarnir l’axe.");
             float understanding=m.mindset!=null&&m.mindset.Length==2&&m.mindset[0]!=null?m.mindset[0].understanding:0;
             if(m.passes[0]>=40&&Completion(m,0)<PassCompletionAlert)
-                Add("passing",4,understanding< -.15f?"Le groupe manque d’automatismes : "+Completion(m,0).ToString("0",French)+" % de passes réussies. Un système plus familier aiderait.":ours.tempo>.65f?"Le rythme élevé coûte des ballons : "+Completion(m,0).ToString("0",French)+" % de passes réussies.":"Nos passes manquent de précision : "+Completion(m,0).ToString("0",French)+" % réussies.");
+                Add("passing",4,(understanding< -.15f?"Le groupe manque d’automatismes : ":"Passes réussies : ")+Completion(m,0).ToString("0",French)+" %. "+(understanding< -.15f?"Essayez un système plus familier.":ours.tempo>.65f?"Le rythme peut y contribuer : essayez de le réduire d’un cran, sans présumer que c’est la seule cause.":"Essayez un soutien proche du porteur pour offrir une sortie de passe.")+" Surveillez la précision et les pertes sous pression après ce changement.");
             if(AverageComposure(m,0)<NervesAlert)
                 Add("nerves",3,"Le groupe est tendu : décisions hâtives. « Concentration ! » ou une causerie rassurante peut l’apaiser.");
             float fitness=m.actors.Where(a=>a.side==0&&!a.sentOff&&a.slot>0).Select(a=>a.fitness).DefaultIfEmpty(100).Average();
             if(fitness<TiredAlert&&(ours.pressing>=HighPressThreshold||AverageDrive(m,0)>.2f))
-                Add("tired",4,"Le pressing intense épuise le groupe : condition moyenne "+fitness.ToString("0",French)+" %. Pensez à baisser l’intensité ou à changer.");
+                Add("tired",4,"Condition moyenne "+fitness.ToString("0",French)+" % avec un engagement élevé. Essayez un remplacement ou un pressing moins intense ; surveillez ensuite la condition et les récupérations, car réduire l’effort peut leur laisser plus de temps.");
             if(us.highRecoveries>=HighRecoveriesPraise)
-                Add("high-recoveries",2,"Notre pressing récupère haut : "+us.highRecoveries+" ballons gagnés dans leur moitié.");
+                Add("high-recoveries",2,"Nous récupérons haut : "+us.highRecoveries+" ballons gagnés dans leur moitié. Gardez ce réglage si les occasions suivent ; surveillez la fatigue et les passes dans notre dos.");
             if(m.score[0]<m.score[1]&&m.Minute>=60&&ours.mentality<.5f)
                 Add("chasing",3,"Nous sommes menés et le bloc reste prudent : une mentalité plus offensive ouvrirait davantage d’occasions.");
             return list.OrderByDescending(o=>o.priority).ToList();

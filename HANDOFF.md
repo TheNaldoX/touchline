@@ -2,16 +2,30 @@
 
 Lire AGENTS.md. Ce fichier contient uniquement l’état courant ; l’historique détaillé est dans Git et les PR. Mettre à jour en fin de lot, sans accumuler les comptes rendus anciens.
 
+## Session autonome autorisée — 17 h 19 à 18 h 49 Paris
+
+- Demande utilisateur : améliorer IA/décisions, graphismes/animations, UI, événements aléatoires à choix, finances/budgets et contenu original cohérent. Fin le9 octobre à16:49UTC ; réserver après18h25Paris aux validations. Automatisation touchline-am-liorations-jusqu-au-6-octobre réactivée toutes les10min, avec cette échéance et désactivation finale.
+- Unity actuelle : tests37952223643 sur4623ddf, démarrés après réussite du rendu37950676810. Session26334 terminée. Ne pas toucher Assets avant la fin des tests.
+- Diagnostic finances commencé : ProfessionalManagement.TransferBudget déduit achats engagés, réserve de trésorerie, plafond12% des recettes et obligations des prêts ; WageBudget séparé. Examiner leur présentation et les engagements avant de changer les règles. CareerFinancialTransactions assure les contreparties des transferts : ne pas créer de recettes sans paiement.
+- Événements : recherche des classes Event/Incident non concluante ; inspecter CareerManagement et les messages/décisions existants avant de créer un système en doublon. Nouveaux choix à coûts proportionnés au club, effets bornés, aléatoire à graine et persistance testée.
+
 ## Reprise immédiate — 9 octobre 2026
 
-- Branche : `fix/signing-club-history`, PR #63, code6a435d8 ; base PR #62 (`fix/claude-handoff-validation`a7969d4), elle-même sur PR #61.
+- Branche : `feat/recruitment-tactical-decisions`, PR #64, code62eb8a4 ; base PR #63 (`fix/signing-club-history`c022b2c), puis #62/#61.
 - Claude et Codex alternent, jamais simultanément. Victor a réinitialisé ses limites et demandé de poursuivre. Il demande aussi une méthode économe : contexte court, lectures ciblées, lots stabilisés avant Unity, attentes scriptées.
 - Claude a laissé deux lots, maintenant assemblés : `film/ui-recruitment-cell-2`9983765 (cellule de recrutement) et `film/ui-immersion-focus-1`b3cbf11 (immersion tactique). Un conflit CiUiScreens résolu en conservant les deux parcours.
 - Fonctionnalités : missions par recruteur, connaissance régionale, intérêt du joueur, personnalité simulée, adaptation des recrues ; préparation collective, causeries, cris, consignes individuelles et observations de l’adjoint.
 - Corrections de reprise : recommandations devenues inaccessibles filtrées ; Resize et ScrollTo séparés dans le scénario de captures ; carrière sans emploi rechargeable même si un ancien titulaire a quitté le club ou pris sa retraite. Les contrôles des matchs actifs et joueurs introuvables restent stricts.
 - Validation native1944eef réussie246/246 (Actions37943332562). Puis correction visuelle : boutons de causerie sur deux colonnes, retour à la ligne et hauteur automatique. Rendu ciblé réussi, Actions37944380106 / `film/ui-immersion-focus-talks-relay` /5feca04 : huit captures revues, boutons lisibles, réactions visibles, cibles≥48dp et textes≥12sp. Exception QuickSearch éditeur préexistante seulement. Pas de nouvelle APK ni fusion main.
 
-- Lot courant : arrivées rattachées au club recruteur ; bilans/progression et notifications filtrés, historique conservé. Trois régressions (offre de changement de club + sauvegarde, double arrivée, notification). 916/916 Core. Unity en cours Actions37947890765 /6a435d8 ; aucune modification Assets avant sa fin. Anciennes données sans club rattachées au club courant avant départ ; origine de données déjà mélangées non reconstructible.
+- Lot courant : arrivées rattachées au club recruteur ; bilans/progression et notifications filtrés, historique conservé. Trois régressions (offre de changement de club + sauvegarde, double arrivée, notification). 916/916 Core. Unity249/249 réussi Actions37947890765 /6a435d8, artefact11624124627 récupéré dans .validation/signing-club-native. Anciennes données sans club rattachées au club courant avant départ ; origine de données déjà mélangées non reconstructible.
+
+## Lot recrutement / conseils / calibration — en validation
+
+- Recommandations triées par budget puis besoins du système, comparaison au titulaire/référent et adéquation tactique connue. Conseils avec essai, compromis et indicateurs ; tempo formulé comme hypothèse.
+- Core919/919. Deux graines ×200 avant/après, rapports recruitment-context-* dans tools/Calibration/Reports. Statistiques hors xG identiques ; xG1,69/1,72→2,50/2,52 pour2,61/2,69 buts. Correction de l’estimation seulement, coefficient interne1,65 ; pas validé sur données réelles.
+- Ligne haute NON résolue : essai de déplacement différencié retiré (buts/penalties dégradés). Retard de lecture défensive retiré après régressions ; runs flight-read invalides, conflit de compilation .NET, ne pas les citer. Penalties0,19/0,26 ; sorties13,79/13,46 restent inchangés.
+- Rendu37950676810 réussi, récupéré dans .validation/film-ui-recruitment-focus-context. Revue des deux captures comparaison : DÉFAUT visible, texte doré non replié déborde, trois colonnes trop étroites en déplié. Corriger Touchline.uss ligne1247 (.recruit-hub-assessment : white-space normal, largeur contrainte) et revoir colonnes1238 ; scénario doit vérifier le texte replié, audit actuel ne voit pas ce débordement. Quatre autres captures encore à revoir. Tests natifs37952223643 en cours, Assets figés jusque-là. Aucun APK nouveau.
 
 ## Preuves disponibles
 
@@ -61,7 +75,7 @@ Calibration :200 matchs/graine1, même catalogue. Avant `tools/Calibration/Repor
 
 ## Pièges et prochaines étapes
 
-1. Attendre Actions37947890765, récupérer et vérifier les résultats natifs ; PR #63 reste brouillon. Ensuite candidat APK distinct après validations.
+1. Terminer rendu37950676810 et tests natifs PR #64, revue visuelle. Rééquilibrage physique encore ouvert : ne pas présenter les trois demandes comme entièrement terminées.
 2. Test Fold réel : fluidité, gels, après-but, nuit, navigation et pliage. Main n’est pas fusionnée ; ne pas contourner ce point de validation.
 3. Calibration : ligne haute, sorties, penalties, xG ; audit des consignes sur graines appariées, pas de réglage pour satisfaire une seule graine.
 4. Revoir adaptation/recrutement après changement de club et équilibre sur plusieurs saisons. Puis lisibilité portrait et petits libellés11sp.

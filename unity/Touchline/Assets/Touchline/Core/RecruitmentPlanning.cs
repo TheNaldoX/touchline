@@ -19,8 +19,9 @@ namespace Touchline.Core
     }
     public sealed class RecruitmentRecommendation
     {
-        public string player, reason;
-        public int knowledge, reportAge;
+        public string player, reason, comparison, tacticalFit;
+        public int knowledge, reportAge, needPriority;
+        public float improvement;
         public bool stale, affordable, levelKnown;
         public float assessedLevel;
         public long estimatedFee, currentMonthlyWage;
@@ -127,6 +128,9 @@ namespace Touchline.Core
             var result = new List<RecruitmentRecommendation>();
             if (db?.players == null || world == null || life == null || limit <= 0) return result;
             long transfer = TransferBudget, wage = RecruitmentWageRoom(db);
+            var needs = RecruitmentOverview(db).needs;
+            var starters = (lineup ?? Array.Empty<string>()).Select(db.Find).Where(p => p != null && p.team == club).ToArray();
+            var squad = db.Squad(club);
             var reports = world.reports.Where(r => string.IsNullOrEmpty(r.club) || r.club == club)
                 .GroupBy(r => r.player).ToDictionary(g => g.Key, g => g.OrderByDescending(r => r.started).First());
             foreach (var p in db.players.Where(p => Scoutable(p) && FootballPositions.Matches(p, role)))
@@ -141,14 +145,30 @@ namespace Touchline.Core
                     assessedLevel = revealAttributes ? p.rating + p.development : report.estimate,
                     estimatedFee = p.team == "free" ? 0 : Math.Max(0, p.value), currentMonthlyWage = MonthlySalary(Math.Max(0, p.wage)) };
                 item.affordable = item.estimatedFee <= transfer && item.currentMonthlyWage <= wage;
+                var need = needs.FirstOrDefault(n => FootballPositions.Matches(p, n.role));
+                item.needPriority = need?.priority ?? -1;
+                string matchRole = need?.role ?? role;
+                var reference = starters.Where(x => FootballPositions.Matches(x, matchRole)).OrderByDescending(x => x.rating + x.development).FirstOrDefault()
+                    ?? squad.Where(x => FootballPositions.Matches(x, matchRole)).OrderByDescending(x => x.rating + x.development).FirstOrDefault();
+                item.improvement = reference == null ? 0 : item.assessedLevel - reference.rating - reference.development;
+                // Three rating points is a qualitative comparison threshold, not a guaranteed starting place.
+                item.comparison = reference == null ? "Pas de référence interne à ce poste."
+                    : "Face à " + reference.name + " : " + (item.improvement > 3 ? "renfort potentiel" : item.improvement < -3 ? "plutôt une doublure" : "niveau estimé comparable") + ". À confirmer par l’observation.";
                 item.reason = item.stale ? "Rapport ancien : renouveler l’observation avant décision."
                     : !item.affordable ? "Valeur ou salaire actuel hors enveloppe : prêt ou négociation à étudier."
                     : knowledge < 90 ? "Premières impressions : poursuivre l’observation."
                     : "Profil à comparer ; indemnité, salaire demandé et primes à confirmer avec l’agent.";
+                item.reason = (need == null ? "Hors des postes naturels du système actuel. " : FootballPositions.Label(need.role) + " · " + need.reason + " ") + item.reason;
                 result.Add(item);
             }
-            return result.OrderBy(r => r.stale).ThenByDescending(r => r.affordable).ThenByDescending(r => r.knowledge)
-                .ThenByDescending(r => r.assessedLevel).ThenBy(r => r.player, StringComparer.Ordinal).Take(limit).ToList();
+            var selected = result.OrderBy(r => r.stale).ThenByDescending(r => r.affordable).ThenByDescending(r => r.needPriority)
+                .ThenByDescending(r => r.improvement).ThenByDescending(r => r.knowledge).ThenBy(r => r.player, StringComparer.Ordinal).Take(limit).ToList();
+            foreach(var item in selected) {
+                var p = db.Find(item.player);
+                var known = new[]{"stamina","sprintSpeed","shortPassing"}.ToDictionary(k => k, k => AssessedAttribute(db,p.id,k));
+                item.tacticalFit = TacticalFitHint(db,p,known.Where(k => k.Value.known).ToDictionary(k => k.Key,k => k.Value));
+            }
+            return selected;
         }
     }
 }

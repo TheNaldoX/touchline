@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Recrutement contextualisé par poste, budget et comparaison interne ; conseils tactiques avec pistes à tester et estimation des occasions recalibrée séparément des tirs.
 - Recrutement : bilans et adaptation rattachés au club recruteur, historique conservé après changement de club et progression propre à chaque arrivée.
 - Reprise de Claude : cellule de recrutement/immersion tactique, recommandations obsolètes filtrées, sauvegardes sans emploi réparées et boutons de causerie repliables ; passation condensée pour limiter les lectures répétées.
 - Base de départ : retrait des 2 784 joueurs/116 clubs fictifs et de la promotion fictive initiale du centre ; anciennes carrières conservées avec leur catalogue compatible, sans réécriture au chargement.

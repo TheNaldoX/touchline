@@ -361,6 +361,11 @@ namespace Touchline.Editor
                         if(profile==null||!profile.worldBound.Overlaps(scroll.contentViewport.worldBound))throw new Exception("La piste connue reste hors du défilement visible");
                         Root.Q<ScrollView>("recruit-hub").scrollOffset=Vector2.zero;
                     });
+                    if(Path.GetFileName(Output).Contains("-context")){
+                        list.Add(()=>{var comparison=Root.Q("recruit-hub-comparison-"+reportedPlayer);if(comparison==null||comparison.resolvedStyle.whiteSpace!=WhiteSpace.Normal)throw new Exception("Comparaison absente ou texte non repliable");Root.Q<ScrollView>("recruit-hub").ScrollTo(comparison);});
+                        list.Add(()=>Capture(screen.tag+"-comparaison-contextuelle"));
+                        continue;
+                    }
                     if(Path.GetFileName(Output).Contains("-scroll"))continue;
                     list.Add(()=>{
                         var search=Root.Query<Button>().ToList().First(b=>b.name!=null&&b.name.StartsWith("recruit-hub-search-",StringComparison.Ordinal));
