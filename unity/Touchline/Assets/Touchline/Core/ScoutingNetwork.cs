@@ -45,7 +45,7 @@ namespace Touchline.Core
             if(world.scoutMissions.Count(m=>m.club==club&&(m.status=="active"||m.status=="finishing"))>=2)throw new InvalidOperationException("Deux recherches sont déjà en cours. Terminez ou arrêtez une mission.");
             if(string.IsNullOrWhiteSpace(nationality))nationality="Tous";
             if(string.IsNullOrWhiteSpace(country))country="Tous";
-            if(country!="Tous"&&!(db.leagues?.Any(l=>l.country==country)??false))throw new ArgumentException("Ce territoire n’est pas couvert par la base des championnats.");
+            if(country!="Tous"&&!ScoutingGeography.Countries(db).Contains(country))throw new ArgumentException("Ce territoire n’est pas couvert par la base de recrutement.");
             var mission=new ScoutMission{id="scout-"+club+"-"+(++world.serial),club=club,role=role,nationality=nationality,country=country,minAge=minAge,maxAge=maxAge,maxFee=maxFee,maxMonthlyWage=maxMonthlyWage,priority=priority,budget=budget,remaining=budget,observationCost=ObservationCost,started=life.day,until=life.day+28,nextSearch=life.day+1};
             Charge(budget,"Enveloppe d’observation • "+FootballPositions.Label(role)+" / "+nationality);world.scoutMissions.Add(mission);
             ScoutMail(Staff("scout").name,"Mission de recrutement ouverte","Recherche : "+FootballPositions.Label(role)+" · territoire "+country+" · nationalité "+nationality+" · "+minAge+"–"+maxAge+" ans. L’enveloppe de "+budget.ToString("N0")+" € est réservée. Le reliquat sera rendu à la clôture ; trois observations simultanées au maximum.");
@@ -68,7 +68,7 @@ namespace Touchline.Core
         public IEnumerable<PlayerData> ScoutCandidates(Database db,ScoutMission m)
         {
             var reports=world.reports.Where(r=>r.club==club||string.IsNullOrEmpty(r.club)).GroupBy(r=>r.player).ToDictionary(g=>g.Key,g=>g.OrderByDescending(r=>r.started).First());var selected=new HashSet<string>(m.players??new List<string>());var followed=new HashSet<string>(shortlist);
-            var territoryLeagues=new HashSet<string>((db.leagues??Array.Empty<LeagueData>()).Where(l=>l.country==m.country).Select(l=>l.id));var territoryClubs=new HashSet<string>(db.clubs.Where(c=>territoryLeagues.Contains(c.league)).Select(c=>c.id));bool allTerritories=string.IsNullOrEmpty(m.country)||m.country=="Tous";
+            var territoryClubs=new HashSet<string>(ScoutingGeography.ClubIds(db,m.country));bool allTerritories=string.IsNullOrEmpty(m.country)||m.country=="Tous";
             bool NeedsReport(string id)=>!reports.TryGetValue(id,out var r)||r.confidence>=90&&ReportKnowledge(r)<90;
             float Priority(PlayerData p)
             {

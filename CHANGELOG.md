@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Recrutement : territoires fiables pour 45 clubs hors catalogue de championnats (1 434 joueurs), filtres et missions par pays partagés, sans ajout de ligue ni modification des notes.
 - Recrutement : synthèse des besoins tactiques sans double compter les polyvalents, budgets après engagements, rapports et pistes observées, accès directs aux missions, joueurs libres et agents, avec plafonds d'observation cohérents.
 - Tactique : audit apparié de sept consignes (200 affiches), raccourcis de match en deux touches avec pause/vitesse conservées et boutons adaptés au Fold, captures CI vérifiées et compteur de joueurs libres corrigé dans le diagnostic carrière.
 - Ambiance : tribunes qui se lèvent en vague, sautent et lèvent bras et écharpes sur un but (à moitié sur une frappe), virage populaire aux couleurs du club avec écharpes et grands drapeaux, drapeaux de coin qui flottent, ombres de contact sous les joueurs et le ballon, ralenti des buts filmé en plan bas à côté du but qui suit le ballon (le filet se creuse aussi au ralenti).

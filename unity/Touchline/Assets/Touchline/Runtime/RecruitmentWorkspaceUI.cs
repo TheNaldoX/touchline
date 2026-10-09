@@ -40,7 +40,7 @@ namespace Touchline
             var advancedButton=Button(toolbar,recruitAdvanced?"Fermer les filtres":"Filtres +",()=>{});advancedButton.name="recruit-advanced-button";advancedButton.AddToClassList("recruit-advanced-button");advancedButton.tooltip="Pays, championnat, nationalité, âge et budgets";
             var summary=Text(content,"","recruit-results");summary.name="recruit-summary";
             var advanced=new Foldout{text="Filtres avancés",tooltip="Pays, championnat, nationalité, âge et budgets",value=recruitAdvanced,name="recruit-advanced"};advanced.AddToClassList("recruit-advanced");advanced.RegisterValueChangedCallback(e=>{recruitAdvanced=e.newValue;advancedButton.text=e.newValue?"Fermer les filtres":"Filtres +";advancedButton.EnableInClassList("active",e.newValue);});advancedButton.clicked+=()=>advanced.value=!advanced.value;advancedButton.EnableInClassList("active",recruitAdvanced);content.Add(advanced);var criteria=Scroll(advanced);criteria.name="recruit-criteria-scroll";criteria.AddToClassList("recruit-criteria-scroll");var advancedRow=Row(criteria,"recruit-advanced-row");
-            var country=new DropdownField("Pays du club",new[]{"Tous"}.Concat(Database.leagues.Select(l=>l.country).Where(c=>!string.IsNullOrWhiteSpace(c)).Distinct().OrderBy(c=>c)).ToList(),recruitCountry){name="recruit-country"};advancedRow.Add(country);
+            var country=new DropdownField("Pays du club",ScoutingTerritories(),recruitCountry){name="recruit-country"};advancedRow.Add(country);
             var leagueChoices=new[]{"Tous"}.Concat(Database.leagues.Where(l=>recruitCountry=="Tous"||l.country==recruitCountry).Select(l=>l.name).Distinct().OrderBy(l=>l)).ToList();
             if(!leagueChoices.Contains(recruitLeague))recruitLeague="Tous";
             var league=new DropdownField("Championnat",leagueChoices,recruitLeague){name="recruit-league"};advancedRow.Add(league);
@@ -55,8 +55,8 @@ namespace Touchline
             list.unbindItem=(element,index)=>((RecruitmentRow)element).Release();
             void Populate()
             {
-                var territories=new HashSet<string>(Database.leagues.Where(l=>(recruitCountry=="Tous"||l.country==recruitCountry)&&(recruitLeague=="Tous"||l.name==recruitLeague)).Select(l=>l.id));
-                var clubs=new HashSet<string>(Database.clubs.Where(c=>territories.Contains(c.league)).Select(c=>c.id));
+                var clubs=new HashSet<string>(ScoutingGeography.ClubIds(Database,recruitCountry,recruitLeague));
+
                 var rows=Database.players.Where(p=>p.team!=Career.club&&p.team!="retired"&&!string.IsNullOrEmpty(p.team)&&!p.team.StartsWith("academy-")&&Core.FootballPositions.Matches(p,recruitRole)&&French.CompareInfo.IndexOf(p.name,recruitSearch,CompareOptions.IgnoreCase|CompareOptions.IgnoreNonSpace)>=0&&p.age>=recruitMinAge&&p.age<=recruitMaxAge&&(recruitNationality=="Tous"||p.nationality==recruitNationality)&&(recruitMaxFee<=0||p.team=="free"||p.value<=recruitMaxFee)&&(recruitMaxMonthly<=0||Core.Career.MonthlySalary(p.wage)<=recruitMaxMonthly));
                 if(recruitCountry!="Tous"||recruitLeague!="Tous")rows=rows.Where(p=>clubs.Contains(p.team));
                 if(marketFilter=="Libres")rows=rows.Where(p=>p.team=="free");else if(marketFilter=="Bientôt libres")rows=rows.Where(p=>Career.AnnouncedFreeAgentRelease(Database,p.id)!=null);else if(marketFilter=="Fin de contrat ≤ 6 mois")rows=rows.Where(p=>Career.CanPrecontract(Database,p.id));else if(marketFilter=="Ma sélection")rows=rows.Where(p=>Career.shortlist.Contains(p.id));else if(marketFilter=="Observés")rows=rows.Where(p=>Career.Knowledge(p.id)>=40);
