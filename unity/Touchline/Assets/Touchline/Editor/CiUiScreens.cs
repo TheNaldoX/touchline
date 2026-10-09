@@ -79,6 +79,7 @@ namespace Touchline.Editor
 
         static List<Action> BuildSteps()
         {
+            if(Path.GetFileName(Output).StartsWith("ui-scout-snapshot-",StringComparison.Ordinal))return BuildScoutSnapshotSteps();
             if(FocusedImmersion)return BuildFocusedImmersionSteps();
             if(FocusedCareer)return BuildCareerReviewSteps();
             if(FocusedCell)return BuildFocusedCellSteps();
@@ -125,6 +126,20 @@ namespace Touchline.Editor
                 list.Add(()=>{Capture(screen.tag+"-match-consignes");SetField("tacticalTab","Composition");Call("Navigate","Match");});
             }
             return list;
+        }
+
+        static List<Action> BuildScoutSnapshotSteps()
+        {
+            var list=new List<Action>();string id=null;
+            list.Add(()=>{App.Career.EnsureWorld(App.Database);App.Career.revealAttributes=false;id=App.Database.players.First(p=>p.team!=App.Career.club&&p.team!="retired"&&p.attributes?.Length>0).id;});
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{var c=App.Career;Resize(screen.width,screen.height);c.world.reports.Clear();c.world.reports.Add(new ScoutReport{player=id,club=c.club,confidence=90,judging=15,estimate=70,potential=75,lastObserved=c.life.day,started=c.life.day-20,due=c.life.day,scout="Rapport de sauvegarde ancienne"});SetField("scoutReportFilter","Tous");SetField("recruitmentTab","Rapports");Call("Navigate","Recrutement");});
+                list.Add(()=>{if(Root.Q("scout-missing-snapshot-"+id)==null||Root.Q<Button>("scout-refresh-"+id)?.enabledInHierarchy!=true)throw new Exception("Ancien rapport : avertissement ou actualisation absent");Capture(screen.tag+"-ancien-rapport");Root.Q<DropdownField>("scout-report-filter").value="À actualiser";if(Root.Q("scout-report-"+id)==null)throw new Exception("Filtre des anciens rapports incorrect");});
+                list.Add(()=>{Capture(screen.tag+"-ancien-detail");Click("scout-refresh-"+id);var r=App.Career.ReportFor(id);if(!r.attributesObserved||r.observedAttributes?.Length==0)throw new Exception("Nouvelle observation non archivée");r.confidence=90;r.lastObserved=App.Career.life.day;SetField("scoutReportFilter","Tous");Call("Navigate","Recrutement");});
+                list.Add(()=>{if(Root.Q("scout-missing-snapshot-"+id)!=null||Root.Q("scout-range-ability-"+id)==null)throw new Exception("Nouveau rapport incohérent");Capture(screen.tag+"-rapport-archive");var notice=Root.Q("scout-report-"+id);notice.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(notice);});
+                list.Add(()=>Capture(screen.tag+"-rapport-detail"));
+            }
+            audit.AppendLine("Sauvegarde ancienne et observation renouvelée : deux résolutions, carrière en mémoire ; progression simulée pour la revue UI, vérifiée séparément par CoreTests.");return list;
         }
 
         // Immersion : préparation, briefing adverse, causeries, cris depuis la touche,

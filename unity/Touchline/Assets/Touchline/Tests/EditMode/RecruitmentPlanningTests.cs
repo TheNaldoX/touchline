@@ -26,7 +26,7 @@ namespace Touchline.Tests
         }
         void PlanningReport(string id, int confidence = 90, float level = 70, int age = 0)
         {
-            c.world.reports.Add(new ScoutReport { player = id, club = c.club, confidence = confidence, estimate = level, started = c.life.day - age - 14, due = c.life.day - age, lastObserved = c.life.day - age });
+            c.world.reports.Add(new ScoutReport { player = id, club = c.club, attributesObserved = true, confidence = confidence, estimate = level, started = c.life.day - age - 14, due = c.life.day - age, lastObserved = c.life.day - age });
         }
         [Test] public void RecruitmentDepthDoesNotCountVersatilePlayerTwice()
         {
