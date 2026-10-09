@@ -51,14 +51,17 @@ namespace Touchline.Core
             Mail(Staff("scout").name,"Observation engagée",p.name+" sera observé. Rapport attendu le "+Epoch.AddDays(ReportFor(id).due).ToString("dd/MM")+" ; l’évaluation dépend du niveau du recruteur.",id,"scout");
         }
         public bool WindowOpen=>Date.Month==1||Date.Month==6&&Date.Day>=15||Date.Month==7||Date.Month==8||Date.Month==9&&Date.Day==1;
+        // Ownership remains with the parent until the return or purchase is processed,
+        // even if the scheduled loan end date has passed. Empty legacy parents mean no loan.
+        public bool HasActiveLoan(string id)=>world?.contracts?.Any(c=>c.player==id&&!string.IsNullOrEmpty(c.parent))??false;
         public void ProposeTransfer(Database db,string id,long fee,long wage,int years,string role,bool loan=false,long bonus=0,long clause=0,MarketTerms terms=null,bool precontract=false)
         {
             OffPitch();var p=db.Find(id);if(PlayingCareerEnded(p))throw new InvalidOperationException("La carrière de ce joueur est terminée ; aucun nouveau contrat de joueur ne peut être signé.");bool renewal=p.team==club;
             if(!renewal&&!precontract&&p.team!="free"&&!WindowOpen)throw new InvalidOperationException("Mercato fermé. Dans cette version, fenêtres simulées du 15 juin au 1er septembre et du 1er au 31 janvier.");
             if(world.offers.Any(o=>o.player==id&&o.status=="scheduled"))throw new InvalidOperationException("Un précontrat est déjà signé.");
             if(precontract&&!CanPrecontract(db,id))throw new InvalidOperationException("Le contrat doit expirer dans les six prochains mois, sans prêt en cours.");
-            if(!renewal&&Contract(db,id).parent!=null)throw new InvalidOperationException("Un prêt actif doit prendre fin avant un autre transfert. Utilisez l’option d’achat si elle existe.");
-            if(loan&&(renewal||precontract||p.team=="free"||Contract(db,id).parent!=null))throw new InvalidOperationException("Ce joueur ne peut pas être prêté dans cette situation.");
+            if(HasActiveLoan(id))throw new InvalidOperationException("Ce joueur est sous contrat avec son club prêteur. Une prolongation ne peut pas modifier ses droits : utilisez l’option d’achat prévue ou attendez son retour.");
+            if(loan&&(renewal||precontract||p.team=="free"))throw new InvalidOperationException("Ce joueur ne peut pas être prêté dans cette situation.");
             if(terms==null)terms=new MarketTerms{loanEndDay=Math.Min(world.seasonEnd,life.day+365)};ValidateTerms(terms,loan);
             if(loan&&terms.loanEndDay>Contract(db,id).until)throw new InvalidOperationException("Le prêt doit prendre fin au plus tard à l’échéance du contrat parent.");
             if(terms.obligationFee>TransferBudget-fee)throw new InvalidOperationException("Budget insuffisant pour cette obligation d’achat.");
@@ -80,7 +83,8 @@ namespace Touchline.Core
         {
             OffPitch();var o=world.offers.LastOrDefault(x=>x.player==id&&(x.destination==null||x.destination==club)&&x.status=="accepted");if(o==null||o.due+7<life.day)throw new InvalidOperationException("L’accord n’est plus valable.");
             var p=db.Find(id);if(PlayingCareerEnded(p))throw new InvalidOperationException("La carrière de ce joueur est terminée ; cet accord ne peut plus être signé.");if(p.team!=o.seller||!o.renewal&&!o.precontract&&p.team!="free"&&!WindowOpen)throw new InvalidOperationException("Le joueur ou la fenêtre de transfert a changé.");
-            if(o.loan&&(o.terms==null||o.terms.loanEndDay<=life.day||o.terms.loanEndDay>Contract(db,id).until||Contract(db,id).parent!=null))throw new InvalidOperationException("La fin du prêt ou l’échéance du contrat parent a changé. Renégociez les conditions.");
+            if(HasActiveLoan(id))throw new InvalidOperationException("Le joueur appartient toujours au club prêteur. Cet accord ne peut pas remplacer son prêt ; utilisez l’option d’achat prévue ou attendez son retour.");
+            if(o.loan&&(o.terms==null||o.terms.loanEndDay<=life.day||o.terms.loanEndDay>Contract(db,id).until))throw new InvalidOperationException("La fin du prêt ou l’échéance du contrat parent a changé. Renégociez les conditions.");
             if(o.loan&&o.wage!=p.wage)throw new InvalidOperationException("Le salaire du contrat parent a changé ou cet ancien accord le modifiait. Renégociez le prêt et sa prise en charge salariale.");
             if(!o.renewal&&o.fee+(o.terms?.obligationFee??0)>TransferBudget)throw new InvalidOperationException("Budget de transfert insuffisant.");
             if(Payroll(db)+ReservedWages-(o.renewal?p.wage:0)+(o.loan?o.wage*(o.terms?.loanWagePercent??100)/100:o.wage)>Math.Max(WageBudget,Payroll(db)))throw new InvalidOperationException("Budget salarial insuffisant.");

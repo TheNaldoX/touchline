@@ -49,6 +49,7 @@ namespace Touchline
         {
             var p=Database.Find(id);if(p==null){Message("Ce joueur n’est plus disponible.");return;}
             if(p.team=="retired"||Career.PlayerRetirementEffective(id)){Message("La retraite de ce joueur est effective. Aucun nouveau contrat de joueur ne peut être négocié.");return;}
+            if(Career.HasActiveLoan(id)){ActiveLoanContractDialog(id);return;}
             var accepted=Career.world.offers.LastOrDefault(o=>o.player==id&&(o.destination==null||o.destination==Career.club)&&o.status=="accepted"&&o.due+7>=Career.life.day);if(accepted!=null){TransferAgreementReview(accepted);return;}var outgoing=Career.outgoingLoans.LastOrDefault(o=>o.player==id&&o.owner==Career.club&&o.status=="accepted"&&o.due+7>=Career.life.day);if(outgoing!=null){OutgoingLoanAgreementReview(outgoing);return;}
             var panel=Modal("Négociation · "+p.name);panel.name="transfer-negotiation-form";var s=Scroll(panel);bool own=p.team==Career.club;
             var previous=Career.world.offers.LastOrDefault(o=>o.player==id&&o.status=="counter"&&(o.destination==null||o.destination==Career.club)&&o.seller==p.team);

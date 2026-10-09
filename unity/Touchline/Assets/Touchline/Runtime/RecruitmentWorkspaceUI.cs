@@ -109,6 +109,7 @@ namespace Touchline
             foreach(var o in offers){var p=Database.Find(o.player);if(p==null)continue;var card=Card(parent,"recruit-dossier");Text(card,p.name+" · "+OfferStatus(o.status),"section-title");Text(card,Money(o.fee)+" d’indemnité · "+Money(Core.Career.MonthlySalary(o.wage))+" / mois","muted");var actions=Row(card,"recruit-dossier-actions");Button(actions,"Fiche",()=>PlayerProfile(p.id));
                 if(p.team=="retired"||Career.PlayerRetirementEffective(p.id)){Text(card,"Retraite effective · dossier historique", "muted");continue;}
                 bool decision=Career.RecruitmentOfferNeedsDecision(Database,o);
+                if(Career.HasActiveLoan(o.player)&&(o.status=="accepted"||o.status=="counter"))Button(actions,"Consulter le prêt",()=>ActiveLoanContractDialog(o.player));
                 if(decision&&o.status=="accepted")Button(actions,"Signer l’accord",()=>RunDecision(()=>Career.SignTransfer(Database,o.player))).AddToClassList("primary");
                 if(decision&&o.status=="counter")Button(actions,"Reprendre la négociation",()=>TransferDialog(o.player));
                 if(decision&&o.status=="sale")Button(actions,"Accepter la vente · "+ClubName(o.seller),()=>Confirm("Accepter la cession ?",Money(o.fee)+" pour "+p.name,()=>RunDecision(()=>Career.AcceptSale(Database,o.player))));
