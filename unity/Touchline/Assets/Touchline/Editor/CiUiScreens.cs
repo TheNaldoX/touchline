@@ -166,11 +166,18 @@ namespace Touchline.Editor
                 if(!reference){
                     list.Add(()=>{
                         Capture(screen.tag+"-recrutement-synthese");
+                        if(Path.GetFileName(Output).Contains("-polish"))foreach(var tab in Root.Query<Button>().ToList().Where(b=>b.name!=null&&b.name.StartsWith("recruit-tab-",StringComparison.Ordinal)))
+                            if(tab.worldBound.xMin<Root.worldBound.xMin||tab.worldBound.xMax>Root.worldBound.xMax)throw new Exception("Onglet de recrutement hors écran : "+tab.text);
                         var candidate=Root.Q("recruit-hub-candidate-"+reportedPlayer);
                         if(candidate==null)throw new Exception("Le profil observé doit figurer dans les pistes connues");
-                        Root.Q<ScrollView>("recruit-hub").ScrollTo(candidate);
+                        var scroll=Root.Q<ScrollView>("recruit-hub");
+                        float offset=scroll.scrollOffset.y+candidate.worldBound.yMin-scroll.contentViewport.worldBound.yMin;
+                        scroll.scrollOffset=new Vector2(0,Mathf.Clamp(offset,0,scroll.verticalScroller.highValue));
+                        audit.AppendLine("Piste : défilement "+scroll.scrollOffset.y+" / "+scroll.verticalScroller.highValue);
                     });
                     list.Add(()=>{
+                        var scroll=Root.Q<ScrollView>("recruit-hub");var profile=Root.Q<Button>("recruit-hub-profile-"+reportedPlayer);
+                        if(profile==null||!profile.worldBound.Overlaps(scroll.contentViewport.worldBound))throw new Exception("La piste connue reste hors du défilement visible");
                         Capture(screen.tag+"-recrutement-pistes");
                         Root.Q<ScrollView>("recruit-hub").scrollOffset=Vector2.zero;
                     });
@@ -183,6 +190,12 @@ namespace Touchline.Editor
                         if(Root.Q<DropdownField>("recruit-role")?.value!=searchRole||Root.Q<ListView>("recruit-list")==null)throw new Exception("Le besoin ne filtre pas le marché au bon poste");
                         Capture(screen.tag+"-recrutement-marche");Click("recruit-tab-Synthèse");
                     });
+                    if(Path.GetFileName(Output).Contains("-polish")){
+                        list.Add(()=>Click("recruit-tab-Rapports"));
+                        list.Add(()=>{Capture(screen.tag+"-recrutement-rapports");var action=Root.Query<Button>().ToList().First(b=>b.text=="Contacter l’agent");action.GetFirstAncestorOfType<ScrollView>().ScrollTo(action);});
+                        list.Add(()=>Capture(screen.tag+"-recrutement-rapport-actions"));
+                        continue;
+                    }
                     list.Add(()=>{cash=App.Career.life.cash;missions=App.Career.world.scoutMissions.Count;Click("recruit-hub-mission-"+role);});
                     list.Add(()=>{
                         if(Root.Q<DropdownField>("scout-mission-role")?.value!=searchRole||App.Career.life.cash!=cash||App.Career.world.scoutMissions.Count!=missions)throw new Exception("Préparation mission : poste ou engagement financier incorrect");
