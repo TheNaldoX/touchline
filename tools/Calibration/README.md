@@ -38,6 +38,14 @@ pas physique sans modifier le moteur ni consommer de hasard. Un contrôle réuss
 prouve ni un tir ultérieur ni une occasion dangereuse : ce sont des issues immédiates,
 pas une attribution causale des buts à une consigne.
 
+Les colonnes « Après réception » prolongent chaque contrôle pendant cinq secondes
+au maximum, jusqu’au premier tir, nouvelle passe, possession adverse, ballon contesté,
+arrêt de jeu ou fin de période. « Sans action après 5s » ne signifie pas joueur immobile :
+il peut conduire ou préparer un geste. La somme de ces issues doit égaler les contrôles.
+Deux compteurs décrivent la position au contrôle : distance au but supérieure à25m,
+et au moins deux adversaires de champ plus avancés vers leur propre but. Ce dernier
+compteur est longitudinal, pas une mesure de la fermeture effective du couloir de tir.
+
 Une sélection facultative évite de rejouer les consignes inchangées :
 `dotnet run -c Release -- --tactics 200 1 ligne.csv Ligne`
 ou `"Ligne,Rythme"`. Les affiches et graines restent identiques à l'audit complet.

@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Diagnostic moteur : suivi du premier événement dans les cinq secondes suivant une réception en profondeur et mesure de sa position, sans modifier la simulation.
 - Diagnostic moteur : suivi en lecture seule de la première issue des passes en profondeur dans l’audit tactique, avec contrôle du comptage et distinction contrôle/déviation/hors-jeu.
 - Recrutement : aperçu du coût avant envoi de l’offre, séparant signature, échéances, salaire pris en charge et clauses d’achat, sans engager les finances.
 - Gardiens : relances à la main raccordées aux gestes existants, contact et récupération progressifs, flexion adaptée à la taille sans enfoncer le bras libre.
