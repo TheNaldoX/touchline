@@ -6,6 +6,23 @@ namespace Touchline.Tests
 {
     public class AnimationGroundSurfaceTests
     {
+        [TestCase(30)] [TestCase(60)] [TestCase(120)]
+        public void ThrowRecoveryKeepsBootsAbovePitch(int hz)
+        {
+            var go=new GameObject("Throw support regression");
+            try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="surface-throw",heightCm=180},0,9,Color.white);
+                var actor=new Actor{slot=9,action="idle"};float dt=1f/hz;
+                for(int i=0;i<hz;i++)view.Render(actor,1,dt);
+                actor.actionSequence=1;actor.actionKind="throw";actor.actionContactTime=.5f;actor.actionHeight=1.8f;actor.actionTarget=new Point(.1f,.42f);
+                var meshes=go.GetComponentsInChildren<MeshFilter>();float lowest=100;string part="";float when=0;
+                for(int i=0;i<2*hz;i++){
+                    float t=i*dt;actor.action=t<=1.1f?"throw":"idle";actor.actionTime=Mathf.Max(0,1.1f-t);view.Render(actor,1,dt,new Vector3(.1f,1.8f,.42f));
+                    foreach(var mesh in meshes)Measure(mesh.sharedMesh.vertices,mesh.transform.localToWorldMatrix,mesh.name,t,ref lowest,ref part,ref when);
+                }
+                Assert.GreaterOrEqual(lowest,-.025f,"Boot below pitch at "+when+"s: "+part);
+            }finally{Object.DestroyImmediate(go);}
+        }
         [TestCase("kick",1,.11f)] [TestCase("header",1,2.05f)] [TestCase("throw",1,1.8f)]
         [TestCase("tackle",1,.11f)] [TestCase("miscontrol",1,.11f)] [TestCase("hurt",1,.11f)]
         [TestCase("dive",1,.22f)] [TestCase("dive",-1,.22f)]
