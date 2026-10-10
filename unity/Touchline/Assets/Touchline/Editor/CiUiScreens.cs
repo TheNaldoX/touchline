@@ -79,6 +79,7 @@ namespace Touchline.Editor
 
         static List<Action> BuildSteps()
         {
+            if(Path.GetFileName(Output).StartsWith("ui-finance-preview-",StringComparison.Ordinal))return BuildFinancePreviewSteps();
             if(Path.GetFileName(Output).StartsWith("ui-loan-save-",StringComparison.Ordinal))return BuildLoanSaveSteps();
             if(Path.GetFileName(Output).StartsWith("ui-departure-followup-",StringComparison.Ordinal))return BuildDepartureFollowupSteps();
             if(Path.GetFileName(Output).StartsWith("ui-chance-review-",StringComparison.Ordinal))return BuildChanceReviewSteps();
@@ -133,6 +134,22 @@ namespace Touchline.Editor
             return list;
         }
 
+        static List<Action> BuildFinancePreviewSteps()
+        {
+            var list=new List<Action>();list.Add(()=>App.Career.EnsureWorld(App.Database));
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);SetField("financeTab","Budget");Call("Navigate","Finances");});
+                list.Add(()=>{Capture(screen.tag+"-budget");Click("finance-tab-Billetterie");});
+                list.Add(()=>{App.Career.world.ticket=20;App.Career.world.supporterTrust=70;App.Career.world.lastTicketDay=App.Career.life.day-7;Call("Build");});
+                list.Add(()=>{Root.Q<IntegerField>("finance-ticket-price").value=30;if(App.Career.world.ticket!=20)throw new Exception("Preview changed ticket price before confirmation");if(!Root.Q<Button>("finance-ticket-apply").enabledInHierarchy)throw new Exception("Valid ticket change disabled");});
+                list.Add(()=>{Capture(screen.tag+"-billetterie-apercu");Click("finance-ticket-apply");});
+                list.Add(()=>{if(App.Career.world.ticket!=30||App.Career.world.supporterTrust!=65)throw new Exception("Ticket change not applied as previewed");Root.Q<IntegerField>("finance-ticket-price").value=35;if(Root.Q<Button>("finance-ticket-apply").enabledInHierarchy)throw new Exception("Weekly ticket limit ignored");Capture(screen.tag+"-billetterie-delai");Click("finance-tab-Partenaires");});
+                list.Add(()=>{Capture(screen.tag+"-partenaires");Click("finance-tab-Comptabilité");});
+                list.Add(()=>{Capture(screen.tag+"-comptabilite");App.Career.life.revenue=1000000;Call("Navigate","Club");});
+                list.Add(()=>{Click("manager-decision-payroll");if(Root.Q("finance-budget-explanation")==null)throw new Exception("Payroll alert did not open the Budget tab");});
+            }
+            audit.AppendLine("Finances : quatre onglets, aperçu sans mutation, confirmation et délai hebdomadaire vérifiés aux deux formats.");return list;
+        }
         static List<Action> BuildLoanSaveSteps()
         {
             var list=new List<Action>();string id=null;

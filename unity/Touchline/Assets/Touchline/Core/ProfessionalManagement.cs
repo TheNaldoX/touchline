@@ -11,6 +11,10 @@ namespace Touchline.Core
         public long monthlyPayroll, monthlyReservedWages, monthlyWageLimit, monthlyWageRoom;
         public string limitingFactor;
     }
+    public sealed class TicketPriceForecast
+    {
+        public int price,availableDay;public float occupancy,supporterTrustChange;public long netIncome;
+    }
     [Serializable] public class Employment { public string player,club,parent,role="rotation";public int until,parentUntil,loanUntil,retirement=-1,joined,appearancesAtSigning,wageChangeDay;public long wage,appearanceBonus,releaseClause,originalWage,nextWage;public bool estimated=true,aiRelease,loanAppearanceTracking,loanAppearanceHistoryEstimated;public PlayingTimeUsage playingTime;public MarketTerms terms;public LoanContractConditions parentConditions,purchaseConditions;public bool parentConditionsUnavailable;public string conditionsSource; public bool IsLoan=>!string.IsNullOrEmpty(parent); }
     [Serializable] public class ScoutReport { public string player,club,scout,mission;public int started,due,confidence,judging,lastObserved,depth;public float estimate,potential,uncertainty,potentialUncertainty;public string advice;public AttributeValue[] observedAttributes;public bool attributesObserved; }
     [Serializable] public class TransferOffer { public string player,seller,status="pending",role;public int due,years,attempts;public long fee,wage,bonus,clause;public bool loan,renewal,precontract;public int joinDay;public string destination;public MarketTerms terms; }
@@ -180,8 +184,17 @@ namespace Touchline.Core
             OffPitch();var d=world.sponsors[index];if((d.status!="accepted"&&d.status!="counter")||world.sponsors.Any(x=>x.slot==d.slot&&x.status=="signed"&&x.until>life.day))throw new InvalidOperationException("Signature indisponible.");
             d.status="signed";d.annual=d.asking;d.until=life.day+365*d.years;Mail("Direction commerciale","Partenariat signé",d.name+" : les recettes seront versées chaque semaine. Engagement ferme jusqu’au terme convenu.",null,"finance");
         }
-        public float Occupancy=>Mathx.Clamp(.93f+(world.supporterTrust-70)*.003f-(world.ticket-Mathx.Clamp((float)Math.Sqrt(life.revenue)/400,8,90))*.009f,.15f,1);
+        float TicketOccupancy(int price,float trust)=>Mathx.Clamp(.93f+(trust-70)*.003f-(price-Mathx.Clamp((float)Math.Sqrt(life.revenue)/400,8,90))*.009f,.15f,1);
+        public float Occupancy=>TicketOccupancy(world.ticket,world.supporterTrust);
         public long GateIncome(float multiplier=1)=>(long)(world.capacity*(1+Level("stadium")*.04f)*Occupancy*world.ticket*.85f*multiplier);
+        public TicketPriceForecast PreviewTicketPrice(int price)
+        {
+            if(price<5||price>250)throw new ArgumentOutOfRangeException(nameof(price),"Prix compris entre 5 et 250 €.");
+            float trust=price>world.ticket*1.25f?Math.Max(0,world.supporterTrust-5):world.supporterTrust;
+            float occupancy=TicketOccupancy(price,trust);
+            return new TicketPriceForecast{price=price,availableDay=Math.Max(life.day,world.lastTicketDay+7),occupancy=occupancy,supporterTrustChange=trust-world.supporterTrust,
+                netIncome=(long)(world.capacity*(1+Level("stadium")*.04f)*occupancy*price*.85f)};
+        }
         public void SetTicketPrice(int price){OffPitch();if(price<5||price>250||life.day-world.lastTicketDay<7)throw new InvalidOperationException("Prix de 5 à 250 €, modifiable une fois par semaine.");if(price>world.ticket*1.25f)world.supporterTrust=Math.Max(0,world.supporterTrust-5);world.ticket=price;world.lastTicketDay=life.day;}
         public void RepayDebt(long amount){OffPitch();if(amount<=0||amount>world.debt)throw new InvalidOperationException("Remboursement invalide.");Charge(amount,"Remboursement de dette");world.debt-=amount;}
         public void Press(string phase,string answer)

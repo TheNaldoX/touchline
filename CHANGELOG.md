@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Finances : onglets budget/billetterie/partenaires/comptabilité, aperçu du tarif avant confirmation et synthèse des flux sur trente jours.
 - Animations : correction de la pénétration des chaussures dans le terrain après les poses Mecanim, notamment lors de la récupération des touches.
 - Sauvegardes : un club prêteur vide n’est plus considéré comme un prêt actif, préservant les effectifs, échéances, ventes et options après rechargement.
 - Vestiaire : un joueur dont la demande de départ a été refusée peut relancer la discussion après quatre semaines si le conflit persiste ; seul le dernier message demande une décision.

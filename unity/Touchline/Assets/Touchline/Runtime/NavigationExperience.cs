@@ -11,7 +11,7 @@ namespace Touchline
         readonly List<string> backPages=new List<string>(),forwardPages=new List<string>(),recentPages=new List<string>();
         readonly Dictionary<string,Vector2[]> pageScroll=new Dictionary<string,Vector2[]>();
         string builtPage,builtScrollKey,historyClub;bool historyTravel;
-        string ScrollPageKey=>page+"/"+(page switch{"Tactique"=>tacticalTab,"Recrutement"=>recruitmentTab,"Calendrier"=>calendarTab,_=>""})+"/"+(root.ClassListContains("short-wide")?"short-wide":root.ClassListContains("narrow")?"narrow":"wide");
+        string ScrollPageKey=>page+"/"+(page switch{"Tactique"=>tacticalTab,"Recrutement"=>recruitmentTab,"Calendrier"=>calendarTab,"Finances"=>financeTab,_=>""})+"/"+(root.ClassListContains("short-wide")?"short-wide":root.ClassListContains("narrow")?"narrow":"wide");
         static string PageLabel(string id)=>id=="Club"?"Bureau":id=="Coulisses"?"Zone grise":id;
         public static bool DirectoryMatches(string label,string query)=>French.CompareInfo.IndexOf(label??"",query??"",System.Globalization.CompareOptions.IgnoreCase|System.Globalization.CompareOptions.IgnoreNonSpace)>=0;
         bool MotionEnabled=>PlayerPrefs.GetInt("reduce-motion",0)==0;
