@@ -2,7 +2,13 @@
 
 Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dans Git/PR, pas de nouveaux journaux docs.
 
-## Lot courant — relances des joueurs
+## Lot courant — contrats après sauvegarde
+
+- Branche `fix/loan-state-after-save`, base PR77/b2a8c3d. `Employment.IsLoan` distingue un vrai club prêteur d'une chaîne vide après JsonUtility ; usages unifiés dans retours, salaires, fins de contrat, ventes, formation et UI. Pas de changement du format enregistré ni du moteur de match.
+- Régression avant10/13, après Core937/937 (`loan-state-core.txt`), trois nouveaux scénarios de restauration : joueurs permanents, vente et partage salarial/retour d'un vrai prêt. Unity complète1986/2285, mêmes299 échecs, aucun nouveau (`loan-state-comparison.json`), aucun diagnostic C# nouveau. Captures natives réussies et revues plié/déplié (`ui-loan-save-final`) : option prêt activée avec champ prêteur vide. Pas de Fold physique ni de nouvelle APK. Prochaine priorité : dette d'animations (contacts/sol), puis ligne haute avec hypothèse nouvelle et calibration appariée.
+- `loan-state-two-seasons-final.txt` : deux saisons monde/graine77,384 clubs jouables, effectifs23/29/37 (min/médiane/max), aucun sous18 ou au-dessus40 ; salaires/recettes médiane36%, trois clubs>70%. Sauvegardes complète/compacte identiques pour23682 joueurs, puis sept jours repris identiques avec clubs valides. Premier contrôle rejetait à tort les identifiants `academy-`, corrigé dans l'outil. Scores simplifiés, pas de preuve Android ni d'équilibre sur des décennies.
+
+## Relances des joueurs — PR77
 
 - Branche `fix/departure-followup`, base PR76/d24adb7. Après un refus, relance après28 jours de préoccupation persistante ; indisponibilité/amélioration réinitialise le délai. Seule la dernière demande est actionnable. Champ de club prêteur vide accepté comme absence de prêt après sérialisation.
 - Régression avant0/1, après Core934/934 (`departure-followup-core-save.txt`) et Unity12/12 (`departure-followup-save-tests.xml`). Trois nouveaux cas, dont reprise après sauvegarde/blessure. Capture native `ui-departure-followup-native` réussie, message plié et discussion dépliée revus. Pas de nouvelle APK. À vérifier ensuite : autres comparaisons `parent!=null` dans prêts/finances/carrière ; elles peuvent confondre chaîne vide et prêt après chargement.

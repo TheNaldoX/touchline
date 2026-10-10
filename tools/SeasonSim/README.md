@@ -33,3 +33,5 @@ Options de diagnostic :
 - `--savesize` mesure la sauvegarde au format `JsonUtility` (via `tools/CoreTests/UnityShim.cs`).
 - `--savecheck` écrit la carrière dans l'ancien format et dans le format compact, recharge les deux
   et vérifie qu'ils donnent exactement la même carrière et les mêmes joueurs ; affiche tailles et temps.
+  Avec `--world`, poursuit ensuite sept journées dans les deux sauvegardes, vérifie leur identité
+  et refuse tout joueur attribué à un club inexistant après traitement des contrats/prêts.

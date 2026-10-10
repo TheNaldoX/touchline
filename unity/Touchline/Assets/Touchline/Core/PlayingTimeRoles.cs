@@ -62,7 +62,7 @@ namespace Touchline.Core
         {
             var c=world?.contracts?.FirstOrDefault(x=>x.player==id&&x.club==club);if(c==null)return false;
             if(c.playingTime!=null)return (string.IsNullOrEmpty(c.playingTime.club)||c.playingTime.club==club)&&PlayingTimeRoles.Concern(c.role,c.playingTime);
-            var role=PlayingTimeRoles.Normalize(c.role);if(role=="rotation"||role=="youth"||c.parent!=null)return false;
+            var role=PlayingTimeRoles.Normalize(c.role);if(role=="rotation"||role=="youth"||c.IsLoan)return false;
             int opportunities=RoleMatchOpportunities(id);return opportunities>0&&RoleAppearances(id)<opportunities*(role=="key"?.7f:.5f);
         }
         public string PlayingTimeProgress(string id)

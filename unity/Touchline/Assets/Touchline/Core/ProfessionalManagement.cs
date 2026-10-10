@@ -11,7 +11,7 @@ namespace Touchline.Core
         public long monthlyPayroll, monthlyReservedWages, monthlyWageLimit, monthlyWageRoom;
         public string limitingFactor;
     }
-    [Serializable] public class Employment { public string player,club,parent,role="rotation";public int until,parentUntil,loanUntil,retirement=-1,joined,appearancesAtSigning,wageChangeDay;public long wage,appearanceBonus,releaseClause,originalWage,nextWage;public bool estimated=true,aiRelease,loanAppearanceTracking,loanAppearanceHistoryEstimated;public PlayingTimeUsage playingTime;public MarketTerms terms;public LoanContractConditions parentConditions,purchaseConditions;public bool parentConditionsUnavailable;public string conditionsSource; }
+    [Serializable] public class Employment { public string player,club,parent,role="rotation";public int until,parentUntil,loanUntil,retirement=-1,joined,appearancesAtSigning,wageChangeDay;public long wage,appearanceBonus,releaseClause,originalWage,nextWage;public bool estimated=true,aiRelease,loanAppearanceTracking,loanAppearanceHistoryEstimated;public PlayingTimeUsage playingTime;public MarketTerms terms;public LoanContractConditions parentConditions,purchaseConditions;public bool parentConditionsUnavailable;public string conditionsSource; public bool IsLoan=>!string.IsNullOrEmpty(parent); }
     [Serializable] public class ScoutReport { public string player,club,scout,mission;public int started,due,confidence,judging,lastObserved,depth;public float estimate,potential,uncertainty,potentialUncertainty;public string advice;public AttributeValue[] observedAttributes;public bool attributesObserved; }
     [Serializable] public class TransferOffer { public string player,seller,status="pending",role;public int due,years,attempts;public long fee,wage,bonus,clause;public bool loan,renewal,precontract;public int joinDay;public string destination;public MarketTerms terms; }
     [Serializable] public class YouthPath { public string player,mentor,focus="balanced",group="academy";public int minutes,lastReview,loanAppearances,loanReviewedThrough=-1;public float progress; public string trainingLoad="standard"; public int trainingSessions,seniorMinutes,trackedLoanMinutes,lastAcademyDay=-1; }
@@ -41,12 +41,12 @@ namespace Touchline.Core
         }
         void InitializeEmployment(Database db){ImportFreeAgents(db);EnsureStaffMarket(db);foreach(var p in db.Squad(club))Contract(db,p.id);GenerateSponsors();}
         public long WageBudget=>GrossWageCeiling(FinanceLeague,life.revenue,(life.staff?.members.Sum(s=>s.wage)??0)*52);
-        public long TransferBudget=>Math.Max(0,Math.Min(life.cash-life.revenue/40-CommittedPurchases,life.revenue*12/100-world.transferSpent-(world.contracts.Where(c=>c.club==club&&c.parent!=null).Sum(c=>c.terms?.obligationFee??0))));
+        public long TransferBudget=>Math.Max(0,Math.Min(life.cash-life.revenue/40-CommittedPurchases,life.revenue*12/100-world.transferSpent-(world.contracts.Where(c=>c.club==club&&c.IsLoan).Sum(c=>c.terms?.obligationFee??0))));
         public ClubBudgetSummary BudgetSummary(Database db)
         {
             var b=new ClubBudgetSummary();if(life==null||world==null||db==null)return b;
             b.cash=life.cash;b.reserve=life.revenue/40;b.committedPurchases=CommittedPurchases;
-            b.loanObligations=world.contracts.Where(c=>c.club==club&&c.parent!=null).Sum(c=>c.terms?.obligationFee??0);
+            b.loanObligations=world.contracts.Where(c=>c.club==club&&c.IsLoan).Sum(c=>c.terms?.obligationFee??0);
             b.cashRemaining=Math.Max(0,b.cash-b.reserve-b.committedPurchases);
             b.policyRemaining=Math.Max(0,life.revenue*12/100-world.transferSpent-b.loanObligations);
             b.transferAvailable=TransferBudget;
@@ -120,7 +120,7 @@ namespace Touchline.Core
         public void RejectOffer(string id){OffPitch();var o=world.offers.LastOrDefault(x=>x.player==id&&OfferForManagedClub(x)&&(x.status=="accepted"||x.status=="pending"));if(o==null)throw new InvalidOperationException("Aucune offre ouverte pour votre club.");o.status="withdrawn";}
         public void ListForSale(Database db,string id)
         {
-            OffPitch();var p=db.Find(id);if(p.team!=club||db.Squad(club).Count<=18||Contract(db,id).parent!=null)throw new InvalidOperationException("Le club doit conserver dix-huit joueurs et ne peut céder un joueur prêté.");
+            OffPitch();var p=db.Find(id);if(p.team!=club||db.Squad(club).Count<=18||Contract(db,id).IsLoan)throw new InvalidOperationException("Le club doit conserver dix-huit joueurs et ne peut céder un joueur prêté.");
             if(world.offers.Any(o=>o.player==id&&o.status=="sale"))throw new InvalidOperationException("Offre déjà disponible.");
             var buyer=db.clubs.Where(c=>c.id!=club&&c.annualRevenue>p.value*5).OrderBy(c=>Math.Abs(c.annualRevenue-life.revenue)).FirstOrDefault();if(buyer==null)throw new InvalidOperationException("Aucun acheteur solvable pour le moment.");
             world.offers.Add(new TransferOffer{player=id,seller=buyer.id,fee=(long)(p.value*(.8f+Roll()*.3f)),status="sale",due=life.day+7});Person(id).morale=Math.Max(10,Person(id).morale-4);
@@ -214,8 +214,8 @@ namespace Touchline.Core
             foreach(var o in world.offers.Where(o=>o.status=="accepted"&&o.due+7<life.day))o.status="expired";
             foreach(var c in world.contracts.ToArray()){
                 var p=db.Find(c.player);if(p==null)continue;
-                if(c.club==club&&c.parent==null&&c.until-life.day==180)Mail("Agent de "+p.name,"Six mois de contrat","Le contrat arrive à échéance dans six mois. Nous devons discuter de l’avenir.",p.id,"transfer");
-                if(c.club==club&&c.until<=life.day&&c.parent==null&&!(c.retirement>=0&&c.retirement<=life.day)&&!world.offers.Any(o=>o.player==p.id&&o.status=="scheduled")){SettlePermanentDepartureGrowth(p);p.team="free";c.club="free";life.players.RemoveAll(x=>x.id==p.id);SavePlayer(p);Mail("Secrétariat","Départ en fin de contrat",p.name+" quitte le club sans indemnité.",p.id,"transfer");}
+                if(c.club==club&&!c.IsLoan&&c.until-life.day==180)Mail("Agent de "+p.name,"Six mois de contrat","Le contrat arrive à échéance dans six mois. Nous devons discuter de l’avenir.",p.id,"transfer");
+                if(c.club==club&&c.until<=life.day&&!c.IsLoan&&!(c.retirement>=0&&c.retirement<=life.day)&&!world.offers.Any(o=>o.player==p.id&&o.status=="scheduled")){SettlePermanentDepartureGrowth(p);p.team="free";c.club="free";life.players.RemoveAll(x=>x.id==p.id);SavePlayer(p);Mail("Secrétariat","Départ en fin de contrat",p.name+" quitte le club sans indemnité.",p.id,"transfer");}
                 if(c.club==club&&p.age>=RetirementThreshold(p)-3&&c.retirement<0&&life.day%30==0&&Roll()<.035f+Math.Max(0,p.age-(RetirementThreshold(p)-3))*.012f){c.retirement=Math.Max(life.day+90,world.seasonEnd+1);Mail(p.name,"Mon avenir","J’ai décidé de prendre ma retraite après la fin de cette saison. Je voulais vous en parler personnellement.",p.id,"talk");}
                 if(c.retirement>=0&&c.retirement<=life.day&&p.team!="retired"){RetireEmployment(db,p,c);life.players.RemoveAll(x=>x.id==p.id);SavePlayer(p);Mail("Secrétariat","Retraite effective",p.name+" met un terme à sa carrière.",p.id);}
             }
