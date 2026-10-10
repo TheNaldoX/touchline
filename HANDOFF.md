@@ -4,7 +4,7 @@ Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dé
 
 ## État courant
 
-- Branche `fix/keeper-held-ball-contact`, base PR80/dda0096. Mains Mecanim rejoignent le ballon tenu avec transitions limitées et appuis préservés. Core941/941 ; ciblés30/30 ; globale2020/2295,275 anciens échecs, six anciens corrigés et aucun nouveau (`keeper-hold-comparison.json`). Captures natives `keeper-hold-native` revues ; vidéo en artifacts. Pas de validation Fold ni nouvelle APK à ce stade.
+- Branche `feat/apk-064-consolidated-preview`, PR82, source6b5205b ; base PR81/620b43f. APK0.64/code57 construite, signature/manifest/ARM64 vérifiés. Correction mains gardien : Core941/941, ciblés30/30, globale2020/2295,275 anciens échecs ; six corrigés, aucun nouveau (`keeper-hold-comparison.json`). Captures natives `keeper-hold-native` revues ; vidéo en artifacts. Pas de validation Fold.
 - Finances : quatre onglets, défilement séparé, aperçu tarif sans mutation incluant réaction des supporters et délai hebdomadaire ; flux comptables30 jours ; statuts sponsors français ; alerte salariale ouvre Budget directement.
 - Core941/941 (`.validation/ticket-preview-core-final.txt`). Quatre nouveaux cas. Unity192/195 ciblés (`ticket-preview-unity.xml`) : trois échecs ProfessionalTests déjà présents, aucun nouveau. Captures natives `ui-finance-preview-links` réussies/revues : aperçu, confirmation, délai, destination de l’alerte. Badge préexistant11sp, aucun bouton<48dp. Exception préexistante UnityEditor.Search au démarrage, distincte du jeu.
 - La suite Unity reste rouge : ne pas annoncer tous les chantiers terminés. Nouvelle correction limitée au ballon tenu ; plongeons/prises/placements ne sont pas tous résolus.
@@ -33,16 +33,17 @@ Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dé
 ## Carrière et données
 
 - PR78, deux saisons monde/graine77 puis sauvegarde/reprise :384 clubs jouables, effectifs min23/médiane29/max37, aucun<18 ou>40 ; salaires/recettes médiane36%,3 clubs>70%. Formats complet/compact identiques pour23682 joueurs puis sept journées reprises identiques avec clubs valides. `loan-state-two-seasons-final.txt`. Premier contrôle oubliait `academy-`, corrigé dans l’outil.
-- Ancien audit20 saisons base4a7708a, monde/graine77, scores simplifiés :384 clubs, effectifs23/30/42, aucun<18, un>40 ; note moyenne64,3→64,3, salaires/recettes35→36%,2 clubs>70%,132 endettés, un avec trésorerie nette<−100% recettes. Libres273→1029, promus maintenus57%. Formats identiques47867 joueurs, mais cet ancien audit n’avançait pas après rechargement. `world20-seed77.txt`. Pas de test3D ou Android.
+- Audit20 saisons source6b5205b, monde/graine77, scores simplifiés :384 clubs, effectifs23/30/42, aucun<18, un>40 ; note moyenne64,3→64,3, salaires/recettes35→36%,2 clubs>70%,132 endettés, un avec trésorerie nette<−100% recettes. Promus maintenus57%. Formats complet/compact identiques47867 joueurs, puis sept journées reprises identiques et tous les clubs joueurs valides. `.validation/release064-world20-seed77.txt` (496s). Pas de test3D/Android ; aucun appareil ADB connecté.
 - Catalogue21815 joueurs importés,715 clubs,36 ligues ; aucun fictif initial, newgens dès2027. Portraits absents du dépôt : initiales. Sources : `catalogue-source-audit.json` (sidecar couvre21815 identités,12921 URLs de notes), `catalogue-integrity-audit.json` sans ID dupliqué/club invalide/note hors limites. Ce n’est pas une vérification récente de tous les salaires.
 - OM : ESPN consulté10/10,30 joueurs contre24 au catalogue ; six jeunes manquants Koum/Clement/Bang Na/Doubal/Slimani/El Kadmiri, présence corroborée https://www.om.fr/en/reserve-team . Non importés : postes/dates/provenance à consolider ; DOB El Kadmiri discordante juillet/juin. Staff Ferrier/Nouri/Lancet/Farrugia déjà présents. `.validation/espn-marseille-roster-live.json`.
 - Recrutement, promesses, presse, formation, finances existent : inspecter avant ajout. Priorités ouvertes : décisions/ligne haute, contacts gardiens et sol, profondeur de carrière, données sourcées, UI homogène, Fold réel.
 
 ## APK — préserver
 
+- Nouvelle `artifacts/Touchline-Unity-0.64-preview.apk`,0.64.0-preview.1/code57,73920554octets,source6b5205b,build38014332408 réussi. SHA256 `EA4D0E632C1C7F42A8A75B92353D495231B72218C6710FD712F11CEB0560C0BA` ; preuve `.validation/apk064/verified.json`. Même package et certificat que0.63. PR82 brouillon,275 tests anciens rouges ; Fold non testé.
 - `artifacts/Touchline-Unity-0.63-preview.apk`,0.63.0-preview.1/code56,73911418octets,ARM64,source9d0246f,build37982451316,PR68.
 - SHA256 `8BBCA02E30C4F106E5984A3FDA40635F5880DC4AC6B8B596F154EB1A27ED46F6`, preuve `.validation/apk063-proof.json` ; certificat `130917e6d2b4ea2dcca487587dcff03b1356b14e7de39c3e01657097ad57ee13`, package `fr.personal.touchline.unity`.
-- Préserver APK/sauvegardes. Prochaine version au moins0.64/code57, nom distinct, clé stable seulement en CI. Main non fusionnée, retour Fold attendu.
+- Préserver APK/sauvegardes. Prochaine version au moins0.65/code58, nom distinct, clé stable seulement en CI. Main non fusionnée, retour Fold attendu.
 
 ## Outils et garde-fous
 
