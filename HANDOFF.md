@@ -4,7 +4,7 @@ Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dé
 
 ## État courant
 
-- Lot courant : `fix/keeper-ball-placement`, pose du ballon au sol Mecanim avec récupération/interruption progressive. Core944/944, ciblés38/38, globale2032/2306 :274 anciens échecs, aucun nouveau, un ancien corrigé. `.validation/keeper-place-comparison.json`, captures `keeper-place-native` revues, vidéo en artifacts. PR83 étoiles relatives validée précédemment ; aucun de ces deux lots dans APK0.64. Essais moteur `tune/through-pass-lane-evaluation` isolés : variante licite favoris53,54%, hors-jeu4,33 mais touches51,20 et avantage ligne haute inchangé ; pas intégrés.
+- Lot courant : `fix/agent-playing-time-feedback`, avis agent/fourchettes selon rôle promis, sans écraser offre ; précontrat affiche indemnité nulle, prêt conserve salaire parent. Core947/947, ciblés Unity22/22 ; six captures `ui-agent-role-compact` et parcours des deux résolutions revus. PR83 étoiles relatives, PR84 pose gardien : Core944/944, globale2032/2306 (274 anciens échecs, aucun nouveau). Ces lots ne sont pas dans APK0.64. Essais moteur isolés, non intégrés.
 
 - Branche `feat/apk-064-consolidated-preview`, PR82, source6b5205b ; base PR81/620b43f. APK0.64/code57 construite, signature/manifest/ARM64 vérifiés. Correction mains gardien : Core941/941, ciblés30/30, globale2020/2295,275 anciens échecs ; six corrigés, aucun nouveau (`keeper-hold-comparison.json`). Captures natives `keeper-hold-native` revues ; vidéo en artifacts. Pas de validation Fold.
 - Finances : quatre onglets, défilement séparé, aperçu tarif sans mutation incluant réaction des supporters et délai hebdomadaire ; flux comptables30 jours ; statuts sponsors français ; alerte salariale ouvre Budget directement.

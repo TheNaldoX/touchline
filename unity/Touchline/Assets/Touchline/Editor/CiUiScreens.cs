@@ -79,6 +79,7 @@ namespace Touchline.Editor
 
         static List<Action> BuildSteps()
         {
+            if(Path.GetFileName(Output).StartsWith("ui-agent-role-",StringComparison.Ordinal))return BuildAgentRoleSteps();
             if(Path.GetFileName(Output).StartsWith("ui-finance-preview-",StringComparison.Ordinal))return BuildFinancePreviewSteps();
             if(Path.GetFileName(Output).StartsWith("ui-loan-save-",StringComparison.Ordinal))return BuildLoanSaveSteps();
             if(Path.GetFileName(Output).StartsWith("ui-departure-followup-",StringComparison.Ordinal))return BuildDepartureFollowupSteps();
@@ -316,6 +317,38 @@ namespace Touchline.Editor
             return list;
         }
 
+        static List<Action> BuildAgentRoleSteps()
+        {
+            var list=new List<Action>();string player=null;long cash=0;int offers=0,messages=0;
+            list.Add(()=>{
+                App.Career.EnsureWorld(App.Database);
+                player=App.Database.players.First(p=>p.team!=App.Career.club&&p.team!="free"&&p.team!="retired"&&!p.Goalkeeper&&!App.Career.HasActiveLoan(p.id)).id;
+                var contract=App.Career.Contract(App.Database,player);contract.parent=null;contract.until=App.Career.life.day+730;
+                cash=App.Career.life.cash;offers=App.Career.world.offers.Count;messages=App.Career.life.messages.Count;
+            });
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Recrutement");Call("TransferDialog",player);});
+                list.Add(()=>{
+                    Root.Q<LongField>("negotiation-monthly-wage").value=12340;Root.Q<LongField>("negotiation-fee").value=432100;
+                    Root.Q<DropdownField>("negotiation-role").value=PlayingTimeRoles.Label("starter");
+                    if(!Root.Q<Label>("negotiation-interest").text.Contains(PlayingTimeRoles.Label("starter")))throw new Exception("Avis agent non actualisé pour le titulaire");
+                });
+                list.Add(()=>{Capture(screen.tag+"-agent-titulaire");Root.Q<DropdownField>("negotiation-role").value=PlayingTimeRoles.Label("rotation");});
+                list.Add(()=>{
+                    var text=Root.Q<Label>("negotiation-interest").text;
+                    if(!text.Contains(PlayingTimeRoles.Label("rotation"))||Root.Q<LongField>("negotiation-monthly-wage").value!=12340||Root.Q<LongField>("negotiation-fee").value!=432100)throw new Exception("Avis agent périmé ou proposition écrasée");
+                    Capture(screen.tag+"-agent-rotation");Root.Q<Toggle>("negotiation-loan").value=true;
+                });
+                list.Add(()=>{
+                    if(!Root.Q<Label>("negotiation-interest").text.StartsWith("Prêt :")||Root.Q<LongField>("negotiation-monthly-wage").value!=Career.MonthlySalary(App.Database.Find(player).wage))throw new Exception("Avis prêt incorrect");
+                    Capture(screen.tag+"-agent-pret");Root.Q<Toggle>("negotiation-loan").value=false;
+                    if(Root.Q<LongField>("negotiation-monthly-wage").value!=12340||!Root.Q<Label>("negotiation-interest").text.Contains(PlayingTimeRoles.Label("rotation")))throw new Exception("Brouillon permanent perdu");
+                    if(App.Career.life.cash!=cash||App.Career.world.offers.Count!=offers||App.Career.life.messages.Count!=messages)throw new Exception("Consulter l’agent ne doit engager aucune décision");
+                    audit.AppendLine(screen.tag+" : avis agent selon promesse, prêt au salaire parent, retour au brouillon conservé, aucune mutation financière/offre/message.");Call("CloseModal");
+                });
+            }
+            return list;
+        }
         static List<Action> BuildFocusedNegotiationSteps()
         {
             bool reference=Path.GetFileName(Output).EndsWith("-before",StringComparison.Ordinal);

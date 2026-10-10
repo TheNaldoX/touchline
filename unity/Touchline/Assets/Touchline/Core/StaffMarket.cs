@@ -57,10 +57,11 @@ namespace Touchline.Core
             staffMarket.Add(new StaffMember{id="real-"+id,name=name,club=team.id,role=role,tactics=rating,coaching=rating,judging=Math.Max(1,rating-2),people=rating,wage=Math.Max(1200,team.annualRevenue/70000),until=life.day+730,fictional=false,source=source,biography=bio+" Page vérifiée le 14/09/2026. Notes, salaire et échéance estimés pour la carrière."});
         }
         public long StaffReleaseCost(StaffMember s)=>s.club==null?0:s.wage*Math.Max(0,(s.until-life.day+6)/7);
-        public AgentEstimate PlayerAgent(Database db,string id,bool loan=false)
+        public AgentEstimate PlayerAgent(Database db,string id,bool loan=false,string role=null)
         {
-            var p=db.Find(id)??throw new ArgumentException("Joueur inconnu.");bool own=p.team==club;float uncertainty=Knowledge(id)>=90?.12f:.3f;long fee=own||p.team=="free"?0:(long)(p.value*(loan?.12:1.05));long monthly=MonthlySalary(own||loan?(long)(p.wage*(own?1.08:1)):Math.Max((long)(p.wage*1.12),PlayerTransferInterest(db,id).requiredWeeklyWage));
-            return new AgentEstimate{feeLow=(long)(fee*(1-uncertainty)),feeHigh=(long)(fee*(1+uncertainty)),monthlyLow=loan?MonthlySalary(p.wage):(long)(monthly*.95),monthlyHigh=loan?MonthlySalary(p.wage):(long)(monthly*1.15),message=loan?"Son salaire intégral reste celui du contrat parent. Négocions votre pourcentage de prise en charge, l’indemnité et le temps de jeu.":own?"Discutons de son avenir et du temps de jeu promis.":p.rating>Strength(db,club)+8?"Le projet sportif est un obstacle : le salaire seul ne suffira pas.":"Mon joueur écoutera votre projet. Ces fourchettes sont indicatives ; l’accord du club reste distinct du contrat personnel."};
+            var p=db.Find(id)??throw new ArgumentException("Joueur inconnu.");bool own=p.team==club;var interest=own||loan?null:PlayerTransferInterest(db,id,role);
+            float uncertainty=Knowledge(id)>=90?.12f:.3f;long fee=own||p.team=="free"?0:(long)(p.value*(loan?.12:1.05));long monthly=MonthlySalary(own||loan?(long)(p.wage*(own?1.08:1)):Math.Max((long)(p.wage*1.12),interest.requiredWeeklyWage));
+            return new AgentEstimate{feeLow=(long)(fee*(1-uncertainty)),feeHigh=(long)(fee*(1+uncertainty)),monthlyLow=loan?MonthlySalary(p.wage):(long)(monthly*.95),monthlyHigh=loan?MonthlySalary(p.wage):(long)(monthly*1.15),message=loan?"Son salaire intégral reste celui du contrat parent. Négocions votre pourcentage de prise en charge, l’indemnité et le temps de jeu.":own?"Discutons de son avenir et du temps de jeu promis.":interest.refuses?"Mon joueur refuse ce projet pour le moment. La fourchette salariale n’est pas une promesse d’accord ; le salaire seul ne suffira pas.":"Mon joueur écoutera votre projet. Ces fourchettes tiennent compte du temps de jeu proposé ; l’accord du club reste distinct du contrat personnel."};
         }
         public AgentEstimate StaffAgent(string id)
         {

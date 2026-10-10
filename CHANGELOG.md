@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Négociations : avis de l’agent et fourchette salariale actualisés selon le temps de jeu promis, regroupés dans le dialogue sans écraser les conditions saisies.
 - Gardiens : accompagnement du ballon jusqu’au sol et redressement progressif avec Mecanim, y compris lorsque le geste est interrompu.
 - Recrutement : niveaux et potentiels affichés en étoiles relatives au club sur le marché, les recommandations et les rapports, avec fourchettes d’incertitude sans note globale chiffrée.
 - Android : préparation de la version 0.64/code57 regroupant les corrections validées depuis la 0.63, avec limites de la suite Unity documentées.

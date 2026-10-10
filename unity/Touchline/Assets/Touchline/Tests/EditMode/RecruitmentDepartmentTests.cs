@@ -9,6 +9,29 @@ namespace Touchline.Tests
     // Scouting department, hidden personality, player willingness and settling of new signings.
     public class RecruitmentDepartmentTests
     {
+        [Test] public void AgentSalaryRangeReflectsThePlayingTimeActuallyPromised()
+        {
+            foreach(var teammate in db.Squad("c1"))teammate.rating=72;
+            var player=db.Squad("c1").First(p=>!p.Goalkeeper&&Career.PersonalityTrait(p.id,Career.Ambition)>=15);
+            var starter=c.PlayerAgent(db,player.id,role:"starter");var bench=c.PlayerAgent(db,player.id,role:"rotation");
+            Assert.Less(starter.monthlyLow,bench.monthlyLow,"A better sporting project must change the quoted wage, not only the eventual reply");
+            Assert.AreEqual((long)(Career.MonthlySalary(c.PlayerTransferInterest(db,player.id,"starter").requiredWeeklyWage)*.95),starter.monthlyLow);
+            Assert.AreEqual(0,c.world.offers.Count,"Asking the agent must not create a proposal");
+        }
+        [Test] public void AgentDoesNotPromiseThatAnUnacceptableProjectCanBeBought()
+        {
+            foreach(var teammate in db.Squad("c3"))teammate.rating=90;
+            var player=db.Squad("c3").First(p=>!p.Goalkeeper&&Career.PersonalityTrait(p.id,Career.Ambition)>=10);
+            Assert.IsTrue(c.PlayerTransferInterest(db,player.id,"key").refuses);
+            StringAssert.Contains("refuse",c.PlayerAgent(db,player.id,role:"key").message);
+        }
+        [Test] public void LoanQuoteKeepsTheParentWageRegardlessOfPromisedRole()
+        {
+            var player=db.Squad("c1").First(p=>!p.Goalkeeper);
+            var starter=c.PlayerAgent(db,player.id,true,"starter");var bench=c.PlayerAgent(db,player.id,true,"rotation");
+            Assert.AreEqual(Career.MonthlySalary(player.wage),starter.monthlyLow);
+            Assert.AreEqual(starter.monthlyLow,bench.monthlyLow);Assert.AreEqual(starter.monthlyHigh,bench.monthlyHigh);
+        }
         [Test] public void SavedRecommendationIsHiddenWhenPlayerNoLongerConsidersTheClub()
         {
             var player=db.players.First(p=>p.team!=c.club&&!p.Goalkeeper);
