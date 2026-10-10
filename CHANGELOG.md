@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Prêts sortants : les propositions devenues impossibles avant la réponse expirent avec un message, sans faux accord ni erreur si le joueur a quitté la base.
 - Prêts : la compensation salariale demandée par le club prêteur suit la durée restante et le pourcentage pris en charge, au lieu de compter systématiquement vingt-six semaines.
 - Diagnostic moteur : suivi du premier événement dans les cinq secondes suivant une réception en profondeur et mesure de sa position, sans modifier la simulation.
 - Diagnostic moteur : suivi en lecture seule de la première issue des passes en profondeur dans l’audit tactique, avec contrôle du comptage et distinction contrôle/déviation/hors-jeu.
