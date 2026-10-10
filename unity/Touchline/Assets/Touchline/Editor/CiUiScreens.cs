@@ -79,6 +79,7 @@ namespace Touchline.Editor
 
         static List<Action> BuildSteps()
         {
+            if(Path.GetFileName(Output).StartsWith("ui-recruitment-cache-",StringComparison.Ordinal))return BuildRecruitmentCacheSteps();
             if(Path.GetFileName(Output).StartsWith("ui-scout-snapshot-",StringComparison.Ordinal))return BuildScoutSnapshotSteps();
             if(FocusedImmersion)return BuildFocusedImmersionSteps();
             if(FocusedCareer)return BuildCareerReviewSteps();
@@ -126,6 +127,18 @@ namespace Touchline.Editor
                 list.Add(()=>{Capture(screen.tag+"-match-consignes");SetField("tacticalTab","Composition");Call("Navigate","Match");});
             }
             return list;
+        }
+
+        static List<Action> BuildRecruitmentCacheSteps()
+        {
+            var list=new List<Action>();string id=null;
+            list.Add(()=>{var c=App.Career;c.EnsureWorld(App.Database);c.revealAttributes=false;var p=App.Database.players.First(x=>x.team!=c.club&&x.team!="retired"&&x.attributes?.Length>0);id=p.id;p.positions=new[]{"RW"};p.position="ATT";c.world.reports.Clear();c.world.reports.Add(new ScoutReport{player=id,club=c.club,confidence=90,judging=15,estimate=70,potential=75,attributesObserved=true,started=c.life.day-20,due=c.life.day});SetField("scoutReportFilter","Tous");SetField("recruitmentTab","Rapports");});
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);App.Career.tactic.SetFormation("4-3-3");Call("Navigate","Recrutement");});
+                list.Add(()=>{var advice=Root.Q("scout-report-"+id).Q<Label>(className:"scout-report-advice").text;if(advice.Contains("hors postes du système"))throw new Exception("Winger must initially fit the formation");Capture(screen.tag+"-poste-initial");App.Career.tactic.withoutBall[10].role="ST";App.Career.tactic.withBall[10].role="ST";Call("Navigate","Recrutement");});
+                list.Add(()=>{Capture(screen.tag+"-poste-modifie");var advice=Root.Q("scout-report-"+id).Q<Label>(className:"scout-report-advice").text;if(!advice.Contains("hors postes du système"))throw new Exception("Recruitment still uses the former winger position after a same-day custom tactic change");});
+            }
+            audit.AppendLine("Poste AD remplacé par BT sans changer le nom4-3-3 ni le jour ; grade du rapport vérifié avant/après, deux résolutions, profil de test en mémoire.");return list;
         }
 
         static List<Action> BuildScoutSnapshotSteps()

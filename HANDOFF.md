@@ -2,7 +2,13 @@
 
 Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dans Git/PR, pas de nouveaux journaux docs.
 
-## Lot courant — préparation des gardiens
+## Lot courant — recrutement après changement tactique
+
+- Branche `fix/recruitment-tactic-refresh`, base PR73/c6c666b, code a0fb3a9. Invalidation du cache des besoins à chaque reconstruction d’écran ; réutilisation conservée entre les cartes du même écran. Corrige les postes modifiés sans changement de nom de formation ni de jour. Budget déjà recalculé correctement avant ce lot.
+- Régression native `BuildRecruitmentCacheSteps` : échec avant dans les deux résolutions, réussite après ; quatre captures après revues (`build/film/ui-recruitment-cache-{before,after}`). Aucun avertissement/erreur C# ; exception préexistante de l’indexation UnityEditor.Search au démarrage, distincte du jeu. Pas de test Fold physique. Trois titres latéraux préexistants à11sp.
+- Core inchangé,926/926 hérités. Dernière suite complète de la base PR73 :1975/2274,299 échecs préexistants ; ne pas déclarer la suite verte. Prochaine priorité : diagnostiquer la ligne haute avec une nouvelle hypothèse, puis calibration appariée200 matchs. Pas de nouvelle APK.
+
+## Lot gardiens — PR73
 
 - Branche `fix/keeper-claim-readiness`, base PR72/cbfb053. Mecanim conserve sa pose et ses appuis ; correction progressive des bras pour la préparation de prise aérienne. Annulation interpolée jusqu’au retour réel des mains, déplacement racine accompagné. Aucun Core ni ballon modifié.
 -19/19 tests KeeperClaimAnticipation réussis, dont6 nouveaux cas statique/course à30/60/120Hz. Trois anciens tests de mains trop basses corrigés. Essai intermédiaire de retour en course échouait de35–48cm, correction validée (`keeper-claim-moving-{before,after}.xml`).
@@ -27,7 +33,7 @@ Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dan
 - PR69 : éclairage nocturne latéral, pas de replacement depuis le pied visible si ancien ancrage inaccessible et écart>6cm.317 tests ciblés ; comparaison complète1943/2253→1947/2253,306 échecs préexistants. Preuves `.validation/night-support-test-comparison.json`. Aucune réduction globale démontrée du glissement.
 - PR70 : clip de passe miroir pour gauchers,1953/2259, mêmes306 échecs. Vidéo `artifacts/Touchline-passing-feet-review-2026-10-09.mp4`.
 - PR71 : correction IK pied de passe vers impact (.18s, fondu .14s, max35cm).44 tests ciblés, six nouveaux cas échouent avant/passent après ; suite1963/2265,302 échecs, aucun nouveau. `.validation/pass-contact-comparison.json`, vidéo `artifacts/Touchline-pass-contact-before-after-2026-10-10.mp4`. Aucun Core modifié.
-- Ces PR restent en brouillon : dette globale d’animations et Fold non testé. Prochaine enquête concrète : `KeeperClaimAnticipationTests`, mains trop basses avant prise aérienne ; le retour anticipé Mecanim dans PlayerView court-circuite la préparation procédurale. Reproduire visuellement avant correction, ne pas simplement imposer l’ancienne pose.
+- Ces PR restent en brouillon : dette globale d’animations et Fold non testé. Préparation aérienne ensuite corrigée dans PR73 ; autres défauts de contacts et réception à traiter séparément.
 
 ## Données / carrière / systèmes existants
 
