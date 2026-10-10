@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Android : préparation de la version 0.64/code57 regroupant les corrections validées depuis la 0.63, avec limites de la suite Unity documentées.
 - Gardiens : les mains rejoignent progressivement le ballon tenu avec Mecanim et retrouvent la pose d’attente sans saut, en conservant les appuis capturés.
 - Finances : onglets budget/billetterie/partenaires/comptabilité, aperçu du tarif avant confirmation et synthèse des flux sur trente jours.
 - Animations : correction de la pénétration des chaussures dans le terrain après les poses Mecanim, notamment lors de la récupération des touches.
@@ -83,3 +84,4 @@ Une ligne par pull request, la plus récente en haut.
 
 ## 0.41
 - Import dans Git depuis Google Drive. `MatchDecisions.bak.cs` retiré (doublon compilé de `MatchDecisions.cs`).
+
