@@ -219,7 +219,13 @@ namespace Touchline.Core
                 string destination=string.IsNullOrEmpty(o.destination)?club:o.destination;var p=db.Find(o.player);
                 if(p==null||!db.clubs.Any(c=>c.id==destination)){o.status="expired";continue;}
                 long expectedFee=o.renewal||o.precontract||p.team=="free"?0:(long)(p.value*(o.loan?.12f:1.05f));long expectedWage=(long)(p.wage*(o.renewal?1.08f:o.loan?1f:1.12f));
-                if(o.loan)expectedFee+=(long)(p.wage*26*(100-(o.terms?.loanWagePercent??100))/100);
+                if(o.loan){
+                    // Compensate only the parent's retained gross salary over the remaining days.
+                    // Older offers without terms keep the former 26-week duration fallback.
+                    int days=o.terms==null?26*7:Math.Max(0,o.terms.loanEndDay-life.day);
+                    long retainedWage=p.wage-p.wage*(o.terms?.loanWagePercent??100)/100;
+                    expectedFee+=(long)((decimal)retainedWage*days/7);
+                }
                 string roleIssue=PlayingTimeOfferIssueForClub(db,p.id,o.role,destination);bool willing=o.renewal||p.rating+p.development<Strength(db,destination)+8;bool accepted=roleIssue==null&&o.fee>=expectedFee&&o.wage>=expectedWage&&willing&&(o.clause==0||o.clause>=p.value);
                 o.status=accepted?"accepted":"counter";if(!accepted){o.fee=expectedFee;o.wage=expectedWage;}
                 if(destination==club)Mail("Agent de "+p.name,accepted?"Accord de principe":"Négociation à reprendre",accepted?"Conditions acceptées avec le statut de "+PlayingTimeRoles.Label(o.role)+". "+PlayingTimeRoles.Description(o.role)+" Vous avez sept jours pour confirmer la signature.":roleIssue!=null?roleIssue:willing?"La proposition doit être relevée : indemnité "+expectedFee.ToString("N0")+" €, salaire mensuel "+MonthlySalary(expectedWage).ToString("N0")+" €. Une clause libératoire ne doit pas être inférieure à la valeur du joueur.":"Le joueur ne juge pas le projet sportif suffisamment attractif.",p.id,"transfer",TransferMessageReference(o));

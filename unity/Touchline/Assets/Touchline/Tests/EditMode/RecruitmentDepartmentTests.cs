@@ -9,6 +9,16 @@ namespace Touchline.Tests
     // Scouting department, hidden personality, player willingness and settling of new signings.
     public class RecruitmentDepartmentTests
     {
+        [TestCase(28,0,2600,700)] [TestCase(182,40,10800,700)] [TestCase(365,0,36300,700)] [TestCase(365,100,0,700)] [TestCase(28,40,2232,1001)]
+        public void LoanCounterOfferCompensatesOnlyRemainingSalary(int duration,int share,long compensation,long wage)
+        {
+            var p=db.Squad("c1").First();p.wage=wage;c.Contract(db,p.id).wage=wage;
+            c.ProposeTransfer(db,p.id,0,wage,3,"rotation",true,terms:new MarketTerms{loanWagePercent=share,loanEndDay=c.life.day+duration});
+            var offer=c.world.offers.Last();Days(2);
+            Assert.AreEqual("counter",offer.status);
+            Assert.AreEqual((long)(p.value*.12f)+compensation,offer.fee,"The retained wage compensation must cover the actual remaining loan, not a fixed half-season.");
+            Assert.AreEqual(wage,offer.wage);Assert.AreEqual("c1",p.team);
+        }
         [Test] public void CostPreviewSeparatesImmediateAndDeferredFeesWithoutSpending()
         {
             var p=db.Squad("c1").First();long cash=c.life.cash;int ledger=c.life.ledger.Count,offers=c.world.offers.Count;
