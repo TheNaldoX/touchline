@@ -54,6 +54,23 @@ namespace Touchline.Core
             return list.OrderByDescending(o=>o.priority).ToList();
         }
         static string Level(float v,string low,string mid,string high)=>v<.38f?low:v>.62f?high:mid;
+        // Descriptive thresholds only: these never change a player's decisions or shot outcome.
+        const int ChanceReviewMinimumShots=6;
+        const float LowAverageChance=.08f;
+        public static List<string> ChanceReview(MatchState m)
+        {
+            var us=m.metrics[0];int shots=m.shots[0];var lines=new List<string>();
+            lines.Add(shots+" tirs · "+us.shotsOnTarget+" cadrés · "+us.xg.ToString("0.00",French)+" xG · "+m.score[0]+" buts au score.");
+            if(shots==0)lines.Add("Aucun tir enregistré : regardez comment nous atteignons la surface avant de juger la finition.");
+            else {
+                float quality=us.xg/shots;
+                lines.Add("Qualité moyenne : "+quality.ToString("0.00",French)+" xG par tir.");
+                if(shots<ChanceReviewMinimumShots)lines.Add("Peu de tirs pour conclure. Observez davantage de situations avant de changer le plan.");
+                else if(quality<LowAverageChance)lines.Add("Qualité moyenne faible dans notre modèle : essayez un soutien plus proche du porteur et surveillez les positions de frappe, sans simplement multiplier les tirs.");
+            }
+            lines.Add("Les xG estiment la qualité avant la frappe ; trajectoire, défenseurs et gardien déterminent ensuite le résultat. Un écart avec les buts ne prouve pas à lui seul un problème de finition. Les buts contre leur camp peuvent aussi contribuer au score.");
+            return lines;
+        }
         public static string Style(Tactic t)=>t.formation+" · "+Level(t.line,"bloc bas","bloc médian","ligne haute")+" · "+Level(t.pressing,"pressing mesuré","pressing modéré","pressing intense")+" · "+Level(t.directness,"jeu court","jeu mixte","jeu direct");
         static float Attr(PlayerData p,string key)=>p.Attribute(key);
         public static OpponentReport Opponent(Database db,MatchState m)
@@ -84,8 +101,8 @@ namespace Touchline.Core
             lines.Add("Passes réussies : "+Completion(m,0).ToString("0",French)+" % · récupérations hautes : "+us.highRecoveries+" · tirs : "+m.shots[0]+".");
             var mind=m.mindset!=null&&m.mindset.Length==2?m.mindset[0]:null;
             if(mind!=null&&mind.familiarity>=0)lines.Add(mind.understanding< -.15f?"Automatismes insuffisants ("+mind.familiarity.ToString("0",French)+" % de familiarité, cohésion "+mind.cohesion.ToString("0",French)+" %) : cela s’est vu dans les passes et le placement.":mind.understanding>.15f?"Le groupe maîtrise son système : placement et passes plus sûrs.":"Automatismes corrects, sans avantage net.");
-            if(t.line>=HighLineThreshold)lines.Add(m.metrics[1].throughBalls>=ThroughBallsAlert?"La ligne haute a été attaquée dans son dos ("+m.metrics[1].throughBalls+" passes en profondeur adverses).":"La ligne haute a tenu : peu de ballons dans notre dos.");
-            if(t.pressing>=HighPressThreshold)lines.Add("Le pressing intense a coûté de l’énergie : condition finale "+m.actors.Where(a=>a.side==0&&a.slot>0).Average(a=>a.fitness).ToString("0",French)+" %.");
+            if(t.line>=HighLineThreshold)lines.Add("Consigne finale : ligne haute. "+m.metrics[1].throughBalls+" passes en profondeur adverses sur l’ensemble du match ; ce nombre ne mesure pas leur réussite ni les seules minutes jouées avec ce réglage.");
+            if(t.pressing>=HighPressThreshold)lines.Add("Consigne finale : pressing intense. Condition finale "+m.actors.Where(a=>a.side==0&&a.slot>0&&!a.sentOff).Select(a=>a.fitness).DefaultIfEmpty(100).Average().ToString("0",French)+" %. Cette fatigue ne peut pas être attribuée au seul pressing.");
             if(mind!=null&&mind.talks.Count>0)lines.Add("Causeries : "+string.Join(", ",mind.talks.Select(TeamTalks.Describe))+".");
             return lines;
         }

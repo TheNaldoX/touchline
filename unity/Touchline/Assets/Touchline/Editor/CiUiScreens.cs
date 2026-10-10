@@ -79,6 +79,7 @@ namespace Touchline.Editor
 
         static List<Action> BuildSteps()
         {
+            if(Path.GetFileName(Output).StartsWith("ui-chance-review-",StringComparison.Ordinal))return BuildChanceReviewSteps();
             if(Path.GetFileName(Output).StartsWith("ui-scroll-memory-",StringComparison.Ordinal))return BuildScrollMemorySteps();
             if(Path.GetFileName(Output).StartsWith("ui-recruitment-cache-",StringComparison.Ordinal))return BuildRecruitmentCacheSteps();
             if(Path.GetFileName(Output).StartsWith("ui-scout-snapshot-",StringComparison.Ordinal))return BuildScoutSnapshotSteps();
@@ -128,6 +129,17 @@ namespace Touchline.Editor
                 list.Add(()=>{Capture(screen.tag+"-match-consignes");SetField("tacticalTab","Composition");Call("Navigate","Match");});
             }
             return list;
+        }
+
+        static List<Action> BuildChanceReviewSteps()
+        {
+            var list=new List<Action>();
+            list.Add(()=>{var c=App.Career;c.EnsureWorld(App.Database);c.PrepareLineup(App.Database);var opponent=App.Database.clubs.First(x=>x.playable&&x.id!=c.club).id;var sim=MatchSimulation.Create(App.Database,c,opponent,731,2700);c.match=sim.State;c.ApplyMatchContext(sim);sim.State.clock=35*sim.State.SecondsPerMinute;sim.State.shots[0]=10;sim.State.metrics[0].shotsOnTarget=2;sim.State.metrics[0].xg=.5f;Call("CreateArena",sim);});
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Match");Arena.Paused=true;SetField("matchAnalysisTab","Adjoint");Call("MatchAnalysis");});
+                list.Add(()=>{if(Root.Q("match-chance-review")==null)throw new Exception("Chance review missing from assistant analysis");Capture(screen.tag+"-occasions");Call("CloseModal");});
+            }
+            audit.AppendLine("Bilan des occasions : fixture synthétique10 tirs/0,50xG, match en pause, deux formats, sauvegarde personnelle intacte.");return list;
         }
 
         static List<Action> BuildScrollMemorySteps()

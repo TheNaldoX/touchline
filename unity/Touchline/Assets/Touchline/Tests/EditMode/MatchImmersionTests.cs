@@ -187,6 +187,25 @@ namespace Touchline.Tests
             for(int i=1;i<=100;i++){float value=MatchSimulation.CalibratedShotEstimate(i/100f);Assert.Greater(value,previous);Assert.LessOrEqual(value,1);previous=value;}
         }
 
+        [TestCase(0,0f)] [TestCase(2,.1f)] [TestCase(10,.5f)] [TestCase(10,2f)]
+        public void ChanceReviewSeparatesVolumeQualityAndOutcomeWithoutMutatingMatch(int shots,float xg)
+        {
+            var m=Sim(Db()).State;m.shots[0]=shots;m.metrics[0].xg=xg;
+            string before=UnityEngine.JsonUtility.ToJson(m);var lines=MatchAssistant.ChanceReview(m);string text=string.Join(" ",lines);
+            StringAssert.Contains(shots+" tirs",text);StringAssert.Contains("ne prouve pas",text);
+            Assert.AreEqual(shots>=6&&xg/shots<.08f,text.Contains("Qualité moyenne faible"));
+            if(shots==0)StringAssert.Contains("Aucun tir enregistré",text);
+            if(shots>0&&shots<6)StringAssert.Contains("Peu de tirs",text);
+            Assert.AreEqual(before,UnityEngine.JsonUtility.ToJson(m));
+        }
+        [Test] public void FinalReviewDoesNotTreatCumulativePassesAsProofOfFinalTacticSuccess()
+        {
+            var m=Sim(Db()).State;m.homeTactic.line=.8f;m.homeTactic.pressing=.8f;
+            string text=string.Join(" ",MatchAssistant.FullTimeReview(m));
+            StringAssert.Contains("Consigne finale",text);StringAssert.Contains("ne mesure pas leur réussite",text);
+            Assert.IsFalse(text.Contains("La ligne haute a tenu"));StringAssert.Contains("au seul pressing",text);
+        }
+
         [Test] public void OpponentRallyAtHalfTimeWhenLosingAndAssistantReadsTheGame()
         {
             var db=Db();var sim=Sim(db);Mind(sim,_=>{});sim.State.score[0]=2;
