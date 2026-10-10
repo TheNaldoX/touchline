@@ -4,6 +4,22 @@ using System.Linq;
 
 namespace Touchline.Core
 {
+    public static class ClubRatingScale
+    {
+        const float RatingPointsPerStar=7; // Internal ability points; three stars match the current club reference.
+        public static float Relative(float rating,float reference)=>Mathx.Clamp(3+(rating-reference)/RatingPointsPerStar,1,5);
+        public static string Stars(float rating,float reference)
+        {
+            int count=(int)Math.Round(Relative(rating,reference));
+            return new string('★',count)+new string('☆',5-count);
+        }
+        public static string Range(ScoutRange range,float reference)
+        {
+            if(!range.known)return "À observer";
+            string low=Stars(range.low,reference),high=Stars(range.high,reference);
+            return low==high?low:low+" à "+high;
+        }
+    }
     public struct ScoutRange
     {
         public int low, high; public bool known;

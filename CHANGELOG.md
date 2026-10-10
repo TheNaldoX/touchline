@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Recrutement : niveaux et potentiels affichés en étoiles relatives au club sur le marché, les recommandations et les rapports, avec fourchettes d’incertitude sans note globale chiffrée.
 - Android : préparation de la version 0.64/code57 regroupant les corrections validées depuis la 0.63, avec limites de la suite Unity documentées.
 - Gardiens : les mains rejoignent progressivement le ballon tenu avec Mecanim et retrouvent la pose d’attente sans saut, en conservant les appuis capturés.
 - Finances : onglets budget/billetterie/partenaires/comptabilité, aperçu du tarif avant confirmation et synthèse des flux sur trente jours.

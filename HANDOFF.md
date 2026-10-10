@@ -4,6 +4,8 @@ Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dé
 
 ## État courant
 
+- Lot courant : étoiles relatives unifiées dans recrutement/rapports/marché. Core944/944, trois nouveaux tests Unity3/3 ; captures natives ui-scout-snapshot-stars-final revues aux deux résolutions (rapports, marché). Pas de nouvelle APK. Essais moteur isolés dans tune/through-pass-lane-evaluation, non intégrés : premier essai trop de hors-jeu, variante licite encore en évaluation.
+
 - Branche `feat/apk-064-consolidated-preview`, PR82, source6b5205b ; base PR81/620b43f. APK0.64/code57 construite, signature/manifest/ARM64 vérifiés. Correction mains gardien : Core941/941, ciblés30/30, globale2020/2295,275 anciens échecs ; six corrigés, aucun nouveau (`keeper-hold-comparison.json`). Captures natives `keeper-hold-native` revues ; vidéo en artifacts. Pas de validation Fold.
 - Finances : quatre onglets, défilement séparé, aperçu tarif sans mutation incluant réaction des supporters et délai hebdomadaire ; flux comptables30 jours ; statuts sponsors français ; alerte salariale ouvre Budget directement.
 - Core941/941 (`.validation/ticket-preview-core-final.txt`). Quatre nouveaux cas. Unity192/195 ciblés (`ticket-preview-unity.xml`) : trois échecs ProfessionalTests déjà présents, aucun nouveau. Captures natives `ui-finance-preview-links` réussies/revues : aperçu, confirmation, délai, destination de l’alerte. Badge préexistant11sp, aucun bouton<48dp. Exception préexistante UnityEditor.Search au démarrage, distincte du jeu.
@@ -52,4 +54,5 @@ Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dé
 - CI Unity bloquée deux fois par Docker Hub anonyme : pas de relance en boucle. GitHub via `.validation/github-api.ps1`, secrets jamais imprimés ; attacher chaque PR créée.
 - Nettoyage après dernière Unity seulement : `.validation/cleanup-unity-imports.ps1`,73 imports générés connus ; préserver nouveaux .meta intentionnels, Library et sources. Restaurer scène/ProjectSettings seulement si modifications générées connues.
 - Preuves locales ignorées dans `.validation/` et artifacts ; détails dans PR. Automatisation PAUSED, aucun travail planifié réactivé.
+
 
