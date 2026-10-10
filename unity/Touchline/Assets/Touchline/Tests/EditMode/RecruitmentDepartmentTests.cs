@@ -9,6 +9,25 @@ namespace Touchline.Tests
     // Scouting department, hidden personality, player willingness and settling of new signings.
     public class RecruitmentDepartmentTests
     {
+        [TestCase("sold")] [TestCase("retired")] [TestCase("loaned")] [TestCase("loan-ended")] [TestCase("parent-expiry")] [TestCase("precontract-renewed")]
+        public void IncomingOfferExpiresWhenItsContractualBasisChanges(string change)
+        {
+            var p=db.Squad("c1").First();var contract=c.Contract(db,p.id);
+            bool loan=change=="loan-ended"||change=="parent-expiry",precontract=change=="precontract-renewed";
+            if(precontract)contract.until=100;
+            c.ProposeTransfer(db,p.id,100000,1000,3,"rotation",loan,terms:new MarketTerms{loanEndDay=100},precontract:precontract);
+            var offer=c.world.offers.Last();
+            if(change=="sold")p.team="c2";
+            if(change=="retired")p.team="retired";
+            if(change=="loaned")contract.parent="c2";
+            if(change=="loan-ended")offer.terms.loanEndDay=1;
+            if(change=="parent-expiry")contract.until=50;
+            if(precontract)contract.until=730;
+            c.life.day=offer.due;long fee=offer.fee,wage=offer.wage;int messages=c.life.messages.Count;
+            typeof(Career).GetMethod("ManagementDay",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance).Invoke(c,new object[]{db});
+            Assert.AreEqual("expired",offer.status);Assert.AreEqual(fee,offer.fee);Assert.AreEqual(wage,offer.wage);
+            Assert.IsFalse(c.life.messages.Skip(messages).Any(m=>m.subject=="Accord de principe"||m.subject=="Négociation à reprendre"));
+        }
         [TestCase("sold")] [TestCase("retired")] [TestCase("missing")] [TestCase("ended")] [TestCase("parent-expiry")]
         public void OutgoingLoanExpiresWhenPlayerSituationChangesBeforeReply(string change)
         {

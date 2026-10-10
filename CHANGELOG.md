@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Recrutement : les offres entrantes expirent si un transfert, une retraite, un prêt ou une prolongation invalide leurs conditions avant la réponse de l’agent.
 - Prêts sortants : les propositions devenues impossibles avant la réponse expirent avec un message, sans faux accord ni erreur si le joueur a quitté la base.
 - Prêts : la compensation salariale demandée par le club prêteur suit la durée restante et le pourcentage pris en charge, au lieu de compter systématiquement vingt-six semaines.
 - Diagnostic moteur : suivi du premier événement dans les cinq secondes suivant une réception en profondeur et mesure de sa position, sans modifier la simulation.
