@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Android : préparation de la version0.65/code58, consolidant les correctifs de recrutement, prêts, rapports financiers et contacts des relances/touches.
 - Animation : appui progressif des deux chaussures au sol au lâcher des touches de champ, tout en conservant le contact des mains et l’orientation des pieds.
 - Animation : ajustement progressif des deux mains autour du lâcher lors des touches des joueurs de champ, sans modifier la trajectoire simulée du ballon.
 - Recrutement : les offres entrantes expirent si un transfert, une retraite, un prêt ou une prolongation invalide leurs conditions avant la réponse de l’agent.
