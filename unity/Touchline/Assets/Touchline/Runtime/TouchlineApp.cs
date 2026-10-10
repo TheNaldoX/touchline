@@ -63,6 +63,8 @@ namespace Touchline
         void Navigate(string destination){if(launchMenuVisible||!careerSelected||delegatingMatch)return;bool hadMatch=Career.match!=null;RecordNavigation(destination);if(arena!=null)arena.Paused=true;if(destination!="Match")CloseFinishedMatch();page=destination;Build();if(hadMatch||queuedPreferenceSave)Save();}
         void Build()
         {
+            // Share needs within a screen, never across rebuilds after a manager decision.
+            overviewCache=null;overviewKey=null;
             if(launchMenuVisible){BuildLaunchMenu();return;}
             ObserveContractPersistence();var initializationBefore=InitializationStamp();Career.EnsureLife(Database);RememberPage();
             if(Career.world!=null&&Career.world.managerStatus!="employed"&&!new[]{"Club","Carrière","Messages","Réglages","Changer de club"}.Contains(page))page="Carrière";
