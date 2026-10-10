@@ -9,6 +9,21 @@ namespace Touchline.Tests
     // Scouting department, hidden personality, player willingness and settling of new signings.
     public class RecruitmentDepartmentTests
     {
+        [TestCase("sold")] [TestCase("retired")] [TestCase("missing")] [TestCase("ended")] [TestCase("parent-expiry")]
+        public void OutgoingLoanExpiresWhenPlayerSituationChangesBeforeReply(string change)
+        {
+            var p=db.Squad(c.club).First();var contract=c.Contract(db,p.id);
+            c.ProposeOutgoingLoan(db,p.id,"c1",0,new MarketTerms{loanEndDay=c.life.day+100});var offer=c.outgoingLoans.Last();
+            if(change=="sold")p.team="c2";
+            if(change=="retired")p.team="retired";
+            if(change=="missing")db.players=db.players.Where(q=>q.id!=p.id).ToArray();
+            if(change=="ended")offer.terms.loanEndDay=1;
+            if(change=="parent-expiry")contract.until=50;
+            c.life.day=offer.due;long cash=c.life.cash;int messages=c.life.messages.Count;
+            typeof(Career).GetMethod("OutgoingLoanDay",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance).Invoke(c,new object[]{db});
+            Assert.AreEqual("expired",offer.status);Assert.AreEqual(cash,c.life.cash);
+            Assert.IsFalse(c.life.messages.Skip(messages).Any(m=>m.subject=="Accord de prêt"));
+        }
         [TestCase(28,0,2600,700)] [TestCase(182,40,10800,700)] [TestCase(365,0,36300,700)] [TestCase(365,100,0,700)] [TestCase(28,40,2232,1001)]
         public void LoanCounterOfferCompensatesOnlyRemainingSalary(int duration,int share,long compensation,long wage)
         {

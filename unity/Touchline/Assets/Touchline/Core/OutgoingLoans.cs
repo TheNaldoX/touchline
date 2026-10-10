@@ -18,7 +18,13 @@ namespace Touchline.Core
         void OutgoingLoanDay(Database db)
         {
             outgoingLoans??=new List<OutgoingLoanOffer>();foreach(var o in outgoingLoans.Where(o=>o.status=="pending"&&o.due<=life.day)){
-                var p=db.Find(o.player);var assessment=LoanClubAssessment(db,o.player,o.borrower,o.terms,o.fee);bool fit=assessment?.levelCompatible==true,affordable=assessment?.affordable==true;
+                var p=db.Find(o.player);var contract=world.contracts.FirstOrDefault(c=>c.player==o.player);
+                if(p==null||PlayingCareerEnded(p)||p.team!=o.owner||contract==null||contract.IsLoan||o.terms==null||o.terms.loanEndDay<=life.day||o.terms.loanEndDay>contract.until){
+                    o.status="expired";
+                    if(o.owner==club)Mail("Secrétariat","Proposition de prêt caduque",(p?.name??o.player)+" : la situation du joueur ou les échéances contractuelles ont changé. Aucun prêt n’a été signé.",p?.id,"transfer",OutgoingLoanMessageReference(o));
+                    continue;
+                }
+                var assessment=LoanClubAssessment(db,o.player,o.borrower,o.terms,o.fee);bool fit=assessment?.levelCompatible==true,affordable=assessment?.affordable==true;
                 o.status=fit&&affordable?"accepted":"declined";if(o.owner==club)Mail("Agent · "+p.name,o.status=="accepted"?"Accord de prêt":"Prêt refusé",o.status=="accepted"?"Le club accepte les conditions. Vous disposez de sept jours pour signer.":!fit?"Le niveau et le temps de jeu envisagés ne conviennent pas au joueur.":"Le club d’accueil ne peut pas financer ces conditions. Réduisez l’indemnité, la part salariale ou les clauses.",p.id,"transfer",OutgoingLoanMessageReference(o));}
             foreach(var o in outgoingLoans.Where(o=>o.status=="accepted"&&o.due+7<life.day))o.status="expired";
         }
