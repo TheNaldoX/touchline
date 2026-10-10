@@ -137,6 +137,40 @@ namespace Touchline
                 head.localRotation=Quaternion.Slerp(head.localRotation,Quaternion.Euler(pitch,yaw,0),weight*reach);
             }
         }
+        float mecanimPlacementLower;Vector3 placementLeft,placementRight,placementRoot;bool placementTracked,placementActive;
+        void MecanimKeeperPlacement(Actor actor,float remaining,Vector3 ballPosition,float dt,bool reset)
+        {
+            bool placing=actor.action=="place-ball",rising=actor.action=="keeper-rise";
+            if(reset||actor.slot!=0){mecanimPlacementLower=0;placementTracked=false;placementActive=false;}
+            if(actor.slot!=0)return;
+            var left=Limb("L");var right=Limb("R");
+            if(!placementTracked){placementLeft=left.wrist.position;placementRight=right.wrist.position;}
+            else {var travel=transform.position-placementRoot;placementLeft+=travel;placementRight+=travel;}
+            float desired=placing?Mathf.SmoothStep(0,1,1-remaining/MatchSimulation.KeeperPlaceDuration):rising?Mathf.SmoothStep(0,1,remaining/MatchSimulation.KeeperRiseDuration):0;
+            // Normal placement progresses below this rate; interruptions recover over time.
+            mecanimPlacementLower=Mathf.MoveTowards(mecanimPlacementLower,desired,Mathf.Max(0,dt)*6);
+            float lower=mecanimPlacementLower;if(placing)placementActive=true;
+            const float settledHands=.005f; // metres before returning completely to the captured animation
+            if(!placing&&lower<=0&&Vector3.Distance(placementLeft,left.wrist.position)<settledHands&&Vector3.Distance(placementRight,right.wrist.position)<settledHands)placementActive=false;
+            if(!placementActive){placementLeft=left.wrist.position;placementRight=right.wrist.position;placementRoot=transform.position;placementTracked=true;return;}
+            var lf=left.foot.position;var rf=right.foot.position;
+            var lr=left.foot.rotation;var rr=right.foot.rotation;
+            body.localPosition+=Vector3.down*(.48f*lower); // metres in the rig's local scale
+            if(bones.TryGetValue("spine05",out var upperSpine))upperSpine.localRotation=Quaternion.Euler(35*lower,0,0)*upperSpine.localRotation;
+            if(bones.TryGetValue("spine02",out var lowerSpine))lowerSpine.localRotation=Quaternion.Euler(25*lower,0,0)*lowerSpine.localRotation;
+            var contact=ballPosition-transform.forward*.06f;gripOffset=Vector3.zero;
+            for(int i=0;i<2;i++){
+                var limb=Limb(Sides[i]);float sign=i==0?1:-1;
+                var target=contact+transform.right*(sign*.11f);
+                if(!placing)target=Vector3.Lerp(limb.wrist.position,target,lower);
+                const float placementHandSpeed=4; // metres/second, including entry from an unfinished catch
+                SolveArm(Sides[i],Vector3.MoveTowards(i==0?placementLeft:placementRight,target,placementHandSpeed*Mathf.Max(0,dt)),-body.up);
+                if(placing)OrientKeeperHand(i,ballPosition);
+            }
+            SolveLeg("L",lf,transform.forward);SolveLeg("R",rf,transform.forward);
+            left.foot.rotation=lr;right.foot.rotation=rr;
+            placementLeft=left.wrist.position;placementRight=right.wrist.position;placementRoot=transform.position;placementTracked=true;
+        }
         void KeeperHandlingPose(Actor actor,float remaining,Vector3 ballPosition)
         {
             bool placing=actor.action=="place-ball",rising=actor.action=="keeper-rise";
