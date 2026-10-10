@@ -7,6 +7,42 @@ namespace Touchline
     {
         Vector3 distributionContactOffset;
         public Vector3 DistributionHandPosition=>bones["wrist.R"].position+distributionContactOffset;
+        float mecanimDistributionLower;
+        void MecanimKeeperDistributionContact(Actor actor,float remaining,Vector3 ball,float dt,bool reset)
+        {
+            if(reset)mecanimDistributionLower=0;
+            bool distributing=MatchSimulation.HandDistribution(actor.action),roll=actor.action=="keeper-roll";
+            if(!distributing&&mecanimDistributionLower<=0)return;
+            float elapsed=MatchSimulation.KeeperDistributionDuration-remaining;
+            float contact=actor.actionContactTime>0?actor.actionContactTime:MatchSimulation.KeeperDistributionContact;
+            const float releaseBlendSeconds=.20f,loweringSpeed=3; // seconds, metres/second
+            float maximumLowering=MotionStature*.22f; // limit knee flexion to 22% of stature, including short keepers
+            float weight=distributing?1-Mathf.SmoothStep(0,1,(elapsed-contact)/releaseBlendSeconds):0;
+            var fingers=roll?transform.forward:body.up;var palm=roll?body.up:transform.forward;
+            distributionContactOffset=fingers*.075f+palm*.025f;
+            var hand=Limb("R");var target=(elapsed<=contact?ball:new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z))-distributionContactOffset;
+            float lowering=0;
+            if(roll&&elapsed<=contact){
+                // Bend only as far as the captured shoulder requires to keep the held path reachable.
+                float reach=(Vector3.Distance(hand.upperArm.position,hand.lowerArm.position)+Vector3.Distance(hand.lowerArm.position,hand.wrist.position))*.97f;
+                var delta=hand.upperArm.position-target;float horizontal=delta.x*delta.x+delta.z*delta.z;
+                lowering=Mathf.Clamp(delta.y-Mathf.Sqrt(Mathf.Max(0,reach*reach-horizontal)),0,maximumLowering);
+            }
+            mecanimDistributionLower=Mathf.MoveTowards(mecanimDistributionLower,lowering,loweringSpeed*Mathf.Max(0,dt));
+            if(mecanimDistributionLower>0){
+                var freeHand=Limb("L").wrist;var freePosition=freeHand.position;var freeRotation=freeHand.rotation;
+                var lf=Limb("L").foot;var rf=Limb("R").foot;var lp=lf.position;var rp=rf.position;var lr=lf.rotation;var rr=rf.rotation;
+                body.position-=Vector3.up*mecanimDistributionLower;
+                SolveLeg("L",lp,transform.forward);SolveLeg("R",rp,transform.forward);lf.rotation=lr;rf.rotation=rr;
+                // The supporting arm keeps its captured height while the knees bend;
+                // lowering the whole free hand with the pelvis buried its glove.
+                SolveArm("L",freePosition,body.forward);freeHand.rotation=freeRotation;
+            }
+            if(weight<=0)return;
+            SolveArm("R",Vector3.Lerp(hand.wrist.position,target,weight),roll?body.forward:-body.up);
+            var orientation=Quaternion.LookRotation(fingers,palm)*Quaternion.Inverse(Quaternion.LookRotation(handAxes[1],handPalmAxes[1]));
+            hand.wrist.rotation=Quaternion.Slerp(hand.wrist.rotation,orientation,weight*Mathf.SmoothStep(0,1,elapsed/.12f));
+        }
         void FinalKeeperDistributionContact(Actor actor,float remaining,Vector3 ball)
         {
             if(!MatchSimulation.HandDistribution(actor.action))return;

@@ -4,7 +4,7 @@ Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dé
 
 ## État courant
 
-- Session autorisée jusqu’au10/10/2026 à10h Paris (08:00UTC). Quota vérifié05h18 :70% utilisé,30% restant. Automatisation réactivée avec arrêt à10h ; dès92% utilisés, aucun nouveau lot, build/livraison dernière source validée (clé CI stable, version au moins0.65/code58). Dès09h15 privilégier consolidation/livraison. Ce créneau remplace les anciennes échéances.
+- Session autorisée jusqu’au10/10/2026 à10h Paris (08:00UTC). Quota vérifié05h33 :73% utilisé,27% restant. Automatisation réactivée avec arrêt à10h ; dès92% utilisés, aucun nouveau lot, build/livraison dernière source validée (clé CI stable, version au moins0.65/code58). Dès09h15 privilégier consolidation/livraison. Ce créneau remplace les anciennes échéances.
 
 - Lot courant : `fix/agent-playing-time-feedback`, avis agent/fourchettes selon rôle promis, sans écraser offre ; précontrat affiche indemnité nulle, prêt conserve salaire parent. Core947/947, ciblés Unity22/22 ; six captures `ui-agent-role-compact` et parcours des deux résolutions revus. PR83 étoiles relatives, PR84 pose gardien : Core944/944, globale2032/2306 (274 anciens échecs, aucun nouveau). Ces lots ne sont pas dans APK0.64. Essais moteur isolés, non intégrés.
 
@@ -14,6 +14,8 @@ Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dé
 - La suite Unity reste rouge : ne pas annoncer tous les chantiers terminés. Nouvelle correction limitée au ballon tenu ; plongeons/prises/placements ne sont pas tous résolus.
 
 ## Lots retenus récents
+
+- Lot validé : `fix/keeper-distribution-clips`, raccordement des deux captures de relance existantes, contact et récupération continus. Core947/947 ; ciblés37/37. Globale2067/2321 :254 échecs anciens,20 anciens corrigés,aucun nouveau (`keeper-distribution-final-comparison.json`). Douze nouveaux tests. Flexion proportionnelle à la taille, bras libre préservé. Captures roll-final et throw-native revues, vidéo `artifacts/Touchline-keeper-roll-final-2026-10-10.mp4`. Pas de nouvelle mocap, pas de test Fold ; simulation inchangée. Prochaine étape : aperçu financier des offres avant envoi, puis diagnostic moteur ligne haute distinct des essais rejetés.
 
 | PR | Changement et preuves locales |
 |---|---|
@@ -57,6 +59,6 @@ Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dé
 - `.tools/dotnet/dotnet.exe`, DOTNET_CLI_HOME=.tools/cli ; CoreTests/Calibration/SeasonSim. Ne pas reconstruire un outil pendant son exécution. Python : `C:/Users/victo/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe` ; ffmpeg `C:/ffmpeg-8.1.2-essentials_build/bin/ffmpeg.exe`.
 - CI Unity bloquée deux fois par Docker Hub anonyme : pas de relance en boucle. GitHub via `.validation/github-api.ps1`, secrets jamais imprimés ; attacher chaque PR créée.
 - Nettoyage après dernière Unity seulement : `.validation/cleanup-unity-imports.ps1`,73 imports générés connus ; préserver nouveaux .meta intentionnels, Library et sources. Restaurer scène/ProjectSettings seulement si modifications générées connues.
-- Preuves locales ignorées dans `.validation/` et artifacts ; détails dans PR. Automatisation PAUSED, aucun travail planifié réactivé.
+- Preuves locales ignorées dans `.validation/` et artifacts ; détails dans PR. Automatisation ACTIVE jusqu’au10/10 à10h Paris ; dès92% utilisés, geler et livrer une APK validée.
 
 

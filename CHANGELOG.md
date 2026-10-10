@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Gardiens : relances à la main raccordées aux gestes existants, contact et récupération progressifs, flexion adaptée à la taille sans enfoncer le bras libre.
 - Négociations : avis de l’agent et fourchette salariale actualisés selon le temps de jeu promis, regroupés dans le dialogue sans écraser les conditions saisies.
 - Gardiens : accompagnement du ballon jusqu’au sol et redressement progressif avec Mecanim, y compris lorsque le geste est interrompu.
 - Recrutement : niveaux et potentiels affichés en étoiles relatives au club sur le marché, les recommandations et les rapports, avec fourchettes d’incertitude sans note globale chiffrée.
