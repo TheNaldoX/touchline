@@ -220,6 +220,9 @@ namespace Touchline
             if(turnWeight>0)MecanimTurnYaw(turnWeight);
             MecanimFootLock(dt,reset);
             MecanimPassContact(actor);
+            // Retargeted clips can lower a rotated boot below the pitch during
+            // action recovery. Preserve the captured knee plane and foot rotation.
+            KeepBootsAbovePitch(Vector3.forward,true);
             return true;
         }
 

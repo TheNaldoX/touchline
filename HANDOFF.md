@@ -2,7 +2,13 @@
 
 Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dans Git/PR, pas de nouveaux journaux docs.
 
-## Lot courant — contrats après sauvegarde
+## Lot courant — appuis Mecanim
+
+- Branche `fix/mecanim-ground-contact`, base PR78/7ab45e0. Réutilise la correction de semelle au sol après les couches Mecanim, en conservant rotation du pied et plan du genou. Aucun moteur/ballon modifié.
+- Trois nouveaux tests de récupération de touche échouent avant (5,5–6,6cm sous le sol), passent après à30/60/120Hz. Core937/937 ; Unity2007/2288,281 échecs restants,18 anciens corrigés, aucun nouveau (`ground-contact-comparison.json`). Captures natives avant/après revues, vidéo `artifacts/Touchline-throw-support-before-after-2026-10-10.mp4` (avant gauche/après droite, ralenti2×). Ballon de référence immobile ; ne prouve pas le contact mains/ballon. Pas de mesure Android.
+- Prochain lot : finances en onglets et aperçu billetterie sans modifier la carrière avant confirmation. Dette d'animations et ligne haute toujours ouvertes.
+
+## Contrats après sauvegarde — PR78
 
 - Branche `fix/loan-state-after-save`, base PR77/b2a8c3d. `Employment.IsLoan` distingue un vrai club prêteur d'une chaîne vide après JsonUtility ; usages unifiés dans retours, salaires, fins de contrat, ventes, formation et UI. Pas de changement du format enregistré ni du moteur de match.
 - Régression avant10/13, après Core937/937 (`loan-state-core.txt`), trois nouveaux scénarios de restauration : joueurs permanents, vente et partage salarial/retour d'un vrai prêt. Unity complète1986/2285, mêmes299 échecs, aucun nouveau (`loan-state-comparison.json`), aucun diagnostic C# nouveau. Captures natives réussies et revues plié/déplié (`ui-loan-save-final`) : option prêt activée avec champ prêteur vide. Pas de Fold physique ni de nouvelle APK. Prochaine priorité : dette d'animations (contacts/sol), puis ligne haute avec hypothèse nouvelle et calibration appariée.
