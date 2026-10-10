@@ -29,6 +29,15 @@ ne signifie pas absence d'effet. Intervalles exploratoires, sans correction des 
 multiples ; ce n'est ni une promesse de victoire ni une validation sur toutes les formations.
 Une erreur de simulation interrompt l'audit au lieu d'exclure silencieusement un match.
 
+Les colonnes « Profondeur adverse » suivent chaque passe en profondeur de l’adversaire
+jusqu’à sa première issue : contrôle, hors-jeu, interception contrôlée, déviation,
+contrôle manqué, sortie, ballon non maîtrisé, interruption ou vol inachevé à la pause/fin.
+Elles sont exprimées par match, pas en pourcentage. Leur somme doit correspondre au
+nombre de passes en profondeur adverses ; sinon l’audit échoue. Le suivi lit chaque
+pas physique sans modifier le moteur ni consommer de hasard. Un contrôle réussi ne
+prouve ni un tir ultérieur ni une occasion dangereuse : ce sont des issues immédiates,
+pas une attribution causale des buts à une consigne.
+
 Une sélection facultative évite de rejouer les consignes inchangées :
 `dotnet run -c Release -- --tactics 200 1 ligne.csv Ligne`
 ou `"Ligne,Rythme"`. Les affiches et graines restent identiques à l'audit complet.
