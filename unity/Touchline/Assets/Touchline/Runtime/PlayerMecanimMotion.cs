@@ -135,6 +135,8 @@ namespace Touchline
                     // Tacle debout : pied intérieur dans le ballon, du côté où il se trouve.
                     if(actor.actionKind!=MatchSimulation.StandingDuel)break;
                     clip=BallOnLeft(actor)?StandingTackleClip+" (miroir)":StandingTackleClip;simContact=actor.actionContactTime>0?actor.actionContactTime:MatchSimulation.TacklePreparation;break;
+                case "keeper-roll":clip="Goalkeeper Pass";simContact=actor.actionContactTime>0?actor.actionContactTime:MatchSimulation.KeeperDistributionContact;break;
+                case "keeper-throw":clip=KeeperThrowClip;simContact=actor.actionContactTime>0?actor.actionContactTime:MatchSimulation.KeeperDistributionContact;break;
                 case "throw":clip=actor.slot==0?(MecanimClips.ContainsKey(KeeperThrowClip)?KeeperThrowClip:"Goalkeeper Pass"):"Throw In";simContact=actor.actionContactTime>0?actor.actionContactTime:.5f;break;
                 case "dive":clip=(actor.diveSide>=0)==(DiveClipSide>0)?"Goalkeeper Diving Save":"Goalkeeper Diving Save (miroir)";simContact=actor.actionContactTime>0?actor.actionContactTime:.2f;break;
                 case "claim":clip="Goalkeeper Catch";simContact=.2f;break;
