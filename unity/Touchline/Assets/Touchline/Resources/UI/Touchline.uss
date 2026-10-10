@@ -512,7 +512,7 @@ Button:disabled { opacity: .45; }
 .manager-shell .club-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .manager-shell .navigation { border-right-width: 1px; border-right-color: rgb(27,44,58); }
 .manager-shell .navigation > Button { font-size: 13px; min-height: 48px; max-height: 48px; margin-top: 1px; margin-bottom: 1px; }
-.manager-shell .nav-caption { padding: 7px 10px; font-size: 11px; }
+.manager-shell .nav-caption { padding: 7px 10px; font-size: 12px; }
 .manager-shell .nav-group { margin-top: 6px; margin-bottom: 2px; }
 .manager-nav-badge { position: absolute; right: 5px; top: 12px; min-width: 20px; height: 19px; border-radius: 6px; padding: 1px 4px; font-size: 11px; color: rgb(19,39,38); background-color: rgb(131,230,200); -unity-text-align: middle-center; }
 .manager-shell .navigation > Button.unread-nav { padding-right: 32px; border-right-width: 0; }
@@ -1104,19 +1104,19 @@ Button.prematch-selected { background-color: rgb(26,66,61); border-width: 1px; b
 .recruit-workspace .recruit-budget { font-size: 11px; margin: 0 0 0 16px; flex-shrink: 1; -unity-text-align: middle-right; }
 .recruit-workspace .recruit-tabs { flex-wrap: nowrap; margin-bottom: 6px; }
 .recruit-workspace .recruit-tabs > Button { min-height: 48px; height: 48px; margin-top: 0; margin-bottom: 0; padding: 3px 8px; }
-.recruit-workspace .recruit-toolbar { flex-wrap: nowrap; flex-shrink: 0; align-items: center; margin-bottom: 2px; }
-.recruit-workspace .recruit-search-tools { flex-grow: 1; flex-basis: 0; min-width: 0; margin: 0 8px 0 0; }
+.recruit-workspace .recruit-toolbar { flex-wrap: wrap; flex-shrink: 0; align-items: center; margin-bottom: 2px; }
+.recruit-workspace .recruit-search-tools { flex-grow: 1; flex-basis: 100%; min-width: 0; margin: 0 0 6px; }
 .recruit-workspace .recruit-search-tools > TextField { min-height: 48px; height: 48px; }
-.recruit-workspace .recruit-search-tools .unity-base-field__label { min-width: 30px; width: 30px; margin-right: 4px; font-size: 11px; }
+.recruit-workspace .recruit-search-tools .unity-base-field__label { min-width: 30px; width: 30px; margin-right: 4px; font-size: 12px; }
 .recruit-workspace .recruit-search-tools > Button { min-height: 48px; height: 48px; margin-left: 4px; padding: 4px 8px; }
-.recruit-workspace .recruit-filters { flex-grow: 1.2; flex-basis: 0; min-width: 0; margin: 0; }
+.recruit-workspace .recruit-filters { flex-grow: 1.2; flex-basis: 75%; min-width: 0; margin: 0; }
 .recruit-workspace .recruit-filters > DropdownField { min-height: 48px; height: 48px; margin: 0 5px 0 0; }
 .recruit-workspace .recruit-advanced-button { min-height: 48px; height: 48px; min-width: 78px; margin: 0; padding: 4px 8px; font-size: 12px; }
 .recruit-workspace .recruit-results { font-size: 11px; margin: 5px 0 7px; white-space: normal; }
 .recruit-workspace .recruit-advanced { margin: 0; }
 .recruit-workspace .recruit-advanced > Toggle { display: none; }
 .recruit-workspace .recruit-advanced > .unity-foldout__content { margin-left: 0; }
-.recruit-workspace .recruit-player-row { flex-wrap: nowrap; height: 68px; padding: 7px 8px; }
+.recruit-workspace .recruit-player-row { flex-wrap: nowrap; height: 100px; padding: 7px 8px; }
 .recruit-workspace .recruit-portrait { width: 40px; height: 48px; margin-right: 10px; }
 .recruit-workspace .recruit-copy { align-self: center; }
 .recruit-workspace .recruit-player-name { font-size: 14px; margin-bottom: 4px; }
@@ -1131,7 +1131,7 @@ Button.prematch-selected { background-color: rgb(26,66,61); border-width: 1px; b
 .narrow .recruit-workspace .recruit-toolbar { flex-wrap: wrap; }
 .narrow .recruit-workspace .recruit-search-tools { flex-basis: 100%; margin: 0 0 6px; }
 .narrow .recruit-workspace .recruit-filters { flex-basis: 75%; }
-.narrow .recruit-workspace .recruit-advanced-button { min-width: 65px; font-size: 11px; }
+.narrow .recruit-workspace .recruit-advanced-button { min-width: 65px; font-size: 12px; }
 .narrow .recruit-workspace .recruit-player-row { flex-wrap: wrap; height: 140px; padding: 7px; }
 .narrow .recruit-workspace .recruit-portrait { width: 35px; height: 48px; margin-right: 7px; }
 .narrow .recruit-workspace .recruit-player-name { font-size: 13px; }

@@ -79,6 +79,7 @@ namespace Touchline.Editor
 
         static List<Action> BuildSteps()
         {
+            if(Path.GetFileName(Output).StartsWith("ui-scroll-memory-",StringComparison.Ordinal))return BuildScrollMemorySteps();
             if(Path.GetFileName(Output).StartsWith("ui-recruitment-cache-",StringComparison.Ordinal))return BuildRecruitmentCacheSteps();
             if(Path.GetFileName(Output).StartsWith("ui-scout-snapshot-",StringComparison.Ordinal))return BuildScoutSnapshotSteps();
             if(FocusedImmersion)return BuildFocusedImmersionSteps();
@@ -127,6 +128,21 @@ namespace Touchline.Editor
                 list.Add(()=>{Capture(screen.tag+"-match-consignes");SetField("tacticalTab","Composition");Call("Navigate","Match");});
             }
             return list;
+        }
+
+        static List<Action> BuildScrollMemorySteps()
+        {
+            var list=new List<Action>();float saved=0;
+            list.Add(()=>App.Career.EnsureWorld(App.Database));
+            ScrollView MarketScroll()=>Root.Q<ListView>("recruit-list").Q<ScrollView>();
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);SetField("recruitmentTab","Marché");Call("Navigate","Recrutement");});
+                list.Add(()=>{foreach(var id in new[]{"recruit-role","recruit-market","recruit-order"})if(Root.Q(id).worldBound.width<48)throw new Exception("Recruitment filter is collapsed: "+id);MarketScroll().scrollOffset=new Vector2(0,240);});
+                list.Add(()=>{saved=MarketScroll().scrollOffset.y;if(saved<100)throw new Exception("Market fixture must be scrollable");Capture(screen.tag+"-marche-position");Click("recruit-tab-Rapports");});
+                list.Add(()=>{Capture(screen.tag+"-rapports");Click("recruit-tab-Marché");});
+                list.Add(()=>{Capture(screen.tag+"-marche-retour");if(Math.Abs(MarketScroll().scrollOffset.y-saved)>1)throw new Exception("Market scroll position lost after visiting reports");foreach(var row in Root.Query(className:"recruit-player-row").ToList()){var copy=row.Q(className:"recruit-copy");if(copy.worldBound.yMin<row.worldBound.yMin||copy.worldBound.yMax>row.worldBound.yMax)throw new Exception("Recruitment identity exceeds its row");}});
+            }
+            audit.AppendLine("Marché défilé puis Rapports puis Marché : position conservée dans les deux formats.");return list;
         }
 
         static List<Action> BuildRecruitmentCacheSteps()

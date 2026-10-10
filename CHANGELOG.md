@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Navigation : défilement mémorisé séparément par onglet de recrutement/calendrier et format d’écran ; titres de navigation agrandis.
 - Recrutement : les besoins et recommandations sont recalculés après les changements manuels de postes, même sans changement de formation ni de journée.
 - Animations : préparation progressive des mains du gardien avant une prise aérienne, avec retour continu à la course si la trajectoire est annulée, sans modifier les appuis capturés.
 - Recrutement : les rapports conservent les niveaux et attributs observés au lieu de découvrir automatiquement la progression cachée des cibles ; filtres compacts et actions remontées dans les fiches de rapport.

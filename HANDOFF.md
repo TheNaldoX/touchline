@@ -2,7 +2,12 @@
 
 Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dans Git/PR, pas de nouveaux journaux docs.
 
-## Lot courant — recrutement après changement tactique
+## Lot courant — navigation et marché
+
+- Branche `fix/workspace-scroll-memory`, base PR74/ad52d6a. Positions séparées par onglet (recrutement, calendrier, tactique) et format. Titres latéraux12sp ; marché déplié : lignes104 unités pour éviter le chevauchement du nom/salaire/rapport, recherche sur une ligne dédiée et filtres visibles.
+- Régression native `BuildScrollMemorySteps` : échec avant dans les deux formats (`scroll-memory-repro.log`), réussite après (`scroll-memory-final.log`). Six captures ; retour marché revu plié/déplié. Assertions position, contenu dans sa ligne et largeur des filtres. Première fixture sans monde corrigée ; essai de barre qui masquait les filtres corrigé avant livraison. Aucun changement Core,926/926 hérités ; suite Unity globale reste1975/2274,299 anciens échecs. Pas de nouvelle APK ni validation physique Fold.
+
+## Recrutement après changement tactique — PR74
 
 - Branche `fix/recruitment-tactic-refresh`, base PR73/c6c666b, code a0fb3a9. Invalidation du cache des besoins à chaque reconstruction d’écran ; réutilisation conservée entre les cartes du même écran. Corrige les postes modifiés sans changement de nom de formation ni de jour. Budget déjà recalculé correctement avant ce lot.
 - Régression native `BuildRecruitmentCacheSteps` : échec avant dans les deux résolutions, réussite après ; quatre captures après revues (`build/film/ui-recruitment-cache-{before,after}`). Aucun avertissement/erreur C# ; exception préexistante de l’indexation UnityEditor.Search au démarrage, distincte du jeu. Pas de test Fold physique. Trois titres latéraux préexistants à11sp.
