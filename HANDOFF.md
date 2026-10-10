@@ -6,7 +6,8 @@ Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dé
 
 - Session autorisée jusqu’au10/10/2026 à10h Paris (08:00UTC). Quota vérifié05h33 :73% utilisé,27% restant. Automatisation réactivée avec arrêt à10h ; dès92% utilisés, aucun nouveau lot, build/livraison dernière source validée (clé CI stable, version au moins0.65/code58). Dès09h15 privilégier consolidation/livraison. Ce créneau remplace les anciennes échéances.
 
-- Lot courant : `fix/agent-playing-time-feedback`, avis agent/fourchettes selon rôle promis, sans écraser offre ; précontrat affiche indemnité nulle, prêt conserve salaire parent. Core947/947, ciblés Unity22/22 ; six captures `ui-agent-role-compact` et parcours des deux résolutions revus. PR83 étoiles relatives, PR84 pose gardien : Core944/944, globale2032/2306 (274 anciens échecs, aucun nouveau). Ces lots ne sont pas dans APK0.64. Essais moteur isolés, non intégrés.
+- Lot courant : `feat/transfer-cost-preview`, aperçu avant offre (signature/agent, échéances, salaire partiel, option/obligation, précontrat). Core953/953, Unity recrutement23/23 ; six nouveaux cas. Huit captures `ui-transfer-cost-compact` réussies, plié/déplié revus ; aucune mutation cash/offres/messages, montant actualisé en changeant le partage salarial et le paiement. UI compacte, pas de nouvel élément <12sp ni bouton <48dp (badge11sp ancien). Simulation inchangée.
+- PR83 étoiles relatives, PR84 pose gardien, PR85 avis agent, PR86 relances gardien (8633e0d). Dernière globale2067/2321 :254 échecs anciens,20 corrigés,aucun nouveau. Ces lots ne sont pas dans APK0.64. Fold non testé. Prochaine étape : diagnostic moteur ciblé ligne haute/passes, sans réintégrer les essais rejetés.
 
 - Branche `feat/apk-064-consolidated-preview`, PR82, source6b5205b ; base PR81/620b43f. APK0.64/code57 construite, signature/manifest/ARM64 vérifiés. Correction mains gardien : Core941/941, ciblés30/30, globale2020/2295,275 anciens échecs ; six corrigés, aucun nouveau (`keeper-hold-comparison.json`). Captures natives `keeper-hold-native` revues ; vidéo en artifacts. Pas de validation Fold.
 - Finances : quatre onglets, défilement séparé, aperçu tarif sans mutation incluant réaction des supporters et délai hebdomadaire ; flux comptables30 jours ; statuts sponsors français ; alerte salariale ouvre Budget directement.
@@ -15,7 +16,7 @@ Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dé
 
 ## Lots retenus récents
 
-- Lot validé : `fix/keeper-distribution-clips`, raccordement des deux captures de relance existantes, contact et récupération continus. Core947/947 ; ciblés37/37. Globale2067/2321 :254 échecs anciens,20 anciens corrigés,aucun nouveau (`keeper-distribution-final-comparison.json`). Douze nouveaux tests. Flexion proportionnelle à la taille, bras libre préservé. Captures roll-final et throw-native revues, vidéo `artifacts/Touchline-keeper-roll-final-2026-10-10.mp4`. Pas de nouvelle mocap, pas de test Fold ; simulation inchangée. Prochaine étape : aperçu financier des offres avant envoi, puis diagnostic moteur ligne haute distinct des essais rejetés.
+- Lot validé : `fix/keeper-distribution-clips`, raccordement des deux captures de relance existantes, contact et récupération continus. Core947/947 ; ciblés37/37. Globale2067/2321 :254 échecs anciens,20 anciens corrigés,aucun nouveau (`keeper-distribution-final-comparison.json`). Douze nouveaux tests. Flexion proportionnelle à la taille, bras libre préservé. Captures roll-final et throw-native revues, vidéo `artifacts/Touchline-keeper-roll-final-2026-10-10.mp4`. Pas de nouvelle mocap, pas de test Fold ; simulation inchangée. Aperçu financier effectué dans le lot suivant ; diagnostic moteur encore ouvert.
 
 | PR | Changement et preuves locales |
 |---|---|
@@ -30,6 +31,8 @@ Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dé
 |69–71|Éclairage nocturne, reprise d’appui si ancrage inaccessible, passe gauchère miroir, IK passe autour du contact. Preuves `night-support-test-comparison.json`, `pass-contact-comparison.json`, vidéos dans artifacts. Aucun gain global de glissement ou performance Android démontré.|
 
 ## Moteur — essais rejetés, ne pas intégrer
+
+- `fix/blind-interception-contact` : contact rapide arrivant dans le dos du défenseur transformé en rebond, six nouveaux cas (avant4 échecs, après959/959 Core expérimentaux). Rejeté :200/graine1 buts2,61→2,47, cadrés7,74→6,82, touches49,93→51,05, penalties0,19→0,18, sorties13,79→13,47, favoris52,53→57,58%.200 paires ligne basse/haute : avantage net+1,13→+1,00 reste excessif. Preuves `blind-intercept-{before,core,after-200,line}.txt` et CSV. Source revenue à PR87/c16fbd4,953 Core retenus. Diagnostic : défaut local réel mais rebond systématique trop large ; ne pas réintégrer tel quel. Prochaine piste : mesurer les issues des passes en profondeur (contrôle/interception/arrêt/hors-jeu) avant une nouvelle règle.
 
 - Essai `fix/through-pass-target-reading`,2e893e6 (origine ddeffa1/aed2c72), rejeté et non intégré. Ne considérer que la ligne projetée pour les appels licites corrige8 scénarios mais graine2/200 matchs : favoris62,14→68,93%, touches49,44→50,27, penalties0,26→0,20, buts2,69→2,82. Graine1 : favoris52,53→53,54%, touches49,93→51,20 ; avantage net ligne haute+1,13→+1,12 inchangé sur200 paires. Preuves through-onside-{before,after}-seed2.txt, through-onside-after-{200,line}.txt.955 tests Core expérimentaux,947 dans la branche retenue. Ne pas réintégrer sans nouveau diagnostic.
 

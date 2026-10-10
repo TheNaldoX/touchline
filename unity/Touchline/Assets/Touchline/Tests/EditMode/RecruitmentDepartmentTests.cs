@@ -9,6 +9,33 @@ namespace Touchline.Tests
     // Scouting department, hidden personality, player willingness and settling of new signings.
     public class RecruitmentDepartmentTests
     {
+        [Test] public void CostPreviewSeparatesImmediateAndDeferredFeesWithoutSpending()
+        {
+            var p=db.Squad("c1").First();long cash=c.life.cash;int ledger=c.life.ledger.Count,offers=c.world.offers.Count;
+            var quote=c.PreviewTransferCost(db,p.id,100001,500,false,false,new MarketTerms{upfrontPercent=25,instalments=3});
+            Assert.AreEqual(26000,quote.cashAtSignature);Assert.AreEqual(75001,quote.deferredFee);Assert.AreEqual(1000,quote.agentFee);
+            Assert.AreEqual(3,quote.instalments);Assert.AreEqual(Career.MonthlySalary(500),quote.monthlyWage);
+            Assert.AreEqual(cash,c.life.cash);Assert.AreEqual(ledger,c.life.ledger.Count);Assert.AreEqual(offers,c.world.offers.Count);
+        }
+        [TestCase(0)] [TestCase(50)] [TestCase(100)] public void LoanPreviewKeepsParentSalaryAndDoesNotChargePurchaseOption(int share)
+        {
+            var p=db.Squad("c1").First();p.wage=1234;
+            var quote=c.PreviewTransferCost(db,p.id,50000,99999,true,false,new MarketTerms{loanWagePercent=share,loanEndDay=c.life.day+100,optionFee=200000});
+            Assert.AreEqual(52468,quote.cashAtSignature);Assert.AreEqual(Career.MonthlySalary(1234*share/100),quote.monthlyWage);
+            Assert.AreEqual(200000,quote.optionFee);Assert.AreEqual(0,quote.deferredFee);Assert.AreEqual(1234,p.wage);
+        }
+        [Test] public void PrecontractAndRenewalHaveNoTransferIndemnity()
+        {
+            var p=db.Squad("c1").First();var quote=c.PreviewTransferCost(db,p.id,999999,500,false,true,new MarketTerms());
+            Assert.AreEqual(1000,quote.cashAtSignature);Assert.AreEqual(0,quote.fee);Assert.IsTrue(quote.salaryOnArrival);
+            quote=c.PreviewTransferCost(db,c.lineup[0],999999,500,false,false,new MarketTerms());Assert.AreEqual(1000,quote.cashAtSignature);Assert.IsFalse(quote.salaryOnArrival);
+        }
+        [Test] public void CostPreviewRejectsInvalidAndOverflowingAmounts()
+        {
+            var p=db.Squad("c1").First();Assert.Throws<ArgumentException>(()=>c.PreviewTransferCost(db,p.id,-1,500,false,false,new MarketTerms()));
+            Assert.Throws<ArgumentException>(()=>c.PreviewTransferCost(db,p.id,1000,500,false,false,new MarketTerms{upfrontPercent=25}));
+            Assert.Throws<OverflowException>(()=>c.PreviewTransferCost(db,p.id,long.MaxValue,500,false,false,new MarketTerms()));
+        }
         [Test] public void AgentSalaryRangeReflectsThePlayingTimeActuallyPromised()
         {
             foreach(var teammate in db.Squad("c1"))teammate.rating=72;
