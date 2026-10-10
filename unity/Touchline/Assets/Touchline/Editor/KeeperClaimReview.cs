@@ -13,7 +13,7 @@ namespace Touchline.Editor
     {
         const string Key="KeeperClaimReview";
         static int frame,last=-1;static PlayerView view;static Actor actor;static MatchState state;
-        static Camera camera;static RenderTexture target;static Transform ball;static string output;static bool throwReview,holdReview,placeReview;static string distributionReview;
+        static Camera camera;static RenderTexture target;static Transform ball;static string output;static bool throwReview,holdReview,placeReview,throwContactReview;static string distributionReview;
         static KeeperClaimReview(){EditorApplication.update+=Tick;}
         public static void Run(){ProjectBuilder.Configure();SessionState.SetBool(Key,true);EditorApplication.isPlaying=true;}
         static void Setup()
@@ -25,7 +25,7 @@ namespace Touchline.Editor
             if(!System.Text.RegularExpressions.Regex.IsMatch(name,"^[a-zA-Z0-9.-]+$"))throw new Exception("Invalid output name");
             output=Path.GetFullPath("build/film/"+name);if(Directory.Exists(output))throw new Exception("Preserve existing proof");Directory.CreateDirectory(output);
             app.GetComponent<UIDocument>().rootVisualElement.style.display=DisplayStyle.None;
-            throwReview=Environment.GetCommandLineArgs().Contains("-touchlineThrowGround");
+            throwReview=Environment.GetCommandLineArgs().Contains("-touchlineThrowGround");throwContactReview=Environment.GetCommandLineArgs().Contains("-touchlineThrowContact");
             holdReview=Environment.GetCommandLineArgs().Contains("-touchlineKeeperHold");
             placeReview=Environment.GetCommandLineArgs().Contains("-touchlineKeeperPlace");
             distributionReview=Environment.GetCommandLineArgs().Contains("-touchlineKeeperRoll")?"keeper-roll":Environment.GetCommandLineArgs().Contains("-touchlineKeeperThrow")?"keeper-throw":null;
@@ -69,10 +69,16 @@ namespace Touchline.Editor
                 }else if(throwReview){
                     if(frame==0)for(int i=0;i<60;i++)view.Render(actor,1,dt);
                     actor.action=t<=1.1f?"throw":"idle";actor.actionTime=Mathf.Max(0,1.1f-t);actor.actionSequence=1;actor.actionKind="throw";actor.actionContactTime=.5f;actor.actionHeight=1.8f;actor.actionTarget=new Point(-48.9f,.42f);
-                    ball.position=new Vector3(-48.9f,1.8f,.42f);view.Render(actor,1,dt,ball.position);
+                    ball.position=new Vector3(-48.9f,1.8f,.42f);
+                    if(throwContactReview){
+                        var flight=new BallState{setupStart=new Point(-48.9f,.3f),setupHeight=.11f,start=actor.actionTarget,startHeight=actor.actionHeight,end=new Point(-48.9f,8)};
+                        if(t<=.5f){var throwPoint=MatchSimulation.ThrowPreparation(flight,t/.5f,out float y);ball.position=new Vector3(throwPoint.x,y,throwPoint.z);}
+                        else {float u=Mathf.Clamp01((t-.5f)/1.5f);var throwPoint=Point.Lerp(flight.start,flight.end,u);ball.position=new Vector3(throwPoint.x,Mathf.Lerp(1.8f,.11f,u)+Mathf.Sin(u*Mathf.PI)*1.5f,throwPoint.z);}
+                    }
+                    view.Render(actor,1,dt,ball.position);
                 }else view.Render(actor,1,dt,ball.position,new PlayerMotionContext{keeperClaim=sample});
                 camera.Render();var previous=RenderTexture.active;RenderTexture.active=target;var image=new Texture2D(1280,720,TextureFormat.RGB24,false);image.ReadPixels(new Rect(0,0,1280,720),0,0);image.Apply();File.WriteAllBytes(Path.Combine(output,"frame-"+frame.ToString("D3")+".png"),image.EncodeToPNG());UnityEngine.Object.DestroyImmediate(image);RenderTexture.active=previous;
-                if(++frame>=(throwReview||holdReview||placeReview||distributionReview!=null?120:21)){File.WriteAllText(Path.Combine(output,"scope.txt"),distributionReview!=null?"Synthetic keeper distribution: authoritative preparation, illustrative released flight, 2 s at60Hz. No match outcome or Android measurement.":placeReview?"Synthetic physical ball placement and rise, 2 s at60Hz,182cm keeper. No match outcome or Android measurement.":holdReview?"Synthetic keeper hold then idle, 2 s at60Hz,182cm keeper. White sphere marks authoritative holding position; stays fixed after release for comparison. No match outcome or Android measurement.":throwReview?"Synthetic throw recovery, 2 s at60Hz,180cm player. Stationary reference ball, no contact evaluation or Android measurement.":"Synthetic airborne claim readiness, 0.35 s at60Hz,182cm keeper. No catch outcome, no personal save, no Android performance measurement.");SessionState.SetBool(Key,false);EditorApplication.Exit(0);}
+                if(++frame>=(throwReview||holdReview||placeReview||distributionReview!=null?120:21)){File.WriteAllText(Path.Combine(output,"scope.txt"),throwContactReview?"Synthetic outfield throw: authoritative preparation and illustrative released flight, 2s at60Hz; no Android performance or match outcome measurement.":distributionReview!=null?"Synthetic keeper distribution: authoritative preparation, illustrative released flight, 2 s at60Hz. No match outcome or Android measurement.":placeReview?"Synthetic physical ball placement and rise, 2 s at60Hz,182cm keeper. No match outcome or Android measurement.":holdReview?"Synthetic keeper hold then idle, 2 s at60Hz,182cm keeper. White sphere marks authoritative holding position; stays fixed after release for comparison. No match outcome or Android measurement.":throwReview?"Synthetic throw recovery, 2 s at60Hz,180cm player. Stationary reference ball, no contact evaluation or Android measurement.":"Synthetic airborne claim readiness, 0.35 s at60Hz,182cm keeper. No catch outcome, no personal save, no Android performance measurement.");SessionState.SetBool(Key,false);EditorApplication.Exit(0);}
             }catch(Exception e){SessionState.SetBool(Key,false);Debug.LogException(e);EditorApplication.Exit(1);}
         }
     }

@@ -6,6 +6,22 @@ namespace Touchline.Tests
 {
     public class ActionCoverageTests
     {
+        [TestCase(30,160)] [TestCase(60,160)] [TestCase(120,160)]
+        [TestCase(30,180)] [TestCase(60,180)] [TestCase(120,180)]
+        [TestCase(30,205)] [TestCase(60,205)] [TestCase(120,205)]
+        public void OutfieldThrowContactKeepsBothHandsBesideBall(int fps,int height)
+        {
+            var go=new GameObject("Outfield throw contact");try{
+                var v=View(go);v.ChangeIdentity(new PlayerData{id="throw-contact",heightCm=height});var a=new Actor{slot=9,action="throw",actionKind="throw",actionContactTime=.5f,actionSequence=1,actionTarget=new Point(0,.42f),actionHeight=height*.01f};
+                var setup=new BallState{setupStart=new Point(0,.3f),setupHeight=.11f,start=a.actionTarget,startHeight=a.actionHeight,end=new Point(0,8)};
+                for(int i=0;i<=fps/2;i++){a.actionTime=1.1f-i/(float)fps;var point=MatchSimulation.ThrowPreparation(setup,i/(fps*.5f),out float y);v.Render(a,1,1f/fps,new Vector3(point.x,y,point.z));}
+                var ball=new Vector3(0,height*.01f,.42f);
+                foreach(var hand in go.GetComponentsInChildren<Transform>())if(hand.name=="wrist.L"||hand.name=="wrist.R"){
+                    Assert.That(Vector3.Distance(hand.position,ball),Is.LessThan(.17f),hand.name);
+                    Assert.That(hand.name=="wrist.L"?-hand.position.x:hand.position.x,Is.GreaterThan(0),"The arms must not cross through the ball.");
+                }
+            }finally{Object.DestroyImmediate(go);}
+        }
         static PlayerView View(GameObject go,bool left=false){var v=go.AddComponent<PlayerView>();v.Build(new PlayerData{id="coverage",heightCm=180,preferredFoot=left?"Left":"Right"},0,9,Color.white);return v;}
         [TestCase(false,"pass")] [TestCase(true,"pass")] [TestCase(false,"through")] [TestCase(true,"cutback")]
         public void InsidePassMeetsBallWithMedialBootSurface(bool left,string kind)

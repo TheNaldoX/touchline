@@ -148,6 +148,21 @@ namespace Touchline
                 if(actor.velocity.Length<.3f)PlantBothFeet();
             }
         }
+        void MecanimThrowContact(Actor actor,float remaining,Vector3 ball)
+        {
+            if(actor.action!="throw"||actor.slot==0||actor.actionHeight<=0)return;
+            const float approachSeconds=.25f,recoverySeconds=.25f,gripHalfWidth=.095f; // seconds and metres
+            float elapsed=1.1f-remaining,contact=actor.actionContactTime>0?actor.actionContactTime:.5f;
+            float weight=1-Mathf.SmoothStep(0,1,Mathf.Abs(elapsed-contact)/(elapsed<=contact?approachSeconds:recoverySeconds));
+            if(weight<=0)return;
+            var aim=elapsed<=contact?ball:new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z);
+            for(int i=0;i<2;i++){
+                string side=i==0?"L":"R";
+                var hand=Limb(side).wrist;var rotation=hand.rotation;
+                var target=aim+transform.right*(side=="L"?-gripHalfWidth:gripHalfWidth);
+                SolveArm(side,Vector3.Lerp(hand.position,target,weight),-body.up);hand.rotation=rotation;
+            }
+        }
         void ThrowPose(Actor actor,float remaining,Vector3 ball)
         {
             float elapsed=Mathf.Clamp(1.1f-remaining,0,1.1f),contact=actor.actionContactTime>0?actor.actionContactTime:.5f;
