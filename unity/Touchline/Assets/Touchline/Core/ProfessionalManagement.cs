@@ -218,6 +218,14 @@ namespace Touchline.Core
             foreach(var o in world.offers.Where(o=>o.status=="pending"&&o.due<=life.day)){
                 string destination=string.IsNullOrEmpty(o.destination)?club:o.destination;var p=db.Find(o.player);
                 if(p==null||!db.clubs.Any(c=>c.id==destination)){o.status="expired";continue;}
+                var employment=world.contracts.FirstOrDefault(c=>c.player==p.id);
+                bool loanChanged=o.loan&&(o.terms==null||o.terms.loanEndDay<=life.day||o.terms.loanEndDay>(employment?.until??0));
+                bool precontractChanged=o.precontract&&(employment==null||employment.until<=life.day||Epoch.AddDays(employment.until)>Date.AddMonths(6)||world.offers.Any(other=>other.player==p.id&&other.status=="scheduled"));
+                if(PlayingCareerEnded(p)||p.team!=o.seller||employment==null||employment.IsLoan||loanChanged||precontractChanged){
+                    o.status="expired";
+                    if(destination==club)Mail("Secrétariat","Proposition contractuelle caduque",p.name+" : la situation du joueur ou son contrat a changé pendant les discussions. Aucune nouvelle condition n’a été acceptée ; réexaminez sa disponibilité avant de négocier.",p.id,"transfer",TransferMessageReference(o));
+                    continue;
+                }
                 long expectedFee=o.renewal||o.precontract||p.team=="free"?0:(long)(p.value*(o.loan?.12f:1.05f));long expectedWage=(long)(p.wage*(o.renewal?1.08f:o.loan?1f:1.12f));
                 if(o.loan){
                     // Compensate only the parent's retained gross salary over the remaining days.
