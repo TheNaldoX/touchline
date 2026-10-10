@@ -12,8 +12,28 @@ namespace Touchline.Core
         public bool recall;
     }
     [Serializable] public class PaymentDue { public string player,label,club,counterparty;public int due;public long amount;public bool settled,legacyUnpaired; }
+    public sealed class TransferCostPreview
+    {
+        public long fee,agentFee,cashAtSignature,deferredFee,monthlyWage,optionFee,obligationFee;
+        public int instalments;
+        public bool salaryOnArrival;
+    }
     public partial class Career
     {
+        // Read-only quote of the existing payment rules, not an agreement or affordability approval.
+        public TransferCostPreview PreviewTransferCost(Database db,string id,long fee,long weeklyWage,bool loan,bool precontract,MarketTerms terms)
+        {
+            var p=db.Find(id);if(p==null||fee<0||weeklyWage<=0||loan&&precontract)throw new ArgumentException("Conditions financières invalides.");
+            ValidateTerms(terms,loan);
+            if(p.team==club||p.team=="free"||precontract)fee=0;
+            if(loan)weeklyWage=p.wage;
+            checked {
+                long agent=weeklyWage*2,immediate=fee*terms.upfrontPercent/100;
+                return new TransferCostPreview{fee=fee,agentFee=agent,cashAtSignature=immediate+agent,deferredFee=fee-immediate,
+                    monthlyWage=MonthlySalary(loan?weeklyWage*terms.loanWagePercent/100:weeklyWage),instalments=fee>0?terms.instalments:0,
+                    optionFee=loan?terms.optionFee:0,obligationFee=loan?terms.obligationFee:0,salaryOnArrival=precontract};
+            }
+        }
         public List<PaymentDue> payments=new List<PaymentDue>();
         public List<string> shortlist=new List<string>();
         public string MarketPhase=>WindowOpen?Date.Month==1?Date.Day>=25?"Dernière semaine du mercato d’hiver":"Mercato d’hiver":Date.Month==9||Date.Month==8&&Date.Day>=25?"Dernière ligne droite estivale":Date.Month==6?"Ouverture du mercato estival":"Mercato estival":Date.Month==5||Date.Month==6?"Préparation du marché":"Hors mercato · observation et prolongations";

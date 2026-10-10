@@ -103,11 +103,33 @@ namespace Touchline
             long transferFeeBeforePre=permanent.precontract&&!own&&p.team!="free"?p.value:permanent.fee;
             pre.RegisterValueChangedCallback(e=>{if(loading)return;if(e.newValue){if(loan.value){loan.value=false;pre.SetValueWithoutNotify(true);}transferFeeBeforePre=fee.value;fee.value=0;}else fee.value=transferFeeBeforePre;payments.SetEnabled(!loan.value&&!pre.value);refreshAgent();});
             share.RegisterValueChangedCallback(e=>refreshContribution());days.RegisterValueChangedCallback(e=>refreshContribution());role.RegisterValueChangedCallback(e=>refreshContribution());
-            Text(s,"La prime d’agent représente deux semaines du salaire intégral. Le salaire mensuel est converti en coût annuel sur 12 mois. Le staff ne signera jamais à votre place.","footnote");
             var error=Text(s,"","notice");error.name="negotiation-error";error.style.display=DisplayStyle.None;error.style.fontSize=14;error.style.whiteSpace=WhiteSpace.Normal;error.focusable=true;
+            var costCard=Card(s);costCard.name="negotiation-cost-preview";Text(costCard,"VOTRE ENGAGEMENT FINANCIER","eyebrow");
+            var costNow=Text(costCard,"","scout-status");costNow.name="negotiation-cost-now";
+            var costLater=Text(costCard,"","muted");var costSalary=Text(costCard,"","muted");costSalary.name="negotiation-cost-salary";
+            var costClauses=Text(costCard,"","footnote");var costWarning=Text(costCard,"","muted");
+            costCard.style.paddingTop=costCard.style.paddingBottom=12;
+            foreach(var label in new[]{costNow,costLater,costSalary,costClauses,costWarning}){label.style.marginTop=4;label.style.marginBottom=4;}
+            Action refreshCost=()=>{
+                if(loading)return;
+                try{
+                    var quote=Career.PreviewTransferCost(Database,id,fee.value,loan.value?p.wage:Core.Career.WeeklySalary(wage.value),loan.value,pre.value,
+                        new MarketTerms{loanWagePercent=loan.value?share.value:100,loanEndDay=Career.life.day+days.value,optionFee=loan.value?option.value:0,obligationFee=loan.value?obligation.value:0,obligationAppearances=loan.value?appearances.value:0,recall=loan.value&&recall.value,upfrontPercent=loan.value||pre.value?100:upfront.value,instalments=loan.value||pre.value?0:instalments.value});
+                    costNow.text="À la signature : "+Money(quote.cashAtSignature)+" · dont agent "+Money(quote.agentFee);
+                    costLater.text="Indemnité totale : "+Money(quote.fee)+(quote.deferredFee>0?" · reste "+Money(quote.deferredFee)+" en "+quote.instalments+" échéances trimestrielles.":" · aucun paiement différé.");
+                    costSalary.text="Salaire brut à votre charge : "+Money(quote.monthlyWage)+" / mois"+(quote.salaryOnArrival?", à partir de son arrivée.":".");
+                    costClauses.text=(quote.optionFee>0?"Option facultative : "+Money(quote.optionFee)+", exclue du montant à signer. ":quote.obligationFee>0?"Obligation d’achat : "+Money(quote.obligationFee)+", réservée au budget mais non payée à la signature. ":"")+"Hors charges employeur et primes de présence ("+Money(Math.Max(0,bonus.value))+" par apparition). Aucune dépense avant confirmation de l’accord.";
+                    costWarning.text=quote.cashAtSignature>Career.life.cash?"Trésorerie actuelle insuffisante pour signer ces conditions.":quote.fee>Career.TransferBudget-quote.obligationFee?"Indemnité et obligation dépassent le budget disponible.":"Agent : deux semaines du salaire intégral. Accord et budgets à confirmer avant signature.";
+                }catch(ArgumentException){costNow.text="Aperçu indisponible : corrigez les montants et les clauses.";costLater.text=costSalary.text=costClauses.text=costWarning.text="";}
+                catch(OverflowException){costNow.text="Montant trop élevé pour établir cet aperçu.";costLater.text=costSalary.text=costClauses.text=costWarning.text="";}
+            };
+            foreach(var field in new[]{fee,wage,bonus,option,obligation})field.RegisterValueChangedCallback(_=>refreshCost());
+            foreach(var field in new[]{share,days,appearances,upfront,instalments})field.RegisterValueChangedCallback(_=>refreshCost());
+            foreach(var field in new[]{loan,pre,recall})field.RegisterValueChangedCallback(_=>refreshCost());
             void ShowError(string message){error.text=message+" Vos conditions sont conservées : corrigez-les puis renvoyez l’offre.";error.style.display=DisplayStyle.Flex;error.schedule.Execute(()=>{s.ScrollTo(error);error.Focus();});}
             submit=Button(s,"Envoyer à l’agent",()=>{error.style.display=DisplayStyle.None;RunDecision(()=>Career.ProposeTransfer(Database,id,fee.value,loan.value?p.wage:Core.Career.WeeklySalary(wage.value),years.value,PlayingTimeRoles.All[Mathf.Clamp(role.index,0,PlayingTimeRoles.All.Length-1)],loan.value,bonus.value,clause.value,new MarketTerms{loanWagePercent=loan.value?share.value:100,loanEndDay=Career.life.day+days.value,optionFee=loan.value?option.value:0,obligationFee=loan.value?obligation.value:0,obligationAppearances=loan.value?appearances.value:0,recall=loan.value&&recall.value,upfrontPercent=loan.value||pre.value?100:upfront.value,instalments=loan.value||pre.value?0:instalments.value},pre.value),ShowError);});submit.name="negotiation-send";submit.AddToClassList("primary");
             restore(loanPrevious!=null);
+            refreshCost();
         }
 
 
