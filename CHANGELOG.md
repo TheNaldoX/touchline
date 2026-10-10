@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Vestiaire : un joueur dont la demande de départ a été refusée peut relancer la discussion après quatre semaines si le conflit persiste ; seul le dernier message demande une décision.
 - Analyse du match : bilan des tirs, qualité moyenne des occasions et limites des xG ; distinction entre consignes finales et statistiques cumulées.
 - Navigation : défilement mémorisé séparément par onglet de recrutement/calendrier et format d’écran ; titres de navigation agrandis.
 - Recrutement : les besoins et recommandations sont recalculés après les changements manuels de postes, même sans changement de formation ni de journée.

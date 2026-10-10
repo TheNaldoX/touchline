@@ -25,11 +25,12 @@ namespace Touchline.Core
             {
                 if(db.Find(p.id)?.team!=club)continue;
                 var contract=world.contracts.FirstOrDefault(c=>c.player==p.id&&c.club==club);
-                if(contract?.parent!=null)continue;
+                if(!string.IsNullOrEmpty(contract?.parent))continue;
                 var r=DepartureFor(p.id);
                 bool concern=PlayingTimeConcern(p.id)&&p.morale<DepartureMorale&&p.trust<DepartureTrust&&Available(p.id);
                 if(r==null){if(!concern)continue;r=new DepartureRequest{club=club,player=p.id,since=life.day};departureRequests.Add(r);}
                 if(r.lastChecked==life.day)continue;r.lastChecked=life.day;
+                if(r.status=="refused"&&!concern)r.since=life.day;
                 if(r.status=="watching"){
                     if(!concern){r.since=life.day;continue;}
                     if(life.day-r.since<DepartureConcernDays)continue;
@@ -39,6 +40,10 @@ namespace Touchline.Core
                 else if(!PlayingTimeConcern(p.id)&&p.morale>=55&&p.trust>=55){
                     r.status="withdrawn";
                     Mail(db.Find(p.id).name,"Je retire ma demande","Mon utilisation et notre relation ont évolué. Je suis prêt à poursuivre au club. Une éventuelle offre de vente déjà reçue reste à votre appréciation.",p.id,"talk");
+                }
+                else if(r.status=="refused"&&r.answered>=0&&life.day-Math.Max(r.answered,r.since)>=DepartureConcernDays&&concern){
+                    r.status="requested";r.opened=life.day;
+                    Mail(db.Find(p.id).name,"Ma situation n’a pas changé","Depuis notre dernier échange, mon temps de jeu reste inférieur à notre accord. Je souhaite reparler de mon avenir. Étudions un départ ou trouvons une solution concrète ; mon contrat reste en vigueur tant qu’aucun transfert n’est signé.",p.id,"talk","departure/"+club+"/"+p.id+"/"+r.opened);
                 }
             }
             foreach(var r in departureRequests.Where(r=>r.status=="closed"||r.status=="withdrawn").OrderBy(r=>r.lastChecked).Take(Math.Max(0,departureRequests.Count-300)).ToArray())departureRequests.Remove(r);
@@ -50,7 +55,7 @@ namespace Touchline.Core
             // Listing can fail (squad size, ownership, no buyer). Keep the request
             // untouched until that check succeeds; listing is not a signed sale.
             if(allow&&!world.offers.Any(o=>o.player==id&&o.status=="sale"&&o.due>=life.day))ListForSale(db,id);
-            r.status=allow?"listed":"refused";r.answered=life.day;
+            r.status=allow?"listed":"refused";r.answered=life.day;r.since=life.day;
             var p=Person(id);p.trust=Mathx.Clamp(p.trust+(allow?3:-5),0,100);
             Mail(db.Find(id).name,"Suite à ma demande",allow?"Merci d’étudier les offres. Mon contrat continue tant qu’aucun transfert n’est signé.":"Je prends acte du refus. Il faudra des changements concrets de temps de jeu pour me convaincre de rester.",id,"talk");ApplyLife(db);
         }
