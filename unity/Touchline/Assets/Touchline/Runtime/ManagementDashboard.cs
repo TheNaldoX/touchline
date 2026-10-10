@@ -123,7 +123,7 @@ namespace Touchline
             int medical=life.medical.Count(c=>c.closed<0&&string.IsNullOrEmpty(c.responsibilityEndedReason)&&c.treatment=="pending"&&Career.PlayerMedicalResponsibility(c.player)&&Database.Find(c.player)?.team==Career.club);
             if(medical>0)Decision("Avis médical attendu",medical+" dossier(s) sans protocole choisi","Santé","medical",true);
             if(life.managerBanUntil>life.day)Decision("Suspension du manager","Décisions confiées au staff jusqu’au "+Touchline.Core.Career.Epoch.AddDays(life.managerBanUntil).ToString("dd MMM",French),"Staff et délégation","suspension",true);
-            long payroll=Career.Payroll(Database);if(payroll>Career.WageBudget)Decision("Plafond salarial dépassé",Money(Core.Career.MonthlySalary(payroll))+" / mois · plafond "+Money(Core.Career.MonthlySalary(Career.WageBudget))+" / mois. Réduisez les charges ou demandez une révision du budget avant de recruter.","Finances","payroll",true);
+            long payroll=Career.Payroll(Database);if(payroll>Career.WageBudget)Decision("Plafond salarial dépassé",Money(Core.Career.MonthlySalary(payroll))+" / mois · plafond "+Money(Core.Career.MonthlySalary(Career.WageBudget))+" / mois. Réduisez les charges ou demandez une révision du budget avant de recruter.","Finances","payroll",true,()=>{financeTab="Budget";Navigate("Finances");});
             if(life.cash<0)Decision("Trésorerie négative",Money(life.cash)+" · examiner les charges et recettes","Finances","cash",true);
             int approved=life.projects.Count(p=>p.status=="approved");
             if(approved>0)Decision("Financement accordé",approved+" projet(s) attendent votre engagement","Infrastructures","facilities");

@@ -138,9 +138,15 @@ namespace Touchline
             opponent.RegisterValueChangedCallback(e=>{if(loading||opponent.index<0||opponent.index>=pickerIds.Count)return;selected=pickerIds[opponent.index];updatePicker();});
             mode.RegisterValueChangedCallback(e=>updatePicker());search.RegisterValueChangedCallback(e=>updatePicker());days.RegisterValueChangedCallback(e=>refresh());wage.RegisterValueChangedCallback(e=>refresh());fee.RegisterValueChangedCallback(e=>refresh());obligation.RegisterValueChangedCallback(e=>refresh());refresh();
         }
+        string financeTab="Budget";
         void FinancePage()
         {
-            var s=Scroll(content);Heading(s,"Les moyens de votre ambition");var w=Career.world;var metrics=Row(s,"metric-grid");Metric(metrics,"TRÉSORERIE",Money(Career.life.cash),"Disponible");Metric(metrics,"DETTE",Money(w.debt),"Avances du propriétaire");Metric(metrics,"SALAIRES",Money(Core.Career.MonthlySalary(Career.Payroll(Database))),"Chaque mois");Metric(metrics,"TRANSFERTS",Money(Career.TransferBudget),"Plafond de dépenses");
+            Heading(content,"Finances");var tabs=Row(content,"finance-tabs");
+            foreach(var tab in new[]{"Budget","Billetterie","Partenaires","Comptabilité"}){var button=Button(tabs,tab,()=>{financeTab=tab;Build();});button.name="finance-tab-"+tab;button.EnableInClassList("active",financeTab==tab);}
+            var s=Scroll(content);s.name="finance-workspace";var w=Career.world;
+            if(financeTab=="Billetterie"){FinanceTicketControls(s);return;}
+            if(financeTab=="Budget"){
+            var metrics=Row(s,"metric-grid");Metric(metrics,"TRÉSORERIE",Money(Career.life.cash),"Disponible");Metric(metrics,"DETTE",Money(w.debt),"Avances du propriétaire");Metric(metrics,"SALAIRES",Money(Core.Career.MonthlySalary(Career.Payroll(Database))),"Chaque mois");Metric(metrics,"TRANSFERTS",Money(Career.TransferBudget),"Plafond de dépenses");
             var budget=Career.BudgetSummary(Database);var limits=Card(s);limits.name="finance-budget-explanation";
             Text(limits,"Ce que vous pouvez engager","section-title");
             Text(limits,"Trésorerie : "+Money(budget.cash)+" · réserve de fonctionnement : "+Money(budget.reserve)+" · achats déjà engagés : "+Money(budget.committedPurchases),"muted");
@@ -155,11 +161,34 @@ namespace Touchline
             Text(payroll,"Autres personnels : "+Money(employment.otherPersonnel/12)+" / mois · total personnel : "+Money(employment.Total/12)+" / mois");
             Text(payroll,"Plafond des salaires bruts joueurs : "+Money(Core.Career.MonthlySalary(Career.WageBudget))+" / mois. Il tient compte des coûts employeur.","muted");
             Text(payroll,Career.OperatingCostSource(Database),"footnote");
-            var gate=Card(s);Text(gate,"Le stade et ses supporters","section-title");var price=new IntegerField("Prix moyen d’une place (€)"){value=w.ticket};gate.Add(price);Text(gate,"Affluence estimée : "+(Career.Occupancy*100).ToString("0")+" % · Recette nette estimée : "+Money(Career.GateIncome()),"muted");Button(gate,"Appliquer ce tarif",()=>RunDecision(()=>Career.SetTicketPrice(price.value)));Text(gate,"Une modification par semaine. Un prix trop élevé réduit l’affluence et peut détériorer la confiance des supporters.","footnote");
+            return;}
+            if(financeTab=="Partenaires"){
             Heading(s,"Vos partenaires");Text(s,"Entreprises fictives et montants simulés, dimensionnés aux recettes du club. Un engagement actif par emplacement.","muted");
-            for(int i=0;i<w.sponsors.Count;i++){int index=i;var d=w.sponsors[i];var card=Card(s);Text(card,d.name+" · "+d.status,"section-title");Text(card,Money(d.annual)+" / an · "+d.years+" ans");if(d.status=="signed")Text(card,"Échéance : "+Touchline.Core.Career.Epoch.AddDays(d.until).ToString("dd MMM yyyy",French));else if(d.status!="expired"){var amount=new LongField("Demande annuelle (€)"){value=d.asking>0?d.asking:d.annual};card.Add(amount);var years=new IntegerField("Durée (1 à 5 ans)"){value=d.years};card.Add(years);Button(card,"Négocier",()=>RunDecision(()=>Career.NegotiateSponsor(index,amount.value,years.value)));if(d.status=="accepted"||d.status=="counter")Button(card,"Signer à "+Money(d.asking)+" / an",()=>RunDecision(()=>Career.SignSponsor(index))).AddToClassList("primary");}}
+            for(int i=0;i<w.sponsors.Count;i++){int index=i;var d=w.sponsors[i];var card=Card(s);Text(card,d.name+" · "+(d.status=="offer"?"À négocier":OfferStatus(d.status)),"section-title");Text(card,Money(d.annual)+" / an · "+d.years+" ans");if(d.status=="signed")Text(card,"Échéance : "+Touchline.Core.Career.Epoch.AddDays(d.until).ToString("dd MMM yyyy",French));else if(d.status!="expired"){var amount=new LongField("Demande annuelle (€)"){value=d.asking>0?d.asking:d.annual};card.Add(amount);var years=new IntegerField("Durée (1 à 5 ans)"){value=d.years};card.Add(years);Button(card,"Négocier",()=>RunDecision(()=>Career.NegotiateSponsor(index,amount.value,years.value)));if(d.status=="accepted"||d.status=="counter")Button(card,"Signer à "+Money(d.asking)+" / an",()=>RunDecision(()=>Career.SignSponsor(index))).AddToClassList("primary");}}
+            return;}
             if(w.debt>0){var debt=new LongField("Rembourser (€)"){value=Math.Min(w.debt,Math.Max(0,Career.life.cash/10))};s.Add(debt);Button(s,"Rembourser la dette",()=>RunDecision(()=>Career.RepayDebt(debt.value)));}
-            Heading(s,"Mouvements comptables");foreach(var item in Career.life.ledger.TakeLast(35).Reverse())Text(s,Touchline.Core.Career.Epoch.AddDays(item.day).ToString("dd MMM",French)+" · "+item.label+" · "+Money(item.amount));Text(s,Career.life.financeSource,"footnote");
+            Heading(s,"Mouvements comptables");
+            var recent=Career.life.ledger.Where(i=>i.day>Career.life.day-30&&i.day<=Career.life.day).ToArray();var flow=Row(s,"metric-grid");
+            Metric(flow,"ENCAISSÉ",Money(recent.Where(i=>i.amount>0).Sum(i=>i.amount)),"30 derniers jours");Metric(flow,"DÉCAISSÉ",Money(-recent.Where(i=>i.amount<0).Sum(i=>i.amount)),"30 derniers jours");Metric(flow,"SOLDE DES FLUX",Money(recent.Sum(i=>i.amount)),"Hors solde de départ");
+            if(Career.life.ledger.Count==0)Text(s,"Aucun mouvement enregistré pour le moment. Les paiements et recettes apparaîtront ici au fil de la carrière.","empty-state");
+            foreach(var item in Career.life.ledger.TakeLast(35).Reverse())Text(s,Touchline.Core.Career.Epoch.AddDays(item.day).ToString("dd MMM",French)+" · "+item.label+" · "+Money(item.amount));Text(s,Career.life.financeSource,"footnote");
+        }
+        void FinanceTicketControls(VisualElement s)
+        {
+            var card=Card(s);Text(card,"Le stade et ses supporters","section-title");
+            Text(card,"Tarif actuel : "+Career.world.ticket+" € · affluence estimée : "+(Career.Occupancy*100).ToString("0")+" % · recette nette : "+Money(Career.GateIncome()),"muted");
+            var price=new IntegerField("Nouveau prix moyen (€)"){value=Career.world.ticket,name="finance-ticket-price"};card.Add(price);
+            var preview=Text(card,"","section-title");preview.name="finance-ticket-preview";var effect=Text(card,"","muted");effect.name="finance-ticket-effect";
+            var timing=Text(card,"","muted");var apply=PlayerManagementButton(card,"Appliquer ce tarif",()=>RunDecision(()=>Career.SetTicketPrice(price.value)));apply.name="finance-ticket-apply";apply.AddToClassList("primary");
+            void Refresh(){
+                if(price.value<5||price.value>250){preview.text="Choisissez un prix de 5 à 250 €.";effect.text="";timing.text="";apply.SetEnabled(false);return;}
+                var f=Career.PreviewTicketPrice(price.value);preview.text="Aperçu : "+(f.occupancy*100).ToString("0")+" % de remplissage · "+Money(f.netIncome)+" nets / rencontre";
+                effect.text=f.supporterTrustChange<0?"Hausse supérieure à 25 % : confiance des supporters "+f.supporterTrustChange.ToString("0")+" points. Cet effet est inclus dans l’aperçu.":"Pas de baisse immédiate de confiance liée à ce changement.";
+                bool ready=f.availableDay<=Career.life.day;timing.text=ready?"Tarif modifiable aujourd’hui. Aucun changement avant confirmation.":"Prochain changement possible le "+Core.Career.Epoch.AddDays(f.availableDay).ToString("dd MMM yyyy",French)+".";
+                apply.SetEnabled(PlayerManagementAvailable&&ready&&price.value!=Career.world.ticket);
+            }
+            price.RegisterValueChangedCallback(_=>Refresh());Refresh();
+            Text(card,"Estimation de jeu pour une rencontre à domicile au tarif normal, hors multiplicateur de compétition. L’affluence future reste variable. Une modification par semaine.","footnote");
         }
         void PressPage()=>ContextualPressPage();
         void ManagerPage()

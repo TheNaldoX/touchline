@@ -2,7 +2,13 @@
 
 Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dans Git/PR, pas de nouveaux journaux docs.
 
-## Lot courant — appuis Mecanim
+## Lot courant — finances et billetterie
+
+- Branche `feat/finance-ticket-preview`, base PR79/661ece9. Quatre onglets avec défilement séparé, estimation avant confirmation incluant la réaction des supporters, délai hebdomadaire explicite. Flux comptables30 jours et état vide ; statuts sponsors français ; alerte salariale ouvre Budget directement.
+- Core941/941 (`ticket-preview-core-final.txt`), quatre nouveaux tests read-only/appliqué/délai/plage ; Unity192/195 ciblés, trois échecs déjà présents dans PR79, aucun nouveau. Captures natives des quatre onglets aux deux formats revues (`ui-finance-preview-links`), parcours aperçu/confirmation/délai/alerte réussi. Exception préexistante UnityEditor.Search au démarrage, aucune exception du jeu. Badge notifications préexistant11sp ; aucun bouton<48dp dans ce parcours.
+- Suite globale de référence PR79 :2007/2288,281 échecs ; pas de nouvelle APK ni Fold physique. Pas de modification de la demande ou des tarifs appliqués, seulement un aperçu utilisant leur formule. Restent moteur/ligne haute, contacts, données et profondeur de carrière.
+
+## Appuis Mecanim — PR79
 
 - Branche `fix/mecanim-ground-contact`, base PR78/7ab45e0. Réutilise la correction de semelle au sol après les couches Mecanim, en conservant rotation du pied et plan du genou. Aucun moteur/ballon modifié.
 - Trois nouveaux tests de récupération de touche échouent avant (5,5–6,6cm sous le sol), passent après à30/60/120Hz. Core937/937 ; Unity2007/2288,281 échecs restants,18 anciens corrigés, aucun nouveau (`ground-contact-comparison.json`). Captures natives avant/après revues, vidéo `artifacts/Touchline-throw-support-before-after-2026-10-10.mp4` (avant gauche/après droite, ralenti2×). Ballon de référence immobile ; ne prouve pas le contact mains/ballon. Pas de mesure Android.
