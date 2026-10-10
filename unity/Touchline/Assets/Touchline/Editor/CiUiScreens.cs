@@ -221,7 +221,11 @@ namespace Touchline.Editor
                 list.Add(()=>{if(Root.Q("scout-missing-snapshot-"+id)==null||Root.Q<Button>("scout-refresh-"+id)?.enabledInHierarchy!=true)throw new Exception("Ancien rapport : avertissement ou actualisation absent");Capture(screen.tag+"-ancien-rapport");Root.Q<DropdownField>("scout-report-filter").value="À actualiser";if(Root.Q("scout-report-"+id)==null)throw new Exception("Filtre des anciens rapports incorrect");});
                 list.Add(()=>{Capture(screen.tag+"-ancien-detail");Click("scout-refresh-"+id);var r=App.Career.ReportFor(id);if(!r.attributesObserved||r.observedAttributes?.Length==0)throw new Exception("Nouvelle observation non archivée");r.confidence=90;r.lastObserved=App.Career.life.day;SetField("scoutReportFilter","Tous");Call("Navigate","Recrutement");});
                 list.Add(()=>{if(Root.Q("scout-missing-snapshot-"+id)!=null||Root.Q("scout-range-ability-"+id)==null)throw new Exception("Nouveau rapport incohérent");Capture(screen.tag+"-rapport-archive");var notice=Root.Q("scout-report-"+id);notice.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(notice);});
-                list.Add(()=>Capture(screen.tag+"-rapport-detail"));
+                list.Add(()=>{var range=Root.Q("scout-range-ability-"+id)?.Q<Label>();if(range==null||!range.text.Contains("★")||System.Text.RegularExpressions.Regex.IsMatch(range.text,"[0-9]"))throw new Exception("Le niveau doit rester en étoiles relatives, sans note globale numérique");Capture(screen.tag+"-rapport-detail");});
+                list.Add(()=>{SetField("recruitmentTab","Marché");SetField("recruitSearch",App.Database.Find(id).name);Call("Navigate","Recrutement");});
+                list.Add(()=>Capture(screen.tag+"-marche"));
+                list.Add(()=>{SetField("recruitmentTab","Synthèse");Call("Navigate","Recrutement");});
+                list.Add(()=>Capture(screen.tag+"-synthese"));
             }
             audit.AppendLine("Sauvegarde ancienne et observation renouvelée : deux résolutions, carrière en mémoire ; progression simulée pour la revue UI, vérifiée séparément par CoreTests.");return list;
         }

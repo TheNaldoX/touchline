@@ -82,7 +82,7 @@ namespace Touchline
                 var item = new VisualElement(); item.AddToClassList("recruit-hub-candidate"); item.name = "recruit-hub-recommendation-" + id; section.Add(item);
                 var head = Row(item, "scout-report-head"); head.style.alignItems = Align.Center; GradeBadge(head, card.grade);
                 Text(head, p.name + " · " + p.age + " ans · " + ClubName(p.team), "recruit-hub-player-name");
-                Text(item, "Niveau " + card.ability + (card.potential.known ? " · potentiel " + card.potential : "") + (card.interest != null ? " · " + card.interest : ""), "recruit-hub-assessment");
+                Text(item, "Niveau " + ClubRatingScale.Range(card.ability,ClubRatingBaseline()) + (card.potential.known ? " · potentiel " + ClubRatingScale.Range(card.potential,ClubRatingBaseline()) : "") + (card.interest != null ? " · " + card.interest : ""), "recruit-hub-assessment");
                 var actions = Row(item, "recruit-hub-actions");
                 HubAction(actions, "Rapport", "recruit-hub-rec-report-" + id, () => { scoutReportFilter = "Tous"; recruitmentTab = "Rapports"; Build(); });
                 HubAction(actions, "Agent", "recruit-hub-rec-agent-" + id, () => TransferDialog(id));

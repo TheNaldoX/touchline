@@ -108,14 +108,15 @@ namespace Touchline
             badge.tooltip="Note de recrutement A–E : comparaison prudente avec votre titulaire au même poste, besoins, âge, budget et incertitude.";
             return badge;
         }
-        const float RangeBarLow=40,RangeBarHigh=95; // rating scale shown by the bars (1–99 values)
         // Range bar; the yellow tick marks the average level of your current eleven.
         void RangeBar(VisualElement parent,string label,ScoutRange range,float reference,string name)
         {
-            var row=Row(parent,"scout-range-row");row.name=name;row.style.alignItems=Align.Center;
-            var caption=Text(row,label+" "+range,"scout-range-label");caption.style.minWidth=140;
+            float baseline=ClubRatingBaseline();
+            var row=Row(parent,"scout-range-row");row.name=name;row.style.flexDirection=FlexDirection.Column;row.style.alignItems=Align.Stretch;
+            var caption=Text(row,label+" estimé : "+ClubRatingScale.Range(range,baseline),"scout-range-label");caption.style.whiteSpace=WhiteSpace.Normal;
+            caption.tooltip="Évaluation relative à votre club : trois étoiles correspondent au niveau moyen de votre onze. La fourchette traduit l’incertitude du recruteur.";
             var track=new VisualElement();track.style.flexGrow=1;track.style.height=12;track.style.backgroundColor=new Color(.5f,.5f,.55f,.25f);track.style.minWidth=90;row.Add(track);
-            float Pos(float v)=>Mathf.Clamp01((v-RangeBarLow)/(RangeBarHigh-RangeBarLow))*100;
+            float Pos(float v)=>(ClubRatingScale.Relative(v,baseline)-1)/4*100;
             if(range.known){var fill=new VisualElement();fill.style.position=UnityEngine.UIElements.Position.Absolute;fill.style.top=0;fill.style.bottom=0;fill.style.left=Length.Percent(Pos(range.low));fill.style.width=Length.Percent(Mathf.Max(1.5f,Pos(range.high)-Pos(range.low)));fill.style.backgroundColor=new Color(.25f,.6f,.95f);track.Add(fill);}
             if(reference>0){var tick=new VisualElement();tick.style.position=UnityEngine.UIElements.Position.Absolute;tick.style.top=-3;tick.style.bottom=-3;tick.style.width=3;tick.style.left=Length.Percent(Pos(reference));tick.style.backgroundColor=new Color(.95f,.75f,.2f);track.Add(tick);}
         }
@@ -127,6 +128,7 @@ namespace Touchline
             {
                 RangeBar(card,"Niveau",data.ability,ClubRatingBaseline(),"scout-range-ability-"+p.id);
                 if(data.potential.known)RangeBar(card,"Potentiel",data.potential,0,"scout-range-potential-"+p.id);else Text(card,"Potentiel : à préciser (connaissance ≥ 65 %)","footnote");
+                Text(card,"Trois étoiles : niveau moyen de votre onze (repère jaune). La fourchette reflète l’incertitude de l’observation.","footnote");
                 Text(card,data.gradeReason,"scout-report-advice");
                 if(data.strengths.Count>0)Text(card,"Points forts : "+string.Join(", ",data.strengths),"body-text").name="scout-strengths-"+p.id;
                 if(data.weaknesses.Count>0)Text(card,"Points faibles : "+string.Join(", ",data.weaknesses),"body-text").name="scout-weaknesses-"+p.id;
