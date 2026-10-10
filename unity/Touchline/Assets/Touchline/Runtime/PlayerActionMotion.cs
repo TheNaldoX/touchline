@@ -155,6 +155,27 @@ namespace Touchline
             float elapsed=1.1f-remaining,contact=actor.actionContactTime>0?actor.actionContactTime:.5f;
             float weight=1-Mathf.SmoothStep(0,1,Mathf.Abs(elapsed-contact)/(elapsed<=contact?approachSeconds:recoverySeconds));
             if(weight<=0)return;
+            var leftFoot=Limb("L").foot.position;var rightFoot=Limb("R").foot.position;float lowering=0;
+            for(int i=0;i<2;i++){
+                var leg=Limb(i==0?"L":"R");var rotation=leg.foot.rotation;
+                var center=rotation*new Vector3(0,.02f,.075f);
+                float extent=Mathf.Abs((rotation*Vector3.right).y)*.057f+Mathf.Abs((rotation*Vector3.up).y)*.085f+Mathf.Abs((rotation*Vector3.forward).y)*.145f;
+                var target=i==0?leftFoot:rightFoot;target.y=.01f-(center.y-extent)*transform.localScale.y;
+                float reach=Vector3.Distance(leg.upperLeg.position,leg.lowerLeg.position)+Vector3.Distance(leg.lowerLeg.position,leg.foot.position)-.005f; // same IK reach margin, metres
+                var delta=leg.upperLeg.position-target;
+                lowering=Mathf.Max(lowering,delta.y-Mathf.Sqrt(Mathf.Max(0,reach*reach-delta.x*delta.x-delta.z*delta.z)));
+            }
+            body.position-=Vector3.up*(Mathf.Clamp(lowering,0,MotionStature*.18f)*weight); // cap knee flexion by stature
+            for(int i=0;i<2;i++){
+                string side=i==0?"L":"R";var leg=Limb(side);var foot=leg.foot;var rotation=foot.rotation;
+                // Use the whole rotated boot, as in the pitch penetration guard (metres).
+                var center=rotation*new Vector3(0,.02f,.075f);
+                float extent=Mathf.Abs((rotation*Vector3.right).y)*.057f+Mathf.Abs((rotation*Vector3.up).y)*.085f+Mathf.Abs((rotation*Vector3.forward).y)*.145f;
+                var target=i==0?leftFoot:rightFoot;
+                float sole=target.y+(center.y-extent)*transform.localScale.y;
+                target.y+=(.01f-sole)*weight;
+                SolveLeg(side,target,leg.lowerLeg.position-leg.upperLeg.position);foot.rotation=rotation;
+            }
             var aim=elapsed<=contact?ball:new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z);
             for(int i=0;i<2;i++){
                 string side=i==0?"L":"R";
