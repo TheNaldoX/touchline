@@ -22,6 +22,23 @@ namespace Touchline.Tests
                 }
             }finally{Object.DestroyImmediate(go);}
         }
+        [TestCase(30,160)] [TestCase(60,160)] [TestCase(120,160)]
+        [TestCase(30,180)] [TestCase(60,180)] [TestCase(120,180)]
+        [TestCase(30,205)] [TestCase(60,205)] [TestCase(120,205)]
+        public void OutfieldThrowHasTwoBootsTouchingPitchAtRelease(int fps,int height)
+        {
+            var go=new GameObject("Throw support");try{
+                var v=View(go);v.ChangeIdentity(new PlayerData{id="throw-support",heightCm=height});
+                var a=new Actor{slot=9,action="throw",actionKind="throw",actionContactTime=.5f,actionSequence=1,actionTarget=new Point(0,.42f),actionHeight=height*.01f};
+                for(int i=0;i<=fps/2;i++){a.actionTime=1.1f-i/(float)fps;v.Render(a,1,1f/fps,new Vector3(0,height*.01f,.42f));}
+                foreach(var foot in go.GetComponentsInChildren<Transform>())if(foot.name=="foot.L"||foot.name=="foot.R"){
+                    var q=foot.rotation;var center=q*new Vector3(0,.02f,.075f);
+                    float extent=Mathf.Abs((q*Vector3.right).y)*.057f+Mathf.Abs((q*Vector3.up).y)*.085f+Mathf.Abs((q*Vector3.forward).y)*.145f;
+                    float sole=foot.position.y+(center.y-extent)*go.transform.localScale.y;
+                    Assert.That(sole,Is.InRange(.005f,.035f),foot.name+" must touch the pitch at release");
+                }
+            }finally{Object.DestroyImmediate(go);}
+        }
         static PlayerView View(GameObject go,bool left=false){var v=go.AddComponent<PlayerView>();v.Build(new PlayerData{id="coverage",heightCm=180,preferredFoot=left?"Left":"Right"},0,9,Color.white);return v;}
         [TestCase(false,"pass")] [TestCase(true,"pass")] [TestCase(false,"through")] [TestCase(true,"cutback")]
         public void InsidePassMeetsBallWithMedialBootSurface(bool left,string kind)

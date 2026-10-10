@@ -55,6 +55,7 @@ namespace Touchline.Editor
                     if(t<=actor.actionContactTime){var position=MatchSimulation.KeeperDistributionPreparation(flight,t/actor.actionContactTime,out var height);ball.position=new Vector3(position.x,height,position.z);}
                     else {float progress=Mathf.Clamp01((t-actor.actionContactTime)/1.5f);var position=Point.Lerp(flight.start,flight.end,progress);ball.position=new Vector3(position.x,Mathf.Lerp(flight.startHeight,.11f,progress)+Mathf.Sin(progress*Mathf.PI)*(distributionReview=="keeper-roll"?.035f:2.1f),position.z);}
                     view.Render(actor,1,dt,ball.position);
+
                 }else if(placeReview){
                     ball.position=new Vector3(-48.64f,1.1f,0);
                     if(frame==0){actor.action="keeper-hold";actor.actionTime=1;for(int i=0;i<60;i++)view.Render(actor,1,dt,ball.position);}
@@ -77,6 +78,11 @@ namespace Touchline.Editor
                     }
                     view.Render(actor,1,dt,ball.position);
                 }else view.Render(actor,1,dt,ball.position,new PlayerMotionContext{keeperClaim=sample});
+                    if(throwContactReview&&frame==30)foreach(var foot in view.GetComponentsInChildren<Transform>())if(foot.name=="foot.L"||foot.name=="foot.R"){
+                        var q=foot.rotation;var center=q*new Vector3(0,.02f,.075f);
+                        float extent=Mathf.Abs((q*Vector3.right).y)*.057f+Mathf.Abs((q*Vector3.up).y)*.085f+Mathf.Abs((q*Vector3.forward).y)*.145f;
+                        Debug.Log("THROW_CONTACT_SUPPORT "+foot.name+" sole="+(foot.position.y+(center.y-extent)*view.transform.localScale.y)+" mecanim="+PlayerView.UseMecanim+" ready="+PlayerView.MecanimReady);
+                    }
                 camera.Render();var previous=RenderTexture.active;RenderTexture.active=target;var image=new Texture2D(1280,720,TextureFormat.RGB24,false);image.ReadPixels(new Rect(0,0,1280,720),0,0);image.Apply();File.WriteAllBytes(Path.Combine(output,"frame-"+frame.ToString("D3")+".png"),image.EncodeToPNG());UnityEngine.Object.DestroyImmediate(image);RenderTexture.active=previous;
                 if(++frame>=(throwReview||holdReview||placeReview||distributionReview!=null?120:21)){File.WriteAllText(Path.Combine(output,"scope.txt"),throwContactReview?"Synthetic outfield throw: authoritative preparation and illustrative released flight, 2s at60Hz; no Android performance or match outcome measurement.":distributionReview!=null?"Synthetic keeper distribution: authoritative preparation, illustrative released flight, 2 s at60Hz. No match outcome or Android measurement.":placeReview?"Synthetic physical ball placement and rise, 2 s at60Hz,182cm keeper. No match outcome or Android measurement.":holdReview?"Synthetic keeper hold then idle, 2 s at60Hz,182cm keeper. White sphere marks authoritative holding position; stays fixed after release for comparison. No match outcome or Android measurement.":throwReview?"Synthetic throw recovery, 2 s at60Hz,180cm player. Stationary reference ball, no contact evaluation or Android measurement.":"Synthetic airborne claim readiness, 0.35 s at60Hz,182cm keeper. No catch outcome, no personal save, no Android performance measurement.");SessionState.SetBool(Key,false);EditorApplication.Exit(0);}
             }catch(Exception e){SessionState.SetBool(Key,false);Debug.LogException(e);EditorApplication.Exit(1);}
