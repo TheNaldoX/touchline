@@ -54,21 +54,22 @@ namespace Touchline
             var panel=Modal("Négociation · "+p.name);panel.name="transfer-negotiation-form";var s=Scroll(panel);bool own=p.team==Career.club;
             var previous=Career.world.offers.LastOrDefault(o=>o.player==id&&o.status=="counter"&&(o.destination==null||o.destination==Career.club)&&o.seller==p.team);
             var normalPrevious=previous?.loan==false?previous:null;var loanPrevious=previous?.loan==true?previous:null;
-            var range=Career.PlayerAgent(Database,id);var loanRange=Career.PlayerAgent(Database,id,true);var agent=Card(s);Text(agent,"AGENT · PREMIER ÉCHANGE","eyebrow");var agentMessage=Text(agent,range.message);agentMessage.name="negotiation-agent-message";
-            if(!own){var interest=Career.PlayerTransferInterest(Database,id);Text(agent,"Intérêt du joueur : "+interest.label+(interest.reasons.Count>0?" · "+string.Join(" ",interest.reasons):""),"scout-status").name="negotiation-interest";}
-            var agentConditions=Text(agent,"");agentConditions.name="negotiation-agent-conditions";
+            var range=Career.PlayerAgent(Database,id);var loanRange=Career.PlayerAgent(Database,id,true);var agent=Card(s);Text(agent,"AGENT · PREMIER ÉCHANGE","eyebrow");var agentMessage=Text(agent,range.message,"muted");agentMessage.name="negotiation-agent-message";
+            var agentInterest=own?null:Text(agent,"","scout-status");if(agentInterest!=null)agentInterest.name="negotiation-interest";
+            var agentConditions=Text(agent,"","muted");agentConditions.name="negotiation-agent-conditions";
             var contract=Career.Contract(Database,id);Text(s,"Échéance actuelle : "+Core.Career.Epoch.AddDays(contract.until).ToString("dd MMM yyyy",French)+(contract.estimated?" · estimation de jeu":""),"muted");
             var permanent=new TransferFormDraft{fee=own||p.team=="free"?0:normalPrevious?.fee??p.value,monthly=Core.Career.MonthlySalary(normalPrevious?.wage??(long)(p.wage*1.12f)),years=normalPrevious?.years??3,role=Array.IndexOf(PlayingTimeRoles.All,PlayingTimeRoles.Normalize(normalPrevious?.role??(own?contract.role:"rotation"))),bonus=normalPrevious?.bonus??0,clause=normalPrevious?.clause??0,precontract=normalPrevious?.precontract==true,upfront=normalPrevious?.terms?.upfrontPercent??100,instalments=normalPrevious?.terms?.instalments??0};
             var borrowed=new TransferFormDraft{fee=loanPrevious?.fee??loanRange.feeHigh,monthly=Core.Career.MonthlySalary(p.wage),years=loanPrevious?.years??3,role=Array.IndexOf(PlayingTimeRoles.All,PlayingTimeRoles.Normalize(loanPrevious?.role??"rotation")),bonus=loanPrevious?.bonus??0,clause=loanPrevious?.clause??0,share=loanPrevious?.terms?.loanWagePercent??100,days=loanPrevious?.terms!=null?loanPrevious.terms.loanEndDay-Career.life.day:LoanDefaultDays(contract),option=loanPrevious?.terms?.optionFee??0,obligation=loanPrevious?.terms?.obligationFee??0,appearances=loanPrevious?.terms?.obligationAppearances??0,recall=loanPrevious?.terms?.recall==true};
             var fee=new LongField("Indemnité proposée (€)");fee.name="negotiation-fee";s.Add(fee);fee.SetEnabled(!own&&p.team!="free");
             var wage=new LongField("Salaire mensuel proposé (€)");wage.name="negotiation-monthly-wage";s.Add(wage);var years=new IntegerField("Durée (années)");years.name="negotiation-years";s.Add(years);
-            var roleCard=Card(s,"negotiation-role-card");Text(roleCard,"VOTRE PROJET SPORTIF","eyebrow");
+            var roleCard=new VisualElement();roleCard.AddToClassList("negotiation-role-card");agent.Add(roleCard);
             var role=new DropdownField("Temps de jeu promis",PlayingTimeRoles.All.Select(PlayingTimeRoles.Label).ToList(),2);role.name="negotiation-role";roleCard.Add(role);
             var roleDescription=Text(roleCard,"","notice");roleDescription.name="negotiation-role-description";
-            Action refreshRole=()=>{string promised=PlayingTimeRoles.All[Mathf.Clamp(role.index,0,PlayingTimeRoles.All.Length-1)];roleDescription.text=PlayingTimeRoles.Description(promised)+(promised=="youth"&&p.age>=24?" Ce statut est réservé aux joueurs de moins de 24 ans. Choisissez un autre engagement.":"");};
+            Action refreshAgent=null;
+            Action refreshRole=()=>{string promised=PlayingTimeRoles.All[Mathf.Clamp(role.index,0,PlayingTimeRoles.All.Length-1)];roleDescription.text=PlayingTimeRoles.Description(promised)+(promised=="youth"&&p.age>=24?" Ce statut est réservé aux joueurs de moins de 24 ans. Choisissez un autre engagement.":"");refreshAgent?.Invoke();};
             role.RegisterValueChangedCallback(_=>refreshRole());
             if(own)Text(roleCard,"Engagement actuel : "+PlayingTimeRoles.Label(contract.role),"muted").name="negotiation-current-role";
-            Text(roleCard,"Le joueur et son agent évaluent le rôle proposé. Après la signature, votre utilisation du joueur compte dans sa satisfaction ; les indisponibilités médicales connues sont prises en compte.","footnote");
+            Text(roleCard,"Promesse suivie après signature : son utilisation et ses indisponibilités médicales comptent dans sa satisfaction.","footnote");
             var bonus=new LongField("Prime de présence (€)");bonus.name="negotiation-bonus";s.Add(bonus);var clause=new LongField("Clause libératoire (€), 0 = aucune");clause.name="negotiation-clause";s.Add(clause);
             var pre=new Toggle("Précontrat : arrivée après le contrat actuel");pre.name="negotiation-precontract";s.Add(pre);pre.SetEnabled(Career.CanPrecontract(Database,id));
             var loan=new Toggle("Négocier un prêt");loan.name="negotiation-loan";s.Add(loan);loan.SetEnabled(!own&&p.team!="free"&&!contract.IsLoan&&LoanMaximumDays(contract)>=28);if(!own&&p.team!="free"&&!contract.IsLoan&&LoanMaximumDays(contract)<28)Text(s,LoanDurationText(contract,0),"notice").name="negotiation-loan-unavailable";
@@ -84,15 +85,23 @@ namespace Touchline
                 if(!valid){contribution.text="Pourcentage invalide : indiquez une prise en charge entre 0 et 100 %. Aucun accord ne sera envoyé avec cette valeur.";return;}
                 long borrower=p.wage*share.value/100,owner=p.wage-borrower;contribution.text="Votre club : "+Money(Core.Career.MonthlySalary(borrower))+" / mois · "+ClubName(p.team)+" : "+Money(Core.Career.MonthlySalary(owner))+" / mois. Répartition du contrat parent, sans augmentation salariale.";
             };
+            refreshAgent=()=>{
+                string promised=PlayingTimeRoles.All[Mathf.Clamp(role.index,0,PlayingTimeRoles.All.Length-1)];
+                var estimate=loan.value?loanRange:Career.PlayerAgent(Database,id,role:promised);agentMessage.text=estimate.message;
+                agentConditions.text="Indemnité indicative : "+Money(pre.value?0:estimate.feeLow)+" à "+Money(pre.value?0:estimate.feeHigh)+(loan.value?" · Contrat parent : "+Money(estimate.monthlyLow)+" / mois. Votre part se règle en pourcentage.":" · Salaire : "+Money(estimate.monthlyLow)+" à "+Money(estimate.monthlyHigh)+" / mois");
+                if(agentInterest==null)return;
+                if(loan.value){agentInterest.text="Prêt : accord du club propriétaire et du joueur encore à obtenir. Salaire du contrat parent conservé.";return;}
+                var interest=Career.PlayerTransferInterest(Database,id,promised);agentInterest.text="Projet : "+PlayingTimeRoles.Label(promised)+" · "+interest.label+(interest.reasons.Count>0?" · "+string.Join(" ",interest.reasons):"");
+            };
             Action<TransferFormDraft> capture=d=>{d.fee=fee.value;d.monthly=wage.value;d.years=years.value;d.role=role.index;d.bonus=bonus.value;d.clause=clause.value;d.precontract=pre.value;d.share=share.value;d.days=days.value;d.option=option.value;d.obligation=obligation.value;d.appearances=appearances.value;d.recall=recall.value;d.upfront=upfront.value;d.instalments=instalments.value;};
             Action<bool> restore=isLoan=>{
                 loading=true;var d=isLoan?borrowed:permanent;loan.SetValueWithoutNotify(isLoan);pre.SetValueWithoutNotify(!isLoan&&d.precontract);fee.SetValueWithoutNotify(d.fee);wage.SetValueWithoutNotify(isLoan?Core.Career.MonthlySalary(p.wage):d.monthly);years.SetValueWithoutNotify(d.years);role.SetValueWithoutNotify(role.choices[Mathf.Clamp(d.role,0,role.choices.Count-1)]);bonus.SetValueWithoutNotify(d.bonus);clause.SetValueWithoutNotify(d.clause);share.SetValueWithoutNotify(d.share);days.SetValueWithoutNotify(d.days);option.SetValueWithoutNotify(d.option);obligation.SetValueWithoutNotify(d.obligation);appearances.SetValueWithoutNotify(d.appearances);recall.SetValueWithoutNotify(d.recall);upfront.SetValueWithoutNotify(d.upfront);instalments.SetValueWithoutNotify(d.instalments);
                 wage.SetEnabled(!isLoan);wage.label=isLoan?"Salaire mensuel du contrat parent (€)":"Salaire mensuel proposé (€)";terms.SetEnabled(isLoan);terms.value=isLoan;payments.SetEnabled(!isLoan&&!pre.value);years.SetEnabled(!isLoan);
-                var estimate=isLoan?loanRange:range;agentMessage.text=estimate.message;agentConditions.text="Indemnité indicative : "+Money(estimate.feeLow)+" à "+Money(estimate.feeHigh)+(isLoan?" · Contrat parent : "+Money(estimate.monthlyLow)+" / mois. Votre part se règle en pourcentage.":" · Salaire : "+Money(estimate.monthlyLow)+" à "+Money(estimate.monthlyHigh)+" / mois");loading=false;refreshContribution();refreshRole();
+                loading=false;refreshContribution();refreshRole();
             };
             loan.RegisterValueChangedCallback(e=>{if(loading)return;capture(e.previousValue?borrowed:permanent);restore(e.newValue);});
             long transferFeeBeforePre=permanent.precontract&&!own&&p.team!="free"?p.value:permanent.fee;
-            pre.RegisterValueChangedCallback(e=>{if(loading)return;if(e.newValue){if(loan.value){loan.value=false;pre.SetValueWithoutNotify(true);}transferFeeBeforePre=fee.value;fee.value=0;}else fee.value=transferFeeBeforePre;payments.SetEnabled(!loan.value&&!pre.value);});
+            pre.RegisterValueChangedCallback(e=>{if(loading)return;if(e.newValue){if(loan.value){loan.value=false;pre.SetValueWithoutNotify(true);}transferFeeBeforePre=fee.value;fee.value=0;}else fee.value=transferFeeBeforePre;payments.SetEnabled(!loan.value&&!pre.value);refreshAgent();});
             share.RegisterValueChangedCallback(e=>refreshContribution());days.RegisterValueChangedCallback(e=>refreshContribution());role.RegisterValueChangedCallback(e=>refreshContribution());
             Text(s,"La prime d’agent représente deux semaines du salaire intégral. Le salaire mensuel est converti en coût annuel sur 12 mois. Le staff ne signera jamais à votre place.","footnote");
             var error=Text(s,"","notice");error.name="negotiation-error";error.style.display=DisplayStyle.None;error.style.fontSize=14;error.style.whiteSpace=WhiteSpace.Normal;error.focusable=true;
