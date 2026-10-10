@@ -14,11 +14,12 @@ static partial class P
     {
         public double Width, Line, Press, PassLength, Passes, Completion, Shots, Xg, Fitness, GoalsFor, GoalsAgainst, Crosses, ThroughAgainst, OffsidesCaught, HighRecoveries;
         public readonly ThroughPassObserver Trace=new ThroughPassObserver();
-        public double[] Values=>new[]{Width,Line,Press,PassLength,Passes,Completion,Shots,Xg,Fitness,GoalsFor,GoalsAgainst,Crosses,ThroughAgainst,OffsidesCaught,HighRecoveries}.Concat(Enumerable.Range(0,ThroughPassObserver.Labels.Length).Select(i=>(double)Trace.Counts[1,i])).ToArray();
-        public static readonly string[] Names=new[]{"Largeur (m)","Ligne (m depuis centre)","Pressing (joueur·s)","Passe moyenne (m)","Passes tentées","Passes réussies (%)","Tirs","xG","Condition finale (%)","Buts pour","Buts contre","Centres","Passes en profondeur adverses","Hors-jeu adverses","Récupérations hautes"}.Concat(ThroughPassObserver.Labels.Select(label=>"Profondeur adverse : "+label)).ToArray();
+        public double[] Values=>new[]{Width,Line,Press,PassLength,Passes,Completion,Shots,Xg,Fitness,GoalsFor,GoalsAgainst,Crosses,ThroughAgainst,OffsidesCaught,HighRecoveries}.Concat(Enumerable.Range(0,ThroughPassObserver.Labels.Length).Select(i=>(double)Trace.Counts[1,i])).Concat(Enumerable.Range(0,ThroughPassObserver.FollowLabels.Length).Select(i=>(double)Trace.FollowCounts[1,i])).Concat(new[]{(double)Trace.FarReceipts[1],Trace.CoveredReceipts[1]}).ToArray();
+        public static readonly string[] Names=new[]{"Largeur (m)","Ligne (m depuis centre)","Pressing (joueur·s)","Passe moyenne (m)","Passes tentées","Passes réussies (%)","Tirs","xG","Condition finale (%)","Buts pour","Buts contre","Centres","Passes en profondeur adverses","Hors-jeu adverses","Récupérations hautes"}.Concat(ThroughPassObserver.Labels.Select(label=>"Profondeur adverse : "+label)).Concat(ThroughPassObserver.FollowLabels.Select(label=>"Après réception : "+label)).Concat(new[]{"Réceptions à plus de 25m du but","Réceptions avec au moins deux défenseurs devant"}).ToArray();
         public void Read(MatchState m)
         {
             if(Trace.Attempts[1]!=m.metrics[1].throughBalls||Enumerable.Range(0,ThroughPassObserver.Labels.Length).Sum(i=>Trace.Counts[1,i])!=Trace.Attempts[1])throw new InvalidOperationException("Unclassified through passes in audit.");
+            if(Enumerable.Range(0,ThroughPassObserver.FollowLabels.Length).Sum(i=>Trace.FollowCounts[1,i])!=Trace.Counts[1,0])throw new InvalidOperationException("Unclassified reception followups in audit.");
             var t=m.metrics[0];Width=t.AverageWidth;Line=t.AverageLine;Press=t.pressingSeconds;
             PassLength=t.AveragePassLength(m.passes[0]);Passes=m.passes[0];Completion=Passes>0?100*m.completedPasses[0]/Passes:0;
             Shots=m.shots[0];Xg=t.xg;Fitness=m.actors.Where(x=>x.side==0&&x.slot>0).Average(x=>x.fitness);
