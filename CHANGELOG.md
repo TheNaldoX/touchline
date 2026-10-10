@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Gardiens : les mains rejoignent progressivement le ballon tenu avec Mecanim et retrouvent la pose d’attente sans saut, en conservant les appuis capturés.
 - Finances : onglets budget/billetterie/partenaires/comptabilité, aperçu du tarif avant confirmation et synthèse des flux sur trente jours.
 - Animations : correction de la pénétration des chaussures dans le terrain après les poses Mecanim, notamment lors de la récupération des touches.
 - Sauvegardes : un club prêteur vide n’est plus considéré comme un prêt actif, préservant les effectifs, échéances, ventes et options après rechargement.

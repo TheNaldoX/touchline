@@ -4,10 +4,10 @@ Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dé
 
 ## État courant
 
-- Branche `feat/finance-ticket-preview`, PR80, code9b4e6be, base PR79/661ece9. Les PR restent en brouillon, non fusionnées ; aucune nouvelle APK ni validation physique Fold.
+- Branche `fix/keeper-held-ball-contact`, base PR80/dda0096. Mains Mecanim rejoignent le ballon tenu avec transitions limitées et appuis préservés. Core941/941 ; ciblés30/30 ; globale2020/2295,275 anciens échecs, six anciens corrigés et aucun nouveau (`keeper-hold-comparison.json`). Captures natives `keeper-hold-native` revues ; vidéo en artifacts. Pas de validation Fold ni nouvelle APK à ce stade.
 - Finances : quatre onglets, défilement séparé, aperçu tarif sans mutation incluant réaction des supporters et délai hebdomadaire ; flux comptables30 jours ; statuts sponsors français ; alerte salariale ouvre Budget directement.
 - Core941/941 (`.validation/ticket-preview-core-final.txt`). Quatre nouveaux cas. Unity192/195 ciblés (`ticket-preview-unity.xml`) : trois échecs ProfessionalTests déjà présents, aucun nouveau. Captures natives `ui-finance-preview-links` réussies/revues : aperçu, confirmation, délai, destination de l’alerte. Badge préexistant11sp, aucun bouton<48dp. Exception préexistante UnityEditor.Search au démarrage, distincte du jeu.
-- Dernière suite globale PR79 :2007/2288,281 échecs restants,18 anciens corrigés, aucun nouveau (`ground-contact-comparison.json`). Ne pas annoncer une suite verte ni tous les chantiers terminés.
+- La suite Unity reste rouge : ne pas annoncer tous les chantiers terminés. Nouvelle correction limitée au ballon tenu ; plongeons/prises/placements ne sont pas tous résolus.
 
 ## Lots retenus récents
 
@@ -51,3 +51,4 @@ Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dé
 - CI Unity bloquée deux fois par Docker Hub anonyme : pas de relance en boucle. GitHub via `.validation/github-api.ps1`, secrets jamais imprimés ; attacher chaque PR créée.
 - Nettoyage après dernière Unity seulement : `.validation/cleanup-unity-imports.ps1`,73 imports générés connus ; préserver nouveaux .meta intentionnels, Library et sources. Restaurer scène/ProjectSettings seulement si modifications générées connues.
 - Preuves locales ignorées dans `.validation/` et artifacts ; détails dans PR. Automatisation PAUSED, aucun travail planifié réactivé.
+

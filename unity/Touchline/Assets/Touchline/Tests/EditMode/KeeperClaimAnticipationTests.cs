@@ -7,6 +7,28 @@ namespace Touchline.Tests
 {
     public class KeeperClaimAnticipationTests
     {
+        [TestCase(30)] [TestCase(60)] [TestCase(120)]
+        public void CapturedKeeperHoldsPhysicalBallAndReleasesHandsContinuously(int fps)
+        {
+            var go=new GameObject("Keeper held contact");var reference=new GameObject("Keeper idle reference");
+            try{
+                var view=go.AddComponent<PlayerView>();var idle=reference.AddComponent<PlayerView>();
+                view.Build(new PlayerData{id="hold-contact",heightCm=182},0,0,Color.yellow);idle.Build(new PlayerData{id="hold-contact",heightCm=182},0,0,Color.yellow);
+                var actor=new Actor{slot=0,action="idle"};var control=new Actor{slot=0,action="idle"};var ball=new Vector3(0,1.1f,.36f);
+                var wrist=go.GetComponentsInChildren<Transform>().First(t=>t.name=="wrist.R");var idleWrist=reference.GetComponentsInChildren<Transform>().First(t=>t.name=="wrist.R");
+                for(int frame=0;frame<fps;frame++){view.Render(actor,1,1f/fps,ball);idle.Render(control,1,1f/fps,ball);}
+                var previous=wrist.position;float speed=0;
+                for(int frame=0;frame<fps*2;frame++){
+                    actor.action=frame<fps?"keeper-hold":"idle";actor.actionTime=1;
+                    view.Render(actor,1,1f/fps,ball);idle.Render(control,1,1f/fps,ball);
+                    speed=Mathf.Max(speed,Vector3.Distance(wrist.position,previous)*fps);previous=wrist.position;
+                    if(frame==fps-1)Assert.Less(Vector3.Distance(view.HeldBallPosition,ball),.04f,"The held mesh must meet the physical ball before distribution");
+                    Assert.Less(Vector3.Distance(view.FootPosition(true),idle.FootPosition(true)),.001f,"Hand correction preserves captured footwork");
+                }
+                Assert.Less(speed,8,"No hand snap when possession starts or ends");
+                Assert.Less(Vector3.Distance(wrist.position,idleWrist.position),.02f,"Hands return to the captured idle pose");
+            }finally{Object.DestroyImmediate(go);Object.DestroyImmediate(reference);}
+        }
         static MatchState Scene(float height,out Actor keeper,int side=0,int period=1)
         {
             int dir=-(side==0?1:-1)*(period==2?-1:1);
