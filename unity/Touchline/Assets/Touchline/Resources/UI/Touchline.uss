@@ -99,7 +99,7 @@ Button.primary:hover { background-color: rgb(167,248,223); }
 .list-row > Label { white-space: normal; flex-shrink: 1; margin-right: 10px; }
 .notice { background-color: rgb(33,45,57); font-size: 14px; padding: 16px; margin: 10px 0 16px 0; }
 .toast { position: absolute; bottom: 84px; left: 20px; right: 20px; min-height: 56px; background-color: rgb(38,82,74); border-color: rgb(124,226,198); white-space: normal; -unity-text-align: middle-left; }
-.modal-panel { flex-direction: column; align-items: stretch; width: 88%; max-width: 800px; max-height: 90%; padding: 24px; background-color: rgb(17,31,47); }
+.modal-panel { flex-direction: column; flex-wrap: nowrap; align-items: stretch; width: 88%; max-width: 800px; max-height: 90%; padding: 24px; background-color: rgb(17,31,47); }
 .modal-panel > .row { flex-shrink: 0; }
 .modal-panel > .scroll { max-height: 650px; min-height: 100px; flex-shrink: 1; }
 .modal-panel > Button { flex-shrink: 0; }

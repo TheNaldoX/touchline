@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Linq;
 using Touchline.Core;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -40,8 +41,20 @@ namespace Touchline
             }
             delegatingMatch=false;CloseModal();Save();
             if(failure!=null){Debug.LogException(failure);Message("La simulation a été interrompue : "+failure.Message);yield break;}
-            if(simulation.State.finished){Career.ProcessMedicalEvents(Database);Career.RecordMatch(Database);Navigate("Club");}
+            if(simulation.State.finished){Career.ProcessMedicalEvents(Database);Career.RecordMatch(Database);Navigate("Club");DelegatedMatchRecap(simulation.State);}
             else {page="Match";Build();if(arena!=null)arena.Paused=true;}
+        }
+        void DelegatedMatchRecap(MatchState match)
+        {
+            var panel=Modal("Compte rendu de l’adjoint");panel.name="delegated-match-recap";
+            var order=FixtureDisplayOrder(match);
+            Text(panel,ClubName(order.HomeClub)+"  "+order.Score(match)+"  "+ClubName(order.AwayClub),"analysis-score").name="delegated-match-score";
+            var body=Scroll(panel);Text(body,"Buteurs","section-title");
+            var goals=match.events.Where(e=>e.kind=="goal").OrderBy(e=>e.time).ToArray();
+            if(goals.Length==0)Text(body,"Aucun but inscrit.","muted");
+            foreach(var goal in goals){var row=Card(body,"match-moment");row.name="delegated-goal";Text(row,match.MinuteAt(goal.time)+"′ · "+(Database.Find(goal.player)?.name??"Buteur non renseigné"),"section-title");Text(row,goal.text,"muted");}
+            Text(body,"Statistiques de la rencontre","section-title");MatchStatistics(body,match);
+            Button(panel,"Revenir au bureau",CloseModal).AddToClassList("primary");
         }
     }
 }
