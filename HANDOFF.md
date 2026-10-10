@@ -2,7 +2,13 @@
 
 Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dans Git/PR, pas de nouveaux journaux docs.
 
-## Lot courant — navigation et marché
+## Lot courant — bilan des occasions
+
+- Branche `feat/match-chance-review`, base PR75/5375b7a. Carte dans Analyse/Adjoint : tirs, cadrés, xG, qualité moyenne, conseil prudent après six tirs ; explication dépliable. Bilan final distingue consignes finales et statistiques cumulées. Aucun calcul de tir, décision ou aléatoire modifié.
+- Core931/931 (`chance-review-core.txt`), dont5 nouveaux cas ; Unity22/22 MatchImmersionTests (`chance-review-tests.xml`). Texte compact ensuite revérifié4/4 Core et compilation/captures natives `ui-chance-review-final`, deux formats revus, pas de petit texte ni bouton<48dp dans ce parcours. Fixture synthétique10tirs/0,50xG, pas une preuve d’équilibrage. Premier rendu échouait à rechercher une arène inactive dans la fixture ; corrigé.
+- Dernière suite globale reste celle de PR73 :1975/2274 et299 anciens échecs ; non relancée pour ces écrans. Aucun test Fold physique ou nouvelle APK. Restent ouverts : équilibre ligne haute/penalties/sorties, contacts d’animation, profondeur management, sources financières et présentation. Ne pas annoncer tous les chantiers terminés.
+
+## Navigation et marché — PR75
 
 - Branche `fix/workspace-scroll-memory`, base PR74/ad52d6a. Positions séparées par onglet (recrutement, calendrier, tactique) et format. Titres latéraux12sp ; marché déplié : lignes104 unités pour éviter le chevauchement du nom/salaire/rapport, recherche sur une ligne dédiée et filtres visibles.
 - Régression native `BuildScrollMemorySteps` : échec avant dans les deux formats (`scroll-memory-repro.log`), réussite après (`scroll-memory-final.log`). Six captures ; retour marché revu plié/déplié. Assertions position, contenu dans sa ligne et largeur des filtres. Première fixture sans monde corrigée ; essai de barre qui masquait les filtres corrigé avant livraison. Aucun changement Core,926/926 hérités ; suite Unity globale reste1975/2274,299 anciens échecs. Pas de nouvelle APK ni validation physique Fold.

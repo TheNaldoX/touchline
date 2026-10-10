@@ -86,7 +86,7 @@ namespace Touchline
             if(m.mindset==null||m.mindset.Length!=2)return;
             var card=Card(parent,"immersion-card");card.name="assistant-observations";Text(card,m.finished?"BILAN TACTIQUE":"CE QUE JE VOIS DEPUIS LE BANC","eyebrow");
             var lines=m.finished?MatchAssistant.FullTimeReview(m):MatchAssistant.Observe(m).Select(o=>o.text).Take(3).ToList();
-            if(lines.Count==0)Text(card,"Rien d’alarmant pour l’instant : le plan est respecté.","muted");
+            if(lines.Count==0)Text(card,"Pas d’alerte détectée dans les mesures disponibles.","muted");
             foreach(var line in lines)Text(card,line);
             Text(card,"Sang-froid moyen "+Signed(MatchAssistant.AverageComposure(m,0))+" · engagement "+Signed(MatchAssistant.AverageDrive(m,0))+" · automatismes "+UnderstandingWord(m.mindset[0].understanding)+".","footnote");
         }

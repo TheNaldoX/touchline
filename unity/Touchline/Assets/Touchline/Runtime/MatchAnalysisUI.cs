@@ -49,6 +49,9 @@ namespace Touchline
         }
         void MatchCoach(VisualElement parent,MatchState m)
         {
+            var chances=Card(parent);chances.name="match-chance-review";Text(chances,"OCCASIONS ET FINITION","section-title");
+            var chanceLines=MatchAssistant.ChanceReview(m);foreach(var line in chanceLines.Take(chanceLines.Count-1))Text(chances,line);
+            var explanation=new Foldout{text="Comprendre les xG",value=false};chances.Add(explanation);Text(explanation,chanceLines.Last(),"muted");
             AssistantObservations(parent,m);
             if(Career.world!=null)Career.EnsureStaffMarket(Database);var staff=Career.Staff("assistant");Text(parent,staff.name+" · Tactique "+staff.tactics+" / 20","section-title");
             if(staff.wage<=0){Text(parent,"Le poste d’adjoint est vacant. Recrutez un adjoint pour disposer de conseils.","notice");return;}
