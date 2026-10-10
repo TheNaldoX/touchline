@@ -13,10 +13,12 @@ static partial class P
     sealed class TacticalSample
     {
         public double Width, Line, Press, PassLength, Passes, Completion, Shots, Xg, Fitness, GoalsFor, GoalsAgainst, Crosses, ThroughAgainst, OffsidesCaught, HighRecoveries;
-        public double[] Values=>new[]{Width,Line,Press,PassLength,Passes,Completion,Shots,Xg,Fitness,GoalsFor,GoalsAgainst,Crosses,ThroughAgainst,OffsidesCaught,HighRecoveries};
-        public static readonly string[] Names={"Largeur (m)","Ligne (m depuis centre)","Pressing (joueur·s)","Passe moyenne (m)","Passes tentées","Passes réussies (%)","Tirs","xG","Condition finale (%)","Buts pour","Buts contre","Centres","Passes en profondeur adverses","Hors-jeu adverses","Récupérations hautes"};
+        public readonly ThroughPassObserver Trace=new ThroughPassObserver();
+        public double[] Values=>new[]{Width,Line,Press,PassLength,Passes,Completion,Shots,Xg,Fitness,GoalsFor,GoalsAgainst,Crosses,ThroughAgainst,OffsidesCaught,HighRecoveries}.Concat(Enumerable.Range(0,ThroughPassObserver.Labels.Length).Select(i=>(double)Trace.Counts[1,i])).ToArray();
+        public static readonly string[] Names=new[]{"Largeur (m)","Ligne (m depuis centre)","Pressing (joueur·s)","Passe moyenne (m)","Passes tentées","Passes réussies (%)","Tirs","xG","Condition finale (%)","Buts pour","Buts contre","Centres","Passes en profondeur adverses","Hors-jeu adverses","Récupérations hautes"}.Concat(ThroughPassObserver.Labels.Select(label=>"Profondeur adverse : "+label)).ToArray();
         public void Read(MatchState m)
         {
+            if(Trace.Attempts[1]!=m.metrics[1].throughBalls||Enumerable.Range(0,ThroughPassObserver.Labels.Length).Sum(i=>Trace.Counts[1,i])!=Trace.Attempts[1])throw new InvalidOperationException("Unclassified through passes in audit.");
             var t=m.metrics[0];Width=t.AverageWidth;Line=t.AverageLine;Press=t.pressingSeconds;
             PassLength=t.AveragePassLength(m.passes[0]);Passes=m.passes[0];Completion=Passes>0?100*m.completedPasses[0]/Passes:0;
             Shots=m.shots[0];Xg=t.xg;Fitness=m.actors.Where(x=>x.side==0&&x.slot>0).Average(x=>x.fitness);
@@ -72,8 +74,8 @@ static partial class P
             var low=new TacticalSample[count];var high=new TacticalSample[count];
             Parallel.For(0,count,new ParallelOptions{MaxDegreeOfParallelism=Environment.ProcessorCount},i=>{
                 var f=fixtures[i];low[i]=new TacticalSample();high[i]=new TacticalSample();
-                var a=Play(db,f.home,f.away,f.seed,t=>choice.set(t,false),low[i].Read,choice.prepare?.Invoke(false));
-                var b=Play(db,f.home,f.away,f.seed,t=>choice.set(t,true),high[i].Read,choice.prepare?.Invoke(true));
+                var a=Play(db,f.home,f.away,f.seed,t=>choice.set(t,false),low[i].Read,choice.prepare?.Invoke(false),low[i].Trace.Sample);
+                var b=Play(db,f.home,f.away,f.seed,t=>choice.set(t,true),high[i].Read,choice.prepare?.Invoke(true),high[i].Trace.Sample);
                 if(a.error||b.error)throw new InvalidOperationException($"{f.home}/{f.away} graine {f.seed}: {a.err} {b.err}");
             });
             for(int i=0;i<count;i++)foreach(var v in new[]{(choice.low,low[i]),(choice.high,high[i])})
