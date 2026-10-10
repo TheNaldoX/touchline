@@ -48,7 +48,7 @@ namespace Touchline.Core
         {
             if(world==null||world.managerStatus!="employed"||life.day%14!=0)return;
             int count=db.Squad(club).Count;
-            int expiring=world.contracts.Count(c=>c.club==club&&c.parent==null&&c.until>life.day&&c.until-life.day<=60);
+            int expiring=world.contracts.Count(c=>c.club==club&&!c.IsLoan&&c.until>life.day&&c.until-life.day<=60);
             if(count-expiring>=SquadWarningThreshold)return;
             Mail("Direction sportive","Effectif bientôt trop court",
                 count+" joueurs sous contrat"+(expiring>0?", dont "+expiring+" en fin de contrat d’ici deux mois":"")+". Sous "+MinimumMatchSquad+" joueurs, le centre de formation devra compléter le groupe. Prolongez, recrutez ou intégrez des jeunes.",null,"transfer");

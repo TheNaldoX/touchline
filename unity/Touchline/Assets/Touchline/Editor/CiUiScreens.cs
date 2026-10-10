@@ -79,6 +79,7 @@ namespace Touchline.Editor
 
         static List<Action> BuildSteps()
         {
+            if(Path.GetFileName(Output).StartsWith("ui-loan-save-",StringComparison.Ordinal))return BuildLoanSaveSteps();
             if(Path.GetFileName(Output).StartsWith("ui-departure-followup-",StringComparison.Ordinal))return BuildDepartureFollowupSteps();
             if(Path.GetFileName(Output).StartsWith("ui-chance-review-",StringComparison.Ordinal))return BuildChanceReviewSteps();
             if(Path.GetFileName(Output).StartsWith("ui-scroll-memory-",StringComparison.Ordinal))return BuildScrollMemorySteps();
@@ -130,6 +131,18 @@ namespace Touchline.Editor
                 list.Add(()=>{Capture(screen.tag+"-match-consignes");SetField("tacticalTab","Composition");Call("Navigate","Match");});
             }
             return list;
+        }
+
+        static List<Action> BuildLoanSaveSteps()
+        {
+            var list=new List<Action>();string id=null;
+            list.Add(()=>{var c=App.Career;c.EnsureWorld(App.Database);id=App.Database.players.First(x=>x.team!=c.club&&x.team!="free"&&x.team!="retired"&&x.age>=18).id;c.Contract(App.Database,id).parent="";});
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Recrutement");Call("TransferDialog",id);var loan=Root.Q<Toggle>("negotiation-loan");if(loan==null||!loan.enabledInHierarchy)throw new Exception("Empty lending club disables loan negotiation");loan.value=true;Root.Q("transfer-negotiation-form").Q<ScrollView>().ScrollTo(loan);});
+                list.Add(()=>Root.Q("transfer-negotiation-form").Q<ScrollView>().ScrollTo(Root.Q<Toggle>("negotiation-loan")));
+                list.Add(()=>{Capture(screen.tag+"-pret-apres-sauvegarde");Call("CloseModal");});
+            }
+            audit.AppendLine("Champ prêteur vide comme après désérialisation : option prêt activable aux deux formats ; vraie restauration vérifiée par CoreTests.");return list;
         }
 
         static List<Action> BuildDepartureFollowupSteps()

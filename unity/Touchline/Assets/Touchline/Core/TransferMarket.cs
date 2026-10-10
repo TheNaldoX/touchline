@@ -17,13 +17,13 @@ namespace Touchline.Core
         public List<PaymentDue> payments=new List<PaymentDue>();
         public List<string> shortlist=new List<string>();
         public string MarketPhase=>WindowOpen?Date.Month==1?Date.Day>=25?"Dernière semaine du mercato d’hiver":"Mercato d’hiver":Date.Month==9||Date.Month==8&&Date.Day>=25?"Dernière ligne droite estivale":Date.Month==6?"Ouverture du mercato estival":"Mercato estival":Date.Month==5||Date.Month==6?"Préparation du marché":"Hors mercato · observation et prolongations";
-        public long CommittedPurchases=>world==null?0:world.contracts.Where(c=>c.club==club&&c.parent!=null&&c.terms?.obligationFee>0).Sum(c=>c.terms.obligationFee)+payments.Where(p=>!p.settled&&p.club==club).Sum(p=>p.amount);
+        public long CommittedPurchases=>world==null?0:world.contracts.Where(c=>c.club==club&&c.IsLoan&&c.terms?.obligationFee>0).Sum(c=>c.terms.obligationFee)+payments.Where(p=>!p.settled&&p.club==club).Sum(p=>p.amount);
         public long Payroll(Database db)
         {
             // Only this club's incoming/outgoing loans are mapped. UI queries
             // do not rebuild the complete world's aggregated payroll map.
             var loans=new Dictionary<string,Employment>();
-            foreach(var c in world?.contracts??Enumerable.Empty<Employment>())if(c.parent!=null&&c.player!=null&&(c.club==club||c.parent==club))loans[c.player]=c;
+            foreach(var c in world?.contracts??Enumerable.Empty<Employment>())if(c.IsLoan&&c.player!=null&&(c.club==club||c.parent==club))loans[c.player]=c;
             var knownClubs=new HashSet<string>(db.clubs.Select(t=>t.id));long total=0;
             foreach(var p in db.Squad(club))total+=loans.TryGetValue(p.id,out var c)&&c.club==p.team&&c.parent!=p.team&&knownClubs.Contains(c.parent)?BorrowedLoanWage(p,c):p.wage;
             foreach(var c in loans.Values)if(c.parent==club&&c.club!=club&&knownClubs.Contains(c.club)){
@@ -44,7 +44,7 @@ namespace Touchline.Core
         public void ToggleShortlist(string id){if(shortlist.Contains(id))shortlist.Remove(id);else shortlist.Add(id);}
         public void ExerciseLoanOption(Database db,string id)
         {
-            OffPitch();if(PlayingCareerEnded(db.Find(id)))throw new InvalidOperationException("La carrière de ce joueur est terminée ; aucune option d’achat ne peut être levée.");var c=world.contracts.FirstOrDefault(x=>x.player==id&&x.club==club&&x.parent!=null&&x.loanUntil>=life.day);if(c?.terms==null||c.terms.optionFee<=0)throw new InvalidOperationException("Aucune option d’achat active.");
+            OffPitch();if(PlayingCareerEnded(db.Find(id)))throw new InvalidOperationException("La carrière de ce joueur est terminée ; aucune option d’achat ne peut être levée.");var c=world.contracts.FirstOrDefault(x=>x.player==id&&x.club==club&&x.IsLoan&&x.loanUntil>=life.day);if(c?.terms==null||c.terms.optionFee<=0)throw new InvalidOperationException("Aucune option d’achat active.");
             long cost=c.terms.optionFee;if(cost>TransferBudget)throw new InvalidOperationException("Budget de transfert insuffisant.");if(Payroll(db)+ReservedWages+c.wage-c.wage*c.terms.loanWagePercent/100>Math.Max(WageBudget,Payroll(db)))throw new InvalidOperationException("Budget salarial insuffisant pour prendre en charge le salaire intégral.");string owner=c.parent;BeforeFinancialTermsChange(db,club,owner);Charge(cost,"Option d’achat • "+db.Find(id).name);CreditTransferRecipient(db,owner,cost,"Option d’achat • "+db.Find(id).name);world.transferSpent+=cost;ConvertLoanPurchase(c,db.Find(id));AfterFinancialTermsChange(db,club,owner);SavePlayer(db.Find(id));Mail("Secrétariat","Option d’achat levée",db.Find(id).name+" est transféré définitivement. Le salaire intégral est désormais à votre charge.",id,"transfer");
         }
         public void RecallLoan(Database db,string id)
@@ -54,7 +54,7 @@ namespace Touchline.Core
         void ResolveLoans(Database db)
         {
             ReviewOutgoingLoanAppearances(db);
-            foreach(var c in world.contracts.Where(c=>c.parent!=null&&c.loanUntil<=life.day).ToArray()){
+            foreach(var c in world.contracts.Where(c=>c.IsLoan&&c.loanUntil<=life.day).ToArray()){
                 var p=db.Find(c.player);if(p==null){ForgetLoanPlayerHistory(c.parent,c.player);CloseRetiredLoan(c);continue;}if(p.team=="retired"||c.retirement>=0&&c.retirement<=life.day){RetireEmployment(db,p,c,true);continue;}var terms=c.terms??new MarketTerms();string owner=c.parent,borrower=c.club;BeforeFinancialTermsChange(db,owner,borrower);bool owned=c.parent==club,borrowed=c.club==club;int appearances=borrowed?(life.players.FirstOrDefault(x=>x.id==p.id)?.appearances??0)-c.appearancesAtSigning:c.loanAppearanceTracking?Math.Max(0,(world.youth.FirstOrDefault(y=>y.player==p.id)?.loanAppearances??0)-c.appearancesAtSigning):0;
                 bool purchase=terms.obligationFee>0&&(terms.obligationAppearances==0||appearances>=terms.obligationAppearances);
                 if(purchase){SettleSignedPrincipal(db,borrower,owner,terms.obligationFee,"Obligation d’achat • "+p.name);if(borrowed)world.transferSpent+=terms.obligationFee;ConvertLoanPurchase(c,p);Mail("Secrétariat","Obligation d’achat déclenchée",p.name+" est transféré définitivement selon les conditions signées.",p.id,"transfer");}

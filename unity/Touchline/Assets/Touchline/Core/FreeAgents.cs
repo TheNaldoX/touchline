@@ -110,7 +110,7 @@ namespace Touchline.Core
         bool CareerEmploymentProtected(PlayerData p)
         {
             var contract=LookupEmployment(p.id);
-            return contract!=null&&(!contract.estimated||contract.parent!=null||contract.joined>0||contract.nextWage>0)||(world.offers?.Any(o=>o.player==p.id&&new[]{"signed","scheduled"}.Contains(o.status))??false)||(world.aiTransfers?.Any(t=>t.player==p.id)??false);
+            return contract!=null&&(!contract.estimated||contract.IsLoan||contract.joined>0||contract.nextWage>0)||(world.offers?.Any(o=>o.player==p.id&&new[]{"signed","scheduled"}.Contains(o.status))??false)||(world.aiTransfers?.Any(t=>t.player==p.id)??false);
         }
         void ImportReferencedFreeAgents(Database db)
         {
@@ -164,7 +164,7 @@ namespace Touchline.Core
         {
             var p=db.Find(id);if(p==null||p.team==club||p.team=="retired"||p.team=="free"||p.age<18||p.team.StartsWith("academy-"))return false;var c=Contract(db,id);
             var departure=AnnouncedFreeAgentRelease(db,id);if(departure!=null&&string.IsNullOrEmpty(departure.contractEndsOn))return false;
-            return c.parent==null&&c.until>life.day&&Epoch.AddDays(c.until)<=Date.AddMonths(6)&&!world.offers.Any(o=>o.player==id&&o.status=="scheduled");
+            return !c.IsLoan&&c.until>life.day&&Epoch.AddDays(c.until)<=Date.AddMonths(6)&&!world.offers.Any(o=>o.player==id&&o.status=="scheduled");
         }
         public long ReservedWages=>world?.offers.Where(o=>o.destination==club&&o.status=="scheduled").Sum(o=>o.wage)??0;
         void ActivatePrecontracts(Database db)

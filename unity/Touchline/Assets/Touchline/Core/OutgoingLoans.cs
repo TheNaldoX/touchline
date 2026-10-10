@@ -10,7 +10,7 @@ namespace Touchline.Core
         public List<OutgoingLoanOffer> outgoingLoans=new List<OutgoingLoanOffer>();
         public void ProposeOutgoingLoan(Database db,string player,string borrower,long fee,MarketTerms terms)
         {
-            OffPitch();var p=db.Find(player);if(!WindowOpen||PlayingCareerEnded(p)||p.team!=club||p.age<18||Contract(db,player).parent!=null||db.Squad(club).Count<19||!LoanRecipientAllowed(db,borrower))throw new InvalidOperationException("Un prêt nécessite un joueur majeur sous contrat, un effectif suffisant et un mercato ouvert.");
+            OffPitch();var p=db.Find(player);if(!WindowOpen||PlayingCareerEnded(p)||p.team!=club||p.age<18||Contract(db,player).IsLoan||db.Squad(club).Count<19||!LoanRecipientAllowed(db,borrower))throw new InvalidOperationException("Un prêt nécessite un joueur majeur sous contrat, un effectif suffisant et un mercato ouvert.");
             ValidateTerms(terms,true);if(fee<0||terms.loanEndDay>Contract(db,player).until)throw new InvalidOperationException("Conditions invalides : le prêt doit finir avant le contrat du joueur.");
             if(outgoingLoans.Any(o=>o.player==player&&(o.status=="pending"||o.status=="accepted")))throw new InvalidOperationException("Un prêt est déjà en discussion.");
             var offer=new OutgoingLoanOffer{player=player,owner=club,borrower=borrower,fee=fee,terms=terms,due=life.day+2};outgoingLoans.Add(offer);Mail("Agent · "+p.name,"Prêt proposé","Le joueur et le club d’accueil étudient le temps de jeu, la prise en charge salariale et les clauses. Réponse sous deux jours.",player,"transfer",OutgoingLoanMessageReference(offer));
@@ -24,7 +24,7 @@ namespace Touchline.Core
         }
         public void SignOutgoingLoan(Database db,string player)
         {
-            OffPitch();var o=outgoingLoans.LastOrDefault(o=>o.player==player&&o.owner==club&&o.status=="accepted"&&o.due+7>=life.day);if(o==null||!WindowOpen||db.Squad(club).Count<19)throw new InvalidOperationException("Le prêt ne peut plus être signé.");var p=db.Find(player);if(PlayingCareerEnded(p))throw new InvalidOperationException("La carrière de ce joueur est terminée ; cet accord de prêt ne peut plus être signé.");var c=Contract(db,player);if(p.team!=club||c.parent!=null||o.terms==null||o.terms.loanEndDay<=life.day||o.terms.loanEndDay>c.until)throw new InvalidOperationException("La situation du joueur a changé.");
+            OffPitch();var o=outgoingLoans.LastOrDefault(o=>o.player==player&&o.owner==club&&o.status=="accepted"&&o.due+7>=life.day);if(o==null||!WindowOpen||db.Squad(club).Count<19)throw new InvalidOperationException("Le prêt ne peut plus être signé.");var p=db.Find(player);if(PlayingCareerEnded(p))throw new InvalidOperationException("La carrière de ce joueur est terminée ; cet accord de prêt ne peut plus être signé.");var c=Contract(db,player);if(p.team!=club||c.IsLoan||o.terms==null||o.terms.loanEndDay<=life.day||o.terms.loanEndDay>c.until)throw new InvalidOperationException("La situation du joueur a changé.");
             ReceiveNpcTransfer(db,o.borrower,o.fee,"Indemnité de prêt • "+p.name);
             CaptureLoanParent(c,p);c.parentUntil=c.until;c.parent=club;c.club=o.borrower;c.originalWage=p.wage;c.wage=p.wage;c.terms=o.terms;c.loanUntil=o.terms.loanEndDay;PrepareLoanPurchase(c,3,true);p.team=o.borrower;
             var path=world.youth.FirstOrDefault(y=>y.player==player);if(path==null){path=new YouthPath{player=player,group="loan"};world.youth.Add(path);}path.group="loan";StartOutgoingLoanTracking(c,path);

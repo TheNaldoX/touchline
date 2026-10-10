@@ -49,7 +49,7 @@ namespace Touchline.Core
         {
             var totals=db.clubs.ToDictionary(t=>t.id,t=>0L);
             var loans=new Dictionary<string,Employment>();
-            foreach(var contract in world?.contracts??Enumerable.Empty<Employment>())if(contract.parent!=null&&contract.player!=null)loans[contract.player]=contract;
+            foreach(var contract in world?.contracts??Enumerable.Empty<Employment>())if(contract.IsLoan&&contract.player!=null)loans[contract.player]=contract;
             foreach(var p in db.players){
                 if(p==null||p.team==null||!totals.ContainsKey(p.team))continue;
                 if(loans.TryGetValue(p.id,out var loan)&&loan.club==p.team&&loan.parent!=p.team&&totals.ContainsKey(loan.parent)){
@@ -77,7 +77,7 @@ namespace Touchline.Core
         Dictionary<string,long> AiCommittedByClub(IEnumerable<string> ids)
         {
             var unpaid=new Dictionary<string,long>();foreach(var p in payments)if(!p.settled&&p.club!=null)unpaid[p.club]=unpaid.GetValueOrDefault(p.club)+p.amount;
-            var obligations=new Dictionary<string,long>();foreach(var c in world.contracts)if(c.parent!=null&&c.club!=null)obligations[c.club]=obligations.GetValueOrDefault(c.club)+(c.terms?.obligationFee??0);
+            var obligations=new Dictionary<string,long>();foreach(var c in world.contracts)if(c.IsLoan&&c.club!=null)obligations[c.club]=obligations.GetValueOrDefault(c.club)+(c.terms?.obligationFee??0);
             var incoming=new Dictionary<string,long>();foreach(var o in world.offers)if(o.destination!=null&&(o.status=="accepted"||o.status=="scheduled"))incoming[o.destination]=incoming.GetValueOrDefault(o.destination)+o.fee+o.wage*26;
             var result=new Dictionary<string,long>();
             foreach(var id in ids){
@@ -93,7 +93,7 @@ namespace Touchline.Core
         long AiCommitted(string id)
         {
             long committed=payments.Where(p=>p.club==id&&!p.settled).Sum(p=>p.amount)
-                +world.contracts.Where(c=>c.club==id&&c.parent!=null).Sum(c=>c.terms?.obligationFee??0)
+                +world.contracts.Where(c=>c.club==id&&c.IsLoan).Sum(c=>c.terms?.obligationFee??0)
                 +world.offers.Where(o=>o.destination==id&&(o.status=="accepted"||o.status=="scheduled")).Sum(o=>o.fee+o.wage*26);
             var former=previousClubs.FirstOrDefault(p=>p.club==id);
             committed+=id==club?world.debt:Math.Max(world.aiAccounts.FirstOrDefault(a=>a.club==id)?.operatingDebt??0,former?.debt??0);
@@ -157,7 +157,7 @@ namespace Touchline.Core
             // of committing every available euro to another three-year deal.
             long repayment=Math.Min(debt,Math.Min(team.annualRevenue*15/100,Math.Max(team.annualRevenue*3/100,debt*6/100)));
             long due=payments.Where(p=>p.club==team.id&&!p.settled&&p.due<=life.day+365).Sum(p=>p.amount)
-                +world.contracts.Where(c=>c.club==team.id&&c.parent!=null&&c.terms?.loanEndDay<=life.day+365).Sum(c=>c.terms?.obligationFee??0)
+                +world.contracts.Where(c=>c.club==team.id&&c.IsLoan&&c.terms?.loanEndDay<=life.day+365).Sum(c=>c.terms?.obligationFee??0)
                 +world.offers.Where(o=>o.destination==team.id&&(o.status=="accepted"||o.status=="scheduled")&&o.joinDay<=life.day+365).Sum(o=>o.fee);
             long cashBuffer=Math.Max(0,projectedCash-team.annualRevenue/4-AiCommitted(team.id));
             long unfundedDue=Math.Max(0,due-cashBuffer);
@@ -203,7 +203,7 @@ namespace Touchline.Core
             // Commitments only change with debts settled above; signings below
             // move cash, never these obligations.
             var committed=AiCommittedByClub(eligible);
-            var protectedPlayers=new HashSet<string>(world.contracts.Where(c=>c.parent!=null).Select(c=>c.player));
+            var protectedPlayers=new HashSet<string>(world.contracts.Where(c=>c.IsLoan).Select(c=>c.player));
             protectedPlayers.UnionWith(world.offers.Where(o=>o.status=="accepted"||o.status=="scheduled"||o.status=="pending"||o.status=="sale").Select(o=>o.player));
             // A seller lets a player go only for a reason: he is not a starter, the
             // squad is above its size, debt forces sales, the player was listed as
@@ -213,7 +213,7 @@ namespace Touchline.Core
             var listed=new HashSet<string>();
             // Announced departures (contract ending this summer, not renewed) no
             // longer count in a squad's size, for buyers as for sellers.
-            var leaving=new HashSet<string>(world.contracts.Where(e=>e.aiRelease&&e.parent==null&&e.until<=life.day+21).Select(e=>e.player));
+            var leaving=new HashSet<string>(world.contracts.Where(e=>e.aiRelease&&!e.IsLoan&&e.until<=life.day+21).Select(e=>e.player));
             int Active(List<PlayerData> q)=>q.Count(p=>!leaving.Contains(p.id));
             bool Releases(PlayerData p,List<PlayerData> seller,ClubData buyer)
             {

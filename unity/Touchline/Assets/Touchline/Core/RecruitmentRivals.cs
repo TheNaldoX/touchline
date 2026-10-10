@@ -90,7 +90,7 @@ namespace Touchline.Core
             foreach (var id in shortlist.ToArray())
             {
                 var p = db.Find(id); if (!Scoutable(p) || p.team == "free") continue;
-                var contract = world.contracts.FirstOrDefault(c => c.player == id && c.parent == null);
+                var contract = world.contracts.FirstOrDefault(c => c.player == id && !c.IsLoan);
                 if (contract != null && contract.until > life.day && contract.until - life.day <= AlertContractDays && RecruitmentAlert("contract:" + id + ":" + contract.until))
                     Mail("Cellule recrutement", "Fin de contrat en vue", p.name + " arrive en fin de contrat le " + Epoch.AddDays(contract.until).ToString("dd/MM/yyyy") + ". Un précontrat est envisageable, sans indemnité, si le joueur accepte votre projet.", id, "scout");
             }

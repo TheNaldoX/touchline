@@ -35,7 +35,7 @@ namespace Touchline.Core
             if(world.offers.Any(o=>o.player==p.id&&(o.status=="scheduled"||o.status=="accepted")))return false;
             // Only at the end of a deal: nobody walks away from a running contract.
             bool free=p.team=="free"||contract==null||contract.club!=p.team;
-            if(!free&&(contract.until>life.day+21||contract.parent!=null))return false;
+            if(!free&&(contract.until>life.day+21||contract.IsLoan))return false;
             float chance=RetirementByAge[Math.Min(age-31,RetirementByAge.Length-1)]*(p.rating>=80?RetireStar:p.rating>=72?RetireEstablished:1f)*(free&&p.team=="free"?RetireWithoutClub:1f);
             // Stable per player and season: no draw from the career generator.
             return StableIdentity("retire:"+p.id+":"+world.year)%1000<chance*1000;
@@ -97,7 +97,7 @@ namespace Touchline.Core
                 }
                 while(live.Count<squadSize){
                     var template=before.OrderBy(p=>live.Count(x=>x.Goalkeeper==p.Goalkeeper&&x.position==p.position)).First();
-                    var candidate=db.players.Where(p=>p.team=="free"&&p.age>=18&&p.age<32&&p.Goalkeeper==template.Goalkeeper&&p.position==template.position&&p.rating>=reference.rating-9&&p.rating<=reference.rating+5&&(!contracts.TryGetValue(p.id,out var activeLoan)||activeLoan.parent==null)&&!world.offers.Any(o=>o.player==p.id&&o.status=="scheduled")).OrderBy(p=>Math.Abs(p.rating-reference.rating)).FirstOrDefault();
+                    var candidate=db.players.Where(p=>p.team=="free"&&p.age>=18&&p.age<32&&p.Goalkeeper==template.Goalkeeper&&p.position==template.position&&p.rating>=reference.rating-9&&p.rating<=reference.rating+5&&(!contracts.TryGetValue(p.id,out var activeLoan)||!activeLoan.IsLoan)&&!world.offers.Any(o=>o.player==p.id&&o.status=="scheduled")).OrderBy(p=>Math.Abs(p.rating-reference.rating)).FirstOrDefault();
                     if(candidate==null){candidate=CreateReplacement(db,team,reference,template,additions.Count);additions.Add(candidate);}else candidate.team=team.id;
                     live.Add(candidate);
                 }
@@ -110,7 +110,7 @@ namespace Touchline.Core
                     additions.Add(youth);live.Add(youth);
                 }
                 var surplus=new HashSet<string>();int remaining=live.Count,keepers=live.Count(p=>p.Goalkeeper);
-                foreach(var fringe in live.Where(p=>contracts.TryGetValue(p.id,out var e)&&e.parent==null&&e.until<=life.day+21).OrderBy(p=>p.rating)){
+                foreach(var fringe in live.Where(p=>contracts.TryGetValue(p.id,out var e)&&!e.IsLoan&&e.until<=life.day+21).OrderBy(p=>p.rating)){
                     if(remaining<=squadSize)break;if(fringe.Goalkeeper&&keepers<=2)continue;
                     // Do not empty a role merely to reduce payroll; wait for a different expiry.
                     if(live.Count(p=>p.position==fringe.position&&!surplus.Contains(p.id))<=1)continue;
@@ -119,7 +119,7 @@ namespace Touchline.Core
                 double weights=live.Where(p=>!surplus.Contains(p.id)).Sum(p=>Math.Max(p.wage,reference.wage*Math.Pow(1.075,p.rating-reference.rating)));
                 var departing=new List<PlayerData>();
                 foreach(var p in live){
-                    if(contracts.TryGetValue(p.id,out var contract)&&contract.parent!=null)continue;
+                    if(contracts.TryGetValue(p.id,out var contract)&&contract.IsLoan)continue;
                     if(surplus.Contains(p.id)){contract.aiRelease=true;continue;}
                     bool newEmployment=contract==null||contract.club!=team.id;
                     if(newEmployment||contract.until<=life.day+21){
@@ -171,14 +171,14 @@ namespace Touchline.Core
             string role=leaving.positions?.FirstOrDefault()??leaving.position;
             return db.players.Where(p=>p.team=="free"&&p.age>=18&&p.age<=FreeAgentMaxAge&&p.Goalkeeper==leaving.Goalkeeper&&(p.position==leaving.position||p.positions?.FirstOrDefault()==role)
                     &&p.rating>=reference.rating-FreeAgentBelowReference&&p.rating<=reference.rating+FreeAgentAboveReference
-                    &&(!contracts.TryGetValue(p.id,out var loan)||loan.parent==null)&&!world.offers.Any(o=>o.player==p.id&&o.status=="scheduled"))
+                    &&(!contracts.TryGetValue(p.id,out var loan)||!loan.IsLoan)&&!world.offers.Any(o=>o.player==p.id&&o.status=="scheduled"))
                 .OrderByDescending(p=>p.rating).ThenBy(p=>p.id,StringComparer.Ordinal).FirstOrDefault();
         }
         void ProcessAiEmployment(Database db)
         {
             foreach(var contract in world.contracts){
                 if(contract.nextWage<=0&&!contract.aiRelease)continue;
-                var p=db.Find(contract.player);if(p==null||p.team!=contract.club||contract.parent!=null)continue;
+                var p=db.Find(contract.player);if(p==null||p.team!=contract.club||contract.IsLoan)continue;
                 if(contract.nextWage>0&&contract.wageChangeDay<=life.day){p.wage=contract.nextWage;contract.wage=p.wage;contract.nextWage=0;contract.wageChangeDay=0;SavePlayer(p);}
                 if(contract.aiRelease&&contract.until<=life.day&&!(contract.retirement>=0&&contract.retirement<=life.day)&&!world.offers.Any(o=>o.player==p.id&&o.status=="scheduled")){
                     bool managed=p.team==club;SettlePermanentDepartureGrowth(p);p.team="free";contract.club="free";contract.aiRelease=false;life.players.RemoveAll(x=>x.id==p.id);SavePlayer(p);

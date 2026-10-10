@@ -60,7 +60,7 @@ namespace Touchline.Core
         void ProcessLoanParentWageChanges(Database db)
         {
             if(world?.contracts==null)return;
-            foreach(var c in world.contracts){var s=c.parentConditions;if(c.parent==null||s==null||s.nextWage<=0||s.wageChangeDay>life.day)continue;var p=db.Find(c.player);if(p==null||p.team!=c.club)continue;
+            foreach(var c in world.contracts){var s=c.parentConditions;if(!c.IsLoan||s==null||s.nextWage<=0||s.wageChangeDay>life.day)continue;var p=db.Find(c.player);if(p==null||p.team!=c.club)continue;
                 BeforeFinancialTermsChange(db,c.parent,c.club);long due=s.nextWage;p.wage=due;c.wage=due;c.originalWage=due;s.wage=due;s.nextWage=0;s.wageChangeDay=0;if(c.purchaseConditions!=null)c.purchaseConditions.wage=due;
                 AfterFinancialTermsChange(db,c.parent,c.club);SavePlayer(p);
             }

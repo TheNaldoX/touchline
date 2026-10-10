@@ -109,6 +109,15 @@ static class P{
   else for(int i=0;i<dbOld.players.Length&&diffs<5;i++){string p1=J(dbOld.players[i]),p2=J(dbNew.players[i]);if(p1!=p2){diffs++;Console.WriteLine("ÉCHEC joueur "+dbOld.players[i].id+"\n  "+p1.Substring(0,Math.Min(300,p1.Length))+"\n  "+p2.Substring(0,Math.Min(300,p2.Length)));}}
   if(J(dbOld.clubs)!=J(dbNew.clubs)){}
   Console.WriteLine(diffs==0?"Rechargement identique : carrière et "+dbNew.players.Length+" joueurs, ancien format = format compact.":"Différences : "+diffs);
+  if(diffs==0&&oldState.world.managerStatus=="unemployed"){
+   oldState.BindMatchTactic();newState.BindMatchTactic();
+   var clubs=new HashSet<string>(dbNew.clubs.Select(x=>x.id).Concat(dbNew.clubs.Select(x=>"academy-"+x.id))){"free","retired"};
+   for(int day=0;day<7;day++){oldState.AdvanceDay(dbOld);newState.AdvanceDay(dbNew);
+    var invalid=dbOld.players.Concat(dbNew.players).FirstOrDefault(p=>!clubs.Contains(p.team));
+    if(invalid!=null)throw new Exception("Club joueur invalide après reprise de sauvegarde : "+invalid.id+" / "+invalid.team);}
+   if(J(oldState)!=J(newState)||J(dbOld.players)!=J(dbNew.players)){Console.WriteLine("ÉCHEC : divergence après sept journées reprises");diffs++;}
+   else Console.WriteLine("Reprise après sauvegarde : sept journées identiques, tous les clubs joueurs valides.");
+  }
   return diffs==0?0:1;
  }
  static long GetLong(object o,string name){var f=o.GetType().GetField(name);return f==null?0:Convert.ToInt64(f.GetValue(o));}

@@ -67,6 +67,25 @@ public static class LoanSalaryChecks
             c.ProposeTransfer(db,"p24",first.fee,1,3,"rotation",true,terms:new MarketTerms{loanWagePercent=40,loanEndDay=90});c.life.day=4;Call(c,"ManagementDay",db);var accepted=c.world.offers.Last();Require(accepted.status=="accepted"&&accepted.wage==500,"Revised loan fee failed while unchanged parent salary should satisfy agent.");c.SignTransfer(db,"p24");
             Require(db.Find("p24").wage==500&&c.Contract(db,"p24").originalWage==500&&c.Payroll(db)==12200,"Negotiated loan changed parent wage or borrower salary share.");result["agentCounterNegotiatesFeeWithoutRaisingParentWage"]=true;
         }
+        if(only==null||only=="saveRoundTripDoesNotInventLoans"){
+            var(c,db)=Setup();long payroll=c.Payroll(db);var teams=db.players.ToDictionary(p=>p.id,p=>p.team);
+            c=UnityEngine.JsonUtility.FromJson<Career>(UnityEngine.JsonUtility.ToJson(c));
+            Require(CareerSaveRestore.TryRestore(db,c,out var restored),"Career restore failed");db=restored;
+            Require(c.Payroll(db)==payroll,"Reload classified permanent contracts as loans and changed payroll");
+            Call(c,"ResolveLoans",db);Require(db.players.All(p=>teams[p.id]==p.team),"Reload returned permanent players to a nonexistent lending club");
+            result["saveRoundTripDoesNotInventLoans"]=true;
+        }
+        if(only==null||only=="saveRoundTripKeepsSaleEligibility"){
+            var(c,db)=Setup();c=UnityEngine.JsonUtility.FromJson<Career>(UnityEngine.JsonUtility.ToJson(c));
+            Require(CareerSaveRestore.TryRestore(db,c,out var restored),"Career restore failed");c.BindMatchTactic();c.ListForSale(restored,"p4");
+            Require(c.world.offers.Any(o=>o.player=="p4"&&o.status=="sale"),"Permanent player cannot be listed after reload");result["saveRoundTripKeepsSaleEligibility"]=true;
+        }
+        if(only==null||only=="saveRoundTripKeepsRealLoanShares"){
+            var(c,db)=Setup();c.ProposeTransfer(db,"p24",0,500,3,"rotation",true,terms:new MarketTerms{loanWagePercent=40,loanEndDay=28});c.world.offers.Last().status="accepted";c.SignTransfer(db,"p24");long payroll=c.Payroll(db);
+            c=UnityEngine.JsonUtility.FromJson<Career>(UnityEngine.JsonUtility.ToJson(c));Require(CareerSaveRestore.TryRestore(db,c,out var restored),"Loan career restore failed");db=restored;
+            Require(c.HasActiveLoan("p24")&&c.Payroll(db)==payroll,"Real loan share changed after reload");c.life.day=28;Call(c,"ResolveLoans",db);
+            Require(db.Find("p24").team=="c1"&&c.Payroll(db)==12000,"Real loan did not return normally after reload");result["saveRoundTripKeepsRealLoanShares"]=true;
+        }
         return result;
     }
 }
@@ -86,6 +105,9 @@ namespace Touchline.Tests
         [NUnit.Framework.TestCase("permanentTransferSalaryStillNegotiable")]
         [NUnit.Framework.TestCase("purchaseOptionReservesExactOwnerComplement")]
         [NUnit.Framework.TestCase("agentCounterNegotiatesFeeWithoutRaisingParentWage")]
+        [NUnit.Framework.TestCase("saveRoundTripDoesNotInventLoans")]
+        [NUnit.Framework.TestCase("saveRoundTripKeepsSaleEligibility")]
+        [NUnit.Framework.TestCase("saveRoundTripKeepsRealLoanShares")]
         public void ExistingParentContractSalaryAndFinancialSharesStayConsistent(string scenario)
         {
             NUnit.Framework.Assert.That(LoanSalaryChecks.Run(scenario)[scenario],NUnit.Framework.Is.True);
