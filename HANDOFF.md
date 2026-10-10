@@ -2,7 +2,12 @@
 
 Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dans Git/PR, pas de nouveaux journaux docs.
 
-## Lot courant — bilan des occasions
+## Lot courant — relances des joueurs
+
+- Branche `fix/departure-followup`, base PR76/d24adb7. Après un refus, relance après28 jours de préoccupation persistante ; indisponibilité/amélioration réinitialise le délai. Seule la dernière demande est actionnable. Champ de club prêteur vide accepté comme absence de prêt après sérialisation.
+- Régression avant0/1, après Core934/934 (`departure-followup-core-save.txt`) et Unity12/12 (`departure-followup-save-tests.xml`). Trois nouveaux cas, dont reprise après sauvegarde/blessure. Capture native `ui-departure-followup-native` réussie, message plié et discussion dépliée revus. Pas de nouvelle APK. À vérifier ensuite : autres comparaisons `parent!=null` dans prêts/finances/carrière ; elles peuvent confondre chaîne vide et prêt après chargement.
+
+## Bilan des occasions — PR76
 
 - Branche `feat/match-chance-review`, base PR75/5375b7a. Carte dans Analyse/Adjoint : tirs, cadrés, xG, qualité moyenne, conseil prudent après six tirs ; explication dépliable. Bilan final distingue consignes finales et statistiques cumulées. Aucun calcul de tir, décision ou aléatoire modifié.
 - Core931/931 (`chance-review-core.txt`), dont5 nouveaux cas ; Unity22/22 MatchImmersionTests (`chance-review-tests.xml`). Texte compact ensuite revérifié4/4 Core et compilation/captures natives `ui-chance-review-final`, deux formats revus, pas de petit texte ni bouton<48dp dans ce parcours. Fixture synthétique10tirs/0,50xG, pas une preuve d’équilibrage. Premier rendu échouait à rechercher une arène inactive dans la fixture ; corrigé.

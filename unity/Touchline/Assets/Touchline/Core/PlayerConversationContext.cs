@@ -92,7 +92,7 @@ namespace Touchline.Core
                 var injury=Injury(m.player);return injury?.treatment=="pending"&&
                     (!string.IsNullOrEmpty(m.reference)?m.reference=="medical/"+injury.id:m.day>=injury.opened&&(m.subject?.Contains("blessure")??false));
             }
-            if(m.action=="talk"&&m.reference?.StartsWith("departure/",StringComparison.Ordinal)==true)return DepartureFor(m.player)?.status=="requested"&&world?.managerStatus=="employed";
+            if(m.action=="talk"&&m.reference?.StartsWith("departure/",StringComparison.Ordinal)==true){var request=DepartureFor(m.player);return request?.status=="requested"&&world?.managerStatus=="employed"&&m.reference=="departure/"+club+"/"+m.player+"/"+request.opened;}
             if(m.action=="transfer")return PendingTransferAgreement(m)!=null||PendingOutgoingLoanAgreement(m)!=null;
             if(m.action=="staff")return PendingStaffAgreement(m)!=null;
             if(m.action=="finance")return PendingCommercialAgreement(m)!=null;

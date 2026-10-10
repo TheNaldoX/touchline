@@ -79,6 +79,7 @@ namespace Touchline.Editor
 
         static List<Action> BuildSteps()
         {
+            if(Path.GetFileName(Output).StartsWith("ui-departure-followup-",StringComparison.Ordinal))return BuildDepartureFollowupSteps();
             if(Path.GetFileName(Output).StartsWith("ui-chance-review-",StringComparison.Ordinal))return BuildChanceReviewSteps();
             if(Path.GetFileName(Output).StartsWith("ui-scroll-memory-",StringComparison.Ordinal))return BuildScrollMemorySteps();
             if(Path.GetFileName(Output).StartsWith("ui-recruitment-cache-",StringComparison.Ordinal))return BuildRecruitmentCacheSteps();
@@ -129,6 +130,18 @@ namespace Touchline.Editor
                 list.Add(()=>{Capture(screen.tag+"-match-consignes");SetField("tacticalTab","Composition");Call("Navigate","Match");});
             }
             return list;
+        }
+
+        static List<Action> BuildDepartureFollowupSteps()
+        {
+            var list=new List<Action>();string id=null;int message=0;
+            list.Add(()=>{var c=App.Career;c.EnsureWorld(App.Database);var p=App.Database.Squad(c.club).First(x=>x.position!="GB"&&x.unavailableDays<=0&&c.Available(x.id));id=p.id;c.life.day+=28;var contract=c.Contract(App.Database,id);contract.role="starter";contract.playingTime=new PlayingTimeUsage{club=c.club};for(int i=0;i<6;i++)contract.playingTime.Add(false,0);c.Person(id).morale=30;c.Person(id).trust=30;c.departureRequests.Add(new DepartureRequest{club=c.club,player=id,status="refused",answered=c.life.day-28,since=c.life.day-28});c.ReviewDepartureRequests(App.Database);var mail=c.life.messages.Last(x=>x.subject=="Ma situation n’a pas changé");message=mail.id;if(!c.MessageNeedsDecision(mail))throw new Exception("Followup is not actionable");});
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Messages");Call("OpenMessage",message);});
+                list.Add(()=>{Capture(screen.tag+"-relance");Call("Conversation",id);});
+                list.Add(()=>{if(Root.Q<Button>("departure-refuse")==null||Root.Q<Button>("departure-allow")==null)throw new Exception("Followup lost departure choices");Capture(screen.tag+"-discussion");Call("CloseModal");});
+            }
+            audit.AppendLine("Relance contextuelle synthétique : notification actionnable et accès aux décisions de départ, deux formats ; aucune vente ni sauvegarde personnelle.");return list;
         }
 
         static List<Action> BuildChanceReviewSteps()
