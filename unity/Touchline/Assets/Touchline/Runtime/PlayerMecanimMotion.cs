@@ -187,15 +187,17 @@ namespace Touchline
                 if(reset)actionWeights[slot]=1;
             }else if(!acting&&activeAction>=0){actionLive[activeAction]=false;mecanimActionKey=null;}
             if(activeAction>=0&&actionLive[activeAction]){
-                // Foot deliveries share the interpolated simulation clock, including entry mid-highlight.
-                const float FootDeliveryDuration=.64f; // seconds, Flight kick recovery in MatchDecisions
-                mecanimActionElapsed=actor.action=="kick"?Mathf.Clamp(FootDeliveryDuration-remaining,0,FootDeliveryDuration):mecanimActionElapsed+dt;var playable=actionPlayables[activeAction];float length=(float)playable.GetAnimationClip().length;
+                // Contact gestures share the interpolated match clock even when a highlight joins mid-action.
+                float duration=CapturedActionDuration(actor);
+                mecanimActionElapsed=duration>0?Mathf.Clamp(duration-remaining,0,duration):mecanimActionElapsed+dt;var playable=actionPlayables[activeAction];float length=(float)playable.GetAnimationClip().length;
                 playable.SetTime(Mathf.Clamp(mecanimActionContact+mecanimActionElapsed,0,length-.001f));playable.SetSpeed(0);
             }
             for(int i=0;i<2;i++){
                 if(!actionPlayables[i].IsValid())continue;
                 float target=actionLive[i]?1:0;float rate=actionLive[i]?1/ActionFadeIn:1/ActionFadeOut;
                 actionWeights[i]=Mathf.MoveTowards(actionWeights[i],target,rate*dt);
+                // Do not lift the feet before physical take-off when entering a header.
+                if(i==activeAction&&actor.action=="header"&&!reset)actionWeights[i]=Mathf.Min(actionWeights[i],Mathf.Clamp01(mecanimActionElapsed/ActionFadeIn));
                 if(!actionLive[i]){actionPlayables[i].SetSpeed(1);} // le geste finit naturellement pendant le fondu de sortie
                 if(!actionLive[i]&&actionWeights[i]<=0){mecanimGraph.Disconnect(mecanimMixer,ActionInput+i);actionPlayables[i].Destroy();if(activeAction==i)activeAction=-1;if(turnSlot==i)turnSlot=-1;}
             }
@@ -230,6 +232,21 @@ namespace Touchline
             return true;
         }
 
+        static float CapturedActionDuration(Actor actor)
+        {
+            // Seconds: legacy foot/hand deliveries and dives have fixed lifetimes in Core.
+            switch(actor.action){
+                case "kick":return .64f;
+                case "header":return MatchSimulation.AerialContestDuration;
+                case "slide":return MatchSimulation.SlidingDuelDuration;
+                case "tackle":return actor.actionKind==MatchSimulation.StandingDuel&&actor.tackleWithdrawFrom<=0?MatchSimulation.TacklePreparation+MatchSimulation.TackleRecovery:0;
+                case "control":return MatchSimulation.IsBodyControl(actor)?MatchSimulation.BodyControlDuration(actor.actionKind):0;
+                case "keeper-throw":return MatchSimulation.KeeperDistributionDuration;
+                case "throw":return 1.1f;
+                case "dive":return 1.2f;
+                default:return 0; // Multi-clip falls, turns and variable foot controls retain their own timing.
+            }
+        }
         void MecanimPassContact(Actor actor,float remaining)
         {
             // Older saved actions may have no contact metadata; leave their capture untouched.

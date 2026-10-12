@@ -6,6 +6,25 @@ namespace Touchline.Tests
 {
     public class LocomotionFacingTests
     {
+        [TestCase("header", "", .64f, 9)]
+        [TestCase("slide", "", 1.7f, 9)]
+        [TestCase("tackle", MatchSimulation.StandingDuel, .75f, 9)]
+        [TestCase("control", MatchSimulation.ChestControl, .60f, 9)]
+        [TestCase("control", MatchSimulation.ThighControl, .48f, 9)]
+        [TestCase("keeper-throw", "", 1.08f, 0)]
+        [TestCase("dive", "", 1.2f, 0)]
+        public void CapturedContactResumesAtInterpolatedMatchTime(string action,string kind,float duration,int slot)
+        {
+            bool before=PlayerView.UseMecanim;var root=new GameObject("Contact clock");
+            try{
+                PlayerView.UseMecanim=true;var view=root.AddComponent<PlayerView>();view.Build(new PlayerData{id="contact-clock",heightCm=182},0,slot,Color.blue);
+                Assert.IsTrue(PlayerView.MecanimReady);
+                var actor=new Actor{id="contact-clock",slot=slot,action=action,actionKind=kind,actionSequence=1,actionTime=duration-.25f,actionTarget=new Point(0,.4f)};
+                view.Render(actor,.5f,1f/60,new Vector3(0,.11f,.4f));
+                var field=typeof(PlayerView).GetField("mecanimActionElapsed",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic);
+                Assert.AreEqual(.25f-.5f*MatchSimulation.Step,(float)field.GetValue(view),.0001f,"Contact must resume mid-action instead of restarting");
+            }finally{Object.DestroyImmediate(root);PlayerView.UseMecanim=before;}
+        }
         [TestCase(30)][TestCase(60)][TestCase(120)]
         public void CapturedKickFollowsMatchClockWhenHighlightStartsMidGesture(int fps)
         {

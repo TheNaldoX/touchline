@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Contacts capturés : reprise au temps interpolé pour têtes, tacles, contrôles du corps, plongeons et lancers, avec entrée progressive de la tête ; relance au sol conservée en attendant correction de sa pose.
 - Frappes capturées : chronomètre et contact de passe alignés sur le temps interpolé du match, y compris lors du démarrage d’un temps fort au milieu du geste.
 - Livraison Android 0.66/code59 : corrections des retours tactique, interactions, récapitulatif, bureau, presse, discussions, ventes et coups francs ; sauvegardes et signature conservées.
 - Coups francs excentrés : choix d’un centre vers une cible placée selon le duel aérien et la consigne de centres, sans forcer une livraison sur un joueur hors-jeu ou dominé.
