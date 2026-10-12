@@ -53,24 +53,35 @@ namespace Touchline.Tests
             Assert.AreEqual("idle",p.action);Assert.IsFalse(MatchSimulation.GroundedAction(p));
         }
         [TestCase(30,1,160)] [TestCase(60,-1,180)] [TestCase(120,1,205)]
+        [TestCase(30,-1,180)] [TestCase(30,1,205)] [TestCase(60,1,160)]
+        [TestCase(60,1,205)] [TestCase(120,1,160)] [TestCase(120,-1,180)]
         public void ContactRecoveryHasGroundedFeetAndNoPoseTeleport(int fps,int side,int stature)
         {
-            var go=new GameObject("Contact recovery");try{
+            bool mode=PlayerView.UseMecanim;PlayerView.UseMecanim=true;
+            var go=new GameObject("Contact recovery");var control=new GameObject("Matching idle pelvis");try{
                 var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="ground-recovery",heightCm=stature},0,9,Color.white);
+                var idle=control.AddComponent<PlayerView>();idle.Build(new PlayerData{id="ground-recovery",heightCm=stature},0,9,Color.white);
                 // This is an outfield fall. Actor.slot defaults to zero, which
                 // would correctly enter the keeper's lowered ready stance on
                 // return to idle rather than the outfield upright baseline.
-                var actor=new Actor{slot=9,action="idle"};view.Render(actor,1,1f/fps);float baseline=go.transform.Find("Rig").position.y;
-                actor.action="fall";actor.actionKind="fouled-fall";actor.actionSequence=1;actor.diveSide=side;float minBody=0,maxJump=0;var last=Vector3.zero;
+                var actor=new Actor{slot=9,action="idle"};
+                for(int i=0;i<fps;i++){view.Render(actor,1,1f/fps);idle.Render(actor,1,1f/fps);}
+                // Captured motion moves the anatomical pelvis, not its Rig container.
+                var pelvis=go.GetComponentsInChildren<Transform>().First(t=>t.name=="root");
+                var idlePelvis=control.GetComponentsInChildren<Transform>().First(t=>t.name=="root");
+                var idleActor=new Actor{slot=9,action="idle"};
+                float baseline=pelvis.position.y;
+                actor.action="fall";actor.actionKind="fouled-fall";actor.actionSequence=1;actor.diveSide=side;float minBody=0,maxJump=0,maxJumpTime=0;var last=Vector3.zero;
                 for(int i=0;i<=Mathf.CeilToInt(2.6f*fps);i++){
                     float t=i/(float)fps;actor.actionTime=Mathf.Max(0,MatchSimulation.ContactFallDuration-t);if(t>MatchSimulation.ContactFallDuration)actor.action="idle";
-                    view.Render(actor,1,1f/fps);var body=go.transform.Find("Rig").position;
-                    if(i>0)maxJump=Mathf.Max(maxJump,Vector3.Distance(last,body));last=body;minBody=Mathf.Min(minBody,body.y);
+                    view.Render(actor,1,1f/fps);idle.Render(idleActor,1,1f/fps);var body=pelvis.position;body.y-=baseline;
+                    if(i>0&&Vector3.Distance(last,body)>maxJump){maxJump=Vector3.Distance(last,body);maxJumpTime=t;}last=body;minBody=Mathf.Min(minBody,body.y);
                     Assert.GreaterOrEqual(view.FootPosition(true).y,.025f);Assert.GreaterOrEqual(view.FootPosition(false).y,.025f);Assert.AreEqual(Vector3.zero,go.transform.position);
                 }
+                TestContext.WriteLine($"Pelvis {fps}Hz: minimum={minBody:F4}m, maximum step={maxJump:F4}m at {maxJumpTime:F3}s, recovery={last.y:F4}m");
                 Assert.Less(minBody,-.35f);Assert.Less(maxJump,.10f);Assert.That(last.y,Is.InRange(-.06f,.04f));
-                Assert.That(last.y,Is.EqualTo(baseline).Within(.02f),"Recovery must return to the same outfield idle height");
-            }finally{Object.DestroyImmediate(go);}
+                Assert.That(pelvis.position.y,Is.EqualTo(idlePelvis.position.y).Within(.02f),"Recovery must return to the same outfield idle height at the same breathing phase");
+            }finally{Object.DestroyImmediate(go);Object.DestroyImmediate(control);PlayerView.UseMecanim=mode;}
         }
     }
 }

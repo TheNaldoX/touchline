@@ -38,6 +38,8 @@ namespace Touchline
         const float LoopRateMin=.7f,LoopRateMax=2.6f; // cadence relative ; au-delà, le verrouillage des pieds absorbe l'écart
         const float MoveBlendFrom=.25f,MoveBlendTo=1.3f;     // m/s : de l'arrêt à la course
         const float ActionFadeIn=.10f,ActionFadeOut=.22f;     // s
+        const float FallFadeIn=.55f; // s: a full-body drop needs longer than a foot delivery, including tall players at 30Hz.
+        const float FallGroundFade=.30f,FallRecoveryFade=.35f; // s: matched outgoing/incoming fades; finish trip before the recovery slot is reused.
         const float LocomotionBlendRate=8f;                  // 1/s : lissage arrêt/course/conduite
 
         // Instant (s dans le clip) où le pied, la tête ou les mains touchent le ballon.
@@ -58,6 +60,7 @@ namespace Touchline
         Animator mecanimAnimator;PlayableGraph mecanimGraph;AnimationMixerPlayable mecanimMixer;
         AnimationClipPlayable idlePlayable,jogPlayable,dribblePlayable,runPlayable,sprintPlayable,jogBackPlayable,runBackPlayable;
         readonly AnimationClipPlayable[] actionPlayables=new AnimationClipPlayable[2];
+        readonly string[] actionNames=new string[2]; // Cached once per gesture; Unity Object.name allocates on every read.
         readonly float[] actionWeights=new float[2];readonly bool[] actionLive=new bool[2];
         int activeAction=-1;string mecanimActionKey;int mecanimActionSequence=-1;float mecanimActionElapsed,mecanimActionContact;
         float moveBlend,dribbleBlend,backwardBlend,sideBlend,sideSign=1,strafeRightBlend=1;bool mecanimKeeper;
@@ -180,7 +183,7 @@ namespace Touchline
                 if(actionPlayables[slot].IsValid()){mecanimGraph.Disconnect(mecanimMixer,ActionInput+slot);actionPlayables[slot].Destroy();}
                 var clip=MecanimClips[clipName];actionPlayables[slot]=AnimationClipPlayable.Create(mecanimGraph,clip);actionPlayables[slot].SetApplyFootIK(true);
                 mecanimGraph.Connect(actionPlayables[slot],0,mecanimMixer,ActionInput+slot);actionLive[slot]=true;if(activeAction>=0)actionLive[activeAction]=false;
-                activeAction=slot;mecanimActionKey=key;mecanimActionSequence=actor.actionSequence;mecanimActionElapsed=0;
+                actionNames[slot]=clipName;activeAction=slot;mecanimActionKey=key;mecanimActionSequence=actor.actionSequence;mecanimActionElapsed=0;
                 mecanimActionContact=(ClipContact.TryGetValue(clipName,out var c)?c:clip.length*.4f)-simContact;
                 if(turnGesture)mecanimActionContact=TurnClipStart(clipName);
                 if(turnSlot==slot)turnSlot=-1;if(turnGesture)turnSlot=slot;
@@ -195,10 +198,15 @@ namespace Touchline
             }
             for(int i=0;i<2;i++){
                 if(!actionPlayables[i].IsValid())continue;
-                float target=actionLive[i]?1:0;float rate=actionLive[i]?1/ActionFadeIn:1/ActionFadeOut;
+                string actionClip=actionNames[i];
+                // Grounded and standing-up phases crossfade at the same rate,
+                // avoiding an abrupt pelvis lift when the new phase takes over.
+                float fadeIn=actionClip=="Soccer Trip"?FallFadeIn:actionClip==FallenClip?FallGroundFade:actionClip==StandUpClip?FallRecoveryFade:ActionFadeIn;
+                float fadeOut=actionClip=="Soccer Trip"?FallGroundFade:actionClip==FallenClip||actionClip==StandUpClip?FallRecoveryFade:ActionFadeOut;
+                float target=actionLive[i]?1:0;float rate=actionLive[i]?1/fadeIn:1/fadeOut;
                 actionWeights[i]=Mathf.MoveTowards(actionWeights[i],target,rate*dt);
                 // Do not start headers or body receptions before their physical action clock advances.
-                if(i==activeAction&&(actor.action=="header"||MatchSimulation.IsBodyControl(actor)||actor.action=="fall"&&mecanimActionKey=="Soccer Trip"))actionWeights[i]=Mathf.Min(actionWeights[i],Mathf.Clamp01(mecanimActionElapsed/ActionFadeIn));
+                if(i==activeAction&&(actor.action=="header"||MatchSimulation.IsBodyControl(actor)||actor.action=="fall"&&mecanimActionKey=="Soccer Trip"))actionWeights[i]=Mathf.Min(actionWeights[i],Mathf.Clamp01(mecanimActionElapsed/fadeIn));
                 if(!actionLive[i]){actionPlayables[i].SetSpeed(1);} // le geste finit naturellement pendant le fondu de sortie
                 if(!actionLive[i]&&actionWeights[i]<=0){mecanimGraph.Disconnect(mecanimMixer,ActionInput+i);actionPlayables[i].Destroy();if(activeAction==i)activeAction=-1;if(turnSlot==i)turnSlot=-1;}
             }

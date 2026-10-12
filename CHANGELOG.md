@@ -1,3 +1,4 @@
+- Animations : fondus de chute et de relevé progressifs, contrôlés sur neuf combinaisons de taille et fréquence, sans allocation répétée.
 - Validation : les tests du chargeur de portraits utilisent des JPEG temporaires autonomes, sans dépendre du pack personnel absent.
 - Tactique : confirmation des remplacements et permutations, sélection conservée sur écran plié et commandes adaptées au paysage.
 - Animations : les mains capturées distinguent prise et parade, avec fermeture progressive des doigts après le contact.
