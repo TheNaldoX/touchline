@@ -58,6 +58,12 @@ namespace Touchline.Editor
                 var sim=NewMatch(seed);
                 // Avance la partie jusqu'au moment filmé (pas de rendu pendant ce temps).
                 while(sim.State.clock<start&&!sim.State.halfTime&&!sim.State.finished)sim.Advance(MatchSimulation.Step);
+                if(Arg("-touchlineFilmRestart","")=="wide-free-kick"){
+                    bool Found()=>sim.State.phase=="free-kick"&&sim.State.restart<=3&&sim.FreeKickDeliveryApproaching&&sim.State.ball.position.x*sim.Direction(sim.State.restartSide)>16&&Math.Abs(sim.State.ball.position.z)>=18;
+                    while(!Found()&&!sim.State.halfTime&&!sim.State.finished)sim.Advance(MatchSimulation.Step);
+                    if(!Found())throw new Exception("No wide free kick found in this half and seed.");
+                    start=sim.State.clock;goalNote+=" restart=wide-free-kick";
+                }
                 var output=Path.GetFullPath(Path.Combine("build","film",name));if(Directory.Exists(output))Directory.Delete(output,true);
                 logPath=Path.Combine(output,"unity-messages.txt");
                 var diagnostics=new System.Text.StringBuilder();

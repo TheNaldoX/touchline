@@ -93,13 +93,23 @@ namespace Touchline.Core
             if(phase=="penalty")Shoot(p,false,true);
             else if(phase=="free-kick"&&!m.indirectRestart&&Point.Distance(p.position,new Point(Direction(p.side)*52.5f,0))<27&&Math.Abs(p.position.z)<18)Shoot(p,false,false,true);
             else{
-                Actor target=null;float best=float.MinValue;
+                Actor target=null;float best=float.MinValue;string delivery=phase=="corner"?"cross":phase=="throw-in"?"throw":"pass";
+                int direction=Direction(p.side);bool wideFreeKick=phase=="free-kick"&&p.position.x*direction>16&&Math.Abs(p.position.z)>=18;
                 foreach(var a in m.actors){if(a.sentOff||GroundedAction(a)||a.side!=p.side||a==p)continue;float distance=Point.Distance(a.position,p.position);if(distance<2)continue;
                     float score=phase=="corner"?Skill(a,"headingAccuracy")-Point.Distance(a.position,new Point(Direction(p.side)*43,0))-(a.slot==0?1000:0):Space(a.position,1-p.side)*.6f-distance;
                     if(phase=="free-kick"&&a.position.x*Direction(p.side)>OffsideLine(p.side)+.1f)continue;
-                    if(score>best){best=score;target=a;}
+                    string candidate=phase=="corner"?"cross":phase=="throw-in"?"throw":"pass";
+                    // From the flank, compare a credible box delivery with the short pass.
+                    // Reuse the live crossing assessment (receiver, marker, keeper and tactic).
+                    if(wideFreeKick&&a.slot>0&&a.position.x*direction>32&&Math.Abs(a.position.z)<20&&(a.position.x-p.position.x)*direction>3){
+                        float outlook=CrossOutlook(p,a,LowCross(p,a));
+                        const float MinimumRestartCrossOutlook=.5f; // Estimated contest share, 0–1.
+                        float crossScore=outlook*24-distance*.25f; // Utility points, distance in metres.
+                        if(outlook>=MinimumRestartCrossOutlook&&crossScore>score){score=crossScore;candidate="cross";}
+                    }
+                    if(score>best){best=score;target=a;delivery=candidate;}
                 }
-                if(target!=null)Pass(p,target,phase=="corner"?"cross":phase=="throw-in"?"throw":"pass");
+                if(target!=null)Pass(p,target,delivery);
                 else Flight(p,null,"clearance",new Point(Direction(p.side)*8,Math.Sign(p.position.z+.01f)*27),.11f,2.6f,8);
             }
             if(phase!="throw-in"){m.ball.start=spot;m.ball.fixedStart=true;p.actionTarget=spot;}
