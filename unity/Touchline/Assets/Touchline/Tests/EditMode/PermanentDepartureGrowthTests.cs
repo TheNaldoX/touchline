@@ -17,6 +17,47 @@ namespace Touchline.Tests
             c=new Career{club="c0"};c.lineup=Career.Select(db,c.club,c.tactic);c.EnsureWorld(db);c.Person("p10").growth=2.25f;c.ApplyLife(db);
         }
         void Sale(){c.ListForSale(db,"p10");c.AcceptSale(db,"p10");}
+        TransferOffer SaleOffer(){c.ListForSale(db,"p10");return c.world.offers.Last(o=>o.player=="p10"&&o.status=="sale");}
+        [Test] public void ExpiredSaleDoesNotPermanentlyBlockListingAgain()
+        {
+            var old=SaleOffer();c.life.day=8;c.ListForSale(db,"p10");Assert.AreEqual("expired",old.status);Assert.AreEqual(1,c.world.offers.Count(o=>o.player=="p10"&&o.status=="sale"));
+        }
+        [Test] public void SaleCounterRequiresNextDayAndNeverTransfersBeforeConfirmation()
+        {
+            var o=SaleOffer();long cash=c.life.cash,ask=o.fee+o.fee/10;c.CounterSale(db,o,ask);Assert.AreEqual("sale-pending",o.status);Assert.Throws<InvalidOperationException>(()=>c.AcceptSale(db,o));
+            Call(c,"SaleNegotiationDay",db);Assert.AreEqual("sale-pending",o.status);c.life.day++;Call(c,"SaleNegotiationDay",db);
+            Assert.AreEqual("sale",o.status);Assert.AreEqual(ask,o.fee);Assert.AreEqual(cash,c.life.cash);Assert.AreEqual(c.club,db.Find("p10").team);Assert.AreEqual(7,o.due);
+            c.AcceptSale(db,o);Assert.AreEqual(cash+ask,c.life.cash);Assert.AreEqual("sold",o.status);Assert.Throws<InvalidOperationException>(()=>c.AcceptSale(db,o));
+        }
+        [Test] public void SaleCounterCapCannotCompoundAndRoundsAreLimited()
+        {
+            var o=SaleOffer();long initial=o.fee;for(int i=0;i<3;i++){c.CounterSale(db,o,initial*2);c.life.day++;Call(c,"SaleNegotiationDay",db);Assert.AreEqual(initial+initial*15/100,o.fee);}
+            Assert.Throws<InvalidOperationException>(()=>c.CounterSale(db,o,initial*2));Assert.AreEqual("sale",o.status);Assert.AreEqual(7,o.due);
+        }
+        [Test] public void RejectSalePreservesPlayerMoneyAndCanOnlyHappenOnce()
+        {
+            var o=SaleOffer();long cash=c.life.cash;c.RejectSale(db,o);Assert.AreEqual("sale-rejected",o.status);Assert.AreEqual(c.club,db.Find(o.player).team);Assert.AreEqual(cash,c.life.cash);Assert.Throws<InvalidOperationException>(()=>c.RejectSale(db,o));
+        }
+        [Test] public void SaleTermsSurviveSavingWithoutResettingValuationOrDeadline()
+        {
+            var o=SaleOffer();c.CounterSale(db,o,o.fee*2);var saved=JsonUtility.FromJson<Career>(JsonUtility.ToJson(c));var restored=saved.world.offers.Last();Assert.AreEqual(o.saleAsking,restored.saleAsking);Assert.AreEqual(o.saleInitialFee,restored.saleInitialFee);Assert.AreEqual(1,restored.attempts);Assert.AreEqual(o.due,restored.due);Assert.AreEqual(c.club,restored.destination);
+        }
+        [Test] public void SoldOrLoanedPlayerCannotBeSoldThroughOldOffer()
+        {
+            var o=SaleOffer();c.Contract(db,o.player).parent="c2";long cash=c.life.cash;Assert.Throws<InvalidOperationException>(()=>c.AcceptSale(db,o));Assert.AreEqual(cash,c.life.cash);Call(c,"SaleNegotiationDay",db);Assert.AreEqual("expired",o.status);
+        }
+        [Test] public void InvalidCounterAndLastDayCounterDoNotChangeOffer()
+        {
+            var o=SaleOffer();Assert.Throws<ArgumentException>(()=>c.CounterSale(db,o,o.fee));Assert.AreEqual(0,o.attempts);c.life.day=o.due;Assert.Throws<InvalidOperationException>(()=>c.CounterSale(db,o,o.fee+100));Assert.AreEqual("sale",o.status);
+        }
+        [Test] public void InsolventCounterResponseDoesNotCreditSellingClub()
+        {
+            var o=SaleOffer();c.CounterSale(db,o,o.fee+100);c.world.aiAccounts.First(a=>a.club==o.seller).cash=0;long cash=c.life.cash;c.life.day++;Call(c,"SaleNegotiationDay",db);Assert.AreEqual("expired",o.status);Assert.AreEqual(cash,c.life.cash);Assert.AreEqual(c.club,db.Find(o.player).team);
+        }
+        [Test] public void OldSaleFromAnotherManagedClubCannotBeNegotiated()
+        {
+            var o=SaleOffer();o.destination="c2";Assert.Throws<InvalidOperationException>(()=>c.CounterSale(db,o,o.fee+100));Assert.AreEqual("sale",o.status);
+        }
         void Expire(bool ai=false)
         {
             var e=c.Contract(db,"p10");e.until=1;e.aiRelease=ai;c.life.day=1;Call(c,ai?"ProcessAiEmployment":"ManagementDay",db);

@@ -79,6 +79,7 @@ namespace Touchline.Editor
 
         static List<Action> BuildSteps()
         {
+            if(Path.GetFileName(Output).StartsWith("ui-sale-negotiation-",StringComparison.Ordinal))return BuildSaleNegotiationSteps();
             if(Path.GetFileName(Output).StartsWith("ui-discussion-preview-",StringComparison.Ordinal))return BuildDiscussionPreviewSteps();
             if(Path.GetFileName(Output).StartsWith("ui-agent-role-",StringComparison.Ordinal)||Path.GetFileName(Output).StartsWith("ui-transfer-cost-",StringComparison.Ordinal))return BuildAgentRoleSteps();
             if(Path.GetFileName(Output).StartsWith("ui-finance-preview-",StringComparison.Ordinal))return BuildFinancePreviewSteps();
@@ -178,6 +179,15 @@ namespace Touchline.Editor
             audit.AppendLine("Relance contextuelle synthétique : notification actionnable et accès aux décisions de départ, deux formats ; aucune vente ni sauvegarde personnelle.");return list;
         }
 
+        static List<Action> BuildSaleNegotiationSteps()
+        {
+            var list=new List<Action>();TransferOffer offer=null;long cash=0;
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{var c=App.Career;c.EnsureWorld(App.Database);var id=c.lineup[9];foreach(var old in c.world.offers.Where(o=>o.player==id&&(o.status=="sale"||o.status=="sale-pending")))old.status="expired";c.ListForSale(App.Database,id);offer=c.world.offers.Last();cash=c.life.cash;Resize(screen.width,screen.height);Call("SaleNegotiationDialog",offer);});
+                list.Add(()=>{Capture(screen.tag+"-negociation-vente");Click("sale-counter");if(offer.status!="sale-pending"||App.Career.life.cash!=cash)throw new Exception("Sale counter spent money or was not queued");if(Root.Q("sale-negotiation")!=null)throw new Exception("Sale modal remained after submission");});
+            }
+            audit.AppendLine("Deux formats, contre-proposition en attente sans transfert ni encaissement ; fermeture du dialogue après transmission. Fold non testé.");return list;
+        }
         static List<Action> BuildDiscussionPreviewSteps()
         {
             var list=new List<Action>();string player=null;int messages=0;

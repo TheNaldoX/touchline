@@ -204,7 +204,7 @@ namespace Touchline.Core
             // move cash, never these obligations.
             var committed=AiCommittedByClub(eligible);
             var protectedPlayers=new HashSet<string>(world.contracts.Where(c=>c.IsLoan).Select(c=>c.player));
-            protectedPlayers.UnionWith(world.offers.Where(o=>o.status=="accepted"||o.status=="scheduled"||o.status=="pending"||o.status=="sale").Select(o=>o.player));
+            protectedPlayers.UnionWith(world.offers.Where(o=>o.status=="accepted"||o.status=="scheduled"||o.status=="pending"||o.status=="sale"||o.status=="sale-pending").Select(o=>o.player));
             // A seller lets a player go only for a reason: he is not a starter, the
             // squad is above its size, debt forces sales, the player was listed as
             // surplus, or the buyer is a clearly bigger club (a step up).

@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Ventes : contre-propositions avec réponse le lendemain, refus et confirmation distincts, contrôle des offres périmées et du financement acheteur, réouverture possible après expiration.
 - Discussions : aperçu de la phrase réellement envoyée au joueur, avec engagement précis de temps de jeu et archivage homogène des échanges.
 - Moments clés : les tirs de faible qualité restent dans les statistiques, tandis que buts, montants et incidents majeurs restent visibles ; aucun résultat simulé modifié.
 - Presse : conférence en trois questions avec phrases complètes, décor de salle stylisé, compte rendu sauvegardé et effets moyens pour éviter de cumuler les bonus.

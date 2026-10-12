@@ -106,16 +106,29 @@ namespace Touchline
             ActiveLoansPanel(parent);Heading(parent,"Négociations");
             var offers=Career.world.offers.Where(o=>o.destination==null||o.destination==Career.club).TakeLast(30).Reverse().ToArray();
             if(offers.Length==0)Text(parent,"Aucune négociation. Ouvrez une fiche ou contactez un agent depuis Marché.","empty-state");
-            foreach(var o in offers){var p=Database.Find(o.player);if(p==null)continue;var card=Card(parent,"recruit-dossier");Text(card,p.name+" · "+OfferStatus(o.status),"section-title");Text(card,Money(o.fee)+" d’indemnité · "+Money(Core.Career.MonthlySalary(o.wage))+" / mois","muted");var actions=Row(card,"recruit-dossier-actions");Button(actions,"Fiche",()=>PlayerProfile(p.id));
+            foreach(var o in offers){var p=Database.Find(o.player);if(p==null)continue;var card=Card(parent,"recruit-dossier");Text(card,p.name+" · "+OfferStatus(o.status),"section-title");bool sale=o.status.StartsWith("sale",StringComparison.Ordinal)||o.status=="sold"||o.saleInitialFee>0;Text(card,sale?Money(o.fee)+" proposés par "+ClubName(o.seller):Money(o.fee)+" d’indemnité · "+Money(Core.Career.MonthlySalary(o.wage))+" / mois","muted");var actions=Row(card,"recruit-dossier-actions");Button(actions,"Fiche",()=>PlayerProfile(p.id));
                 if(p.team=="retired"||Career.PlayerRetirementEffective(p.id)){Text(card,"Retraite effective · dossier historique", "muted");continue;}
                 bool decision=Career.RecruitmentOfferNeedsDecision(Database,o);
                 if(Career.HasActiveLoan(o.player)&&(o.status=="accepted"||o.status=="counter"))Button(actions,"Consulter le prêt",()=>ActiveLoanContractDialog(o.player));
                 if(decision&&o.status=="accepted")Button(actions,"Signer l’accord",()=>RunDecision(()=>Career.SignTransfer(Database,o.player))).AddToClassList("primary");
                 if(decision&&o.status=="counter")Button(actions,"Reprendre la négociation",()=>TransferDialog(o.player));
-                if(decision&&o.status=="sale")Button(actions,"Accepter la vente · "+ClubName(o.seller),()=>Confirm("Accepter la cession ?",Money(o.fee)+" pour "+p.name,()=>RunDecision(()=>Career.AcceptSale(Database,o.player))));
+                if(decision&&o.status=="sale")Button(actions,"Négocier la vente · "+ClubName(o.seller),()=>SaleNegotiationDialog(o)).name="sale-open-"+p.id;
+                if(o.status=="sale-pending")Text(card,"Demande : "+Money(o.saleAsking)+" · réponse le "+Core.Career.Epoch.AddDays(o.saleResponseDay).ToString("dd MMM",French),"muted");
                 if(o.status=="pending"||o.status=="accepted")Button(actions,"Retirer l’offre",()=>RunDecision(()=>Career.RejectOffer(o.player)));
             }
         }
-        static string OfferStatus(string status)=>status switch{"pending"=>"Réponse attendue","accepted"=>"Accord de principe","counter"=>"Contre-proposition","sale"=>"Offre de vente","signed"=>"Signé","scheduled"=>"Arrivée programmée","withdrawn"=>"Retiré","expired"=>"Expiré","declined"=>"Refusé",_=>status};
+        void SaleNegotiationDialog(TransferOffer offer)
+        {
+            var p=Database.Find(offer.player);if(p==null)return;var panel=Modal("Vente · "+p.name);panel.name="sale-negotiation";var body=Scroll(panel);
+            Heading(body,ClubName(offer.seller));Text(body,"Offre actuelle : "+Money(offer.fee),"section-title");Text(body,"Valable jusqu’au "+Core.Career.Epoch.AddDays(offer.due).ToString("dd MMM",French)+" · versement à la signature.","muted");
+            Text(body,"Salaire libéré après le départ : "+Money(Core.Career.MonthlySalary(p.wage))+" / mois. Le joueur reste dans votre effectif jusqu’à confirmation.","muted");
+            var amount=new LongField("Votre prix demandé (€)"){value=offer.fee+offer.fee/10,name="sale-asking"};body.Add(amount);
+            Text(body,"Trois contre-propositions maximum. La réponse arrive le lendemain ; négocier ne prolonge pas l’offre.","muted");
+            var counter=PlayerManagementButton(body,"Transmettre ce prix",()=>RunDecision(()=>{Career.CounterSale(Database,offer,amount.value);CloseModal();}));counter.name="sale-counter";counter.SetEnabled(PlayerManagementAvailable&&offer.attempts<3&&offer.due>Career.life.day);
+            var accept=PlayerManagementButton(body,"Accepter "+Money(offer.fee),()=>Confirm("Confirmer la vente ?",p.name+" rejoindra "+ClubName(offer.seller)+" pour "+Money(offer.fee)+".",()=>RunDecision(()=>Career.AcceptSale(Database,offer))));accept.name="sale-accept";accept.SetEnabled(PlayerManagementAvailable&&Career.WindowOpen);
+            if(!Career.WindowOpen)Text(body,"Signature disponible à l’ouverture du mercato.","muted");
+            PlayerManagementButton(body,"Refuser l’offre",()=>RunDecision(()=>{Career.RejectSale(Database,offer);CloseModal();})).name="sale-reject";
+        }
+        static string OfferStatus(string status)=>status switch{"pending"=>"Réponse attendue","accepted"=>"Accord de principe","counter"=>"Contre-proposition","sale"=>"Offre de vente","sale-pending"=>"Réponse du club attendue","sale-rejected"=>"Vente refusée","sold"=>"Vendu","signed"=>"Signé","scheduled"=>"Arrivée programmée","withdrawn"=>"Retiré","expired"=>"Expiré","declined"=>"Refusé",_=>status};
     }
 }
