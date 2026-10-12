@@ -48,6 +48,14 @@ compteur est longitudinal, pas une mesure de la fermeture effective du couloir d
 
 Une sélection facultative évite de rejouer les consignes inchangées :
 `dotnet run -c Release -- --tactics 200 1 ligne.csv Ligne`
+
+Pour examiner la hauteur de ligne dans un contexte fixé, sélectionner explicitement
+`LigneContre` (contres activés dans les deux variantes) ou `LignePressing`
+(pressing à 0,8 dans les deux variantes). Seule la ligne varie de 0,2 à 0,8.
+Ces expériences ne font pas partie du lancement par défaut. Même graine et mêmes
+affiches permettent une comparaison avec `Ligne`, sans attribuer au seul réglage
+de ligne les effets d'une autre consigne. Exemple :
+`dotnet run -c Release -- --tactics 200 1 contexte.csv LigneContre,LignePressing`
 ou `"Ligne,Rythme"`. Les affiches et graines restent identiques à l'audit complet.
 Le rapport général distingue les favoris à domicile/à l'extérieur, donne un intervalle
 binomial de Wilson à 95 % et mesure l'écart buts–xG apparié. Ces intervalles décrivent

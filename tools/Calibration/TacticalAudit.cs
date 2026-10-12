@@ -52,6 +52,8 @@ static partial class P
             ("Mentalité","prudente","offensive",(t,h)=>t.mentality=h?.8f:.2f,null),
             ("Pressing","mesuré","intense",(t,h)=>t.pressing=h?.8f:.2f,null),
             ("Ligne","basse","haute",(t,h)=>t.line=h?.8f:.2f,null),
+            ("LigneContre","basse avec contres","haute avec contres",(t,h)=>{t.line=h?.8f:.2f;t.counterAttack=true;},null),
+            ("LignePressing","basse avec pressing intense","haute avec pressing intense",(t,h)=>{t.line=h?.8f:.2f;t.pressing=.8f;},null),
             ("Largeur","étroite","large",(t,h)=>t.width=h?.8f:.2f,null),
             ("Rythme","patient","rapide",(t,h)=>t.tempo=h?.8f:.2f,null),
             ("Passes","courtes","directes",(t,h)=>t.directness=h?.8f:.2f,null),
@@ -60,6 +62,8 @@ static partial class P
             ("Ailiers larges","non","oui",Instruct(PlayerInstructions.StayWide,"LW","RW"),null),
             ("Marquage serré","non","oui",Instruct(PlayerInstructions.TightMarking,"LB","CB","RB"),null)
         }.Concat(mental.Select(x=>(x.name,x.low,x.high,(Action<Tactic,bool>)((t,h)=>{}),(Func<bool,Action<MatchSimulation>>)(h=>Mind(m=>x.set(h,m)))))).ToArray();
+        // Context experiments are opt-in: keep the default audit cost unchanged.
+        if(args.Length<=3)choices=choices.Where(c=>c.name!="LigneContre"&&c.name!="LignePressing").ToArray();
         // Optional selection keeps identical fixture seeds for focused before/after audits.
         if(args.Length>3){
             var requested=args[3].Split(',');

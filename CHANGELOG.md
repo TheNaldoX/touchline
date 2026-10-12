@@ -1,3 +1,4 @@
+- Calibration : audits explicites de hauteur de ligne avec contres ou pressing fixés, sans augmenter le coût du parcours par défaut.
 - Animations : contact de tête recalé progressivement sur le ballon, entrée stable à 30/60/120 images par seconde.
 - Android : prépare la version 0.67/code60 avec les correctifs de contact, recrutement, presse et replay.
 - Replay : la caméra en pause reste cohérente avant et après un changement de format.
