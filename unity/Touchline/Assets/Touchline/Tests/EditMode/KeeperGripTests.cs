@@ -7,6 +7,26 @@ namespace Touchline.Tests
 {
     public class KeeperGripTests
     {
+        [TestCase("L")] [TestCase("R")]
+        public void GroundClearanceRaisesTheElbowWithoutMovingTheGrip(string side)
+        {
+            var go=new GameObject("Keeper elbow contact");
+            try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="elbow-contact",heightCm=180},0,0,Color.yellow);
+                go.transform.position=Vector3.down*1.25f;
+                var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+                var wrist=go.GetComponentsInChildren<Transform>().First(t=>t.name=="wrist."+side);
+                var elbow=go.GetComponentsInChildren<Transform>().First(t=>t.name=="lowerarm01."+side);
+                var target=new Vector3(side=="L"?.4f:-.4f,.15f,.3f);
+                typeof(PlayerView).GetMethod("SolveArm",flags).Invoke(view,new object[]{side,target,Vector3.down});
+                Assert.Less(elbow.position.y,.02f,"Fixture must reproduce an elbow entering the pitch");
+                var position=wrist.position;var rotation=wrist.rotation;
+                typeof(PlayerView).GetMethod("KeeperElbowClearance",flags).Invoke(view,null);
+                Assert.Greater(elbow.position.y,.055f,"Elbow clearance includes the sleeve surface");
+                Assert.Less(Vector3.Distance(wrist.position,position),.005f,"The hand stays on its ball-contact target");
+                Assert.Less(Quaternion.Angle(wrist.rotation,rotation),.05f,"Grip orientation stays unchanged");
+            }finally{Object.DestroyImmediate(go);}
+        }
         [TestCase(30)] [TestCase(60)] [TestCase(120)]
         public void CapturedHandsDistinguishCatchFromParryAtEveryRenderRate(int hz)
         {

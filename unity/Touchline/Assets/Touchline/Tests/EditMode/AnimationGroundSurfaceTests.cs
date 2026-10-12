@@ -6,6 +6,35 @@ namespace Touchline.Tests
 {
     public class AnimationGroundSurfaceTests
     {
+        [TestCase(-1,30,160)] [TestCase(1,30,205)]
+        [TestCase(-1,60,185)] [TestCase(1,60,185)]
+        [TestCase(-1,120,205)] [TestCase(1,120,160)]
+        public void DiveRecoveryKeepsTheShinSurfaceAbovePitch(int side,int hz,int stature)
+        {
+            bool mode=PlayerView.UseMecanim;PlayerView.UseMecanim=true;
+            var go=new GameObject("Keeper shin clearance");var baked=new Mesh();
+            try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="surface-dive",heightCm=stature},0,0,Color.yellow);
+                var actor=new Actor{slot=0,action="idle"};float dt=1f/hz;
+                for(int i=0;i<20;i++)view.Render(actor,1,.02f);
+                actor.actionSequence=1;actor.actionKind="save-catch";actor.actionContactTime=.18f;
+                actor.actionTarget=new Point(side*1.1f,.42f);actor.actionHeight=.22f;actor.diveSide=side;
+                var skin=go.GetComponentInChildren<SkinnedMeshRenderer>();var weights=skin.sharedMesh.boneWeights;var bones=skin.bones;
+                float lowest=float.PositiveInfinity;int samples=0;
+                for(int frame=0;frame<=2*hz;frame++){
+                    float t=frame*dt;actor.action=t<=1.2f?"dive":"idle";actor.actionTime=Mathf.Max(0,1.2f-t);
+                    view.Render(actor,1,dt,new Vector3(side*1.1f,.22f,.42f));
+                    if(t<.6f)continue; // Recovery, after the ball contact; full-body coverage remains in the test below.
+                    skin.BakeMesh(baked);var vertices=baked.vertices;
+                    for(int v=0;v<vertices.Length;v++){
+                        if(!bones[weights[v].boneIndex0].name.StartsWith("lowerleg"))continue;
+                        lowest=Mathf.Min(lowest,skin.transform.TransformPoint(vertices[v]).y);samples++;
+                    }
+                }
+                Assert.Greater(samples,0);TestContext.WriteLine("Recovery shin surface minimum: "+lowest+" m");
+                Assert.GreaterOrEqual(lowest,-.025f,"The shin must not sink into the pitch during recovery");
+            }finally{Object.DestroyImmediate(baked);Object.DestroyImmediate(go);PlayerView.UseMecanim=mode;}
+        }
         [TestCase(30)] [TestCase(60)] [TestCase(120)]
         public void ThrowRecoveryKeepsBootsAbovePitch(int hz)
         {

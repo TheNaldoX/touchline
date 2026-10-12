@@ -13,7 +13,7 @@ namespace Touchline
             float elapsed=Mathf.Clamp(1.2f-remaining,0,1.2f);
             const float ReleaseSeconds=.30f,MaximumWarpMetres=1.1f;
             float weight=Mathf.SmoothStep(0,1,elapsed/contact)*(1-Mathf.SmoothStep(0,1,(elapsed-contact)/ReleaseSeconds));
-            if(weight<=0)return;
+            if(weight<=0){KeeperElbowClearance();return;}
             var ball=new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z);
             bool parry=actor.actionKind=="save-parry";int near=transform.InverseTransformPoint(ball).x>=0?0:1;
             gripOffset=parry?Vector3.zero:body.up*.075f;
@@ -27,7 +27,23 @@ namespace Touchline
             // Retarget only residual reach, with a continuous envelope; never alter the simulated ball.
             var anchor=parry?Limb(Sides[near]).wrist.position+transform.forward*.06f:HeldBallPosition;
             body.position+=Vector3.ClampMagnitude(ball-anchor,MaximumWarpMetres)*weight;
-            Reach();KeepBootsAbovePitch(body.forward,true);
+            Reach();KeepBootsAbovePitch(body.forward,true);KeeperElbowClearance();
+        }
+        void KeeperElbowClearance()
+        {
+            const float ElbowSurfaceRadius=.06f; // metres at standard stature, including sleeve
+            for(int i=0;i<2;i++){
+                var arm=Limb(Sides[i]);var shoulder=arm.upperArm.position;var elbow=arm.lowerArm.position;var hand=arm.wrist.position;
+                float floor=.005f+ElbowSurfaceRadius*transform.localScale.y;if(elbow.y>=floor)continue;
+                float upper=Vector3.Distance(shoulder,elbow),lower=Vector3.Distance(elbow,hand);
+                var direction=(hand-shoulder).normalized;float distance=Mathf.Clamp(Vector3.Distance(shoulder,hand),.05f,upper+lower-.005f);
+                float along=(upper*upper+distance*distance-lower*lower)/(2*distance),lift=Mathf.Sqrt(Mathf.Max(0,upper*upper-along*along));
+                var bend=Vector3.ProjectOnPlane(elbow-shoulder,direction).normalized;var up=Vector3.ProjectOnPlane(Vector3.up,direction).normalized;
+                float baseHeight=shoulder.y+direction.y*along;if(up.y<=bend.y)continue;
+                float low=0,high=1,angle=Vector3.SignedAngle(bend,up,direction);
+                for(int n=0;n<10;n++){float mid=(low+high)*.5f;var trial=Quaternion.AngleAxis(angle*mid,direction)*bend;if(baseHeight+trial.y*lift<floor)low=mid;else high=mid;}
+                var rotation=arm.wrist.rotation;SolveArm(Sides[i],hand,Quaternion.AngleAxis(angle*high,direction)*bend);arm.wrist.rotation=rotation;
+            }
         }
         void KeeperDivePose(Actor actor,float remaining)
         {
