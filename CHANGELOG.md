@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Ventes : acheteurs sélectionnés selon besoin au poste, effectif senior, trésorerie et masse salariale avec parts de prêt ; projet affiché et conditions revérifiées avant confirmation.
 - Contacts capturés : reprise au temps interpolé pour têtes, tacles, contrôles du corps, plongeons et lancers, avec entrée progressive de la tête ; relance au sol conservée en attendant correction de sa pose.
 - Frappes capturées : chronomètre et contact de passe alignés sur le temps interpolé du match, y compris lors du démarrage d’un temps fort au milieu du geste.
 - Livraison Android 0.66/code59 : corrections des retours tactique, interactions, récapitulatif, bureau, presse, discussions, ventes et coups francs ; sauvegardes et signature conservées.

@@ -45,6 +45,7 @@ namespace Touchline.Tests
         }
         [Test] public void AllowingDepartureCreatesOnlyAnOfferAndNoAutomaticSale()
         {
+            foreach(var player in db.Squad("c1"))player.rating=60; // A genuine upgrade for the buyer, rather than an automatic bid.
             Request();long cash=c.life.cash;c.AnswerDeparture(db,"p4",true);
             Assert.AreEqual("listed",c.DepartureFor("p4").status);Assert.AreEqual("c0",db.Find("p4").team);Assert.AreEqual(cash,c.life.cash);
             Assert.IsTrue(c.world.offers.Any(o=>o.player=="p4"&&o.status=="sale"));

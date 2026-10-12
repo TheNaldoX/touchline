@@ -77,7 +77,8 @@ public static class LoanSalaryChecks
         }
         if(only==null||only=="saveRoundTripKeepsSaleEligibility"){
             var(c,db)=Setup();c=UnityEngine.JsonUtility.FromJson<Career>(UnityEngine.JsonUtility.ToJson(c));
-            Require(CareerSaveRestore.TryRestore(db,c,out var restored),"Career restore failed");c.BindMatchTactic();c.ListForSale(restored,"p4");
+            Require(CareerSaveRestore.TryRestore(db,c,out var restored),"Career restore failed");c.BindMatchTactic();restored.Find("p4").rating=70; // Ensure sporting interest independently of loan restoration.
+            c.ListForSale(restored,"p4");
             Require(c.world.offers.Any(o=>o.player=="p4"&&o.status=="sale"),"Permanent player cannot be listed after reload");result["saveRoundTripKeepsSaleEligibility"]=true;
         }
         if(only==null||only=="saveRoundTripKeepsRealLoanShares"){

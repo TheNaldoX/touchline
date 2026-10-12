@@ -16,6 +16,40 @@ namespace Touchline.Tests
             db=new Database{leagues=new[]{new LeagueData{id="fra.1",name="L1"}},clubs=Enumerable.Range(0,4).Select(i=>new ClubData{id="c"+i,name="Club "+i,league="fra.1",playable=true,annualRevenue=20000000+i*1000000}).ToArray(),players=Enumerable.Range(0,96).Select(i=>new PlayerData{id="p"+i,name="Test "+i,team="c"+(i/24),age=24,position=i%24==0?"GB":"MIL",positions=new[]{i%24==0?"GK":"CM"},rating=65,potential=80,value=100000,wage=500,fitness=100,morale=75,attributes=new[]{new AttributeValue{key="shortPassing",value=65}}}).ToArray()};
             c=new Career{club="c0"};c.lineup=Career.Select(db,c.club,c.tactic);c.EnsureWorld(db);c.Person("p10").growth=2.25f;c.ApplyLife(db);
         }
+        [Test] public void SaleBuyerMustImproveItsExistingOptions()
+        {
+            foreach(var p in db.Squad("c1"))p.rating=90;
+            var offer=SaleOffer();Assert.AreNotEqual("c1",offer.seller);
+        }
+        [Test] public void SaleBuyerMustAffordFeeBeforeMakingOffer()
+        {
+            c.world.aiAccounts.First(a=>a.club=="c1").cash=0;
+            Assert.AreNotEqual("c1",SaleOffer().seller);
+        }
+        [Test] public void SaleBuyerMustHaveRoomInItsPayroll()
+        {
+            foreach(var p in db.Squad("c1"))p.wage=100000;
+            Assert.AreNotEqual("c1",SaleOffer().seller);
+        }
+        [Test] public void NoUsefulBuyerDoesNotCreateSaleOrHarmMorale()
+        {
+            foreach(var p in db.players.Where(p=>p.team!=c.club))p.rating=95;
+            float morale=c.Person("p10").morale;long cash=c.life.cash;
+            Assert.Throws<InvalidOperationException>(()=>c.ListForSale(db,"p10"));
+            Assert.AreEqual(0,c.world.offers.Count(o=>o.status=="sale"));Assert.AreEqual(morale,c.Person("p10").morale);Assert.AreEqual(cash,c.life.cash);
+        }
+        [Test] public void BuyerFillsNeedBeforeCounterAndWithdrawsWithoutPayment()
+        {
+            var o=SaleOffer();c.CounterSale(db,o,o.fee+1);foreach(var p in db.Squad(o.seller))p.rating=95;
+            long cash=c.life.cash;c.life.day++;Call(c,"SaleNegotiationDay",db);
+            Assert.AreEqual("expired",o.status);Assert.AreEqual(cash,c.life.cash);Assert.AreEqual(c.club,db.Find(o.player).team);
+        }
+        [Test] public void SaleRechecksSalaryRoomBeforeSignature()
+        {
+            var o=SaleOffer();foreach(var p in db.Squad(o.seller))p.wage=100000;
+            long cash=c.life.cash;Assert.Throws<InvalidOperationException>(()=>c.AcceptSale(db,o));
+            Assert.AreEqual(cash,c.life.cash);Assert.AreEqual(c.club,db.Find(o.player).team);
+        }
         void Sale(){c.ListForSale(db,"p10");c.AcceptSale(db,"p10");}
         TransferOffer SaleOffer(){c.ListForSale(db,"p10");return c.world.offers.Last(o=>o.player=="p10"&&o.status=="sale");}
         [Test] public void ExpiredSaleDoesNotPermanentlyBlockListingAgain()

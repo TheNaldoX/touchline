@@ -17,7 +17,7 @@ namespace Touchline.Core
     }
     [Serializable] public class Employment { public string player,club,parent,role="rotation";public int until,parentUntil,loanUntil,retirement=-1,joined,appearancesAtSigning,wageChangeDay;public long wage,appearanceBonus,releaseClause,originalWage,nextWage;public bool estimated=true,aiRelease,loanAppearanceTracking,loanAppearanceHistoryEstimated;public PlayingTimeUsage playingTime;public MarketTerms terms;public LoanContractConditions parentConditions,purchaseConditions;public bool parentConditionsUnavailable;public string conditionsSource; public bool IsLoan=>!string.IsNullOrEmpty(parent); }
     [Serializable] public class ScoutReport { public string player,club,scout,mission;public int started,due,confidence,judging,lastObserved,depth;public float estimate,potential,uncertainty,potentialUncertainty;public string advice;public AttributeValue[] observedAttributes;public bool attributesObserved; }
-    [Serializable] public class TransferOffer { public string player,seller,status="pending",role;public int due,years,attempts;public long fee,wage,bonus,clause;public bool loan,renewal,precontract;public int joinDay;public string destination;public MarketTerms terms;public long saleInitialFee,saleAsking;public int saleResponseDay; }
+    [Serializable] public class TransferOffer { public string player,seller,status="pending",role,saleReason;public int due,years,attempts;public long fee,wage,bonus,clause;public bool loan,renewal,precontract;public int joinDay;public string destination;public MarketTerms terms;public long saleInitialFee,saleAsking;public int saleResponseDay; }
     [Serializable] public class YouthPath { public string player,mentor,focus="balanced",group="academy";public int minutes,lastReview,loanAppearances,loanReviewedThrough=-1;public float progress; public string trainingLoad="standard"; public int trainingSessions,seniorMinutes,trackedLoanMinutes,lastAcademyDay=-1; }
     [Serializable] public class CommercialDeal { public string name,slot,status="offer";public int years=2,until,counterDay;public long annual,asking; }
     [Serializable] public class PressAppearance { public string fixture,phase,answer;public string[] replies;public int day; }
@@ -122,14 +122,43 @@ namespace Touchline.Core
             Mail("Secrétariat","Contrat signé",p.name+" rejoint votre projet. Statut promis : "+PlayingTimeRoles.Label(c.role)+". "+PlayingTimeRoles.Description(c.role)+" Les salaires et primes sont désormais dus.",id,"transfer");
         }
         public void RejectOffer(string id){OffPitch();var o=world.offers.LastOrDefault(x=>x.player==id&&OfferForManagedClub(x)&&(x.status=="accepted"||x.status=="pending"));if(o==null)throw new InvalidOperationException("Aucune offre ouverte pour votre club.");o.status="withdrawn";}
+        float SaleBuyerInterest(Database db,PlayerData player,ClubData buyer,long payroll,out string reason)
+        {
+            reason=null;var squad=db.Squad(buyer.id);
+            const int MaximumBuyingSquad=30; // Senior players before signing; avoid stockpiling.
+            const float MinimumUpgrade=2; // Ability points above the best existing option.
+            if(buyer.id==club||squad.Count(p=>p.age>=21)>=MaximumBuyingSquad||squad.Count==0)return -1;
+            if(payroll+player.wage>AiGrossWageCeiling(buyer))return -1;
+            string role=FootballPositions.Canonical(player.positions?.FirstOrDefault()??(player.Goalkeeper?"GK":"CM"));
+            var options=squad.Where(p=>p.Goalkeeper==player.Goalkeeper&&FootballPositions.Matches(p,role)).ToArray();
+            float ability=player.rating+player.development,level=(float)squad.Average(p=>p.rating+p.development);
+            float best=options.Length==0?level:options.Max(p=>p.rating+p.development);
+            int cover=role=="CB"||role=="CM"?4:2; // Two players per usual starting position.
+            if(options.Length<cover&&ability>=level-10){reason="Renforcer la rotation au poste de "+FootballPositions.Label(role)+".";return 12+(cover-options.Length)+Math.Max(-5,ability-level);}
+            if(ability>=best+MinimumUpgrade){reason="Améliorer les options de son onze au poste de "+FootballPositions.Label(role)+".";return 8+ability-best;}
+            return -1;
+        }
+        void ValidateSaleBuyer(Database db,TransferOffer offer)
+        {
+            EnsureFinancialAccounts(db);var buyer=db.clubs.First(t=>t.id==offer.seller);
+            if(SaleBuyerInterest(db,db.Find(offer.player),buyer,ClubWeeklyPayrolls(db)[buyer.id],out _) < 0)throw new InvalidOperationException("Le club acheteur n’a plus le besoin sportif ou la marge salariale nécessaires.");
+            ValidateNpcPayment(db,offer.seller,offer.fee);
+        }
         public void ListForSale(Database db,string id)
         {
             OffPitch();var p=db.Find(id);if(p==null||PlayingCareerEnded(p)||p.team!=club||db.Squad(club).Count<=18||Contract(db,id).IsLoan)throw new InvalidOperationException("Le club doit conserver dix-huit joueurs et ne peut céder un joueur prêté ou indisponible.");
             if(world.offers.Any(o=>o.player==id&&(o.status=="sale"||o.status=="sale-pending")&&o.due>=life.day))throw new InvalidOperationException("Offre déjà disponible.");
-            var buyer=db.clubs.Where(c=>c.id!=club&&c.annualRevenue>p.value*5).OrderBy(c=>Math.Abs(c.annualRevenue-life.revenue)).FirstOrDefault();if(buyer==null)throw new InvalidOperationException("Aucun acheteur solvable pour le moment.");
+            EnsureFinancialAccounts(db);var payrolls=ClubWeeklyPayrolls(db);ClubData buyer=null;string reason=null;float bestInterest=-1;
+            long maximumQuote=(long)(p.value*1.1); // Maximum of the existing 80–110% opening quote.
+            foreach(var candidate in db.clubs.Where(t=>t.id!=club&&t.annualRevenue>p.value*5).OrderBy(t=>t.id,StringComparer.Ordinal)){
+                float interest=SaleBuyerInterest(db,p,candidate,payrolls[candidate.id],out var need);if(interest<=bestInterest)continue;
+                try{ValidateNpcPayment(db,candidate.id,maximumQuote);}catch(InvalidOperationException){continue;}
+                buyer=candidate;reason=need;bestInterest=interest;
+            }
+            if(buyer==null)throw new InvalidOperationException("Aucun club avec un besoin sportif et les moyens nécessaires pour le moment.");
             foreach(var expired in world.offers.Where(o=>o.player==id&&(o.status=="sale"||o.status=="sale-pending")&&o.due<life.day))expired.status="expired";
-            long fee=(long)(p.value*(.8f+Roll()*.3f));world.offers.Add(new TransferOffer{player=id,seller=buyer.id,destination=club,fee=fee,saleInitialFee=fee,status="sale",due=life.day+7});Person(id).morale=Math.Max(10,Person(id).morale-4);
-            Mail(buyer.name,"Offre pour "+p.name,fee.ToString("N0")+" € proposés. Vous pouvez accepter, négocier ou refuser avant le "+Epoch.AddDays(life.day+7).ToString("dd/MM")+".",id,"transfer");
+            long fee=(long)(p.value*(.8f+Roll()*.3f));world.offers.Add(new TransferOffer{player=id,seller=buyer.id,destination=club,fee=fee,saleInitialFee=fee,saleReason=reason,status="sale",due=life.day+7});Person(id).morale=Math.Max(10,Person(id).morale-4);
+            Mail(buyer.name,"Offre pour "+p.name,fee.ToString("N0")+" € proposés. Projet du club : "+reason+" Vous pouvez accepter, négocier ou refuser avant le "+Epoch.AddDays(life.day+7).ToString("dd/MM")+".",id,"transfer");
         }
         public void AcceptSale(Database db,string id)
         {
@@ -143,7 +172,7 @@ namespace Touchline.Core
         public void AcceptSale(Database db,TransferOffer o)
         {
             ValidateSale(db,o);if(!WindowOpen)throw new InvalidOperationException("La fenêtre de transfert est fermée.");if(db.Squad(club).Count<=18)throw new InvalidOperationException("L’effectif deviendrait insuffisant.");var p=db.Find(o.player);
-            ReceiveNpcTransfer(db,o.seller,o.fee,"Cession de "+p.name);SettlePermanentDepartureGrowth(p);p.team=o.seller;Contract(db,p.id).club=p.team;AfterFinancialTermsChange(db,club,o.seller);o.status="sold";life.players.RemoveAll(x=>x.id==p.id);SavePlayer(p);lineup=Select(db,club,tactic);
+            ValidateSaleBuyer(db,o);ReceiveNpcTransfer(db,o.seller,o.fee,"Cession de "+p.name);SettlePermanentDepartureGrowth(p);p.team=o.seller;Contract(db,p.id).club=p.team;AfterFinancialTermsChange(db,club,o.seller);o.status="sold";life.players.RemoveAll(x=>x.id==p.id);SavePlayer(p);lineup=Select(db,club,tactic);
             Mail("Secrétariat","Vente confirmée",p.name+" rejoint "+db.clubs.First(t=>t.id==o.seller).name+" pour "+o.fee.ToString("N0")+" €.",p.id,"transfer");
         }
         public void RejectSale(Database db,TransferOffer o)
@@ -165,7 +194,7 @@ namespace Touchline.Core
                 if(o.status!="sale-pending"||o.saleResponseDay>life.day)continue;
                 // Buyer can stretch its original valuation by 15%, never compound each round.
                 long limit=o.saleInitialFee+o.saleInitialFee*15/100;long proposed=Math.Max(o.fee,Math.Min(o.saleAsking,limit));
-                try{ValidateNpcPayment(db,o.seller,proposed);}catch(InvalidOperationException){o.status="expired";Mail("Secrétariat","Acheteur retiré",db.Find(o.player).name+" : le club acheteur ne peut plus financer la proposition.",o.player,"transfer");continue;}
+                try{ValidateSaleBuyer(db,o);ValidateNpcPayment(db,o.seller,proposed);}catch(InvalidOperationException){o.status="expired";Mail("Secrétariat","Acheteur retiré",db.Find(o.player).name+" : le besoin sportif ou les moyens du club acheteur ont changé.",o.player,"transfer");continue;}
                 o.fee=proposed;o.status="sale";Mail(db.clubs.First(t=>t.id==o.seller).name,o.fee==o.saleAsking?"Votre prix est accepté":"Dernière proposition du club",o.fee.ToString("N0")+" € pour "+db.Find(o.player).name+". Aucun transfert n’est effectué avant votre confirmation.",o.player,"transfer");
             }
         }

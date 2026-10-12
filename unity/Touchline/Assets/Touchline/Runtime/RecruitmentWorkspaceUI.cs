@@ -122,6 +122,7 @@ namespace Touchline
             var p=Database.Find(offer.player);if(p==null)return;var panel=Modal("Vente · "+p.name);panel.name="sale-negotiation";var body=Scroll(panel);
             Heading(body,ClubName(offer.seller));Text(body,"Offre actuelle : "+Money(offer.fee),"section-title");Text(body,"Valable jusqu’au "+Core.Career.Epoch.AddDays(offer.due).ToString("dd MMM",French)+" · versement à la signature.","muted");
             Text(body,"Salaire libéré après le départ : "+Money(Core.Career.MonthlySalary(p.wage))+" / mois. Le joueur reste dans votre effectif jusqu’à confirmation.","muted");
+            if(!string.IsNullOrEmpty(offer.saleReason))Text(body,"Projet du club : "+offer.saleReason,"muted").name="sale-buyer-project";
             var amount=new LongField("Votre prix demandé (€)"){value=offer.fee+offer.fee/10,name="sale-asking"};body.Add(amount);
             Text(body,"Trois contre-propositions maximum. La réponse arrive le lendemain ; négocier ne prolonge pas l’offre.","muted");
             var counter=PlayerManagementButton(body,"Transmettre ce prix",()=>RunDecision(()=>{Career.CounterSale(Database,offer,amount.value);CloseModal();}));counter.name="sale-counter";counter.SetEnabled(PlayerManagementAvailable&&offer.attempts<3&&offer.due>Career.life.day);
