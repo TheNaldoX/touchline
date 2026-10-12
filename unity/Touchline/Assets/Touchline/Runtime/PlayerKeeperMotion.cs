@@ -6,6 +6,29 @@ namespace Touchline
     public sealed partial class PlayerView
     {
         Quaternion[] compactCatchPose;
+        void MecanimKeeperDiveContact(Actor actor,float remaining)
+        {
+            if(actor.action!="dive"||actor.actionSequence<=0)return;
+            float contact=Mathf.Clamp(actor.actionContactTime>0?actor.actionContactTime:.2f,.02f,.4f);
+            float elapsed=Mathf.Clamp(1.2f-remaining,0,1.2f);
+            const float ReleaseSeconds=.30f,MaximumWarpMetres=1.1f;
+            float weight=Mathf.SmoothStep(0,1,elapsed/contact)*(1-Mathf.SmoothStep(0,1,(elapsed-contact)/ReleaseSeconds));
+            if(weight<=0)return;
+            var ball=new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z);
+            bool parry=actor.actionKind=="save-parry";int near=transform.InverseTransformPoint(ball).x>=0?0:1;
+            gripOffset=parry?Vector3.zero:body.up*.075f;
+            void Reach(){for(int i=0;i<2;i++){
+                if(parry&&i!=near)continue;
+                var limb=Limb(Sides[i]);var target=ball-transform.forward*.06f-gripOffset+(parry?Vector3.zero:body.right*(i==0?.11f:-.11f));
+                SolveArm(Sides[i],Vector3.Lerp(limb.wrist.position,target,weight),limb.lowerArm.position-limb.upperArm.position);
+                OrientKeeperHand(i,ball);
+            }}
+            Reach();
+            // Retarget only residual reach, with a continuous envelope; never alter the simulated ball.
+            var anchor=parry?Limb(Sides[near]).wrist.position+transform.forward*.06f:HeldBallPosition;
+            body.position+=Vector3.ClampMagnitude(ball-anchor,MaximumWarpMetres)*weight;
+            Reach();KeepBootsAbovePitch(body.forward,true);
+        }
         void KeeperDivePose(Actor actor,float remaining)
         {
             float elapsed=Mathf.Clamp(1.2f-remaining,0,1.2f);

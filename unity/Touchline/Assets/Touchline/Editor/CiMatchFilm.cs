@@ -55,6 +55,12 @@ namespace Touchline.Editor
                         if(Arg("-touchlineFilmSeconds",null)==null)seconds=GoalFilmSeconds;break;
                     }
                 }
+                if(Arg("-touchlineFilmSave","")=="true"){
+                    var probe=NewMatch(seed);
+                    while(!probe.State.halfTime&&!probe.State.finished&&probe.State.metrics[0].saves+probe.State.metrics[1].saves==0)probe.Advance(MatchSimulation.Step);
+                    if(probe.State.metrics[0].saves+probe.State.metrics[1].saves==0)throw new Exception("No save found in first half.");
+                    start=Mathf.Max(0,probe.State.clock-1);goalNote+=$" save_clock={probe.State.clock:0.0}";
+                }
                 var sim=NewMatch(seed);
                 // Avance la partie jusqu'au moment filmé (pas de rendu pendant ce temps).
                 while(sim.State.clock<start&&!sim.State.halfTime&&!sim.State.finished)sim.Advance(MatchSimulation.Step);
