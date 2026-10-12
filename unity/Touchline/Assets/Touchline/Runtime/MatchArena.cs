@@ -118,7 +118,7 @@ namespace Touchline
             if(Simulation==null)return;
             if(float.IsNaN(frameDelta)||float.IsInfinity(frameDelta)||frameDelta<=0)return;
             AdvanceAtmosphere(Mathf.Min(.1f,frameDelta));
-            if(GoalReplayActive){if(!Paused)AdvanceGoalReplay(frameDelta);return;}
+            if(GoalReplayActive){if(!Paused)AdvanceGoalReplay(frameDelta);else ReframeGoalReplayCamera();return;}
             if(!Paused&&!QuietPresentation)renderBudget?.RecordMatchFrame(frameDelta,MatchCamera.targetTexture,Speed);
             frameDelta=Mathf.Min(.1f,frameDelta);
             if(!Paused){Broadcast.Advance(frameDelta,Speed);if(Broadcast.PauseRequested)Paused=true;}else Broadcast.Refresh();

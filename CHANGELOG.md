@@ -1,3 +1,4 @@
+- Replay : la caméra en pause reste cohérente avant et après un changement de format.
 - Recrutement : la comparaison avec un titulaire tient compte de la marge d’incertitude du recruteur.
 # Changelog
 
