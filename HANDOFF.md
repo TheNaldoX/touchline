@@ -2,6 +2,7 @@
 Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dans Git/PR, preuves locales ignorées dans .validation et artifacts.
 
 ## État courant — 12 octobre 2026
+- Lot captured-body-reception : conserve uniquement le fondu calé sur le temps physique ; essai de repositionnement poitrine/cuisse retiré. Core1023/1023 ; globale body-entry-global2220/2433,213anciens échecs/0nouveau,4anciens corrigés,2nouveaux tests. Capture native body-entry-native422images/30Hz ; deux images d’entrée revues, contact et appuis encore imparfaits, pas une preuve de fluidité Fold. PR brouillon à publier.
 - Audit tactique contextuel (outil seulement) :200paires/seed1 pour LigneContre et LignePressing, aucun match en erreur. Avantage net haut-bas :1,76but avec contres,1,39avec pressing, contre1,09référence. Une consigne complémentaire ne résout pas le déséquilibre. Preuve line-context200.txt/csv. Sélections nouvelles opt-in, parcours par défaut inchangé.
 - Lot captured-header-contact : correction résiduelle du contact + entrée capturée sans saut. Ciblés57/76 (19anciens échecs), globale2214/2431,217anciens échecs/0nouveau,13corrigés. Trois nouveaux tests30/60/120Hz passent ; film captured-header-native graine731 tête695,1s, deux images revues. Pas encore dans APK0.67.
 - Essai9a29490 réception avant sans demi-tour REJETÉ : avantage ligne1,09→1,52 sur200paires. Mille matchs/5graines : favoris référence61,30%, candidat60,51% ; ne pas conclure à une dégradation générale des favoris à partir de la seule graine1. Référence agrégée release067-aggregate1000.txt :2,612buts/24,172tirs/.206pen/49,84touches/13,594sorties. Preuves .validation/through-direction-* et release067-general200-seed*. Aucun essai rejeté intégré.
@@ -17,8 +18,8 @@ Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dan
 - APK0.66.0-preview.1/code59 : artifacts/Touchline-Unity-0.66-preview.apk,73956606octets ; CI38222681759 réussie. Signature stable, package et ARM64 vérifiés : .validation/apk066/verified.json. SHA25608BF5F0042B4E467D5169A9CEAD50A6DBFDD8FD90D5189F81E90F3B598DA6E4B. Inclut PR96–106. Fold non testé.
 - Ancienne APK0.65.0-preview.1/code58 : artifacts/Touchline-Unity-0.65-preview.apk (73937734octets), source71f2b3076c7e4d5db30018ca3288135c527f89f4, PR95/CI38028354263. Ne contient PAS PR96–106.
 - Preuve .validation/apk065/verified.json ; SHA256 D8C37FB3E479AF45550F851F13820747FE0F51F57895B39DA174CB81430642E2. Package fr.personal.touchline.unity, cert130917e6d2b4ea2dcca487587dcff03b1356b14e7de39c3e01657097ad57ee13, ARM64.
-- Prochaine APK au moins0.67/code60, nom distinct ; clé stable en CI. Préserver anciennes APK et sauvegardes. Main non fusionnée, Fold réel toujours non testé.
-- Automatisation PAUSED, anciennes échéances expirées. Quota vérifié12/10 :27% utilisé. Seuil utilisateur : dès92% utilisés, aucun nouveau lot, finir APK et livraison.
+- Prochaine APK au moins0.68/code61, nom distinct ; clé stable en CI. Préserver anciennes APK et sauvegardes. Main non fusionnée, Fold réel toujours non testé.
+- Automatisation PAUSED, anciennes échéances expirées. Quota vérifié12/10 :38% utilisé. Seuil utilisateur : dès92% utilisés, aucun nouveau lot, finir APK et livraison.
 
 ## Limites moteur et essais rejetés
 - Référence avant dernier lot : graine1/200 buts2,61, tirs24,72, cadrés7,74, corners10,18, fautes20,80, jaunes3,75, hors-jeu4,05, touches49,93, penalties0,19, sorties13,79, favoris52,53%. Après :2,59buts/24,78tirs/49,89touches/.19pen/13,82sorties/favoris52,53%.
@@ -37,8 +38,3 @@ Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dan
 - .validation/github-api.ps1 via GCM ; jamais imprimer secrets. PR une tâche/branche, attacher chaquePR. Attente scriptée de CI, pas de polls répétés.
 - Après Unity seulement : .validation/cleanup-unity-imports.ps1 enlève73imports connus ; restore scène/ProjectSettings uniquement si modifications générées. Pas de copies de sources, pas de docs journal.
 - Prochain : retour Fold sur0.66 (appuis, tactique, clavier mercato, séquences coups francs), puis bugs visibles et déséquilibres moteur encore ouverts. Les252échecs préexistants et le rendu naturel incomplet restent explicitement non résolus.
-
-
-
-
-

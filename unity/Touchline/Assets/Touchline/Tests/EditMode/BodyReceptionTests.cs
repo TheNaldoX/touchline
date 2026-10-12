@@ -8,6 +8,18 @@ namespace Touchline.Tests
 {
     public class BodyReceptionTests
     {
+        [TestCase(MatchSimulation.ChestControl)] [TestCase(MatchSimulation.ThighControl)]
+        public void CapturedBodyEntryKeepsSupportAtZeroPhysicalProgress(string kind)
+        {
+            var go=new GameObject("Captured reception entry");bool old=PlayerView.UseMecanim;PlayerView.UseMecanim=true;
+            try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="entry",heightCm=180},0,9,Color.white);
+                var actor=new Actor{slot=9,action="idle"};for(int i=0;i<30;i++)view.Render(actor,1,1f/60);
+                var foot=view.FootPosition(false);actor.action="control";actor.actionKind=kind;actor.actionSequence=1;actor.actionHeight=kind==MatchSimulation.ChestControl?1.4f:.94f;actor.actionTarget=new Point(.12f,.3f);actor.actionTime=MatchSimulation.BodyControlDuration(kind);
+                view.Render(actor,1,1f/60,new Vector3(.12f,actor.actionHeight,.3f));
+                Assert.Less(Vector3.Distance(foot,view.FootPosition(false)),.025f,"No support jump before the reception begins");
+            }finally{Object.DestroyImmediate(go);PlayerView.UseMecanim=old;}
+        }
         [TestCase(MatchSimulation.ChestControl,160,true)] [TestCase(MatchSimulation.ChestControl,205,false)]
         [TestCase(MatchSimulation.ThighControl,160,false)] [TestCase(MatchSimulation.ThighControl,205,true)]
         [TestCase(MatchSimulation.ChestControl,180,false)] [TestCase(MatchSimulation.ThighControl,180,true)]

@@ -1,3 +1,4 @@
+- Animations : les contrôles poitrine et cuisse démarrent avec leur horloge physique, sans saut initial du geste capturé.
 - Interface : bandeau de replay compact, sans mots fragmentés sur écran plié.
 - Calibration : audits explicites de hauteur de ligne avec contres ou pressing fixés, sans augmenter le coût du parcours par défaut.
 - Animations : contact de tête recalé progressivement sur le ballon, entrée stable à 30/60/120 images par seconde.
