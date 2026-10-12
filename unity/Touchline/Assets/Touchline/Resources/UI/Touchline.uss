@@ -241,6 +241,10 @@ Button.primary:hover { background-color: rgb(167,248,223); }
 .narrow .tactics-bench { min-width: 0; width: 100%; flex-basis: auto; }
 .narrow .tactics-pitch-column { margin-right: 0; }
 .narrow .tactics-tabs > Button { font-size: 12px; }
+.narrow .tactics-tabs > Button { width: 30%; min-width: 0; }
+.narrow .tactics-tools { flex-wrap: wrap; }
+.narrow .tactics-tools > .muted { width: 100%; flex-shrink: 0; margin-right: 0; }
+.tactics-feedback { font-size: 13px; color: rgb(167, 222, 204); white-space: normal; margin-top: 6px; }
 .narrow .tactics-board { width: 340px; height: 454px; }
 .tactics-workspace { width: 100%; }
 .tactics-bench { flex-shrink: 1; }
@@ -271,6 +275,7 @@ Button.primary:hover { background-color: rgb(167,248,223); }
 .short-wide .player-position { font-size: 12px; }
 .short-wide .player-condition { display: none; }
 .short-wide .selected-post { padding: 8px; }
+.short-wide .tactics-feedback { margin-top: 0; }
 .short-wide .selected-post > .muted { display: none; }
 .short-wide .selected-post .row { flex-wrap: nowrap; }
 .short-wide .tactics-bench > Toggle { min-height: 48px; margin: 2px 0; }
