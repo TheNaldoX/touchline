@@ -65,12 +65,14 @@ namespace Touchline
             var roleCard=new VisualElement();roleCard.AddToClassList("negotiation-role-card");agent.Add(roleCard);
             var role=new DropdownField("Temps de jeu promis",PlayingTimeRoles.All.Select(PlayingTimeRoles.Label).ToList(),2);role.name="negotiation-role";roleCard.Add(role);
             var roleDescription=Text(roleCard,"","notice");roleDescription.name="negotiation-role-description";
+            var roleDetails=new Foldout{text="Avis détaillé de l’agent",value=false,name="negotiation-agent-details"};agent.Add(roleDetails);roleDetails.Add(agentMessage);roleDetails.Add(roleDescription);
             Action refreshAgent=null;
-            Action refreshRole=()=>{string promised=PlayingTimeRoles.All[Mathf.Clamp(role.index,0,PlayingTimeRoles.All.Length-1)];roleDescription.text=PlayingTimeRoles.Description(promised)+(promised=="youth"&&p.age>=24?" Ce statut est réservé aux joueurs de moins de 24 ans. Choisissez un autre engagement.":"");refreshAgent?.Invoke();};
+            Action refreshRole=()=>{string promised=PlayingTimeRoles.All[Mathf.Clamp(role.index,0,PlayingTimeRoles.All.Length-1)];roleDescription.text=PlayingTimeRoles.Description(promised)+(promised=="youth"&&p.age>=24?" Ce statut est réservé aux joueurs de moins de 24 ans. Choisissez un autre engagement.":"");if(promised=="youth"&&p.age>=24)roleDetails.value=true;refreshAgent?.Invoke();};
             role.RegisterValueChangedCallback(_=>refreshRole());
             if(own)Text(roleCard,"Engagement actuel : "+PlayingTimeRoles.Label(contract.role),"muted").name="negotiation-current-role";
-            Text(roleCard,"Promesse suivie après signature : son utilisation et ses indisponibilités médicales comptent dans sa satisfaction.","footnote");
-            var bonus=new LongField("Prime de présence (€)");bonus.name="negotiation-bonus";s.Add(bonus);var clause=new LongField("Clause libératoire (€), 0 = aucune");clause.name="negotiation-clause";s.Add(clause);
+            Text(roleDetails,"Promesse suivie après signature : son utilisation et ses indisponibilités médicales comptent dans sa satisfaction.","footnote");
+            var clauses=new Foldout{text="Primes et clauses",value=false,name="negotiation-extra-clauses"};s.Add(clauses);
+            var bonus=new LongField("Prime de présence (€)");bonus.name="negotiation-bonus";clauses.Add(bonus);var clause=new LongField("Clause libératoire (€), 0 = aucune");clause.name="negotiation-clause";clauses.Add(clause);
             var pre=new Toggle("Précontrat : arrivée après le contrat actuel");pre.name="negotiation-precontract";s.Add(pre);pre.SetEnabled(Career.CanPrecontract(Database,id));
             var loan=new Toggle("Négocier un prêt");loan.name="negotiation-loan";s.Add(loan);loan.SetEnabled(!own&&p.team!="free"&&!contract.IsLoan&&LoanMaximumDays(contract)>=28);if(!own&&p.team!="free"&&!contract.IsLoan&&LoanMaximumDays(contract)<28)Text(s,LoanDurationText(contract,0),"notice").name="negotiation-loan-unavailable";
             var terms=new Foldout{text="Prêt : salaire, durée et achat",value=false};terms.name="negotiation-loan-terms";s.Add(terms);
@@ -96,7 +98,7 @@ namespace Touchline
             Action<TransferFormDraft> capture=d=>{d.fee=fee.value;d.monthly=wage.value;d.years=years.value;d.role=role.index;d.bonus=bonus.value;d.clause=clause.value;d.precontract=pre.value;d.share=share.value;d.days=days.value;d.option=option.value;d.obligation=obligation.value;d.appearances=appearances.value;d.recall=recall.value;d.upfront=upfront.value;d.instalments=instalments.value;};
             Action<bool> restore=isLoan=>{
                 loading=true;var d=isLoan?borrowed:permanent;loan.SetValueWithoutNotify(isLoan);pre.SetValueWithoutNotify(!isLoan&&d.precontract);fee.SetValueWithoutNotify(d.fee);wage.SetValueWithoutNotify(isLoan?Core.Career.MonthlySalary(p.wage):d.monthly);years.SetValueWithoutNotify(d.years);role.SetValueWithoutNotify(role.choices[Mathf.Clamp(d.role,0,role.choices.Count-1)]);bonus.SetValueWithoutNotify(d.bonus);clause.SetValueWithoutNotify(d.clause);share.SetValueWithoutNotify(d.share);days.SetValueWithoutNotify(d.days);option.SetValueWithoutNotify(d.option);obligation.SetValueWithoutNotify(d.obligation);appearances.SetValueWithoutNotify(d.appearances);recall.SetValueWithoutNotify(d.recall);upfront.SetValueWithoutNotify(d.upfront);instalments.SetValueWithoutNotify(d.instalments);
-                wage.SetEnabled(!isLoan);wage.label=isLoan?"Salaire mensuel du contrat parent (€)":"Salaire mensuel proposé (€)";terms.SetEnabled(isLoan);terms.value=isLoan;payments.SetEnabled(!isLoan&&!pre.value);years.SetEnabled(!isLoan);
+                wage.SetEnabled(!isLoan);wage.label=isLoan?"Salaire mensuel du contrat parent (€)":"Salaire mensuel proposé (€)";terms.SetEnabled(isLoan);terms.value=isLoan;terms.style.display=isLoan?DisplayStyle.Flex:DisplayStyle.None;payments.SetEnabled(!isLoan&&!pre.value);payments.style.display=!isLoan&&!own&&p.team!="free"?DisplayStyle.Flex:DisplayStyle.None;years.SetEnabled(!isLoan);clauses.value=d.bonus>0||d.clause>0;
                 loading=false;refreshContribution();refreshRole();
             };
             loan.RegisterValueChangedCallback(e=>{if(loading)return;capture(e.previousValue?borrowed:permanent);restore(e.newValue);});
@@ -108,6 +110,7 @@ namespace Touchline
             var costNow=Text(costCard,"","scout-status");costNow.name="negotiation-cost-now";
             var costLater=Text(costCard,"","muted");var costSalary=Text(costCard,"","muted");costSalary.name="negotiation-cost-salary";
             var costClauses=Text(costCard,"","footnote");var costWarning=Text(costCard,"","muted");
+            var footer=new VisualElement{name="negotiation-footer"};footer.AddToClassList("negotiation-footer");panel.Add(footer);var summary=Text(footer,"","muted");summary.name="negotiation-sticky-cost";
             costCard.style.paddingTop=costCard.style.paddingBottom=12;
             foreach(var label in new[]{costNow,costLater,costSalary,costClauses,costWarning}){label.style.marginTop=4;label.style.marginBottom=4;}
             Action refreshCost=()=>{
@@ -116,18 +119,19 @@ namespace Touchline
                     var quote=Career.PreviewTransferCost(Database,id,fee.value,loan.value?p.wage:Core.Career.WeeklySalary(wage.value),loan.value,pre.value,
                         new MarketTerms{loanWagePercent=loan.value?share.value:100,loanEndDay=Career.life.day+days.value,optionFee=loan.value?option.value:0,obligationFee=loan.value?obligation.value:0,obligationAppearances=loan.value?appearances.value:0,recall=loan.value&&recall.value,upfrontPercent=loan.value||pre.value?100:upfront.value,instalments=loan.value||pre.value?0:instalments.value});
                     costNow.text="À la signature : "+Money(quote.cashAtSignature)+" · dont agent "+Money(quote.agentFee);
+                    summary.text=Money(quote.cashAtSignature)+" à signer · "+Money(quote.monthlyWage)+" / mois";
                     costLater.text="Indemnité totale : "+Money(quote.fee)+(quote.deferredFee>0?" · reste "+Money(quote.deferredFee)+" en "+quote.instalments+" échéances trimestrielles.":" · aucun paiement différé.");
                     costSalary.text="Salaire brut à votre charge : "+Money(quote.monthlyWage)+" / mois"+(quote.salaryOnArrival?", à partir de son arrivée.":".");
                     costClauses.text=(quote.optionFee>0?"Option facultative : "+Money(quote.optionFee)+", exclue du montant à signer. ":quote.obligationFee>0?"Obligation d’achat : "+Money(quote.obligationFee)+", réservée au budget mais non payée à la signature. ":"")+"Hors charges employeur et primes de présence ("+Money(Math.Max(0,bonus.value))+" par apparition). Aucune dépense avant confirmation de l’accord.";
                     costWarning.text=quote.cashAtSignature>Career.life.cash?"Trésorerie actuelle insuffisante pour signer ces conditions.":quote.fee>Career.TransferBudget-quote.obligationFee?"Indemnité et obligation dépassent le budget disponible.":"Agent : deux semaines du salaire intégral. Accord et budgets à confirmer avant signature.";
-                }catch(ArgumentException){costNow.text="Aperçu indisponible : corrigez les montants et les clauses.";costLater.text=costSalary.text=costClauses.text=costWarning.text="";}
-                catch(OverflowException){costNow.text="Montant trop élevé pour établir cet aperçu.";costLater.text=costSalary.text=costClauses.text=costWarning.text="";}
+                }catch(ArgumentException){summary.text=costNow.text="Aperçu indisponible : corrigez les montants et les clauses.";costLater.text=costSalary.text=costClauses.text=costWarning.text="";}
+                catch(OverflowException){summary.text=costNow.text="Montant trop élevé pour établir cet aperçu.";costLater.text=costSalary.text=costClauses.text=costWarning.text="";}
             };
             foreach(var field in new[]{fee,wage,bonus,option,obligation})field.RegisterValueChangedCallback(_=>refreshCost());
             foreach(var field in new[]{share,days,appearances,upfront,instalments})field.RegisterValueChangedCallback(_=>refreshCost());
             foreach(var field in new[]{loan,pre,recall})field.RegisterValueChangedCallback(_=>refreshCost());
             void ShowError(string message){error.text=message+" Vos conditions sont conservées : corrigez-les puis renvoyez l’offre.";error.style.display=DisplayStyle.Flex;error.schedule.Execute(()=>{s.ScrollTo(error);error.Focus();});}
-            submit=Button(s,"Envoyer à l’agent",()=>{error.style.display=DisplayStyle.None;RunDecision(()=>Career.ProposeTransfer(Database,id,fee.value,loan.value?p.wage:Core.Career.WeeklySalary(wage.value),years.value,PlayingTimeRoles.All[Mathf.Clamp(role.index,0,PlayingTimeRoles.All.Length-1)],loan.value,bonus.value,clause.value,new MarketTerms{loanWagePercent=loan.value?share.value:100,loanEndDay=Career.life.day+days.value,optionFee=loan.value?option.value:0,obligationFee=loan.value?obligation.value:0,obligationAppearances=loan.value?appearances.value:0,recall=loan.value&&recall.value,upfrontPercent=loan.value||pre.value?100:upfront.value,instalments=loan.value||pre.value?0:instalments.value},pre.value),ShowError);});submit.name="negotiation-send";submit.AddToClassList("primary");
+            submit=Button(footer,"Envoyer à l’agent",()=>{error.style.display=DisplayStyle.None;RunDecision(()=>Career.ProposeTransfer(Database,id,fee.value,loan.value?p.wage:Core.Career.WeeklySalary(wage.value),years.value,PlayingTimeRoles.All[Mathf.Clamp(role.index,0,PlayingTimeRoles.All.Length-1)],loan.value,bonus.value,clause.value,new MarketTerms{loanWagePercent=loan.value?share.value:100,loanEndDay=Career.life.day+days.value,optionFee=loan.value?option.value:0,obligationFee=loan.value?obligation.value:0,obligationAppearances=loan.value?appearances.value:0,recall=loan.value&&recall.value,upfrontPercent=loan.value||pre.value?100:upfront.value,instalments=loan.value||pre.value?0:instalments.value},pre.value),ShowError);});submit.name="negotiation-send";submit.AddToClassList("primary");
             restore(loanPrevious!=null);
             refreshCost();
         }

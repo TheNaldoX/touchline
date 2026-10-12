@@ -79,6 +79,7 @@ namespace Touchline.Editor
 
         static List<Action> BuildSteps()
         {
+            if(Path.GetFileName(Output).StartsWith("ui-transfer-form-",StringComparison.Ordinal))return BuildTransferFormSteps();
             if(Path.GetFileName(Output).StartsWith("ui-free-kick-wait-",StringComparison.Ordinal))return BuildFreeKickWaitSteps();
             if(Path.GetFileName(Output).StartsWith("ui-button-motion-",StringComparison.Ordinal))return BuildButtonMotionSteps();
             if(Path.GetFileName(Output).StartsWith("ui-sale-negotiation-",StringComparison.Ordinal))return BuildSaleNegotiationSteps();
@@ -181,6 +182,17 @@ namespace Touchline.Editor
             audit.AppendLine("Relance contextuelle synthétique : notification actionnable et accès aux décisions de départ, deux formats ; aucune vente ni sauvegarde personnelle.");return list;
         }
 
+        static List<Action> BuildTransferFormSteps()
+        {
+            var list=new List<Action>();string player=null;long cash=0;int offers=0;
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{var c=App.Career;c.EnsureWorld(App.Database);player=App.Database.players.First(p=>p.team!=c.club&&p.team!="free"&&p.age>=24&&!c.HasActiveLoan(p.id)&&App.Database.clubs.Any(t=>t.id==p.team)).id;cash=c.life.cash;offers=c.world.offers.Count;Resize(screen.width,screen.height);Call("TransferDialog",player);});
+                list.Add(()=>{var button=Root.Q<Button>("negotiation-send");if(button.GetFirstAncestorOfType<ScrollView>()!=null||!Root.worldBound.Contains(button.worldBound.center))throw new Exception("Submit must remain outside scrolling content and visible");if(Root.Q<Foldout>("negotiation-extra-clauses").value||Root.Q("negotiation-loan-terms").resolvedStyle.display!=DisplayStyle.None)throw new Exception("Unused terms clutter initial form");Capture(screen.tag+"-transfert-principal");Root.Q<LongField>("negotiation-monthly-wage").value=10000;Root.Q<LongField>("negotiation-bonus").value=321;Root.Q<Toggle>("negotiation-loan").value=true;});
+                list.Add(()=>{if(Root.Q("negotiation-loan-terms").resolvedStyle.display==DisplayStyle.None)throw new Exception("Loan conditions hidden in loan mode");Root.Q("negotiation-loan-terms").GetFirstAncestorOfType<ScrollView>().ScrollTo(Root.Q("negotiation-loan-terms"));});
+                list.Add(()=>{Capture(screen.tag+"-pret-conditions");Root.Q<Toggle>("negotiation-loan").value=false;if(Root.Q<LongField>("negotiation-monthly-wage").value!=10000||Root.Q<LongField>("negotiation-bonus").value!=321||!Root.Q<Foldout>("negotiation-extra-clauses").value)throw new Exception("Permanent draft not restored with active clauses visible");if(App.Career.life.cash!=cash||App.Career.world.offers.Count!=offers)throw new Exception("Browsing submitted an offer");Call("CloseModal");});
+            }
+            audit.AppendLine("Bouton hors défilement, conditions pertinentes seulement, brouillon salaire10000 et prime321 conservé achat/prêt/achat, aucune offre envoyée.");return list;
+        }
         static List<Action> BuildFreeKickWaitSteps()
         {
             var list=new List<Action>();

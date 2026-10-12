@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Mercato : bouton d’envoi et coût synthétique fixes, primes et clauses regroupées, conditions de prêt masquées en transfert permanent, brouillons conservés entre modes.
 - Temps forts : retour au coup franc quand le tireur et le mur approchent leurs positions, préparation accélérée et expliquée plutôt qu’un faux compte à rebours imminent ; simulation conservée.
 - Boutons : surface tactile stable pendant l’ouverture et l’appui, conservant le fondu et la couleur pressée pour éviter de perdre les appuis près du bord.
 - Ventes : contre-propositions avec réponse le lendemain, refus et confirmation distincts, contrôle des offres périmées et du financement acheteur, réouverture possible après expiration.
