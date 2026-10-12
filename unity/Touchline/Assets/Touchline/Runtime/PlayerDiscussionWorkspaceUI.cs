@@ -40,6 +40,7 @@ namespace Touchline
             var blocked=Text(footer,"","discussion-blocked");blocked.name="conversation-send-reason";
             void Select(string key){
                 selected=key;var topic=context.topics.First(t=>t.key==key);dropdown.SetValueWithoutNotify(topic.title);copy.Clear();Text(copy,topic.title,"discussion-topic-title");Text(copy,topic.reason,"discussion-topic-context");Text(copy,topic.description,"discussion-topic-description");if(topic.warning!=null)Text(copy,topic.warning,"discussion-topic-warning");
+                Text(copy,"Votre message","eyebrow");var preview=Text(copy,"« "+Core.Career.DiscussionOpening(key)+" »","discussion-message-preview");preview.name="conversation-message-preview";
                 if(topic.key=="development"&&person.discussionFocus=="development"){Text(copy,Career.PlayerDevelopmentAdvice(Database,id),"discussion-topic-description");PlayerManagementButton(copy,"Concrétiser le parcours",()=>DevelopmentConversationPlan(id)).name="conversation-open-development";}
                 if(topic.key=="recovery"&&Career.Injury(id)!=null)Button(copy,"Dossier médical",()=>MedicalDetail(id)).name="conversation-medical";
                 Text(copy,"Personnalité de carrière : "+Career.CareerPersonality(id)+". Trait simulé, sans description de la personne réelle.","discussion-personality");

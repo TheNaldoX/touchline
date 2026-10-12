@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Discussions : aperçu de la phrase réellement envoyée au joueur, avec engagement précis de temps de jeu et archivage homogène des échanges.
 - Moments clés : les tirs de faible qualité restent dans les statistiques, tandis que buts, montants et incidents majeurs restent visibles ; aucun résultat simulé modifié.
 - Presse : conférence en trois questions avec phrases complètes, décor de salle stylisé, compte rendu sauvegardé et effets moyens pour éviter de cumuler les bonus.
 - Bureau : cinq derniers résultats et extrait du classement autour du club, avec accès direct au calendrier et au tableau complet.

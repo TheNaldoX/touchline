@@ -837,6 +837,7 @@ Button:disabled { opacity: .45; }
 .discussion-topic-context { color: #a7e4d0; font-size: 14px; white-space: normal; margin-bottom: 12px; }
 .discussion-topic-description { font-size: 14px; white-space: normal; margin-bottom: 10px; }
 .discussion-detail Button { min-height: 48px; }
+.discussion-message-preview { background-color: #203b42; color: #e5f6f0; padding: 12px; border-radius: 10px; margin-bottom: 12px; font-size: 16px; white-space: normal; }
 .discussion-topic-warning { background-color: #30271d; color: #e5cda6; font-size: 13px; padding: 10px; border-radius: 8px; margin-bottom: 10px; white-space: normal; }
 .discussion-personality { color: #96afbd; font-size: 11px; white-space: normal; margin-top: 8px; }
 .discussion-footer { flex-shrink: 0; margin-top: 10px; border-top-width: 1px; border-top-color: #304452; padding-top: 8px; }

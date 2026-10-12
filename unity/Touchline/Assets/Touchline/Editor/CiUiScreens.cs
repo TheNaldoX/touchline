@@ -79,6 +79,7 @@ namespace Touchline.Editor
 
         static List<Action> BuildSteps()
         {
+            if(Path.GetFileName(Output).StartsWith("ui-discussion-preview-",StringComparison.Ordinal))return BuildDiscussionPreviewSteps();
             if(Path.GetFileName(Output).StartsWith("ui-agent-role-",StringComparison.Ordinal)||Path.GetFileName(Output).StartsWith("ui-transfer-cost-",StringComparison.Ordinal))return BuildAgentRoleSteps();
             if(Path.GetFileName(Output).StartsWith("ui-finance-preview-",StringComparison.Ordinal))return BuildFinancePreviewSteps();
             if(Path.GetFileName(Output).StartsWith("ui-loan-save-",StringComparison.Ordinal))return BuildLoanSaveSteps();
@@ -177,6 +178,17 @@ namespace Touchline.Editor
             audit.AppendLine("Relance contextuelle synthétique : notification actionnable et accès aux décisions de départ, deux formats ; aucune vente ni sauvegarde personnelle.");return list;
         }
 
+        static List<Action> BuildDiscussionPreviewSteps()
+        {
+            var list=new List<Action>();string player=null;int messages=0;
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{var c=App.Career;player=c.lineup[9];c.Person(player).lastTalk=c.life.day-8;c.Person(player).promiseUntil=-1;messages=c.life.messages.Count;Resize(screen.width,screen.height);Call("PlayerDiscussionWorkspace",player);});
+                list.Add(()=>{var picker=Root.Q<DropdownField>("conversation-topic-picker");picker.value=PlayerDiscussionPresentation.From(App.Career,App.Database,player).topics.First(t=>t.key=="promise").title;});
+                list.Add(()=>{var preview=Root.Q<Label>("conversation-message-preview");if(preview==null||!preview.text.Contains(Career.DiscussionOpening("promise")))throw new Exception("Exact promise missing from preview");if(App.Career.life.messages.Count!=messages)throw new Exception("Preview sent a message");Capture(screen.tag+"-message-promesse");Click("conversation-send");});
+                list.Add(()=>{if(App.Career.life.messages.Last(m=>m.player==player&&m.sender=="Vous").text!=Career.DiscussionOpening("promise"))throw new Exception("Sent message differs from preview");Call("CloseModal");});
+            }
+            audit.AppendLine("Aperçu exact de la promesse sans envoi anticipé, envoi et message conservé identiques, deux formats. Navigation synthétique, Fold physique non testé.");return list;
+        }
         static List<Action> BuildPressInterviewSteps()
         {
             var list=new List<Action>();

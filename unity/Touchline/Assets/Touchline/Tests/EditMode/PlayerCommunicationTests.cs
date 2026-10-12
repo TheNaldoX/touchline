@@ -8,6 +8,20 @@ namespace Touchline.Tests
 {
     public partial class ProfessionalTests
     {
+        [TestCase("support")] [TestCase("demand")] [TestCase("explain")]
+        [TestCase("apologize")] [TestCase("leadership")] [TestCase("promise")]
+        [TestCase("recovery")] [TestCase("development")] [TestCase("settle")]
+        [TestCase("promiseReview")] [TestCase("role")]
+        public void DiscussionPreviewIsTheExactSentMessageWithoutPrematureEffects(string topic)
+        {
+            if(topic=="promiseReview")c.Person("p9").promiseUntil=21;
+            string before=JsonUtility.ToJson(c);string preview=Career.DiscussionOpening(topic);
+            Assert.AreEqual(before,JsonUtility.ToJson(c));
+            c.Talk(db,"p9",topic,false);
+            Assert.AreEqual(preview,c.life.messages.Last(m=>m.player=="p9"&&m.sender=="Vous").text);
+            Assert.AreEqual("talk",c.life.messages.Last(m=>m.player=="p9"&&m.sender=="Vous").action);
+            if(topic=="promise"){StringAssert.Contains("30 minutes",preview);Assert.AreEqual(c.life.day+21,c.Person("p9").promiseUntil);}
+        }
         [Test] public void ReadMedicalMessageRetainsDecisionUntilTreatment()
         {
             var injury=c.OpenInjury(db,"p9","bruise");var message=c.life.messages.Last();message.read=true;

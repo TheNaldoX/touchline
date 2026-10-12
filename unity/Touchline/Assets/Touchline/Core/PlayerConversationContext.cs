@@ -5,6 +5,21 @@ namespace Touchline.Core
 {
     public partial class Career
     {
+        public static string DiscussionOpening(string topic)=>topic switch
+        {
+            "support"=>"Je te soutiens. Parlons de ce dont tu as besoin.",
+            "demand"=>"J’attends davantage de ton investissement.",
+            "explain"=>"Je veux expliquer tes dernières sélections et ce que j’attends de toi.",
+            "apologize"=>"Je reconnais que notre relation a besoin d’attention.",
+            "leadership"=>"Peux-tu aider les autres et porter notre message dans le vestiaire ?",
+            "promise"=>"Je te promets deux apparitions d’au moins 30 minutes dans les trois prochaines semaines.",
+            "recovery"=>"Parlons de ta charge et de ta récupération.",
+            "development"=>"Quel parcours de développement te conviendrait ?",
+            "settle"=>"Comment se passe ton intégration au groupe ?",
+            "promiseReview"=>"Faisons le point sur le temps de jeu convenu.",
+            "role"=>"Je veux clarifier ton rôle et ce que j’attends de toi.",
+            _=>throw new ArgumentException("Sujet de discussion inconnu.",nameof(topic))
+        };
         public string CareerPersonality(string id)=>new[]{"Ambitieux","Collectif","Réservé","Exigeant"}[StableIdentity(id)%4];
         public string PlayerSituation(Database db,string id)
         {
@@ -41,34 +56,34 @@ namespace Touchline.Core
             OffPitch();var player=db.Find(id);if(player==null||player.team!=club||!life.players.Any(l=>l.id==id))throw new InvalidOperationException("Ce joueur n’appartient plus à votre effectif.");var p=Person(id);
             if(life.day-p.lastTalk<7)throw new InvalidOperationException("Laissez sept jours à votre dernier échange pour produire ses effets.");
             if(topic=="promiseReview"&&p.promiseUntil<0)throw new InvalidOperationException("Aucune promesse de temps de jeu n’est en cours.");
-            string response,question;bool ambitious=CareerPersonality(id)=="Ambitieux"||CareerPersonality(id)=="Exigeant";
+            string response;bool ambitious=CareerPersonality(id)=="Ambitieux"||CareerPersonality(id)=="Exigeant";
             if(topic=="recovery")
             {
-                bool needed=p.fitness<82||Injury(id)!=null;question="Parlons de ta charge et de ta récupération.";
+                bool needed=p.fitness<82||Injury(id)!=null;
                 if(needed){p.restUntil=Math.Max(p.restUntil,life.day+3);p.trust=Math.Min(100,p.trust+1);response="Trois jours sans sélection me permettront de récupérer. J’attends que cet accord soit respecté.";}else{response=ambitious?"Je me sens prêt et je veux jouer. Ne me mettez pas à l’écart sans raison.":"Ma condition est bonne. Gardons simplement une charge adaptée.";if(ambitious)p.trust=Math.Max(0,p.trust-1);}
             }
             else if(topic=="development")
             {
-                question="Quel parcours de développement te conviendrait ?";p.discussionFocus="development";
+                p.discussionFocus="development";
                 bool young=player.age<24;response=young?"Je veux un objectif clair, des séances adaptées et surtout du football senior. Regardons un rôle réaliste ou un prêt de développement.":"À ce stade de ma carrière, je veux travailler un rôle précis et gérer ma charge. Un programme de jeune ne me correspond pas.";p.trust=Math.Min(100,p.trust+(young?1:0));
             }
             else if(topic=="settle")
             {
-                question="Comment se passe ton intégration au groupe ?";var contract=world?.contracts.FirstOrDefault(c=>c.player==id);bool recent=contract?.joined>0&&life.day-contract.joined<60;
+                var contract=world?.contracts.FirstOrDefault(c=>c.player==id);bool recent=contract?.joined>0&&life.day-contract.joined<60;
                 response=recent?"Je dois encore apprendre les habitudes du groupe et vos consignes. Un cadre du vestiaire et un rôle stable m’aideraient.":"Je connais déjà le groupe. C’est surtout la clarté de mon rôle qui compte.";if(recent)p.trust=Math.Min(100,p.trust+1);p.discussionFocus="integration";
             }
             else if(topic=="promiseReview")
             {
-                question="Faisons le point sur le temps de jeu convenu.";int made=Math.Max(0,p.appearances-p.promiseStarts);response=made>=2?"Les deux apparitions convenues ont été données. Nous pourrons juger la suite à l’échéance.":"Il reste "+(2-made)+" apparition(s) d’au moins 30 minutes à me donner avant le "+Epoch.AddDays(p.promiseUntil).ToString("dd/MM")+". Cet échange ne remplace pas les matchs promis.";
+                int made=Math.Max(0,p.appearances-p.promiseStarts);response=made>=2?"Les deux apparitions convenues ont été données. Nous pourrons juger la suite à l’échéance.":"Il reste "+(2-made)+" apparition(s) d’au moins 30 minutes à me donner avant le "+Epoch.AddDays(p.promiseUntil).ToString("dd/MM")+". Cet échange ne remplace pas les matchs promis.";
             }
             else
             {
-                question="Je veux clarifier ton rôle et ce que j’attends de toi.";var contract=world?.contracts.FirstOrDefault(c=>c.player==id);bool lowMinutes=contract?.playingTime!=null?PlayingTimeConcern(id):p.appearances<Math.Max(1,life.matches/3);bool highRole=contract?.role=="key"||contract?.role=="starter";
+                var contract=world?.contracts.FirstOrDefault(c=>c.player==id);bool lowMinutes=contract?.playingTime!=null?PlayingTimeConcern(id):p.appearances<Math.Max(1,life.matches/3);bool highRole=contract?.role=="key"||contract?.role=="starter";
                 response=lowMinutes&&highRole?"Mon rôle contractuel suppose davantage de matchs. Une explication seule ne suffit pas ; il faut des sélections ou une vraie discussion de contrat.":lowMinutes?"Je peux accepter la rotation, mais j’ai besoin d’occasions concrètes et de savoir ce que je dois améliorer.":"Mon temps de jeu est cohérent. Gardons des consignes stables et un retour précis après les matchs.";
                 if(contract?.playingTime!=null)response=PlayingTimeRoles.Label(contract.role)+". "+PlayingTimeProgress(id)+(lowMinutes?" J’attends des sélections cohérentes, pas seulement une explication.":" Faisons le point avec ce suivi et le plan convenu.");
                 p.trust=Mathx.Clamp(p.trust+(lowMinutes&&ambitious?-1:contract?.playingTime!=null?0:1),0,100);p.discussionFocus="role";
             }
-            p.lastTalk=life.day;Mail("Vous",phone?"Appel • compte rendu":"SMS envoyé",question,id,"talk");Mail(player.name,phone?"Après notre appel":"Réponse",response,id,"talk");ApplyLife(db);return true;
+            p.lastTalk=life.day;Mail("Vous",phone?"Appel • compte rendu":"SMS envoyé",DiscussionOpening(topic),id,"talk");Mail(player.name,phone?"Après notre appel":"Réponse",response,id,"talk");ApplyLife(db);return true;
         }
         void PlayerConversationDay(Database db)
         {

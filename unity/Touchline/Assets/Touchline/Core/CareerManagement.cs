@@ -149,7 +149,7 @@ namespace Touchline.Core
                 else{life.leadershipUntil=life.day+7;p.morale=Math.Min(100,p.morale+2);foreach(var teammate in life.players.Where(x=>x.id!=id))teammate.morale=Math.Min(100,teammate.morale+.3f);response="Je vais parler au groupe et montrer l’exemple à l’entraînement.";}
             }
             else{p.promiseUntil=life.day+21;p.promiseStarts=p.appearances;response="D’accord pour deux apparitions d’au moins 30 minutes dans les trois prochaines semaines. Je compte sur votre parole.";}
-            Mail("Vous",phone?"Appel • compte rendu":"SMS envoyé",topic=="support"?"Je te soutiens. Parlons de ce dont tu as besoin.":topic=="demand"?"J’attends davantage de ton investissement.":topic=="explain"?"Je veux expliquer tes dernières sélections et ce que j’attends de toi.":topic=="apologize"?"Je reconnais que notre relation a besoin d’attention.":topic=="leadership"?"Peux-tu aider les autres et porter notre message dans le vestiaire ?":"Je te donnerai du temps de jeu dans les prochaines semaines.",id);
+            Mail("Vous",phone?"Appel • compte rendu":"SMS envoyé",DiscussionOpening(topic),id,"talk");
             Mail(db.Find(id).name,phone?"Après notre appel":"Réponse",response,id,"talk");ApplyLife(db);
         }
         public static string FacilityName(string kind)=>kind=="training"?"Centre d’entraînement":kind=="medical"?"Pôle médical":kind=="academy"?"Centre de formation":"Stade";
