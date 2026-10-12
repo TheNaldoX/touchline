@@ -1283,3 +1283,7 @@ Button.prematch-selected { background-color: rgb(26,66,61); border-width: 1px; b
 .finance-tabs > Button { flex-grow: 1; min-height: 48px; font-size: 13px; margin: 0 5px 5px 0; }
 .finance-tabs > .active { background-color: #223e44; color: #a4ead2; border-bottom-width: 2px; border-bottom-color: #98e2c8; }
 .narrow .finance-tabs > Button { flex-basis: 45%; }
+
+.bench-player Button.bench-copy { background-color: transparent; border-width: 0; align-items: flex-start; white-space: normal; padding: 7px; margin: 0; }
+.bench-player Button.bench-copy:hover { background-color: rgb(31,55,68); }
+#tactics-individual-details > Toggle { min-height: 48px; }

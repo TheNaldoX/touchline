@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Tactique : remplacement en touchant le nom sur le banc, consignes individuelles repliables et défilement unique de la composition en mode plié.
 - Match délégué : affichage automatique du score final, des buteurs avec leurs minutes et des statistiques avant de revenir au bureau.
 - Android : préparation de la version0.65/code58, consolidant les correctifs de recrutement, prêts, rapports financiers et contacts des relances/touches.
 - Animation : appui progressif des deux chaussures au sol au lâcher des touches de champ, tout en conservant le contact des mains et l’orientation des pieds.
