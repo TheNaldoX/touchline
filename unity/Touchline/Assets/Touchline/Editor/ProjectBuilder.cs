@@ -86,4 +86,3 @@ namespace Touchline.Editor
         }
     }
 }
-

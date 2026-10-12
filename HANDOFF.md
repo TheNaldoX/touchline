@@ -30,5 +30,3 @@ Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dan
 - .validation/github-api.ps1 via GCM ; jamais imprimer secrets. PR une tâche/branche, attacher chaquePR. Attente scriptée de CI, pas de polls répétés.
 - Après Unity seulement : .validation/cleanup-unity-imports.ps1 enlève73imports connus ; restore scène/ProjectSettings uniquement si modifications générées. Pas de copies de sources, pas de docs journal.
 - Prochain : résultat globale et comparaison échecs, finaliser PR coups francs, versionner/build APK distincte vérifiée. Les limites Fold et moteur restantes doivent être explicitement annoncées.
-
-
