@@ -8,6 +8,9 @@ namespace Touchline
     [Serializable] public class HumanPart { public int material; public float[] position,normal,uv,skinWeight; public int[] skinIndex,index; }
     [Serializable] public class HumanBone { public string name; public int parent; public float[] head,tail; }
     [Serializable] public class HumanSource { public float height; public HumanPart[] parts; public HumanBone[] bones; }
+    // Editor captures construct views outside play mode too; their OnDestroy
+    // must release animation graphs, owned materials and shirt-atlas reservations.
+    [ExecuteAlways]
     public sealed partial class PlayerView : MonoBehaviour
     {
         public string PlayerId { get; private set; }

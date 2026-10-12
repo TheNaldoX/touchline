@@ -7,6 +7,25 @@ namespace Touchline.Tests
 {
     public class PlayerKitTests
     {
+        [Test] public void DestroyingEditorPreviewReleasesGraphMaterialAndShirtCell()
+        {
+            bool mode=PlayerView.UseMecanim;PlayerView.UseMecanim=true;
+            var go=new GameObject("Preview resource lifetime");
+            try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="preview-lifetime",surname="FIXTURE",number=97,heightCm=180},0,9,Color.white);
+                view.Render(new Actor{slot=9,action="idle"},1,1f/60);
+                int cell=view.PrintCell;Assert.GreaterOrEqual(cell,0);
+                var material=go.GetComponentInChildren<SkinnedMeshRenderer>().sharedMaterial;
+                var graph=(UnityEngine.Playables.PlayableGraph)typeof(PlayerView).GetField("mecanimGraph",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).GetValue(view);
+                Assert.IsTrue(graph.IsValid());Assert.AreEqual(1,ShirtPrint.Users(cell));
+                Object.DestroyImmediate(go);
+                TestContext.WriteLine($"After destruction: graph={graph.IsValid()}, atlas users={ShirtPrint.Users(cell)}, material alive={material!=null}");
+                Assert.IsFalse(graph.IsValid(),"Destroyed preview must release its animation graph");
+                Assert.AreEqual(0,ShirtPrint.Users(cell),"Destroyed preview must release its atlas reservation");
+                Assert.IsTrue(material==null,"Owned materials must be destroyed with the preview");
+            }finally{if(go!=null)Object.DestroyImmediate(go);PlayerView.UseMecanim=mode;}
+        }
+
         [Test] public void FabricDetailPreservesKitColoursAndIsSpatiallyStable()
         {
             float min=1,max=0;
