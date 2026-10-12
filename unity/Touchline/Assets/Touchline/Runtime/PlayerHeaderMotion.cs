@@ -6,6 +6,19 @@ namespace Touchline
     public sealed partial class PlayerView
     {
         public Vector3 HeaderContactPosition => bones["head"].TransformPoint(new Vector3(0,.10f,.09f))+transform.forward*.11f;
+        void MecanimHeaderContact(Actor actor,float remaining)
+        {
+            if(actor.action!="header"||actor.actionSequence<=0)return;
+            float elapsed=Mathf.Clamp(MatchSimulation.AerialContestDuration-remaining,0,MatchSimulation.AerialContestDuration);
+            float contact=Mathf.Clamp(actor.actionContactTime>0?actor.actionContactTime:.12f,.02f,.4f);
+            const float ReleaseSeconds=.25f,MaximumRetargetMetres=.65f;
+            float weight=Mathf.SmoothStep(0,1,elapsed/contact)*(1-Mathf.SmoothStep(0,1,(elapsed-contact)/ReleaseSeconds));
+            var point=new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z);
+            // Keep the captured gesture, meeting the authoritative contact with
+            // a continuous residual translation instead of moving the ball.
+            body.position+=Vector3.ClampMagnitude(point-HeaderContactPosition,MaximumRetargetMetres)*weight;
+            KeepBootsAbovePitch(transform.forward,true);
+        }
         void HeaderPose(Actor actor,float remaining)
         {
             float elapsed=Mathf.Clamp(.64f-remaining,0,.64f);

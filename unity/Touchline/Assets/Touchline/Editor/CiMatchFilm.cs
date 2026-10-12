@@ -55,6 +55,12 @@ namespace Touchline.Editor
                         if(Arg("-touchlineFilmSeconds",null)==null)seconds=GoalFilmSeconds;break;
                     }
                 }
+                if(Arg("-touchlineFilmHeader","")=="true"){
+                    var probe=NewMatch(seed);
+                    while(!probe.State.halfTime&&!probe.State.finished&&!probe.State.actors.Any(p=>p.action=="header"))probe.Advance(MatchSimulation.Step);
+                    if(!probe.State.actors.Any(p=>p.action=="header"))throw new Exception("No header found in first half.");
+                    start=Mathf.Max(0,probe.State.clock-1);goalNote+=$" header_clock={probe.State.clock:0.0}";
+                }
                 if(Arg("-touchlineFilmSave","")=="true"){
                     var probe=NewMatch(seed);
                     while(!probe.State.halfTime&&!probe.State.finished&&probe.State.metrics[0].saves+probe.State.metrics[1].saves==0)probe.Advance(MatchSimulation.Step);
