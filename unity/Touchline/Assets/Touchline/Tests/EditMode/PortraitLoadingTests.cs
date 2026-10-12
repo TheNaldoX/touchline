@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
@@ -12,21 +13,42 @@ namespace Touchline.Tests
     public class PortraitLoadingTests
     {
         [Serializable] class Entry { public string player,file; }
-        [Serializable] class Catalog { public Entry[] entries; }
         GameObject host;
+        string fixtureDirectory;
 
         [UnitySetUp] public IEnumerator EnterGame(){yield return new EnterPlayMode();}
         [UnityTearDown] public IEnumerator LeaveGame()
         {
             if(host!=null)UnityEngine.Object.Destroy(host);
             yield return null;
+            if(fixtureDirectory!=null)
+            {
+                foreach(var file in Directory.GetFiles(fixtureDirectory))File.Delete(file);
+                Directory.Delete(fixtureDirectory);fixtureDirectory=null;
+            }
             yield return new ExitPlayMode();
         }
         PortraitStore Create(out Entry[] entries)
         {
-            var text=Resources.Load<TextAsset>("Data/portraits");Assert.NotNull(text,"Bundled portrait catalogue must exist");
-            entries=JsonUtility.FromJson<Catalog>(text.text).entries.Take(8).ToArray();Assert.AreEqual(8,entries.Length);
-            host=new GameObject("Portrait loading integration test");return host.AddComponent<PortraitStore>();
+            // Exercise real local JPEG reads without depending on the optional
+            // personal portrait pack or writing under Assets during a test run.
+            fixtureDirectory=Path.Combine(Path.GetTempPath(),"touchline-portraits-"+Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(fixtureDirectory);
+            var pixels=new Texture2D(2,2,TextureFormat.RGB24,false);
+            byte[] jpeg;
+            try{pixels.SetPixels(new[]{Color.red,Color.green,Color.blue,Color.white});pixels.Apply();jpeg=pixels.EncodeToJPG();}
+            finally{UnityEngine.Object.Destroy(pixels);}
+            var root=new Uri(Application.streamingAssetsPath+"/Portraits/");
+            entries=new Entry[8];var files=new Dictionary<string,string>();
+            for(int i=0;i<entries.Length;i++)
+            {
+                string path=Path.Combine(fixtureDirectory,i+".jpg");File.WriteAllBytes(path,jpeg);
+                entries[i]=new Entry{player="portrait-loading-fixture-"+i,file=Uri.UnescapeDataString(root.MakeRelativeUri(new Uri(path)).ToString())};
+                files.Add(entries[i].player,entries[i].file);
+            }
+            host=new GameObject("Portrait loading integration test");var store=host.AddComponent<PortraitStore>();
+            typeof(PortraitStore).GetField("files",BindingFlags.Instance|BindingFlags.NonPublic).SetValue(store,files);
+            return store;
         }
         static IEnumerator Until(Func<bool> completed)
         {
