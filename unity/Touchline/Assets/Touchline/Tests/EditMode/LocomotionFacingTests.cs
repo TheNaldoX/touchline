@@ -6,6 +6,24 @@ namespace Touchline.Tests
 {
     public class LocomotionFacingTests
     {
+        [TestCase(30)][TestCase(60)][TestCase(120)]
+        public void CapturedKickFollowsMatchClockWhenHighlightStartsMidGesture(int fps)
+        {
+            bool before=PlayerView.UseMecanim;var root=new GameObject("Kick clock");
+            try{
+                PlayerView.UseMecanim=true;var view=root.AddComponent<PlayerView>();view.Build(new PlayerData{id="kick-clock",heightCm=182},0,9,Color.blue);
+                Assert.IsTrue(PlayerView.MecanimReady);
+                var actor=new Actor{id="kick-clock",slot=9,action="kick",actionKind="pass",actionSequence=1,actionTime=.40f};
+                var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+                float Elapsed()=>(float)typeof(PlayerView).GetField("mecanimActionElapsed",flags).GetValue(view);
+                view.Render(actor,.5f,1f/fps,new Vector3(0,.11f,.42f));
+                Assert.AreEqual(.64f-(.40f+.5f*MatchSimulation.Step),Elapsed(),.0001f,"Joining an existing action must not restart its clock");
+                view.Render(actor,.5f,1f/fps,new Vector3(0,.11f,.42f));
+                Assert.AreEqual(.19f,Elapsed(),.0001f,"A frozen match clock must not advance the strike");
+                view.Render(actor,1,1f/fps,new Vector3(0,.11f,.42f));
+                Assert.AreEqual(.24f,Elapsed(),.0001f,"Sub-step interpolation must advance the same action continuously");
+            }finally{Object.DestroyImmediate(root);PlayerView.UseMecanim=before;}
+        }
         [TestCase(160,false,30)] [TestCase(160,true,120)]
         [TestCase(182,false,60)] [TestCase(182,true,30)]
         [TestCase(200,false,120)] [TestCase(200,true,60)]

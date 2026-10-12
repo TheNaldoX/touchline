@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Frappes capturées : chronomètre et contact de passe alignés sur le temps interpolé du match, y compris lors du démarrage d’un temps fort au milieu du geste.
 - Livraison Android 0.66/code59 : corrections des retours tactique, interactions, récapitulatif, bureau, presse, discussions, ventes et coups francs ; sauvegardes et signature conservées.
 - Coups francs excentrés : choix d’un centre vers une cible placée selon le duel aérien et la consigne de centres, sans forcer une livraison sur un joueur hors-jeu ou dominé.
 - Mercato : bouton d’envoi et coût synthétique fixes, primes et clauses regroupées, conditions de prêt masquées en transfert permanent, brouillons conservés entre modes.

@@ -147,7 +147,7 @@ namespace Touchline
         // Retourne false si l'animation capturée n'est pas disponible (repli procédural).
         // Exact exponential response keeps reversals continuous at 30, 60 and 120 Hz.
         public static float StrafeBlend(float current,float target,float dt)=>Mathf.Lerp(current,Mathf.Clamp01(target),1-Mathf.Exp(-Mathf.Max(0,dt)*LocomotionBlendRate));
-        bool MecanimRender(Actor actor,float dt,bool reset,float poseSpeed,bool carrying)
+        bool MecanimRender(Actor actor,float remaining,float dt,bool reset,float poseSpeed,bool carrying)
         {
             if(!UseMecanim||!EnsureMecanimGraph(actor.slot==0))return false;leftFootedNow=leftFooted;mecanimPoseSpeed=poseSpeed;
             if(reset){moveBlend=Mathf.SmoothStep(0,1,Mathf.InverseLerp(MoveBlendFrom,MoveBlendTo,poseSpeed));dribbleBlend=carrying?1:0;}
@@ -187,7 +187,9 @@ namespace Touchline
                 if(reset)actionWeights[slot]=1;
             }else if(!acting&&activeAction>=0){actionLive[activeAction]=false;mecanimActionKey=null;}
             if(activeAction>=0&&actionLive[activeAction]){
-                mecanimActionElapsed+=dt;var playable=actionPlayables[activeAction];float length=(float)playable.GetAnimationClip().length;
+                // Foot deliveries share the interpolated simulation clock, including entry mid-highlight.
+                const float FootDeliveryDuration=.64f; // seconds, Flight kick recovery in MatchDecisions
+                mecanimActionElapsed=actor.action=="kick"?Mathf.Clamp(FootDeliveryDuration-remaining,0,FootDeliveryDuration):mecanimActionElapsed+dt;var playable=actionPlayables[activeAction];float length=(float)playable.GetAnimationClip().length;
                 playable.SetTime(Mathf.Clamp(mecanimActionContact+mecanimActionElapsed,0,length-.001f));playable.SetSpeed(0);
             }
             for(int i=0;i<2;i++){
@@ -221,21 +223,21 @@ namespace Touchline
             mecanimGraph.Evaluate(reset?0:Mathf.Max(0,dt));
             if(turnWeight>0)MecanimTurnYaw(turnWeight);
             MecanimFootLock(dt,reset);
-            MecanimPassContact(actor);
+            MecanimPassContact(actor,remaining);
             // Retargeted clips can lower a rotated boot below the pitch during
             // action recovery. Preserve the captured knee plane and foot rotation.
             KeepBootsAbovePitch(Vector3.forward,true);
             return true;
         }
 
-        void MecanimPassContact(Actor actor)
+        void MecanimPassContact(Actor actor,float remaining)
         {
             // Older saved actions may have no contact metadata; leave their capture untouched.
             if(actor.action!="kick"||!ShortPass(actor)||actor.actionHeight<=0)return;
             const float duration=.64f,contact=.18f,blendWindow=.14f; // seconds: engine kick and smooth correction around impact
             const float maxCorrection=.35f; // metres: never pull a foot to an unreachable distant ball
             const float minBallOffset=.15f; // metres: ignore missing contact points directly under the pelvis
-            float elapsed=duration-actor.actionTime;
+            float elapsed=duration-remaining;
             float weight=1-Mathf.SmoothStep(0,1,Mathf.Abs(elapsed-contact)/blendWindow);
             if(weight<=0)return;
             var foot=Limb(leftFootedNow?"L":"R").foot;
