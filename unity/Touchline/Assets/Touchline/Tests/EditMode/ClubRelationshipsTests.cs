@@ -108,5 +108,19 @@ namespace Touchline.Tests
             Result(0,2);c.Person("p4").trust=30;float morale=c.Person("p4").morale;float supporters=c.world.supporterTrust;
             c.Press("after","ambition");Assert.AreEqual(morale-2,c.Person("p4").morale);Assert.AreEqual(supporters-1,c.world.supporterTrust);
         }
-    }
+        [Test] public void InterviewRequiresThreeValidAnswersBeforeAnyEffect()
+        {
+            Result(0,2);float morale=c.Person("p4").morale;int count=c.world.press.Count;
+            Assert.Throws<InvalidOperationException>(()=>c.PressInterview("after",new[]{"protect","calm"}));
+            Assert.Throws<InvalidOperationException>(()=>c.PressInterview("after",new[]{"protect","invalid","calm"}));
+            Assert.AreEqual(count,c.world.press.Count);Assert.AreEqual(morale,c.Person("p4").morale);
+        }
+        [Test] public void InterviewAveragesEffectsAndPreservesTranscriptOnSave()
+        {
+            Result(0,2);float morale=c.Person("p4").morale;c.PressInterview("after",new[]{"protect","protect","protect"});
+            Assert.AreEqual(morale+2,c.Person("p4").morale);Assert.AreEqual(1,c.world.press.Count);
+            var restored=JsonUtility.FromJson<Career>(JsonUtility.ToJson(c));Assert.AreEqual(3,restored.world.press[0].replies.Length);
+            Assert.AreEqual(Career.PressReply("after",1,"protect"),restored.world.press[0].replies[1]);
+            Assert.Throws<InvalidOperationException>(()=>c.PressInterview("after",new[]{"protect","protect","protect"}));
+        }    }
 }

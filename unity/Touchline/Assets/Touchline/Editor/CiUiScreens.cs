@@ -88,6 +88,7 @@ namespace Touchline.Editor
             if(Path.GetFileName(Output).StartsWith("ui-recruitment-cache-",StringComparison.Ordinal))return BuildRecruitmentCacheSteps();
             if(Path.GetFileName(Output).StartsWith("ui-scout-snapshot-",StringComparison.Ordinal))return BuildScoutSnapshotSteps();
             if(Path.GetFileName(Output).StartsWith("ui-dashboard-results-",StringComparison.Ordinal))return BuildDashboardResultsSteps();
+            if(Path.GetFileName(Output).StartsWith("ui-press-interview-",StringComparison.Ordinal))return BuildPressInterviewSteps();
             if(FocusedImmersion)return BuildFocusedImmersionSteps();
             if(FocusedCareer)return BuildCareerReviewSteps();
             if(FocusedCell)return BuildFocusedCellSteps();
@@ -176,6 +177,17 @@ namespace Touchline.Editor
             audit.AppendLine("Relance contextuelle synthétique : notification actionnable et accès aux décisions de départ, deux formats ; aucune vente ni sauvegarde personnelle.");return list;
         }
 
+        static List<Action> BuildPressInterviewSteps()
+        {
+            var list=new List<Action>();
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{var c=App.Career;c.EnsureWorld(App.Database);c.world.press.Clear();c.life.day=c.NextFixture().day;Resize(screen.width,screen.height);Call("Navigate","Presse");Click("press-enter-before");});
+                list.Add(()=>{if(Root.Q("press-room")==null)throw new Exception("Press room missing");Capture(screen.tag+"-question-1");Click("press-answer-calm");});
+                list.Add(()=>{if(App.Career.world.press.Count!=0)throw new Exception("Premature press effect");Capture(screen.tag+"-question-2");Click("press-answer-protect");});
+                list.Add(()=>{Click("press-answer-ambition");if(App.Career.world.press.Count!=1||App.Career.world.press[0].replies.Length!=3)throw new Exception("Missing complete transcript");if(Root.Q("press-interview")!=null)throw new Exception("Interview not closed");});
+            }
+            audit.AppendLine("Trois questions et phrases concrètes, aucun effet avant fin, trois réponses archivées, deux formats. Salle stylisée UI, pas environnement3D.");return list;
+        }
         static List<Action> BuildDashboardResultsSteps()
         {
             var list=new List<Action>();

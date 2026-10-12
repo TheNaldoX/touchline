@@ -20,7 +20,7 @@ namespace Touchline.Core
     [Serializable] public class TransferOffer { public string player,seller,status="pending",role;public int due,years,attempts;public long fee,wage,bonus,clause;public bool loan,renewal,precontract;public int joinDay;public string destination;public MarketTerms terms; }
     [Serializable] public class YouthPath { public string player,mentor,focus="balanced",group="academy";public int minutes,lastReview,loanAppearances,loanReviewedThrough=-1;public float progress; public string trainingLoad="standard"; public int trainingSessions,seniorMinutes,trackedLoanMinutes,lastAcademyDay=-1; }
     [Serializable] public class CommercialDeal { public string name,slot,status="offer";public int years=2,until,counterDay;public long annual,asking; }
-    [Serializable] public class PressAppearance { public string fixture,phase,answer;public int day; }
+    [Serializable] public class PressAppearance { public string fixture,phase,answer;public string[] replies;public int day; }
     public partial class Career
     {
         void SavePlayer(PlayerData p){CloseMedicalResponsibilitiesForPlayer(p);int index=RosterChangeIndex(p.id);if(index<0){world.rosterChanges.Add(p);rosterIndex[p.id]=world.rosterChanges.Count-1;rosterIndexCount=world.rosterChanges.Count;}else world.rosterChanges[index]=p;}
@@ -197,15 +197,22 @@ namespace Touchline.Core
         }
         public void SetTicketPrice(int price){OffPitch();if(price<5||price>250||life.day-world.lastTicketDay<7)throw new InvalidOperationException("Prix de 5 à 250 €, modifiable une fois par semaine.");if(price>world.ticket*1.25f)world.supporterTrust=Math.Max(0,world.supporterTrust-5);world.ticket=price;world.lastTicketDay=life.day;}
         public void RepayDebt(long amount){OffPitch();if(amount<=0||amount>world.debt)throw new InvalidOperationException("Remboursement invalide.");Charge(amount,"Remboursement de dette");world.debt-=amount;}
-        public void Press(string phase,string answer)
+        public void Press(string phase,string answer)=>PressResponses(phase,new[]{answer});
+        public void PressInterview(string phase,string[] answers)
+        {
+            if(answers==null||answers.Length!=3)throw new InvalidOperationException("Répondez aux trois questions avant de terminer la conférence.");
+            PressResponses(phase,answers);
+        }
+        void PressResponses(string phase,string[] answers)
         {
             OffPitch();var context=Conference(phase);
-            if(!context.Available||!new[]{"calm","ambition","protect"}.Contains(answer))throw new InvalidOperationException(context.unavailable??"Réponse invalide.");
-            var fixture=context.fixture;
-            world.press.Add(new PressAppearance{fixture=fixture.id,phase=phase,answer=answer,day=life.day});
-            foreach(var p in life.players)p.morale=Mathx.Clamp(p.morale+PressMorale(context,answer,p),10,100);
-            world.supporterTrust=Mathx.Clamp(world.supporterTrust+(answer=="ambition"?(phase=="after"&&context.result<0?-1:1):0),0,100);
-            Mail("Attaché de presse","Votre déclaration",answer=="calm"?"Nous nous concentrons sur notre travail et sur ce que nous pouvons maîtriser.":answer=="protect"?"J’assume les décisions. Le groupe a besoin de notre soutien.":"Nous voulons imposer notre jeu et obtenir un résultat.",null,"press");
+            if(!context.Available||answers.Any(a=>!new[]{"calm","ambition","protect"}.Contains(a)))throw new InvalidOperationException(context.unavailable??"Réponse invalide.");
+            var replies=answers.Select((a,i)=>PressReply(phase,i,a)).ToArray();
+            world.press.Add(new PressAppearance{fixture=context.fixture.id,phase=phase,answer=answers[0],replies=replies,day=life.day});
+            foreach(var p in life.players)p.morale=Mathx.Clamp(p.morale+answers.Average(a=>PressMorale(context,a,p)),10,100);
+            float support=answers.Average(a=>a=="ambition"?(phase=="after"&&context.result<0?-1f:1f):0f);
+            world.supporterTrust=Mathx.Clamp(world.supporterTrust+support,0,100);
+            Mail("Attaché de presse","Votre déclaration",string.Join("\n\n",replies.Select((a,i)=>PressQuestion(context,i)+"\n« "+a+" »")),null,"press");
         }
         void ManagementDay(Database db)
         {

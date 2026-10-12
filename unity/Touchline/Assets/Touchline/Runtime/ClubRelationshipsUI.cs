@@ -40,10 +40,22 @@ namespace Touchline
                 var wall=Row(card,"sponsor-wall");foreach(var d in Career.world.sponsors.Where(d=>d.status=="signed"))Text(wall,d.name,"pill");
                 Text(card,context.question??"Aucune rencontre concernée.","section-title");
                 if(!context.Available){Text(card,context.unavailable,"notice");continue;}
-                foreach(var answer in new[]{"calm","ambition","protect"}){
-                    var choice=answer;Button(card,answer=="calm"?"Rester mesuré":answer=="ambition"?"Afficher notre ambition":"Assumer et protéger le groupe",()=>RunDecision(()=>Career.Press(phase,choice))).name="press-"+phase+"-"+answer;
-                }
+                Button(card,"Entrer en conférence · 3 questions",()=>PressInterviewRoom(phase)).name="press-enter-"+phase;
             }
         }
-    }
+        void PressInterviewRoom(string phase)
+        {
+            var context=Career.Conference(phase);if(!context.Available){Message(context.unavailable);return;}
+            string[] replies=new string[3];int question=0;
+            var panel=Modal("Conférence de presse");panel.name="press-interview";var body=Scroll(panel);
+            var room=new VisualElement{name="press-room"};room.AddToClassList("press-room");body.Add(room);
+            Text(room,context.fixture.venue??"Salle de presse · "+ClubName(context.fixture.home),"eyebrow");
+            var wall=Row(room,"press-backdrop");for(int i=0;i<2;i++)Text(wall,i%2==0?ClubName(Career.club):"CONFÉRENCE DE PRESSE","press-wall-mark");
+            var desk=new VisualElement();desk.AddToClassList("press-desk");room.Add(desk);Text(desk,"●  ┃                         ┃  ●","press-microphones");Text(desk,Career.manager+" · entraîneur","section-title");
+            var exchange=new VisualElement();body.Add(exchange);
+            void Show(){exchange.Clear();Text(exchange,"QUESTION "+(question+1)+" / 3 · JOURNALISTE","eyebrow");Text(exchange,Core.Career.PressQuestion(context,question),"section-title");
+                foreach(var tone in new[]{"calm","ambition","protect"}){string choice=tone;var answer=Button(exchange,"« "+Core.Career.PressReply(phase,question,tone)+" »",()=>{replies[question]=choice;if(question<2){question++;Show();}else{try{Career.PressInterview(phase,replies);Career.ApplyLife(Database);Save();CloseModal();Build();}catch(Exception e){Message(e.Message);}}});answer.name="press-answer-"+tone;answer.AddToClassList("press-answer");}
+                Text(exchange,"Votre déclaration sera enregistrée après la troisième réponse. Fermer avant annule cet échange.","footnote");}
+            Show();
+        }    }
 }

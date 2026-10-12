@@ -1287,3 +1287,17 @@ Button.prematch-selected { background-color: rgb(26,66,61); border-width: 1px; b
 .bench-player Button.bench-copy { background-color: transparent; border-width: 0; align-items: flex-start; white-space: normal; padding: 7px; margin: 0; }
 .bench-player Button.bench-copy:hover { background-color: rgb(31,55,68); }
 #tactics-individual-details > Toggle { min-height: 48px; }
+
+.press-room { background-color: rgb(12,26,43); padding: 16px; margin-bottom: 18px; border-radius: 10px; }
+.press-backdrop { justify-content: space-around; padding: 12px; background-color: rgb(25,57,79); }
+.press-wall-mark { font-size: 12px; color: rgb(167,197,210); margin: 10px; }
+.press-desk { margin-top: 15px; padding: 12px; border-top-width: 5px; border-top-color: rgb(129,161,172); background-color: rgb(30,40,51); align-items: center; }
+.press-microphones { font-size: 24px; color: rgb(180,189,199); }
+.press-answer { white-space: normal; min-height: 64px; height: auto; padding: 14px; margin-bottom: 8px; -unity-text-align: middle-left; }
+
+.narrow .press-room { padding: 8px; margin-bottom: 10px; }
+.narrow .press-backdrop { padding: 4px; }
+.narrow .press-wall-mark { margin: 5px; }
+.narrow .press-desk { margin-top: 6px; padding: 6px; }
+.narrow .press-microphones { font-size: 16px; }
+.narrow .press-desk .section-title { font-size: 14px; margin: 2px; }
