@@ -23,6 +23,12 @@ namespace Touchline.Editor
         const string ClipFolder="Assets/Touchline/Resources/Animations/Mixamo";
         static string Arg(string key,string fallback)=>Environment.GetCommandLineArgs().FirstOrDefault(a=>a.StartsWith(key+"="))?.Substring(key.Length+1)??fallback;
 
+        public static int CaptureFrameCount(float length,bool looping,float start,float duration)
+        {
+            if(float.IsNaN(start)||float.IsInfinity(start)||start<0||start>=length||float.IsNaN(duration)||float.IsInfinity(duration)||duration<=0||duration>30)throw new ArgumentException("Capture window must start inside the clip and last 0–30 seconds.");
+            return Mathf.Max(1,Mathf.CeilToInt(Mathf.Min(length*(looping?2:1)-start,duration)*Fps));
+        }
+
         public static void Run()
         {
             var log=new System.Text.StringBuilder();Application.LogCallback hook=(m,st,t)=>{if(log.Length<200000)log.AppendLine(t+": "+m+(t==LogType.Exception||t==LogType.Error?"\n"+st:""));};
@@ -107,8 +113,11 @@ namespace Touchline.Editor
                     var outputPlayable=AnimationPlayableOutput.Create(graph,"Animation",animator);
                     foreach(var clip in selection){
                         var playable=AnimationClipPlayable.Create(graph,clip);playable.SetApplyFootIK(true);outputPlayable.SetSourcePlayable(playable);
-                        int n=Mathf.Clamp(Mathf.RoundToInt(Mathf.Min(clip.length*(clip.isLooping?2:1),3f)*Fps),15,90);info.AppendLine($"clip {clip.name} {clip.length:0.00}s loop={clip.isLooping} frames {frame}-{frame+n-1}");
-                        for(int k=0;k<n;k++){graph.Evaluate(k==0?0:1f/Fps);go.transform.position=Vector3.zero;Shoot();}
+                        // Seconds within the capture: some keeper contacts occur after six seconds.
+                        float start=float.Parse(Arg("-touchlineClipStart","0"),System.Globalization.CultureInfo.InvariantCulture);
+                        float duration=float.Parse(Arg("-touchlineClipDuration","3"),System.Globalization.CultureInfo.InvariantCulture);
+                        int n=CaptureFrameCount(clip.length,clip.isLooping,start,duration);info.AppendLine($"clip {clip.name} {clip.length:0.00}s loop={clip.isLooping} start={start:0.000}s frames {frame}-{frame+n-1}");
+                        for(int k=0;k<n;k++){playable.SetTime(start+k/(double)Fps);graph.Evaluate(0);go.transform.position=Vector3.zero;Shoot();}
                         playable.Destroy();
                     }
                     graph.Destroy();

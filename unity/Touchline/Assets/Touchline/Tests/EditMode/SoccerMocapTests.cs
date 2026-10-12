@@ -8,6 +8,16 @@ namespace Touchline.Tests
     public class SoccerMocapTests
     {
         const string Folder="Animations/RohrSoccer/";
+        [TestCase(9f,6f,1.4f,42)] [TestCase(9f,8f,3f,30)] [TestCase(9f,0f,3f,90)]
+        public void ReviewWindowReachesLateContactWithoutHoldingPastClipEnd(float length,float start,float duration,int frames)
+        {
+            Assert.AreEqual(frames,Touchline.Editor.MecanimPrototypeFilm.CaptureFrameCount(length,false,start,duration));
+        }
+        [TestCase(-1f,1f)] [TestCase(9f,1f)] [TestCase(float.NaN,1f)] [TestCase(0f,0f)] [TestCase(0f,float.PositiveInfinity)]
+        public void ReviewWindowRejectsInvalidTimes(float start,float duration)
+        {
+            Assert.Throws<System.ArgumentException>(()=>Touchline.Editor.MecanimPrototypeFilm.CaptureFrameCount(9f,false,start,duration));
+        }
         static void RequirePack(){if(Resources.Load<AnimationClip>(Folder+"Rohr_08_Side_Foot_Kick")==null)Assert.Ignore("Personal licensed pack not installed; run tools/import-soccer-mocap.ps1 then the Unity import menu.");}
         [Test] public void PersonalPackContainsTwentyOneHumanoidClipsWithoutSourceMeshes()
         {
