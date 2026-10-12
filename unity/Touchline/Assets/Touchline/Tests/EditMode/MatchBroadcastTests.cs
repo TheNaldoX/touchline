@@ -37,12 +37,21 @@ namespace Touchline.Tests
         public void EverySelectionShowsMajorEventsAndInterruptsForManagerDecisions(MatchViewingMode mode)
         {
             var sim=Create();var m=sim.State;var view=new MatchBroadcast(sim);view.SetMode(mode);m.phase="throw-in";m.restart=30;m.ball=new BallState{position=new Point(0,34)};
-            foreach(var kind in new[]{"shot","save","woodwork","goal","penalty","injury","red"}){
-                m.clock+=100;view.Advance(.001f,1);m.events.Add(new MatchEvent{kind=kind,side=0,time=m.clock});float clock=m.clock;view.Advance(.001f,1);
+            foreach(var kind in new[]{"shot","woodwork","goal","penalty","injury","red"}){
+                m.clock+=100;view.Advance(.001f,1);m.events.Add(new MatchEvent{kind=kind,side=0,time=m.clock,xg=.25f});float clock=m.clock;view.Advance(.001f,1);
                 Assert.IsFalse(view.Quiet,kind+" was hidden");if(kind=="injury"||kind=="red"){Assert.IsTrue(view.PauseRequested);Assert.AreEqual(clock,m.clock);}
             }
         }
-        [Test] public void ChangingModeKeepsStateAndStopsTheQuietViewImmediately()
+        [TestCase(.03f,true)][TestCase(.25f,false)]
+        public void KeyMomentsFilterWeakShotsWithoutMutatingSimulation(float quality,bool quiet)
+        {
+            var sim=Create();var view=new MatchBroadcast(sim);view.SetMode(MatchViewingMode.KeyMoments);var m=sim.State;
+            m.clock=100;m.restart=0;m.phase="play";m.shotXg=quality;m.ball=new BallState{kind="shot",goalAttempt=true,side=0};
+            m.events.Add(new MatchEvent{kind="shot",time=100,side=0,xg=quality});string before=JsonUtility.ToJson(m);
+            view.Refresh();Assert.AreEqual(quiet,view.Quiet);Assert.AreEqual(before,JsonUtility.ToJson(m));
+            m.clock=101;m.ball.goalAttempt=false;m.ball.kind="save";m.events.Add(new MatchEvent{kind="save",time=101,side=1});view.Refresh();Assert.AreEqual(quiet,view.Quiet);
+            m.clock=110;m.events.Add(new MatchEvent{kind="goal",time=110,side=0});view.Refresh();Assert.IsFalse(view.Quiet,"A low-probability goal must always be shown");
+        }        [Test] public void ChangingModeKeepsStateAndStopsTheQuietViewImmediately()
         {
             var sim=Create();var view=Calm(sim);string before=JsonUtility.ToJson(sim.State);
             foreach(var mode in new[]{MatchViewingMode.Full,MatchViewingMode.Extended,MatchViewingMode.KeyMoments,MatchViewingMode.Highlights}){

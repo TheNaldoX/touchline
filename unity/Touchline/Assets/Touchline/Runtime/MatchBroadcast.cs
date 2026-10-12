@@ -8,6 +8,7 @@ namespace Touchline
     // contacts still run through the same fixed-step simulation and RNG.
     public sealed class MatchBroadcast
     {
+        const float KeyMomentShotQuality=.10f; // Internal xG threshold for selecting a shot, not changing its outcome.
         readonly MatchSimulation simulation;
         readonly ExitBroadcastWindow exitWindow=new ExitBroadcastWindow();
         int observedEvents;
@@ -23,7 +24,7 @@ namespace Touchline
         public static string ModeName(MatchViewingMode mode)=>mode switch{MatchViewingMode.Full=>"Match complet",MatchViewingMode.KeyMoments=>"Moments clés",MatchViewingMode.Extended=>"Temps forts étendus",_=>"Temps forts"};
         public static string ModeDescription(MatchViewingMode mode)=>mode switch{
             MatchViewingMode.Full=>"Toute la rencontre en 3D, à la vitesse choisie.",
-            MatchViewingMode.KeyMoments=>"Occasions franches, frappes, buts et incidents majeurs. Moins de construction montrée.",
+            MatchViewingMode.KeyMoments=>"Occasions dangereuses, buts, montants et incidents majeurs. Les tentatives faibles peuvent rester dans les statistiques.",
             MatchViewingMode.Extended=>"Davantage de construction, de transitions et d’actions sur les ailes pour analyser votre tactique.",
             _=>"Actions dangereuses et approches de la surface, avec un suivi statistique entre les séquences."};
         public void SetMode(MatchViewingMode mode)
@@ -76,8 +77,8 @@ namespace Touchline
             if(observedEvents>m.events.Count)observedEvents=m.events.Count;
             while(observedEvents<m.events.Count){
                 var e=m.events[observedEvents++];
-                string reason=e.kind switch{"goal"=>"But !","shot"=>"Occasion de but","save"=>"Intervention du gardien","woodwork"=>"Sur le montant","penalty"=>"Penalty","red"=>"Exclusion","yellow"=>"Avertissement","injury"=>"Intervention médicale","substitution"=>"Changement de joueur",_=>null};
-                bool major=e.kind=="goal"||e.kind=="shot"||e.kind=="save"||e.kind=="woodwork"||e.kind=="penalty"||e.kind=="red"||e.kind=="injury";
+                string reason=e.kind switch{"goal"=>"But !","shot"=>"Frappe","save"=>"Intervention du gardien","woodwork"=>"Sur le montant","penalty"=>"Penalty","red"=>"Exclusion","yellow"=>"Avertissement","injury"=>"Intervention médicale","substitution"=>"Changement de joueur",_=>null};
+                bool major=e.kind=="goal"||(e.kind=="shot"&&e.xg>=KeyMomentShotQuality)||(e.kind=="save"&&m.clock<visibleUntil)||e.kind=="woodwork"||e.kind=="penalty"||e.kind=="red"||e.kind=="injury";
                 if(reason!=null&&(Mode!=MatchViewingMode.KeyMoments||major))ShowEvent(e.kind,reason);
                 if(Mode==MatchViewingMode.Extended&&(e.kind=="offside"||e.kind=="foul"))ShowEvent(e.kind,e.kind=="offside"?"Hors-jeu":"Faute sifflée");
                 if(Enabled&&e.side==0&&(e.kind=="injury"||e.kind=="red"))PauseRequested=true;
@@ -103,7 +104,7 @@ namespace Touchline
                 if(m.phase=="kickoff")return "Engagement";
                 return null;
             }
-            if(b.kind=="shot"||b.goalAttempt)return "Occasion de but";
+            if(b.kind=="shot"||b.goalAttempt)return Mode!=MatchViewingMode.KeyMoments||m.shotXg>=KeyMomentShotQuality?"Frappe en cours":null;
             if(b.held)return null;
             int side=MatchSimulation.PossessionSide(m);if(side<0)side=b.side;
             int direction=simulation.Direction(side);
