@@ -14,8 +14,8 @@ namespace Touchline.Editor
         static TouchlineApp App=>TouchlineApp.Instance;static VisualElement Root=>App.GetComponent<UIDocument>().rootVisualElement;
         static GoalReplayUISmoke(){EditorApplication.update+=Tick;}
         static string Output(){var args=Environment.GetCommandLineArgs();int i=Array.IndexOf(args,"-touchlineOutput");return Path.GetFullPath(i>=0&&i+1<args.Length?args[i+1]:"../../artifacts/unity/session8-goal-replay-ui");}
-        public static void Run(){output=Output();if(Directory.Exists(output)&&Directory.EnumerateFileSystemEntries(output).Any())throw new Exception("Preserve prior replay UI proof");Directory.CreateDirectory(output);SessionState.SetBool(Key+".hadSize",PlayerPrefs.HasKey("interface-size"));SessionState.SetInt(Key+".oldSize",PlayerPrefs.GetInt("interface-size",1));PlayerPrefs.SetInt("interface-size",1);ProjectBuilder.Configure();SessionState.SetBool(Key,true);EditorApplication.isPlaying=true;}
-        static void Restore(){if(SessionState.GetBool(Key+".hadSize",false))PlayerPrefs.SetInt("interface-size",SessionState.GetInt(Key+".oldSize",1));else PlayerPrefs.DeleteKey("interface-size");}
+        public static void Run(){SessionState.SetBool(Key+".hadReplay",PlayerPrefs.HasKey("match-goal-replays"));SessionState.SetInt(Key+".oldReplay",PlayerPrefs.GetInt("match-goal-replays",1));output=Output();if(Directory.Exists(output)&&Directory.EnumerateFileSystemEntries(output).Any())throw new Exception("Preserve prior replay UI proof");Directory.CreateDirectory(output);SessionState.SetBool(Key+".hadSize",PlayerPrefs.HasKey("interface-size"));SessionState.SetInt(Key+".oldSize",PlayerPrefs.GetInt("interface-size",1));PlayerPrefs.SetInt("interface-size",1);ProjectBuilder.Configure();SessionState.SetBool(Key,true);EditorApplication.isPlaying=true;}
+        static void Restore(){if(SessionState.GetBool(Key+".hadReplay",false))PlayerPrefs.SetInt("match-goal-replays",SessionState.GetInt(Key+".oldReplay",1));else PlayerPrefs.DeleteKey("match-goal-replays");if(SessionState.GetBool(Key+".hadSize",false))PlayerPrefs.SetInt("interface-size",SessionState.GetInt(Key+".oldSize",1));else PlayerPrefs.DeleteKey("interface-size");}
         static void Require(bool condition,string message){if(!condition)throw new Exception(message);}
         static void Call(string name,params object[] values)=>typeof(TouchlineApp).GetMethod(name,BindingFlags.Instance|BindingFlags.NonPublic).Invoke(App,values);
         static void Resize(int w,int h){var old=target;target=new RenderTexture(w,h,24);target.Create();App.GetComponent<UIDocument>().panelSettings.targetTexture=target;if(old!=null){old.Release();UnityEngine.Object.DestroyImmediate(old);}}
@@ -39,9 +39,21 @@ namespace Touchline.Editor
                 case 0:
                     Require((bool)typeof(TouchlineApp).GetProperty("VisualValidation",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(App),"Personal career access forbidden");App.GetComponent<UIDocument>().panelSettings=UnityEngine.Object.Instantiate(App.GetComponent<UIDocument>().panelSettings);App.Career.EnsureWorld(App.Database);
                     var opponent=App.Database.clubs.First(c=>c.playable&&c.id!=App.Career.club&&c.league==App.Database.clubs.First(o=>o.id==App.Career.club).league);
-                    App.Career.match=MatchSimulation.Create(App.Database,App.Career,opponent.id,9013).State;Resize(1600,700);Call("Navigate","Match");break;
+                    uint seed=9013;bool found=false;
+                    // Select a real scored fixture, never synthesize a goal for the replay test.
+                    const int GoalFixtureAttempts=12;
+                    for(int attempt=0;attempt<GoalFixtureAttempts;attempt++,seed++){
+                        var probe=MatchSimulation.Create(App.Database,App.Career,opponent.id,seed);
+                        while(!probe.State.finished&&probe.State.score[0]+probe.State.score[1]==0){if(probe.State.halfTime)probe.ResumeHalf();probe.Advance(MatchSimulation.Step);}
+                        if(probe.State.score[0]+probe.State.score[1]>0){found=true;break;}
+                    }
+                    Require(found,"No scored fixture found for replay validation");
+                    File.WriteAllText(Path.Combine(output,"fixture.txt"),"seed="+seed);
+                    App.Career.match=MatchSimulation.Create(App.Database,App.Career,opponent.id,seed).State;Resize(1600,700);Call("Navigate","Match");break;
                 case 1:
                     arena=(MatchArena)typeof(TouchlineApp).GetField("arena",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(App);arena.enabled=false;arena.Broadcast.SetMode(MatchViewingMode.Full);arena.Paused=false;arena.Speed=1;
+                    // Isolate this replay test from the user's persisted replay preference.
+                    arena.SetAutomaticGoalReplays(true);
                     seekingGoal=true;SeekNaturalGoal();break;
                 case 2:Capture("replay-landscape");CheckReplay();Unchanged();Resize(1080,2520);break;
                 case 3:Capture("replay-portrait");CheckReplay();Unchanged();var button=Root.Q<Button>("match-replay-skip");using(var e=NavigationSubmitEvent.GetPooled()){e.target=button;button.SendEvent(e);}break;

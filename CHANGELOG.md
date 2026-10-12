@@ -1,3 +1,4 @@
+- Android : prépare la version 0.67/code60 avec les correctifs de contact, recrutement, presse et replay.
 - Replay : la caméra en pause reste cohérente avant et après un changement de format.
 - Recrutement : la comparaison avec un titulaire tient compte de la marge d’incertitude du recruteur.
 # Changelog

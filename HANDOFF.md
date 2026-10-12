@@ -2,6 +2,7 @@
 Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dans Git/PR, preuves locales ignorées dans .validation et artifacts.
 
 ## État courant — 12 octobre 2026
+- Consolidation0.67/code60 : Core1023/1023, globale release067-regression2198/2428,230anciens échecs/0nouveau. PR116 incertitude recruteur, PR117 caméra replay en pause (5/5). Parcours replay natif release067-replay-scored réussi graine9015, captures revues ; libellé replay trop étroit en portrait, Fold absent. Test choisit désormais un vrai match marqué et restaure la préférence replay. Construction à lancer, APK pas encore livrée.
 - Lot scout-comparison-uncertainty : verdict des comparaisons fondé sur toute la fourchette du rapport, sans lecture de note cachée ; Core1023/1023, Unity29/29. ADB revérifié : aucun appareil. Les cinq points demandés restent en cours.
 - Demande : terminer les six axes. NON terminé : ligne haute trop avantageuse, 234 échecs Unity anciens, rendu naturel incomplet et Fold non testé. Ne pas annoncer tous les axes achevés.
 - Branche fix/captured-keeper-contact : contact des plongeons Mecanim corrigé par retarget continu des bras/corps, sans changer le ballon simulé. 14/14 ciblés à 30/60/120Hz ; globale six-axes-regression-global 2190/2424, 234 anciens échecs, zéro nouveau, 18 anciens corrigés. Captures keeper-contact-native revues partiellement : arrêt réel graine731 à319,5s ; caméra suivie cadre mal le contact. Quelques pénétrations du sol persistent (jusqu’à3mm aggravées dans cas déjà en échec). Pas de preuve de fluidité Fold.
@@ -14,7 +15,7 @@ Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dan
 - Ancienne APK0.65.0-preview.1/code58 : artifacts/Touchline-Unity-0.65-preview.apk (73937734octets), source71f2b3076c7e4d5db30018ca3288135c527f89f4, PR95/CI38028354263. Ne contient PAS PR96–106.
 - Preuve .validation/apk065/verified.json ; SHA256 D8C37FB3E479AF45550F851F13820747FE0F51F57895B39DA174CB81430642E2. Package fr.personal.touchline.unity, cert130917e6d2b4ea2dcca487587dcff03b1356b14e7de39c3e01657097ad57ee13, ARM64.
 - Prochaine APK au moins0.67/code60, nom distinct ; clé stable en CI. Préserver anciennes APK et sauvegardes. Main non fusionnée, Fold réel toujours non testé.
-- Automatisation PAUSED, anciennes échéances expirées. Quota vérifié12/10 :11% utilisé. Seuil utilisateur : dès92% utilisés, aucun nouveau lot, finir APK et livraison.
+- Automatisation PAUSED, anciennes échéances expirées. Quota vérifié12/10 :27% utilisé. Seuil utilisateur : dès92% utilisés, aucun nouveau lot, finir APK et livraison.
 
 ## Limites moteur et essais rejetés
 - Référence avant dernier lot : graine1/200 buts2,61, tirs24,72, cadrés7,74, corners10,18, fautes20,80, jaunes3,75, hors-jeu4,05, touches49,93, penalties0,19, sorties13,79, favoris52,53%. Après :2,59buts/24,78tirs/49,89touches/.19pen/13,82sorties/favoris52,53%.
