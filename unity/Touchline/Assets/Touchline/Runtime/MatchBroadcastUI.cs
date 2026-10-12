@@ -87,7 +87,7 @@ namespace Touchline
             if(goalReplaySpeed!=null)goalReplaySpeed.text=arena.GoalReplaySpeed<1?"Replay ×0,5":"Replay ×1";
             broadcastMode.style.display=replaying?DisplayStyle.None:DisplayStyle.Flex;broadcastSpeed.style.display=replaying?DisplayStyle.None:DisplayStyle.Flex;
             var state=arena.Simulation.State;
-            string text=replaying?"REPLAY DU BUT · Séquence enregistrée":state.finished?"RENCONTRE TERMINÉE":state.halfTime?"MI-TEMPS · Ajustez vos consignes":quiet?(arena.Paused?"EN PAUSE · TABLEAU DE BORD":"SUIVI DU MATCH · CHRONO ×"+arena.Broadcast.QuietSpeed+(arena.Broadcast.BudgetLimited?" · charge adaptée":"")):arena.Paused?"EN PAUSE · "+arena.Broadcast.Reason:arena.Broadcast.Enabled?"EN DIRECT · "+arena.Broadcast.Reason+" · ×"+arena.Speed:"MATCH INTÉGRAL · ×"+arena.Speed;
+            string text=replaying?"REPLAY DU BUT":state.finished?"RENCONTRE TERMINÉE":state.halfTime?"MI-TEMPS · Ajustez vos consignes":quiet?(arena.Paused?"EN PAUSE · TABLEAU DE BORD":"SUIVI DU MATCH · CHRONO ×"+arena.Broadcast.QuietSpeed+(arena.Broadcast.BudgetLimited?" · charge adaptée":"")):arena.Paused?"EN PAUSE · "+arena.Broadcast.Reason:arena.Broadcast.Enabled?"EN DIRECT · "+arena.Broadcast.Reason+" · ×"+arena.Speed:"MATCH INTÉGRAL · ×"+arena.Speed;
             if(broadcastStatus.text!=text)broadcastStatus.text=text;
             if(broadcastSpeed!=null)broadcastSpeed.text="×"+arena.Speed;
             if(quietSituation!=null)quietSituation.text=QuietSituationText();
