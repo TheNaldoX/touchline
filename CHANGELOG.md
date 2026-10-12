@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Livraison Android 0.66/code59 : corrections des retours tactique, interactions, récapitulatif, bureau, presse, discussions, ventes et coups francs ; sauvegardes et signature conservées.
 - Coups francs excentrés : choix d’un centre vers une cible placée selon le duel aérien et la consigne de centres, sans forcer une livraison sur un joueur hors-jeu ou dominé.
 - Mercato : bouton d’envoi et coût synthétique fixes, primes et clauses regroupées, conditions de prêt masquées en transfert permanent, brouillons conservés entre modes.
 - Temps forts : retour au coup franc quand le tireur et le mur approchent leurs positions, préparation accélérée et expliquée plutôt qu’un faux compte à rebours imminent ; simulation conservée.
@@ -108,4 +109,5 @@ Une ligne par pull request, la plus récente en haut.
 
 ## 0.41
 - Import dans Git depuis Google Drive. `MatchDecisions.bak.cs` retiré (doublon compilé de `MatchDecisions.cs`).
+
 
