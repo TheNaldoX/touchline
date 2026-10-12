@@ -153,7 +153,10 @@ namespace Touchline.Core
                         signed.club=team.id;signed.wage=free.wage;signed.until=life.day+365*FreeAgentContractYears;signed.joined=life.day;signed.estimated=true;signed.aiRelease=false;signed.nextWage=0;signed.wageChangeDay=0;signed.retirement=-1;
                         continue;
                     }
-                    var p=CreateReplacement(db,team,reference,leaving,additions.Count);p.wage=replacementWage;p.value=Math.Max(25000,reference.value/2);
+                    // A budget share is a ceiling, not the salary of an unproven graduate.
+                    // Use the same club-reference level scale as other new contracts.
+                    var p=CreateReplacement(db,team,reference,leaving,additions.Count);
+                    p.wage=Math.Max(250,(long)Math.Min(reference.wage*Math.Pow(1.075,p.rating-reference.rating),replacementWage));p.value=Math.Max(25000,reference.value/2);
                     p.salarySource="Premier contrat simulé, enveloppe du club";additions.Add(p);
                     world.contracts.Add(new Employment{player=p.id,club=team.id,wage=p.wage,until=life.day+365*3,estimated=true});
                 }

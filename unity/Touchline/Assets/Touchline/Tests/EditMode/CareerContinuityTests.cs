@@ -49,6 +49,23 @@ namespace Touchline.Tests
             Assert.AreEqual("c1",free.team);Assert.AreEqual("c1",contract.club);Assert.Greater(contract.wage,250);Assert.AreEqual(free.wage,contract.wage);
             Assert.Greater(contract.until,c.life.day);Assert.IsTrue(contract.estimated);
         }
+        [Test] public void AcademyReplacementDoesNotConsumeTheWholeAvailableSalaryEnvelope()
+        {
+            var reference=new ClubDevelopmentReference{club="c1",rating=65,wage=500,value=100000,revenue=21000000,squadSize=24};
+            c.world.developmentReferences.Add(reference);
+            foreach(var player in db.Squad("c1")){
+                var contract=c.Contract(db,player.id);contract.until=c.life.day+730;
+                if(player.Goalkeeper){player.age=31;player.rating=55;player.potential=55;contract.until=c.life.day+365;}
+            }
+            Annual();
+            var newcomers=db.Squad("c1").Where(p=>p.salarySource!=null&&p.salarySource.StartsWith("Premier contrat simulé")).ToArray();
+            Assert.Greater(newcomers.Length,0,"The fixture must reach replacement after a non-renewal, not a simple vacancy");
+            foreach(var player in newcomers){
+                Assert.LessOrEqual(player.rating,reference.rating);
+                Assert.That(player.wage,Is.InRange(250,reference.wage),"An unproven graduate cannot earn more than the reference senior merely because the club has headroom");
+                Assert.AreEqual(player.wage,c.Contract(db,player.id).wage);
+            }
+        }
         [Test] public void AiSurplusLeavesAtExpiryWithoutImmediateSalaryCut()
         {
             Annual();var reference=c.world.developmentReferences.Single(r=>r.club=="c1");reference.squadSize=22;
