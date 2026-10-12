@@ -71,7 +71,16 @@ namespace Touchline.Tests
                     if(action=="place-ball")ball.y=Mathf.Lerp(1.1f,.11f,Mathf.SmoothStep(0,1,time/duration));
                     view.Render(actor,1,.02f,ball);
                     if(frame%5!=0)continue;
-                    foreach(var skin in skins){skin.BakeMesh(baked);Measure(baked.vertices,skin.transform.localToWorldMatrix,skin.name,time,ref lowest,ref lowestPart,ref lowestTime);}
+                    foreach(var skin in skins){
+                        skin.BakeMesh(baked);var vertices=baked.vertices;float before=lowest;
+                        Measure(vertices,skin.transform.localToWorldMatrix,skin.name,time,ref lowest,ref lowestPart,ref lowestTime);
+                        if(lowest<before){
+                            int index=0;float heightMin=float.PositiveInfinity;
+                            for(int v=0;v<vertices.Length;v++){float y=skin.transform.TransformPoint(vertices[v]).y;if(y<heightMin){heightMin=y;index=v;}}
+                            var weight=skin.sharedMesh.boneWeights[index];
+                            lowestPart+=" / "+skin.bones[weight.boneIndex0].name;
+                        }
+                    }
                     foreach(var boot in boots)Measure(boot.sharedMesh.vertices,boot.transform.localToWorldMatrix,boot.name,time,ref lowest,ref lowestPart,ref lowestTime);
                 }
                 TestContext.WriteLine(action+" minimum surface height "+lowest+" m at "+lowestTime+" s ("+lowestPart+")");

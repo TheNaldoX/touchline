@@ -8,6 +8,42 @@ namespace Touchline.Tests
 {
     public class GroundContactTests
     {
+        [TestCase("L")] [TestCase("R")]
+        public void CapturedSupportKeepsTheKneeAboveTurfWithoutMovingTheAnkle(string side)
+        {
+            var go=new GameObject("Grounded knee support");
+            try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="knee-floor",heightCm=180},0,9,Color.white);
+                go.transform.position=Vector3.down*.5f;
+                var flags=BindingFlags.Instance|BindingFlags.NonPublic;
+                var foot=go.GetComponentsInChildren<Transform>().First(t=>t.name=="foot."+side);
+                var knee=go.GetComponentsInChildren<Transform>().First(t=>t.name=="lowerleg01."+side);
+                var target=new Vector3(side=="L"?.18f:-.18f,.10f,.45f);
+                typeof(PlayerView).GetMethod("SolveLeg",flags).Invoke(view,new object[]{side,target,Vector3.down});
+                Assert.Less(knee.position.y,.075f,"The fixture must reproduce a knee intersecting the turf");
+                typeof(PlayerView).GetMethod("SolveCapturedSupport",flags).Invoke(view,new object[]{side,target,Vector3.down});
+                Assert.GreaterOrEqual(knee.position.y,.079f,"The knee surface needs clearance above the pitch");
+                Assert.Less(Vector3.Distance(foot.position,target),.005f,"The support ankle stays in place during correction");
+            }finally{Object.DestroyImmediate(go);}
+        }
+        [TestCase("L")] [TestCase("R")]
+        public void CapturedSupportPreservesTheKneePlaneWhenTheFootIsAlreadyPlanted(string side)
+        {
+            var go=new GameObject("Captured knee support");
+            try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="knee-support",heightCm=180},0,9,Color.white);
+                var flags=BindingFlags.Instance|BindingFlags.NonPublic;
+                var foot=go.GetComponentsInChildren<Transform>().First(t=>t.name=="foot."+side);
+                var knee=go.GetComponentsInChildren<Transform>().First(t=>t.name=="lowerleg01."+side);
+                var target=foot.position;target.y=.10f;
+                typeof(PlayerView).GetMethod("SolveLeg",flags).Invoke(view,new object[]{side,target,Vector3.right});
+                var before=knee.position;var planted=foot.position;
+                var support=typeof(PlayerView).GetMethod("MecanimFootLock",flags);
+                support.Invoke(view,new object[]{1f/60,true});support.Invoke(view,new object[]{1f/60,false});
+                Assert.Less(Vector3.Distance(foot.position,planted),.005f,"An unchanged support must stay planted");
+                Assert.Less(Vector3.Distance(knee.position,before),.005f,"Foot locking must not rotate the captured knee around its planted ankle");
+            }finally{Object.DestroyImmediate(go);}
+        }
         [TestCase(30)] [TestCase(60)] [TestCase(120)]
         public void CapturedFallDoesNotSkipToImpactBeforePhysicalTimeAdvances(int hz)
         {

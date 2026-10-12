@@ -1,3 +1,4 @@
+- Animations : le maintien des appuis conserve la direction capturée des genoux et protège leur contact avec le sol.
 - Éditeur : les aperçus de joueurs libèrent leurs graphes, matériaux et cases de flocage à leur destruction.
 - Animations : fondus de chute et de relevé progressifs, contrôlés sur neuf combinaisons de taille et fréquence, sans allocation répétée.
 - Validation : les tests du chargeur de portraits utilisent des JPEG temporaires autonomes, sans dépendre du pack personnel absent.

@@ -372,7 +372,10 @@ namespace Touchline
         void MecanimFootLock(float dt,bool reset)
         {
             for(int i=0;i<2;i++){
-                string side=Sides[i];var foot=Limb(side).foot;var p=foot.position;
+                string side=Sides[i];var leg=Limb(side);var foot=leg.foot;var p=foot.position;
+                // Stabilize the ankle without twisting the captured knee back
+                // toward the actor's facing direction (especially on the ground).
+                var kneePole=leg.lowerLeg.position-leg.upperLeg.position;
                 if(reset){footLocked[i]=false;footLockWeight[i]=0;footStep[i]=0;continue;}
                 bool contact=p.y<FootContactHeight*transform.localScale.y;
                 if(footStep[i]>0){
@@ -380,7 +383,7 @@ namespace Touchline
                     footStep[i]=Mathf.Min(1,footStep[i]+dt/FootStepDuration);float eased=Mathf.SmoothStep(0,1,footStep[i]);
                     var stepTarget=Vector3.Lerp(new Vector3(footStepFrom[i].x,p.y,footStepFrom[i].z),p,eased);stepTarget.y=p.y+Mathf.Sin(footStep[i]*Mathf.PI)*FootStepLift*transform.localScale.y;
                     if(footStep[i]>=1){footStep[i]=0;footLocked[i]=contact;footLockPoint[i]=p;footLockWeight[i]=contact?1:0;}
-                    var stepRotation=foot.rotation;SolveLeg(side,stepTarget);foot.rotation=stepRotation;continue;
+                    var stepRotation=foot.rotation;SolveCapturedSupport(side,stepTarget,kneePole);foot.rotation=stepRotation;continue;
                 }
                 // Verrouillage immédiat sur la position affichée du pied (pas de saut, pas de glissement d'entrée).
                 if(contact&&!footLocked[i]){var shown=Vector3.Lerp(p,footLockPoint[i],footLockWeight[i]);footLocked[i]=true;footLockPoint[i]=new Vector3(shown.x,p.y,shown.z);footLockWeight[i]=1;}
@@ -392,14 +395,32 @@ namespace Touchline
                     var anchor=new Vector3(footLockPoint[i].x,p.y,footLockPoint[i].z);
                     var visibleGap=previousFeet[i]-footLockPoint[i];visibleGap.y=0;float tolerance=FootRecoveryGap*transform.localScale.y;
                     footStepFrom[i]=visibleGap.sqrMagnitude>tolerance*tolerance&&Vector3.Distance(hip.position,anchor)>reach?previousFeet[i]:footLockPoint[i];footStep[i]=Mathf.Epsilon;footLocked[i]=false;footLockWeight[i]=0;
-                    var holdRotation=foot.rotation;SolveLeg(side,new Vector3(footStepFrom[i].x,p.y,footStepFrom[i].z));foot.rotation=holdRotation;continue;
+                    var holdRotation=foot.rotation;SolveCapturedSupport(side,new Vector3(footStepFrom[i].x,p.y,footStepFrom[i].z),kneePole);foot.rotation=holdRotation;continue;
                 }
                 if(footLocked[i]&&!contact)footLocked[i]=false;
                 footLockWeight[i]=Mathf.MoveTowards(footLockWeight[i],footLocked[i]?1:0,dt*FootLockBlend);
                 if(footLockWeight[i]<=0)continue;
                 var target=Vector3.Lerp(p,new Vector3(footLockPoint[i].x,p.y,footLockPoint[i].z),footLockWeight[i]);var rotation=foot.rotation;
-                SolveLeg(side,target);foot.rotation=rotation;
+                SolveCapturedSupport(side,target,kneePole);foot.rotation=rotation;
             }
+        }
+        void SolveCapturedSupport(string side,Vector3 target,Vector3 pole)
+        {
+            var leg=Limb(side);var hip=leg.upperLeg.position;
+            float upper=Vector3.Distance(hip,leg.lowerLeg.position),lower=Vector3.Distance(leg.lowerLeg.position,leg.foot.position);
+            var direction=(target-hip).normalized;float distance=Mathf.Clamp(Vector3.Distance(target,hip),.10f,upper+lower-.005f);
+            float along=(upper*upper+distance*distance-lower*lower)/(2*distance),lift=Mathf.Sqrt(Mathf.Max(0,upper*upper-along*along));
+            var bend=Vector3.ProjectOnPlane(pole,direction).normalized;var up=Vector3.ProjectOnPlane(Vector3.up,direction).normalized;
+            const float KneeSurfaceRadius=.075f; // metres at standard stature: keep the kneecap above turf
+            float floor=.005f+KneeSurfaceRadius*transform.localScale.y,baseHeight=hip.y+direction.y*along;
+            if(baseHeight+bend.y*lift<floor&&up.y>bend.y){
+                float low=0,high=1,angle=Vector3.SignedAngle(bend,up,direction);
+                // Rotate in the leg's plane even for opposite poles; a generic
+                // vector slerp can choose an axis outside that plane.
+                for(int i=0;i<10;i++){float mid=(low+high)*.5f;var trial=Quaternion.AngleAxis(angle*mid,direction)*bend;if(baseHeight+trial.y*lift<floor)low=mid;else high=mid;}
+                pole=Quaternion.AngleAxis(angle*high,direction)*bend;
+            }
+            SolveLeg(side,target,pole);
         }
     }
 }
