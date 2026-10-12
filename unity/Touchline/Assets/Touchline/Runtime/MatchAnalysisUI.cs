@@ -49,20 +49,24 @@ namespace Touchline
         }
         void MatchCoach(VisualElement parent,MatchState m)
         {
-            var chances=Card(parent);chances.name="match-chance-review";Text(chances,"OCCASIONS ET FINITION","section-title");
-            var chanceLines=MatchAssistant.ChanceReview(m);foreach(var line in chanceLines.Take(chanceLines.Count-1))Text(chances,line);
-            var explanation=new Foldout{text="Comprendre les xG",value=false};chances.Add(explanation);Text(explanation,chanceLines.Last(),"muted");
-            AssistantObservations(parent,m);
             if(Career.world!=null)Career.EnsureStaffMarket(Database);var staff=Career.Staff("assistant");Text(parent,staff.name+" · Tactique "+staff.tactics+" / 20","section-title");
-            if(staff.wage<=0){Text(parent,"Le poste d’adjoint est vacant. Recrutez un adjoint pour disposer de conseils.","notice");return;}
+            if(staff.wage<=0){Text(parent,"Le poste d’adjoint est vacant. Recrutez un adjoint pour disposer de conseils.","notice");ChanceReviewPanel(parent,m);return;}
             Text(parent,staff.fictional?"Adjoint fictif · compétences de simulation":"Identité réelle · compétences estimées pour la simulation","footnote");
             Text(parent,"Les conseils tiennent compte des joueurs actuellement sur le terrain. L’adjoint signale aussi le compromis associé à chaque changement.","muted");
             var advice=Career.TacticalReport(Database);foreach(var item in advice){var card=Card(parent);Text(card,item.title,"section-title");Text(card,item.evidence);Text(card,item.tradeoff,"muted");Text(card,"Confiance de l’analyse : "+item.confidence+" / 100","footnote");
-                var apply=Button(card,"Appliquer ce conseil",()=>{try{Career.ApplyStaffAdvice(Database,item.key);Save();MatchAnalysis();}catch(Exception e){Message(e.Message);}});apply.SetEnabled(Career.life.managerBanUntil<=Career.life.day);}
+                var apply=Button(card,"Appliquer ce conseil",()=>{try{Career.ApplyStaffAdvice(Database,item.key);Save();MatchAnalysis();}catch(Exception e){Message(e.Message);}});apply.name="apply-match-advice-"+item.key;apply.SetEnabled(Career.life.managerBanUntil<=Career.life.day);}
             if(advice.Count==0)Text(parent,"Aucune contradiction majeure détectée dans les consignes. Cela ne prédit pas le résultat.");
+            ChanceReviewPanel(parent,m);
+            AssistantObservations(parent,m);
             if(m.clock<80)Text(parent,"Les premières minutes offrent encore peu d’actions à analyser.","notice");
             else if(staff.tactics>=12){var a=m.metrics[0];var card=Card(parent);Text(card,"Ce que nous observons","section-title");Text(card,$"Largeur avec ballon : {a.AverageWidth:0.0} m · Longueur des passes : {a.AveragePassLength(m.passes[0]):0.0} m · Récupérations hautes : {a.highRecoveries}.");Text(card,"Ces moyennes couvrent tout le match joué jusqu’ici. Un changement récent demande du temps avant d’être visible dans les chiffres.","muted");}
             if(staff.tactics>=10&&m.awayPlan!="balanced")Text(parent,m.awayPlan=="chase"?"L’adversaire prend davantage de risques. Surveillez les espaces derrière ses joueurs qui se projettent.":"L’adversaire protège son avance. Cherchez des soutiens entre les lignes en conservant une couverture.","notice");
+        }
+        void ChanceReviewPanel(VisualElement parent,MatchState m)
+        {
+            var chances=Card(parent);chances.name="match-chance-review";Text(chances,"OCCASIONS ET FINITION","section-title");
+            var chanceLines=MatchAssistant.ChanceReview(m);foreach(var line in chanceLines.Take(chanceLines.Count-1))Text(chances,line);
+            var explanation=new Foldout{text="Comprendre les xG",value=false};chances.Add(explanation);Text(explanation,chanceLines.Last(),"muted");
         }
     }
 }

@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Adjoint : distingue volume et qualité des tirs pour proposer une construction plus patiente, avec preuve chiffrée, contrepartie et prise en compte d’un retard au score en fin de match.
 - Coup franc direct : le tireur peut servir un partenaire démarqué et en jeu si la passe sûre offre une occasion nettement meilleure que sa frappe.
 - Conférence : décor condensé après la présentation pour laisser les réponses visibles, avec retour en haut à chaque question et maintien du lieu et de l’entraîneur.
 - Presse : questions et phrases adaptées aux blessés actuels, demandes de départ et calendrier chargé ; le compte rendu conserve les réponses réellement proposées.

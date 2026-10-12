@@ -267,12 +267,15 @@ namespace Touchline.Editor
         static List<Action> BuildChanceReviewSteps()
         {
             var list=new List<Action>();
-            list.Add(()=>{var c=App.Career;c.EnsureWorld(App.Database);c.PrepareLineup(App.Database);var opponent=App.Database.clubs.First(x=>x.playable&&x.id!=c.club).id;var sim=MatchSimulation.Create(App.Database,c,opponent,731,2700);c.match=sim.State;c.ApplyMatchContext(sim);sim.State.clock=35*sim.State.SecondsPerMinute;sim.State.shots[0]=10;sim.State.metrics[0].shotsOnTarget=2;sim.State.metrics[0].xg=.5f;Call("CreateArena",sim);});
+            list.Add(()=>{var c=App.Career;c.EnsureWorld(App.Database);c.PrepareLineup(App.Database);var opponent=App.Database.clubs.First(x=>x.playable&&x.id!=c.club).id;var sim=MatchSimulation.Create(App.Database,c,opponent,731,2700);c.match=sim.State;c.ApplyMatchContext(sim);sim.State.clock=35*sim.State.SecondsPerMinute;sim.State.shots[0]=10;sim.State.metrics[0].shotsOnTarget=2;sim.State.metrics[0].xg=.5f;c.EnsureStaffMarket(App.Database);c.Staff("assistant").tactics=18;Call("CreateArena",sim);});
             foreach(var s in Screens){var screen=s;
-                list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Match");Arena.Paused=true;SetField("matchAnalysisTab","Adjoint");Call("MatchAnalysis");});
-                list.Add(()=>{if(Root.Q("match-chance-review")==null)throw new Exception("Chance review missing from assistant analysis");Capture(screen.tag+"-occasions");Call("CloseModal");});
+                list.Add(()=>{Resize(screen.width,screen.height);App.Career.tactic.workIntoBox=false;Call("Navigate","Match");Arena.Paused=true;SetField("matchAnalysisTab","Adjoint");Call("MatchAnalysis");});
+                list.Add(()=>{if(Root.Q("match-chance-review")==null)throw new Exception("Chance review missing from assistant analysis");var action=Root.Q<Button>("apply-match-advice-patientShots");if(action==null)throw new Exception("Shot quality advice missing");action.GetFirstAncestorOfType<ScrollView>().ScrollTo(action);});
+                list.Add(()=>Capture(screen.tag+"-occasions"));
+                list.Add(()=>{Click("apply-match-advice-patientShots");if(!App.Career.match.homeTactic.workIntoBox)throw new Exception("Advice not applied to live tactic");Call("CloseModal");});
             }
-            audit.AppendLine("Bilan des occasions : fixture synthétique10 tirs/0,50xG, match en pause, deux formats, sauvegarde personnelle intacte.");return list;
+            list.Add(()=>{App.Career.Staff("assistant").wage=0;Call("MatchAnalysis");if(Root.Q("match-chance-review")==null)throw new Exception("Chance data lost without assistant");Call("CloseModal");});
+            audit.AppendLine("Bilan des occasions : fixture synthétique10 tirs/0,50xG, conseil appliqué au match, données conservées sans adjoint, deux formats, sauvegarde personnelle intacte.");return list;
         }
 
         static List<Action> BuildScrollMemorySteps()
