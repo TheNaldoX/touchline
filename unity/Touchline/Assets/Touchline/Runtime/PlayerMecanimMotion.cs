@@ -141,7 +141,13 @@ namespace Touchline
                 case "keeper-roll":clip="Goalkeeper Pass";simContact=actor.actionContactTime>0?actor.actionContactTime:MatchSimulation.KeeperDistributionContact;break;
                 case "keeper-throw":clip=KeeperThrowClip;simContact=actor.actionContactTime>0?actor.actionContactTime:MatchSimulation.KeeperDistributionContact;break;
                 case "throw":clip=actor.slot==0?(MecanimClips.ContainsKey(KeeperThrowClip)?KeeperThrowClip:"Goalkeeper Pass"):"Throw In";simContact=actor.actionContactTime>0?actor.actionContactTime:.5f;break;
-                case "dive":clip=(actor.diveSide>=0)==(DiveClipSide>0)?"Goalkeeper Diving Save":"Goalkeeper Diving Save (miroir)";simContact=actor.actionContactTime>0?actor.actionContactTime:.2f;break;
+                case "dive":{
+                    var local=transform.InverseTransformPoint(new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z));
+                    // Standing chest capture: only reachable central catches, not low scoops,
+                    // overhead claims or parries. The selected clip is held for the whole action.
+                    bool chest=actor.actionKind=="save-catch"&&local.y>=.75f&&local.y<=1.8f&&KeeperCompactCatch.Weight(local)>=.9999f;
+                    clip=chest?"Goalkeeper Catch":(actor.diveSide>=0)==(DiveClipSide>0)?"Goalkeeper Diving Save":"Goalkeeper Diving Save (miroir)";
+                    simContact=actor.actionContactTime>0?actor.actionContactTime:.2f;break;}
                 case "claim":clip="Goalkeeper Catch";simContact=.2f;break;
             }
             return clip!=null&&MecanimClips.ContainsKey(clip);

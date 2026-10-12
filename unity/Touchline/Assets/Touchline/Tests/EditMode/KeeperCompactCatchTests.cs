@@ -6,6 +6,26 @@ namespace Touchline.Tests
 {
     public class KeeperCompactCatchTests
     {
+        [TestCase(30)] [TestCase(60)] [TestCase(120)]
+        public void CapturedChestCatchKeepsTheAnatomicalTorsoUpright(int fps)
+        {
+            var go=new GameObject("Captured central catch");
+            try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="captured-central",heightCm=182},0,0,Color.yellow);
+                var actor=new Actor{slot=0,action="idle"};view.Render(actor,1,1f/fps);
+                var animator=go.GetComponentInChildren<Animator>();
+                actor.action="dive";actor.actionKind="save-catch";actor.actionSequence=1;actor.actionContactTime=.2f;
+                actor.actionTarget=new Point(.2f,.65f);actor.actionHeight=1.1f;
+                var ball=new Vector3(.2f,1.1f,.65f);
+                for(int frame=0;frame<=fps;frame++){
+                    float elapsed=frame/(float)fps;actor.actionTime=1.2f-elapsed;view.Render(actor,1,1f/fps,ball);
+                    var hips=animator.GetBoneTransform(HumanBodyBones.Hips);var chest=animator.GetBoneTransform(HumanBodyBones.Chest);
+                    Assert.Less(Vector3.Angle(chest.position-hips.position,Vector3.up),35,"Actual captured spine must not roll into a lateral dive");
+                    if(frame==fps/5)Assert.Less(Vector3.Distance(view.HeldBallPosition,ball),.15f,"Capture must retain the simulated contact");
+                }
+            }finally{Object.DestroyImmediate(go);}
+        }
+
         [TestCase(.22f,30)] [TestCase(.6f,60)] [TestCase(1.1f,120)]
         [TestCase(1.8f,30)] [TestCase(2.0f,60)]
         public void CentralCatchKeepsSupportAndMeetsTheBall(float height,int fps)
