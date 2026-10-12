@@ -1,3 +1,4 @@
+- Animations : les mains capturées distinguent prise et parade, avec fermeture progressive des doigts après le contact.
 - Animations : le fondu initial des chutes capturées respecte le temps physique, sans démarrage anticipé du geste.
 - Android : prépare la version 0.69/code62 avec la correction des premiers salaires IA validée sur 30 saisons.
 - Validation : le scénario de non-renouvellement tient compte des jeunes promus et vérifie les salaires signés jusqu’à l’échéance.
