@@ -54,6 +54,11 @@ node_modules/
 *.orig
 
 # --- Systeme ---
+# Licensed personal mocap: import locally; do not redistribute the source pack.
+unity/Touchline/Assets/Touchline/Editor/PrivateSoccerMocap/
+unity/Touchline/Assets/Touchline/Editor/PrivateSoccerMocap.meta
+unity/Touchline/Assets/Touchline/Resources/Animations/RohrSoccer/
+unity/Touchline/Assets/Touchline/Resources/Animations/RohrSoccer.meta
 Thumbs.db
 desktop.ini
 .DS_Store

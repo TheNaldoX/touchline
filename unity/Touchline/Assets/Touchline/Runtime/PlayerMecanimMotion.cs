@@ -18,9 +18,14 @@ namespace Touchline
 
         static Dictionary<string,AnimationClip> mecanimClips;
         static Dictionary<string,AnimationClip> MecanimClips{get{
-            if(mecanimClips==null){mecanimClips=new Dictionary<string,AnimationClip>();foreach(var clip in Resources.LoadAll<AnimationClip>("Animations/Mixamo"))if(clip!=null&&!clip.name.StartsWith("__preview__"))mecanimClips[clip.name]=clip;}
+            if(mecanimClips==null){mecanimClips=new Dictionary<string,AnimationClip>();foreach(var clip in Resources.LoadAll<AnimationClip>("Animations/Mixamo"))if(clip!=null&&!clip.name.StartsWith("__preview__"))mecanimClips[clip.name]=clip;
+                // Load only the validated gesture, not the entire personal capture library.
+                var soccerPass=Resources.Load<AnimationClip>("Animations/RohrSoccer/"+CapturedInsidePass);
+                if(soccerPass!=null&&soccerPass.humanMotion)mecanimClips[CapturedInsidePass]=soccerPass;
+            }
             return mecanimClips;}}
         const string IdleClip="Soccer Idle",JogClip="Jog Forward",DribbleClip="Dribble",KeeperIdleClip="Goalkeeper Idle";
+        const string CapturedInsidePass="Rohr_08_Side_Foot_Kick";
         const string RunClip="Standard Run",SprintClip="Two Cycle Sprint",JogBackClip="Jog Backward",RunBackClip="Run Backward",StrafeLeftClip="Jog Strafe Left",StrafeRightClip="Jog Strafe Right";
         public static bool MecanimReady=>MecanimClips.ContainsKey(IdleClip)&&MecanimClips.ContainsKey(JogClip);
 
@@ -45,6 +50,7 @@ namespace Touchline
         // Instant (s dans le clip) où le pied, la tête ou les mains touchent le ballon.
         // Mesuré sur les clips (vitesse maximale du membre, voir MecanimPrototypeFilm).
         static readonly Dictionary<string,float> ClipContact=new Dictionary<string,float>{
+            {CapturedInsidePass,1.4f}, // s: right-foot speed peak measured on the Touchline avatar at 60 Hz, excluding initial pose settling.
             // Pic de vitesse du pied qui frappe (analyse 60 Hz des clips Mixamo).
             {"Kick Soccerball",.517f},{"Kick Soccerball (1)",.417f},{"Soccer Pass",.433f},{"Chip",.483f},{"Soccer Penalty Kick",.733f},{"Strike Forward Jog",.467f},{"Goalkeeper Drop Kick",2.083f},
             // Pic de vitesse des mains.
@@ -120,6 +126,9 @@ namespace Touchline
                     clip=actor.actionKind=="shot"?(mecanimPoseSpeed>=RunningStrikeSpeed&&MecanimClips.ContainsKey(RunningStrikeClip)?RunningStrikeClip:leftFootedNow?"Kick Soccerball":"Kick Soccerball (1)"):actor.actionKind=="cross"||actor.actionKind=="switch"||actor.actionKind=="clearance"?"Chip":"Soccer Pass";
                     // The short-pass capture is right-footed; its mirrored clip keeps left-footed players consistent.
                     if(clip=="Soccer Pass"&&leftFootedNow&&MecanimClips.ContainsKey("Soccer Pass (miroir)"))clip="Soccer Pass (miroir)";
+                    // Slow right-foot deliveries only; deterministic variety, with the existing
+                    // capture as fallback when the licensed personal pack is not installed.
+                    if(!leftFootedNow&&ShortPass(actor)&&actor.actionHeight>0&&mecanimPoseSpeed<ReceiveMaxSpeed&&actor.actionSequence%3==2&&MecanimClips.ContainsKey(CapturedInsidePass))clip=CapturedInsidePass;
                     if(actor.slot==0&&MecanimClips.ContainsKey("Goalkeeper Drop Kick")&&actor.actionKind=="clearance")clip="Goalkeeper Drop Kick";
                     simContact=.18f;break;
                 case "header":clip="Header";simContact=actor.actionContactTime>0?actor.actionContactTime:.12f;break;

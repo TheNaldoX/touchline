@@ -53,7 +53,7 @@ namespace Touchline.Editor
                     Capture(camFront,target,root,Path.Combine(front,"frame-"+frame.ToString("D4")+".jpg"));
                     Capture(camSide,target,root,Path.Combine(side,"frame-"+frame.ToString("D4")+".jpg"));frame++;
                 }
-                var clips=AssetDatabase.FindAssets("t:AnimationClip",new[]{ClipFolder}).Select(AssetDatabase.GUIDToAssetPath).Distinct()
+                var clips=AssetDatabase.FindAssets("t:AnimationClip",new[]{Arg("-touchlineClipFolder",ClipFolder)}).Select(AssetDatabase.GUIDToAssetPath).Distinct()
                     .SelectMany(path=>AssetDatabase.LoadAllAssetsAtPath(path).OfType<AnimationClip>().Where(c=>!c.name.StartsWith("__preview__"))).ToList();
                 info.AppendLine("clips="+clips.Count+(clips.Count>0?" : "+string.Join(", ",clips.Select(c=>$"{c.name} {c.length:0.00}s human={c.humanMotion}")):""));
                 if(clips.Count==0){
@@ -89,7 +89,7 @@ namespace Touchline.Editor
                         // (contrôle de la cuisse) et recul maxi du torse par rapport au bassin (amorti de la poitrine).
                         float yawStart=0,yawEnd=0,yawExtreme=0,chestBackTime=0,chestBack=9;var kneeTop=new float[2];var kneeTime=new float[2];
                         for(int k=0;k<=samples;k++){pl.SetTime(k*step);g.Evaluate(0);var hips=animator.GetBoneTransform(HumanBodyBones.Hips).position;
-                            for(int b=0;b<4;b++){var pos=animator.GetBoneTransform(bones[b]).position-new Vector3(hips.x,0,hips.z);if(k>0){float v=(pos-last[b]).magnitude/step;if(v>peak[b]){peak[b]=v;peakTime[b]=k*step;}}last[b]=pos;}
+                            for(int b=0;b<4;b++){var pos=animator.GetBoneTransform(bones[b]).position-new Vector3(hips.x,0,hips.z);if(k>6){float v=(pos-last[b]).magnitude/step;if(v>peak[b]){peak[b]=v;peakTime[b]=k*step;}}last[b]=pos;}
                             var headPos=animator.GetBoneTransform(HumanBodyBones.Head).position;float head=headPos.y;if(head<headMin)lean=headPos.x-hips.x;headMin=Mathf.Min(headMin,head);headMax=Mathf.Max(headMax,head);
                             var across=animator.GetBoneTransform(HumanBodyBones.RightUpperLeg).position-animator.GetBoneTransform(HumanBodyBones.LeftUpperLeg).position;var facing=Vector3.Cross(across,Vector3.up);
                             float yaw=Mathf.Atan2(facing.x,facing.z)*Mathf.Rad2Deg;if(k==0)yawStart=yaw;yawEnd=yaw;if(Mathf.Abs(Mathf.DeltaAngle(yawStart,yaw))>Mathf.Abs(yawExtreme))yawExtreme=Mathf.DeltaAngle(yawStart,yaw);
@@ -166,6 +166,14 @@ namespace Touchline.Editor
                         Scenario(left?"passe-gauche-contact":"passe-droite-contact",1.6f,(a,t)=>{
                             a.velocity=new Point();
                             if(t>=.4f&&t<1.04f){Begin(a,"kick","pass",.64f,.18f,a.position+new Point(0,.42f),.11f);a.actionTime=.64f-(t-.4f);}
+                            else{a.action="idle";a.actionKind=null;a.actionTime=0;}
+                        });
+                    }
+                    if(Resources.Load<AnimationClip>("Animations/RohrSoccer/Rohr_08_Side_Foot_Kick")!=null){
+                        view.ChangeIdentity(new PlayerData{id="rohr-pass",heightCm=182,preferredFoot="Right"});
+                        Scenario("passe-rohr-contact",1.6f,(a,t)=>{
+                            a.angle=0;a.velocity=new Point();
+                            if(t>=.4f&&t<1.04f){Begin(a,"kick","pass",.64f,.18f,a.position+new Point(0,.42f),.11f);a.actionSequence=2;a.actionTime=.64f-(t-.4f);}
                             else{a.action="idle";a.actionKind=null;a.actionTime=0;}
                         });
                     }

@@ -136,4 +136,5 @@
   <ExcludedTest Include="SupportReleaseAuditTests.cs" />
   <ExcludedTest Include="TacticalLineupTests.cs" />
   <ExcludedTest Include="WithdrawnDuelTests.cs" />
+  <ExcludedTest Include="SoccerMocapTests.cs" />
 </ItemGroup></Project>
