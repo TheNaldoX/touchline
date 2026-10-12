@@ -68,6 +68,17 @@ namespace Touchline.Tests
             db.Find("p24").rating = 99; db.Find("p24").potential = 99; db.Find("p25").rating = 1;
             CollectionAssert.AreEqual(before, c.RecruitmentRecommendations(db).Select(r => r.player + ":" + r.assessedLevel));
         }
+        [TestCase(70, 5, "écart incertain")]
+        [TestCase(74, 2, "renfort potentiel")]
+        [TestCase(58, 2, "plutôt une doublure")]
+        [TestCase(65, 2, "niveau estimé comparable")]
+        public void RecruitmentComparisonIncludesScoutUncertainty(float estimate,float uncertainty,string verdict)
+        {
+            PlanningReport("p24",level:estimate);c.world.reports.Last().uncertainty=uncertainty;
+            StringAssert.Contains(verdict,c.RecruitmentRecommendations(db).Single().comparison);
+            db.Find("p24").rating=99;
+            StringAssert.Contains(verdict,c.RecruitmentRecommendations(db).Single().comparison);
+        }
         [Test] public void RecruitmentRejectsLegacyEmptyEstimateAndForeignClubReports()
         {
             PlanningReport("p24", level: 0); PlanningReport("p25"); c.world.reports.Last().club = "c2";

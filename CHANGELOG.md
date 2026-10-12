@@ -1,3 +1,4 @@
+- Recrutement : la comparaison avec un titulaire tient compte de la marge d’incertitude du recruteur.
 # Changelog
 
 Une ligne par pull request, la plus récente en haut.

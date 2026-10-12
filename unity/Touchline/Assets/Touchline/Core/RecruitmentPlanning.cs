@@ -151,9 +151,14 @@ namespace Touchline.Core
                 var reference = starters.Where(x => FootballPositions.Matches(x, matchRole)).OrderByDescending(x => x.rating + x.development).FirstOrDefault()
                     ?? squad.Where(x => FootballPositions.Matches(x, matchRole)).OrderByDescending(x => x.rating + x.development).FirstOrDefault();
                 item.improvement = reference == null ? 0 : item.assessedLevel - reference.rating - reference.development;
-                // Three rating points is a qualitative comparison threshold, not a guaranteed starting place.
+                // Require the whole scouting range to clear the three-point qualitative threshold.
+                float uncertainty = revealAttributes ? 0 : Math.Max(1.5f, report.uncertainty);
+                string verdict = item.improvement - uncertainty > 3 ? "renfort potentiel"
+                    : item.improvement + uncertainty < -3 ? "plutôt une doublure"
+                    : Math.Abs(item.improvement) + uncertainty <= 3 ? "niveau estimé comparable"
+                    : "écart incertain : observation complémentaire recommandée";
                 item.comparison = reference == null ? "Pas de référence interne à ce poste."
-                    : "Face à " + reference.name + " : " + (item.improvement > 3 ? "renfort potentiel" : item.improvement < -3 ? "plutôt une doublure" : "niveau estimé comparable") + ". À confirmer par l’observation.";
+                    : "Face à " + reference.name + " : " + verdict + ". À confirmer par l’observation.";
                 item.reason = item.stale ? "Rapport ancien : renouveler l’observation avant décision."
                     : !item.affordable ? "Valeur ou salaire actuel hors enveloppe : prêt ou négociation à étudier."
                     : knowledge < 90 ? "Premières impressions : poursuivre l’observation."
