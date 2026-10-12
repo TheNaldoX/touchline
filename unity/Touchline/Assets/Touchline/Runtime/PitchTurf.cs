@@ -16,7 +16,9 @@ namespace Touchline
         public static float Brightness(int x,int y)
         {
             // Trois octaves de bruit de valeur périodique : touffes (32 px), brins (8 px), grain (2 px).
-            float n=Octave(x,y,8,1)*.5f+Octave(x,y,32,2)*.3f+Octave(x,y,128,3)*.2f;
+            // Directional fine growth breaks up round noise blobs. Periodic
+            // coordinates retain seamless tiles and the same texture budget.
+            float n=Octave(x,y,8,1)*.35f+Octave(x,y,32,2)*.25f+Octave(x,y,128,3)*.20f+Octave(x*4,y,32,9)*.20f;
             return Mathf.Lerp(GrainMin,GrainMax,n);
         }
 
@@ -45,7 +47,7 @@ namespace Touchline
         {
             float broad=Mathf.PerlinNoise(19.3f+x*.16f,43.7f+z*.16f);
             float fine=Mathf.PerlinNoise(5.1f+x*.73f,17.2f+z*.73f);
-            float tone=grain*Mathf.Lerp(.92f,1.06f,broad)*Mathf.Lerp(.97f,1.03f,fine);
+            float tone=grain*Mathf.Lerp(.96f,1.025f,broad)*Mathf.Lerp(.98f,1.02f,fine);
             // Small warmer patches break the uniform green without looking muddy.
             return new Color(tone*Mathf.Lerp(.96f,1.015f,broad),tone,tone*Mathf.Lerp(.97f,.90f,broad),1);
         }

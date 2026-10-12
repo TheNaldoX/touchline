@@ -5,6 +5,24 @@ namespace Touchline.Tests
 {
     public sealed class StadiumLookTests
     {
+        [Test] public void ConcreteUsesSharedScaleWithoutAddingGeometryOrKeepingCpuPixels()
+        {
+            var texture=StadiumSurfaceTexture.Concrete();var mesh=StadiumGeometry.Stand(1,false);
+            try{
+                Assert.AreEqual(256,texture.width);Assert.AreEqual(256,texture.height);
+                Assert.Greater(texture.mipmapCount,1);Assert.IsFalse(texture.isReadable);
+                Assert.AreEqual(TextureWrapMode.Repeat,texture.wrapMode);
+                var vertices=mesh.vertices;var triangles=mesh.triangles;var bounds=mesh.bounds;
+                StadiumSurfaceTexture.MapConcrete(mesh);
+                CollectionAssert.AreEqual(vertices,mesh.vertices);CollectionAssert.AreEqual(triangles,mesh.triangles);Assert.AreEqual(bounds,mesh.bounds);
+                var uv=mesh.uv;Assert.AreEqual(vertices.Length,uv.Length);
+                for(int i=0;i<triangles.Length;i+=3){
+                    int a=triangles[i],b=triangles[i+1];
+                    Assert.AreEqual(Vector3.Distance(vertices[a],vertices[b])/StadiumSurfaceTexture.TileMetres,Vector2.Distance(uv[a],uv[b]),.001f,"Constant detail scale on each concrete face");
+                    Assert.IsFalse(float.IsNaN(uv[a].x));
+                }
+            }finally{Object.DestroyImmediate(texture);Object.DestroyImmediate(mesh);}
+        }
         [Test] public void TurfGrainTilesWithoutSeamAndStaysInRange()
         {
             for(int i=0;i<PitchTurf.Size;i+=7){

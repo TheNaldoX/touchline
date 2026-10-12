@@ -1,3 +1,4 @@
+- Graphismes : béton texturé et mat dans les tribunes, échelle homogène sur les pentes et grain de pelouse plus directionnel.
 - Animations : dégagement local des coudes pendant les plongeons, sans déplacer les mains au contact du ballon.
 - Animations : le maintien des appuis conserve la direction capturée des genoux et protège leur contact avec le sol.
 - Éditeur : les aperçus de joueurs libèrent leurs graphes, matériaux et cases de flocage à leur destruction.
