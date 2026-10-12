@@ -54,7 +54,7 @@ namespace Touchline
             var desk=new VisualElement();desk.AddToClassList("press-desk");room.Add(desk);Text(desk,"●  ┃                         ┃  ●","press-microphones");Text(desk,Career.manager+" · entraîneur","section-title");
             var exchange=new VisualElement();body.Add(exchange);
             void Show(){exchange.Clear();Text(exchange,"QUESTION "+(question+1)+" / 3 · JOURNALISTE","eyebrow");Text(exchange,Core.Career.PressQuestion(context,question),"section-title");
-                foreach(var tone in new[]{"calm","ambition","protect"}){string choice=tone;var answer=Button(exchange,"« "+Core.Career.PressReply(phase,question,tone)+" »",()=>{replies[question]=choice;if(question<2){question++;Show();}else{try{Career.PressInterview(phase,replies);Career.ApplyLife(Database);Save();CloseModal();Build();}catch(Exception e){Message(e.Message);}}});answer.name="press-answer-"+tone;answer.AddToClassList("press-answer");}
+                foreach(var tone in new[]{"calm","ambition","protect"}){string choice=tone;var answer=Button(exchange,"« "+Core.Career.PressReply(context,question,tone)+" »",()=>{replies[question]=choice;if(question<2){question++;Show();}else{try{Career.PressInterview(phase,replies);Career.ApplyLife(Database);Save();CloseModal();Build();}catch(Exception e){Message(e.Message);}}});answer.name="press-answer-"+tone;answer.AddToClassList("press-answer");}
                 Text(exchange,"Votre déclaration sera enregistrée après la troisième réponse. Fermer avant annule cet échange.","footnote");}
             Show();
         }    }

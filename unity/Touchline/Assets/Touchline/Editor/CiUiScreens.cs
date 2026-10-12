@@ -245,10 +245,10 @@ namespace Touchline.Editor
         {
             var list=new List<Action>();
             foreach(var s in Screens){var screen=s;
-                list.Add(()=>{var c=App.Career;c.EnsureWorld(App.Database);c.world.press.Clear();c.life.day=c.NextFixture().day;Resize(screen.width,screen.height);Call("Navigate","Presse");Click("press-enter-before");});
+                list.Add(()=>{var c=App.Career;c.EnsureWorld(App.Database);c.world.press.Clear();c.life.medical.Clear();foreach(var player in App.Database.Squad(c.club).Take(3))c.life.medical.Add(new MedicalCase{player=player.id,remaining=10});c.life.day=c.NextFixture().day;Resize(screen.width,screen.height);Call("Navigate","Presse");Click("press-enter-before");});
                 list.Add(()=>{if(Root.Q("press-room")==null)throw new Exception("Press room missing");Capture(screen.tag+"-question-1");Click("press-answer-calm");});
                 list.Add(()=>{if(App.Career.world.press.Count!=0)throw new Exception("Premature press effect");Capture(screen.tag+"-question-2");Click("press-answer-protect");});
-                list.Add(()=>{Click("press-answer-ambition");if(App.Career.world.press.Count!=1||App.Career.world.press[0].replies.Length!=3)throw new Exception("Missing complete transcript");if(Root.Q("press-interview")!=null)throw new Exception("Interview not closed");});
+                list.Add(()=>{Capture(screen.tag+"-question-3");string expected=Core.Career.PressReply(App.Career.Conference("before"),2,"ambition");Click("press-answer-ambition");if(App.Career.world.press.Count!=1||App.Career.world.press[0].replies.Length!=3||App.Career.world.press[0].replies[2]!=expected)throw new Exception("Missing complete transcript");if(Root.Q("press-interview")!=null)throw new Exception("Interview not closed");});
             }
             audit.AppendLine("Trois questions et phrases concrètes, aucun effet avant fin, trois réponses archivées, deux formats. Salle stylisée UI, pas environnement3D.");return list;
         }

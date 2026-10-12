@@ -109,6 +109,39 @@ namespace Touchline.Tests
             Result(0,2);c.Person("p4").trust=30;float morale=c.Person("p4").morale;float supporters=c.world.supporterTrust;
             c.Press("after","ambition");Assert.AreEqual(morale-2,c.Person("p4").morale);Assert.AreEqual(supporters-1,c.world.supporterTrust);
         }
+        [Test] public void PressInjuriesAreCurrentDistinctPlayersAndTranscriptMatchesPreview()
+        {
+            Result(0,2);
+            foreach(var id in new[]{"p1","p2","p3","p3"})c.life.medical.Add(new MedicalCase{player=id,remaining=10});
+            var context=c.Conference("after");Assert.AreEqual(3,context.absentees);Assert.AreEqual("injuries",context.groupTopic);
+            string preview=Career.PressReply(context,2,"protect");Assert.IsTrue(preview.Contains("santé"));
+            c.PressInterview("after",new[]{"calm","calm","protect"});
+            Assert.AreEqual(preview,c.world.press.Last().replies[2]);
+            var restored=JsonUtility.FromJson<Career>(JsonUtility.ToJson(c));Assert.AreEqual(preview,restored.world.press.Last().replies[2]);
+        }
+        [Test] public void PressDoesNotCountRecoveredOrFormerPlayersAsInjured()
+        {
+            Result(1,0);
+            c.life.medical.Add(new MedicalCase{player="p1",remaining=0});
+            c.life.medical.Add(new MedicalCase{player="p2",remaining=10,closed=1});
+            c.life.medical.Add(new MedicalCase{player="p3",remaining=10,responsibilityEndedReason="sold"});
+            c.life.medical.Add(new MedicalCase{player="p90",remaining=10});
+            Assert.AreEqual(0,c.Conference("after").absentees);
+        }
+        [Test] public void PressUsesPendingDepartureButNotAnOldRefusal()
+        {
+            Request();Result(1,0);var context=c.Conference("after");Assert.AreEqual("departure",context.groupTopic);
+            Assert.IsTrue(Career.PressQuestion(context,2).Contains("quitter"));
+            c.AnswerDeparture(db,"p4",false);Assert.AreNotEqual("departure",c.Conference("after").groupTopic);
+        }
+        [Test] public void PressCongestionRequiresThreeMatchesForOurClubInSevenDays()
+        {
+            Result(1,0);c.world.fixtures.Add(new Fixture{id="busy1",home=c.club,away="c1",day=c.life.day+2});
+            Assert.AreNotEqual("congestion",c.Conference("after").groupTopic);
+            c.world.fixtures.Add(new Fixture{id="busy2",home="c2",away=c.club,day=c.life.day+3});
+            Assert.AreEqual("congestion",c.Conference("after").groupTopic);
+            Assert.IsTrue(Career.PressReply(c.Conference("after"),2,"calm").Contains("fatigue"));
+        }
         [Test] public void InterviewRequiresThreeValidAnswersBeforeAnyEffect()
         {
             Result(0,2);float morale=c.Person("p4").morale;int count=c.world.press.Count;

@@ -270,7 +270,7 @@ namespace Touchline.Core
         {
             OffPitch();var context=Conference(phase);
             if(!context.Available||answers.Any(a=>!new[]{"calm","ambition","protect"}.Contains(a)))throw new InvalidOperationException(context.unavailable??"Réponse invalide.");
-            var replies=answers.Select((a,i)=>PressReply(phase,i,a)).ToArray();
+            var replies=answers.Select((a,i)=>PressReply(context,i,a)).ToArray();
             world.press.Add(new PressAppearance{fixture=context.fixture.id,phase=phase,answer=answers[0],replies=replies,day=life.day});
             foreach(var p in life.players)p.morale=Mathx.Clamp(p.morale+answers.Average(a=>PressMorale(context,a,p)),10,100);
             float support=answers.Average(a=>a=="ambition"?(phase=="after"&&context.result<0?-1f:1f):0f);
