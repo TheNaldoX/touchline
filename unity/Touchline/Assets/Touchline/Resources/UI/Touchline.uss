@@ -1305,3 +1305,7 @@ Button.prematch-selected { background-color: rgb(26,66,61); border-width: 1px; b
 .narrow .press-desk { margin-top: 6px; padding: 6px; }
 .narrow .press-microphones { font-size: 16px; }
 .narrow .press-desk .section-title { font-size: 14px; margin: 2px; }
+.press-room-discussion { padding: 8px; margin-bottom: 8px; }
+.press-room-discussion .press-backdrop, .press-room-discussion .press-microphones { display: none; }
+.press-room-discussion .press-desk { margin-top: 4px; padding: 4px; border-top-width: 2px; }
+.press-room-discussion .press-desk .section-title { font-size: 14px; margin: 2px; }

@@ -53,7 +53,7 @@ namespace Touchline
             var wall=Row(room,"press-backdrop");for(int i=0;i<2;i++)Text(wall,i%2==0?ClubName(Career.club):"CONFÉRENCE DE PRESSE","press-wall-mark");
             var desk=new VisualElement();desk.AddToClassList("press-desk");room.Add(desk);Text(desk,"●  ┃                         ┃  ●","press-microphones");Text(desk,Career.manager+" · entraîneur","section-title");
             var exchange=new VisualElement();body.Add(exchange);
-            void Show(){exchange.Clear();Text(exchange,"QUESTION "+(question+1)+" / 3 · JOURNALISTE","eyebrow");Text(exchange,Core.Career.PressQuestion(context,question),"section-title");
+            void Show(){room.EnableInClassList("press-room-discussion",question>0);body.scrollOffset=UnityEngine.Vector2.zero;exchange.Clear();Text(exchange,"QUESTION "+(question+1)+" / 3 · JOURNALISTE","eyebrow");Text(exchange,Core.Career.PressQuestion(context,question),"section-title");
                 foreach(var tone in new[]{"calm","ambition","protect"}){string choice=tone;var answer=Button(exchange,"« "+Core.Career.PressReply(context,question,tone)+" »",()=>{replies[question]=choice;if(question<2){question++;Show();}else{try{Career.PressInterview(phase,replies);Career.ApplyLife(Database);Save();CloseModal();Build();}catch(Exception e){Message(e.Message);}}});answer.name="press-answer-"+tone;answer.AddToClassList("press-answer");}
                 Text(exchange,"Votre déclaration sera enregistrée après la troisième réponse. Fermer avant annule cet échange.","footnote");}
             Show();

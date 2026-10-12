@@ -2,6 +2,7 @@
 Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dans Git/PR, preuves locales ignorées dans .validation et artifacts.
 
 ## État courant —12 octobre2026
+- Lot ergonomie presse : décor réduit après introduction, trois choix entièrement visibles dans les deux captures ui-press-interview-answer-space ; assertion viewport réussie. Core inchangé1016/1016. Fold matériel toujours non testé. Prochain : choix sur coups francs puis ligne haute.
 - Lot presse contextuelle : blessures actuelles distinctes, départ demandé et calendrier chargé pilotent la troisième question/phrases ; transcript exact conservé. Core1016/1016, Unity18/18, captures ui-press-interview-contextual revues. Salle stylisée encore volumineuse en déplié : prochain lot ergonomie, puis décisions/coups francs. Aucun effet médical ou promesse implicite ajouté.
 - Lot fix/sale-buyer-needs : besoins au poste, trésorerie et masse salariale des acheteurs vérifiés avant offre/réponse/signature ; projet sportif affiché. Core1012/1012, Unity67/67, deux formats UI revus, calibration200/graine1 identique. APK0.66 inchangée. Prochain : presse contextuelle puis axes tactique/coups francs/Fold encore ouverts.
 - Demande en cours : traiter les6axes (contacts, décisions/tactique, coups francs, recrutement/ventes, Fold, management). Ne pas annoncer les6terminés. Lot fix/contact-animation-clock :7cas supplémentaires synchronisés, tête progressive ; relance au sol rejetée pour pénétration du sol. Globale finale2153/2405,252anciens échecs/0nouveau. Ciblés116/134 (18anciens), film contact-clock-final-goal revu sur captures, aucunCoremodifié. APK0.66 inchangée. Prochain lot : besoins sportifs/budget des acheteurs. Questions Fold0.66 en attente utilisateur.
@@ -35,5 +36,6 @@ Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dan
 - .validation/github-api.ps1 via GCM ; jamais imprimer secrets. PR une tâche/branche, attacher chaquePR. Attente scriptée de CI, pas de polls répétés.
 - Après Unity seulement : .validation/cleanup-unity-imports.ps1 enlève73imports connus ; restore scène/ProjectSettings uniquement si modifications générées. Pas de copies de sources, pas de docs journal.
 - Prochain : retour Fold sur0.66 (appuis, tactique, clavier mercato, séquences coups francs), puis bugs visibles et déséquilibres moteur encore ouverts. Les252échecs préexistants et le rendu naturel incomplet restent explicitement non résolus.
+
 
 
