@@ -2,6 +2,7 @@
 Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dans Git/PR, preuves locales ignorées dans .validation et artifacts.
 
 ## État courant —12 octobre2026
+- Lot coup franc : passe vers partenaire clairement mieux placé plutôt que frappe automatique ; sécurité/hors-jeu et spécialité tireur considérés. Core1019/1019, UnityRestart17/17. Calibration200/graine1 strictement mêmes moyennes : cas rare, pas rééquilibrage global. Capture central-free-kick-choice-native deux instants revus, ne prouve pas la nouvelle combinaison en match naturel. Prochain : atténuation du lien hauteur de ligne/attaquants, audit apparié en cours.
 - Lot ergonomie presse : décor réduit après introduction, trois choix entièrement visibles dans les deux captures ui-press-interview-answer-space ; assertion viewport réussie. Core inchangé1016/1016. Fold matériel toujours non testé. Prochain : choix sur coups francs puis ligne haute.
 - Lot presse contextuelle : blessures actuelles distinctes, départ demandé et calendrier chargé pilotent la troisième question/phrases ; transcript exact conservé. Core1016/1016, Unity18/18, captures ui-press-interview-contextual revues. Salle stylisée encore volumineuse en déplié : prochain lot ergonomie, puis décisions/coups francs. Aucun effet médical ou promesse implicite ajouté.
 - Lot fix/sale-buyer-needs : besoins au poste, trésorerie et masse salariale des acheteurs vérifiés avant offre/réponse/signature ; projet sportif affiché. Core1012/1012, Unity67/67, deux formats UI revus, calibration200/graine1 identique. APK0.66 inchangée. Prochain : presse contextuelle puis axes tactique/coups francs/Fold encore ouverts.
@@ -36,6 +37,7 @@ Lire AGENTS.md. Claude et Codex alternent, jamais simultanément. Historique dan
 - .validation/github-api.ps1 via GCM ; jamais imprimer secrets. PR une tâche/branche, attacher chaquePR. Attente scriptée de CI, pas de polls répétés.
 - Après Unity seulement : .validation/cleanup-unity-imports.ps1 enlève73imports connus ; restore scène/ProjectSettings uniquement si modifications générées. Pas de copies de sources, pas de docs journal.
 - Prochain : retour Fold sur0.66 (appuis, tactique, clavier mercato, séquences coups francs), puis bugs visibles et déséquilibres moteur encore ouverts. Les252échecs préexistants et le rendu naturel incomplet restent explicitement non résolus.
+
 
 
 

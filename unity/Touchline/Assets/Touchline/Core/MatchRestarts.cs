@@ -91,7 +91,10 @@ namespace Touchline.Core
             var m=State;var phase=m.phase;var p=RestartTaker();var spot=m.ball.position;Control(p);m.phase="play";m.decision=.6f;
             m.ball.restartExemption=phase=="goal-kick"||phase=="corner"||phase=="throw-in";
             if(phase=="penalty")Shoot(p,false,true);
-            else if(phase=="free-kick"&&!m.indirectRestart&&Point.Distance(p.position,new Point(Direction(p.side)*52.5f,0))<27&&Math.Abs(p.position.z)<18)Shoot(p,false,false,true);
+            else if(phase=="free-kick"&&!m.indirectRestart&&Point.Distance(p.position,new Point(Direction(p.side)*52.5f,0))<27&&Math.Abs(p.position.z)<18){
+                var receiver=FreeKickCombination(p);
+                if(receiver==null)Shoot(p,false,false,true);else Pass(p,receiver,"pass");
+            }
             else{
                 Actor target=null;float best=float.MinValue;string delivery=phase=="corner"?"cross":phase=="throw-in"?"throw":"pass";
                 int direction=Direction(p.side);bool wideFreeKick=phase=="free-kick"&&p.position.x*direction>16&&Math.Abs(p.position.z)>=18;
@@ -113,6 +116,23 @@ namespace Touchline.Core
                 else Flight(p,null,"clearance",new Point(Direction(p.side)*8,Math.Sign(p.position.z+.01f)*27),.11f,2.6f,8);
             }
             if(phase!="throw-in"){m.ball.start=spot;m.ball.fixedStart=true;p.actionTarget=spot;}
+        }
+        Actor FreeKickCombination(Actor taker)
+        {
+            // A set-piece specialist retains the shot unless a legal, open pass
+            // offers at least twice its geometric chance. No random variety for its own sake.
+            const float ChanceAdvantage=2f,MinimumLaneSafety=.65f,MaximumCombinationDistance=24f;
+            float best=ShotQuality(taker)*(.75f+FreeKickSkill(taker)/100)*ChanceAdvantage;
+            Actor receiver=null;int dir=Direction(taker.side);float line=OffsideLine(taker.side);
+            foreach(var mate in State.actors){
+                if(mate.side!=taker.side||mate==taker||mate.slot==0||mate.sentOff||GroundedAction(mate)||mate.position.x*dir>line+.1f)continue;
+                float distance=Point.Distance(taker.position,mate.position);
+                if(distance<2||distance>MaximumCombinationDistance||(mate.position.x-taker.position.x)*dir<3)continue;
+                float safety=Safety(taker,mate.position);if(safety<MinimumLaneSafety)continue;
+                float chance=ShotQuality(mate)*safety;
+                if(chance>best){best=chance;receiver=mate;}
+            }
+            return receiver;
         }
     }
 }

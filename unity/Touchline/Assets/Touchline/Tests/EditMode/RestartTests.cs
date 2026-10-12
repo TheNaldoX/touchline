@@ -67,6 +67,21 @@ namespace Touchline.Tests
             m.actors[(1-side)*11].position=new Point(dir*52.5f,0);return s;
         }
         static void DeliverRestart(MatchSimulation s)=>typeof(MatchSimulation).GetMethod("RestartKick",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(s,null);
+        [TestCase(0)][TestCase(1)] public void CentralFreeKickFindsClearlyBetterUnmarkedTeammate(int side)
+        {
+            int dir=side==0?1:-1;var s=Sim("free-kick",new Point(dir*30,0),side);var m=s.State;
+            foreach(var a in m.actors){a.position=new Point(dir*45,25);a.velocity=new Point();}
+            var taker=m.actors[side*11+8];taker.position=new Point(dir*29.58f,0);m.restartTaker=taker.id;
+            var receiver=m.actors[side*11+9];receiver.position=new Point(dir*40,7);m.actors[(1-side)*11].position=new Point(dir*52.5f,0);
+            DeliverRestart(s);Assert.AreEqual("pass",m.ball.kind);Assert.AreEqual(receiver.id,m.ball.to);Assert.IsTrue(m.ball.fixedStart);Assert.IsFalse(m.ball.offside);
+        }
+        [Test] public void CentralFreeKickDoesNotServeOffsideTeammate()
+        {
+            var s=Sim("free-kick",new Point(30,0));var m=s.State;
+            foreach(var a in m.actors)a.position=new Point(35,25);
+            var taker=m.actors[8];taker.position=new Point(29.58f,0);m.restartTaker=taker.id;m.actors[9].position=new Point(40,7);m.actors[11].position=new Point(52.5f,0);
+            DeliverRestart(s);Assert.AreEqual("shot",m.ball.kind);
+        }
         [TestCase(0,-1)][TestCase(0,1)][TestCase(1,-1)][TestCase(1,1)]
         public void WideFreeKickCanDeliverToAnOnsideAerialTarget(int side,int flank)
         {

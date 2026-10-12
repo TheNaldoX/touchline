@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Coup franc direct : le tireur peut servir un partenaire démarqué et en jeu si la passe sûre offre une occasion nettement meilleure que sa frappe.
 - Conférence : décor condensé après la présentation pour laisser les réponses visibles, avec retour en haut à chaque question et maintien du lieu et de l’entraîneur.
 - Presse : questions et phrases adaptées aux blessés actuels, demandes de départ et calendrier chargé ; le compte rendu conserve les réponses réellement proposées.
 - Ventes : acheteurs sélectionnés selon besoin au poste, effectif senior, trésorerie et masse salariale avec parts de prêt ; projet affiché et conditions revérifiées avant confirmation.
