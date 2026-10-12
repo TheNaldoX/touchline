@@ -8,6 +8,26 @@ namespace Touchline.Tests
 {
     public class GroundContactTests
     {
+        [TestCase(30)] [TestCase(60)] [TestCase(120)]
+        public void CapturedFallDoesNotSkipToImpactBeforePhysicalTimeAdvances(int hz)
+        {
+            bool mode=PlayerView.UseMecanim;PlayerView.UseMecanim=true;
+            var go=new GameObject("Captured fall entry");var control=new GameObject("Same idle frame");
+            try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="fall-entry",heightCm=180},0,9,Color.white);
+                var idle=control.AddComponent<PlayerView>();idle.Build(new PlayerData{id="fall-entry",heightCm=180},0,9,Color.white);
+                var actor=new Actor{slot=9,action="idle"};float dt=1f/hz;
+                for(int i=0;i<hz;i++){view.Render(actor,1,dt);idle.Render(actor,1,dt);}
+                var head=go.GetComponentsInChildren<Transform>().First(t=>t.name=="head");
+                idle.Render(actor,1,dt);
+                var before=control.GetComponentsInChildren<Transform>().First(t=>t.name=="head").position;var left=idle.FootPosition(true);var right=idle.FootPosition(false);
+                actor.action="fall";actor.actionKind="fouled-fall";actor.actionSequence=1;actor.actionTime=MatchSimulation.ContactFallDuration;
+                view.Render(actor,1,dt);
+                Assert.Less(Vector3.Distance(before,head.position),.025f,"No fall impact before simulation time advances");
+                Assert.Less(Vector3.Distance(left,view.FootPosition(true)),.025f,"Left support must not jump on entry");
+                Assert.Less(Vector3.Distance(right,view.FootPosition(false)),.025f,"Right support must not jump on entry");
+            }finally{Object.DestroyImmediate(go);Object.DestroyImmediate(control);PlayerView.UseMecanim=mode;}
+        }
         static object Invoke(MatchSimulation sim,string method,params object[] args)=>typeof(MatchSimulation).GetMethod(method,BindingFlags.Instance|BindingFlags.NonPublic).Invoke(sim,args);
         static MatchSimulation Simulation()
         {

@@ -1,3 +1,4 @@
+- Animations : le fondu initial des chutes capturées respecte le temps physique, sans démarrage anticipé du geste.
 - Android : prépare la version 0.69/code62 avec la correction des premiers salaires IA validée sur 30 saisons.
 - Validation : le scénario de non-renouvellement tient compte des jeunes promus et vérifie les salaires signés jusqu’à l’échéance.
 - Finances : le premier salaire d’un jeune remplaçant IA dépend de son niveau, sans consommer automatiquement toute l’enveloppe disponible.

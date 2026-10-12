@@ -67,6 +67,14 @@ namespace Touchline.Editor
                     if(probe.State.metrics[0].saves+probe.State.metrics[1].saves==0)throw new Exception("No save found in first half.");
                     start=Mathf.Max(0,probe.State.clock-1);goalNote+=$" save_clock={probe.State.clock:0.0}";
                 }
+                string fallPlayer=null;
+                if(Arg("-touchlineFilmFall","")=="true"){
+                    var probe=NewMatch(seed);
+                    while(!probe.State.halfTime&&!probe.State.finished&&!probe.State.actors.Any(p=>p.action=="fall"))probe.Advance(MatchSimulation.Step);
+                    fallPlayer=probe.State.actors.FirstOrDefault(p=>p.action=="fall")?.id;
+                    if(fallPlayer==null)throw new Exception("No fall found in first half.");
+                    start=Mathf.Max(0,probe.State.clock-1);goalNote+=$" fall_clock={probe.State.clock:0.0} fall_player={fallPlayer}";
+                }
                 var sim=NewMatch(seed);
                 // Avance la partie jusqu'au moment filmé (pas de rendu pendant ce temps).
                 while(sim.State.clock<start&&!sim.State.halfTime&&!sim.State.finished)sim.Advance(MatchSimulation.Step);
@@ -131,6 +139,7 @@ namespace Touchline.Editor
                     var desired=arena.BallDisplayPosition;desired.y=.9f;
                     var owner=sim.State.ball.owner==null?-1:Array.FindIndex(sim.State.actors,a=>a.id==sim.State.ball.owner);
                     if(owner>=0){var visual=arena.PlayerVisual(owner);if(visual!=null)desired=Vector3.Lerp(visual.transform.position+Vector3.up*.9f,desired,.3f);}
+                    if(fallPlayer!=null){int fallen=Array.FindIndex(sim.State.actors,a=>a.id==fallPlayer);if(fallen>=0)desired=arena.PlayerVisual(fallen).transform.position+Vector3.up*.9f;}
                     focus=i==0?desired:Vector3.SmoothDamp(focus,desired,ref focusVelocity,.35f,40,1f/Fps);
                     follow.transform.position=new Vector3(focus.x,3.4f,Mathf.Max(focus.z-12,-40));follow.transform.LookAt(focus+Vector3.down*.2f); // caméra basse et proche, façon diffusion rapprochée
                     Capture(arena.MatchCamera,target,root,Path.Combine(broadcastDir,"frame-"+i.ToString("D4")+".jpg"));
