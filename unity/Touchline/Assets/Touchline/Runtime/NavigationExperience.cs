@@ -56,10 +56,12 @@ namespace Touchline
         }
         void AnimateEntry(VisualElement element,bool drawer=false)
         {
-            if(!MotionEnabled)return;InterfaceAnimationCount++;float started=Time.realtimeSinceStartup;float distance=drawer?22:7;var duration=drawer?.2f:.15f;
-            element.style.opacity=.35f;element.style.translate=new Translate(0,distance);
+            if(!MotionEnabled)return;InterfaceAnimationCount++;float started=Time.realtimeSinceStartup;var duration=drawer?.2f:.15f;
+            // Keep hit targets stationary between pointer down and up. Entry is a fade,
+            // not a translation that can move an edge away from a resting finger.
+            element.style.opacity=.35f;
             IVisualElementScheduledItem animation=null;
-            animation=element.schedule.Execute(()=>{float t=Mathf.Clamp01((Time.realtimeSinceStartup-started)/duration),ease=1-Mathf.Pow(1-t,3);element.style.opacity=Mathf.Lerp(.35f,1,ease);element.style.translate=new Translate(0,distance*(1-ease));if(t>=1)animation?.Pause();}).Every(16);
+            animation=element.schedule.Execute(()=>{float t=Mathf.Clamp01((Time.realtimeSinceStartup-started)/duration),ease=1-Mathf.Pow(1-t,3);element.style.opacity=Mathf.Lerp(.35f,1,ease);if(t>=1)animation?.Pause();}).Every(16);
         }
         void NavigationButtons(VisualElement brand)
         {

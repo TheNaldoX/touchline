@@ -79,6 +79,7 @@ namespace Touchline.Editor
 
         static List<Action> BuildSteps()
         {
+            if(Path.GetFileName(Output).StartsWith("ui-button-motion-",StringComparison.Ordinal))return BuildButtonMotionSteps();
             if(Path.GetFileName(Output).StartsWith("ui-sale-negotiation-",StringComparison.Ordinal))return BuildSaleNegotiationSteps();
             if(Path.GetFileName(Output).StartsWith("ui-discussion-preview-",StringComparison.Ordinal))return BuildDiscussionPreviewSteps();
             if(Path.GetFileName(Output).StartsWith("ui-agent-role-",StringComparison.Ordinal)||Path.GetFileName(Output).StartsWith("ui-transfer-cost-",StringComparison.Ordinal))return BuildAgentRoleSteps();
@@ -179,6 +180,18 @@ namespace Touchline.Editor
             audit.AppendLine("Relance contextuelle synthétique : notification actionnable et accès aux décisions de départ, deux formats ; aucune vente ni sauvegarde personnelle.");return list;
         }
 
+        static List<Action> BuildButtonMotionSteps()
+        {
+            var list=new List<Action>();int clicks=0;Button button=null;VisualElement panel=null;Vector2 point=default;Rect pressed=default,released=default;
+            list.Add(()=>{PlayerPrefs.SetInt("reduce-motion",0);Resize(1080,2520);Call("Navigate","Club");panel=(VisualElement)Call("Modal","Appui pendant l’ouverture");button=new Button(()=>clicks++){text="Action unique",name="entry-test-button"};panel.Add(button);});
+            list.Add(()=>{Call("AnimateEntry",panel,true);panel.schedule.Execute(()=>{
+                pressed=button.worldBound;point=new Vector2(pressed.center.x,pressed.yMax-1);
+                using(var e=PointerDownEvent.GetPooled(new Event{type=EventType.MouseDown,mousePosition=point,button=0})){e.target=button;button.SendEvent(e);}
+                panel.schedule.Execute(()=>{released=button.worldBound;using(var e=PointerUpEvent.GetPooled(new Event{type=EventType.MouseUp,mousePosition=point,button=0})){e.target=button;button.SendEvent(e);}}).StartingIn(250);
+            }).StartingIn(16);});
+            list.Add(()=>{audit.AppendLine("Pointer="+point+" downBounds="+pressed+" upBounds="+released+" clicks="+clicks);Capture("appui-ouverture-animee");if(!released.Contains(point)||clicks!=1)throw new Exception("Stationary press lost during entry: clicks="+clicks+", hit="+released.Contains(point));Call("CloseModal");PlayerPrefs.SetInt("reduce-motion",1);});
+            audit.AppendLine("Animations activées explicitement. Appui synthétique bord bas, relâchement au même point après250ms ; pas une validation Android.");return list;
+        }
         static List<Action> BuildSaleNegotiationSteps()
         {
             var list=new List<Action>();TransferOffer offer=null;long cash=0;

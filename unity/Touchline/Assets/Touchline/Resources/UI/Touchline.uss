@@ -291,8 +291,8 @@ Button.primary:hover { background-color: rgb(167,248,223); }
 .navigation > Button { font-size: 14px; margin: 1px 3px; }
 .navigation > Button.active { border-radius: 5px; }
 .card { border-radius: 8px; }
-Button { border-radius: 6px; transition-property: background-color, color, scale; transition-duration: .12s; }
-Button:active { scale: 0.975 0.975; background-color: rgb(46,83,91); }
+Button { border-radius: 6px; transition-property: background-color, color; transition-duration: .12s; }
+Button:active { background-color: rgb(46,83,91); }
 Button.active { color: rgb(166,244,221); background-color: rgb(28,65,60); border-color: rgb(86,161,145); }
 Button.primary { background-color: rgb(131,230,200); color: rgb(12,39,36); }
 .reduce-motion Button { transition-duration: 0s; }
