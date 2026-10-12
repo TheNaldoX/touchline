@@ -85,6 +85,17 @@ namespace Touchline.Tests
             Assert.That(view.QuietSituation,Does.Contain("Construction").And.Contain("axe central"));
             sim.State.ball.held=true;Assert.That(view.QuietSituation,Does.Contain("Gardien"));
         }
+        [TestCase(MatchViewingMode.KeyMoments)][TestCase(MatchViewingMode.Highlights)][TestCase(MatchViewingMode.Extended)]
+        public void FreeKickHighlightWaitsForTakerAndWallRatherThanExpiredCountdown(MatchViewingMode mode)
+        {
+            var sim=Create();var m=sim.State;m.periodSeconds=2700;var view=new MatchBroadcast(sim);view.SetMode(mode);
+            m.clock=100;m.phase="free-kick";m.restart=.2f;m.restartSide=0;m.ball=new BallState{position=new Point(30,0)};
+            var taker=m.actors[9];m.restartTaker=taker.id;taker.position=new Point(0,0);m.restartWall.Clear();
+            string before=JsonUtility.ToJson(m);view.Refresh();Assert.IsTrue(view.Quiet,"A low timer does not mean the taker has arrived");Assert.AreEqual(before,JsonUtility.ToJson(m));
+            Assert.That(view.QuietSituation,Does.Contain("mise en place"));
+            taker.position=new Point(29.58f,0);var wall=m.actors[17];m.restartWall.Add(wall.id);wall.position=new Point(10,0);view.Refresh();Assert.IsTrue(view.Quiet,"Wall still approaching");
+            wall.position=new Point(39.6f,0);view.Refresh();Assert.IsFalse(view.Quiet,"Return for the kick once taker and wall approach their marks");
+        }
         [TestCase("shot","FRAPPE")][TestCase("goal","BUT !")][TestCase("save","ARRÊT DU GARDIEN")]
         public void ImportantActionsHaveDistinctUnambiguousHeadlines(string kind,string expected)=>Assert.AreEqual(expected,MatchBroadcast.EventHeadline(kind));
         [TestCase("shot",2.1f)][TestCase("goal",5f)]

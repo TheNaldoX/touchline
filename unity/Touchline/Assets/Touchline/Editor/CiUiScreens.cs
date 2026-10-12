@@ -79,6 +79,7 @@ namespace Touchline.Editor
 
         static List<Action> BuildSteps()
         {
+            if(Path.GetFileName(Output).StartsWith("ui-free-kick-wait-",StringComparison.Ordinal))return BuildFreeKickWaitSteps();
             if(Path.GetFileName(Output).StartsWith("ui-button-motion-",StringComparison.Ordinal))return BuildButtonMotionSteps();
             if(Path.GetFileName(Output).StartsWith("ui-sale-negotiation-",StringComparison.Ordinal))return BuildSaleNegotiationSteps();
             if(Path.GetFileName(Output).StartsWith("ui-discussion-preview-",StringComparison.Ordinal))return BuildDiscussionPreviewSteps();
@@ -180,6 +181,16 @@ namespace Touchline.Editor
             audit.AppendLine("Relance contextuelle synthétique : notification actionnable et accès aux décisions de départ, deux formats ; aucune vente ni sauvegarde personnelle.");return list;
         }
 
+        static List<Action> BuildFreeKickWaitSteps()
+        {
+            var list=new List<Action>();
+            list.Add(()=>{var c=App.Career;c.EnsureWorld(App.Database);c.PrepareLineup(App.Database);var opponent=App.Database.clubs.First(x=>x.playable&&x.id!=c.club).id;var sim=MatchSimulation.Create(App.Database,c,opponent,731,2700);c.match=sim.State;c.ApplyMatchContext(sim);Call("CreateArena",sim);});
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Match");Arena.Paused=true;Arena.Broadcast.SetMode(MatchViewingMode.Highlights);var m=Arena.Simulation.State;m.clock+=30;m.phase="free-kick";m.restart=.2f;m.restartSide=0;m.restartTaker=null;m.restartWall.Clear();m.ball=new BallState{position=new Point(30,0),side=0};Arena.Broadcast.Refresh();});
+                list.Add(()=>{if(!Arena.QuietPresentation)throw new Exception("Preparation should be in statistical view");Capture(screen.tag+"-preparation-coup-franc");});
+            }
+            audit.AppendLine("État synthétique : coup franc, tireur pas encore désigné, compteur0,2s ; préparation expliquée dans la vue statistique. Simulation en pause pour capture.");return list;
+        }
         static List<Action> BuildButtonMotionSteps()
         {
             var list=new List<Action>();int clicks=0;Button button=null;VisualElement panel=null;Vector2 point=default;Rect pressed=default,released=default;

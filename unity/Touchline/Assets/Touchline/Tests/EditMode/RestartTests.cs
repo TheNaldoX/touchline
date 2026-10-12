@@ -52,6 +52,12 @@ namespace Touchline.Tests
             var s=Sim("free-kick",new Point(30,4));s.Advance(1);var copy=new MatchSimulation(db,JsonUtility.FromJson<MatchState>(JsonUtility.ToJson(s.State)));
             s.Advance(20);copy.Advance(20);Assert.AreEqual(JsonUtility.ToJson(s.State),JsonUtility.ToJson(copy.State));
         }
+        [Test] public void BroadcastReadinessDoesNotPickTakerOrAlterRestartState()
+        {
+            var s=Sim("free-kick",new Point(30,4));string before=JsonUtility.ToJson(s.State);
+            Assert.IsFalse(s.FreeKickDeliveryApproaching);Assert.AreEqual(before,JsonUtility.ToJson(s.State));
+            s.Advance(1);before=JsonUtility.ToJson(s.State);bool near=s.FreeKickDeliveryApproaching;Assert.AreEqual(before,JsonUtility.ToJson(s.State));
+        }
         [Test] public void GoalKickLeavesAreaClearAndLaunchesFromRest()
         {
             var s=Sim("goal-kick",new Point(-47,0));WaitForKick(s);Assert.IsTrue(s.State.ball.fixedStart);Assert.IsNull(s.State.ball.owner);Assert.AreEqual(s.State.actors[0].id,s.State.ball.from);

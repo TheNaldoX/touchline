@@ -42,6 +42,7 @@ namespace Touchline
                 var m=simulation.State;
                 if(m.halfTime)return "Mi-temps · préparez vos ajustements";
                 if(m.finished)return "Match terminé";
+                if(m.phase=="free-kick"&&m.restart>0&&!simulation.FreeKickDeliveryApproaching)return "Coup franc · mise en place du tireur et du mur";
                 if(m.restart>0){string phase=m.phase switch{"throw-in"=>"Touche","goal-kick"=>"Six mètres","corner"=>"Corner","free-kick"=>"Coup franc","penalty"=>"Penalty","goal"=>"Après le but","kickoff"=>"Engagement",_=>"Arrêt de jeu"};return phase+" · préparation, reprise dans "+Math.Max(1,(int)Math.Ceiling(m.restart))+" s";}
                 if(m.ball.held)return "Gardien en possession · préparation de la relance";
                 int side=MatchSimulation.PossessionSide(m);if(side<0)side=m.ball.side;
@@ -93,6 +94,7 @@ namespace Touchline
         {
             var b=m.ball;
             if(m.restart>0){
+                if(m.HalfDuration==2700&&m.phase=="free-kick"&&(!simulation.FreeKickDeliveryApproaching||m.restart>(Mode==MatchViewingMode.Extended?6:3)))return null;
                 // Full-duration stoppages include retrieval and preparation.
                 // Show the award through the event window, then return for
                 // the actual delivery instead of filming 30 seconds of waiting.

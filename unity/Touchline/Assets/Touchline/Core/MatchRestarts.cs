@@ -5,6 +5,17 @@ namespace Touchline.Core
 {
     public sealed partial class MatchSimulation
     {
+        // Read-only broadcast cue: show the approach only once the taker and wall
+        // are within two metres of their assigned marks. This does not authorize a kick.
+        public bool FreeKickDeliveryApproaching
+        {
+            get{
+                var m=State;if(m.phase!="free-kick"||m.restart<=0)return false;
+                var taker=Find(m.restartTaker);if(taker==null||taker.sentOff||Point.Distance(taker.position,RestartPosition(taker,taker))>2)return false;
+                for(int i=0;i<m.restartWall.Count;i++){var p=Find(m.restartWall[i]);if(p==null||p.sentOff||Point.Distance(p.position,WallPosition(i))>2)return false;}
+                return true;
+            }
+        }
         float FreeKickSkill(Actor p)=>Skill(p,Data(p).attributes?.Any(a=>a.key=="freeKickAccuracy")==true?"freeKickAccuracy":"fkAccuracy");
         Actor RestartTaker()
         {
