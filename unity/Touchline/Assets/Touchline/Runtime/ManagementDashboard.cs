@@ -24,6 +24,7 @@ namespace Touchline
             ManagerFixtureCard(top,fixture,employed);
             ManagerDecisionCard(top,employed);
             if(!employed){ManagerInbox(s);return;}
+            ManagerSportingSummary(s);
 
             var metrics=Row(s,"manager-metrics");
             ManagerMetric(metrics,"TRÉSORERIE",Money(life.cash),"Finances et budgets","Finances",life.cash<0);
@@ -58,6 +59,25 @@ namespace Touchline
             ManagerInbox(s);
         }
 
+        void ManagerSportingSummary(VisualElement parent)
+        {
+            if(Career.world==null)return;
+            var grid=Row(parent,"manager-work-grid");grid.name="manager-sporting-summary";
+            var results=Card(grid,"manager-work-card");results.name="manager-recent-results";Text(results,"DERNIERS RÉSULTATS","eyebrow");
+            var recent=Career.world.history.Concat(Career.world.fixtures).Where(f=>f.played&&f.day<=Career.life.day&&(f.home==Career.club||f.away==Career.club)).GroupBy(f=>f.id).Select(g=>g.First()).OrderByDescending(f=>f.day).ThenByDescending(f=>f.id,StringComparer.Ordinal).Take(5).ToArray();
+            foreach(var f in recent){var row=Card(results,"manager-result");Text(row,ClubName(f.home)+"  "+f.hg+" – "+f.ag+"  "+ClubName(f.away),"section-title");Text(row,FixtureDay(f)+" · "+Career.CompetitionName(Database,f.league),"muted");}
+            if(recent.Length==0)Text(results,"Aucun match disputé pour le moment.","muted");
+            Button(results,"Calendrier et résultats",()=>Navigate("Calendrier"));
+            var standings=Card(grid,"manager-work-card");standings.name="manager-league-standing";Text(standings,"LE CHAMPIONNAT","eyebrow");
+            var division=Career.world.divisions.FirstOrDefault(d=>d.clubs.Contains(Career.club));
+            if(division==null){Text(standings,"Aucun championnat associé au club.","muted");return;}
+            Text(standings,Career.CompetitionName(Database,division.id),"section-title");var table=Career.Table(division.id);int rank=table.FindIndex(t=>t.club==Career.club);
+            Text(standings,table.All(t=>t.played==0)?"La saison n’a pas encore commencé.":"Votre position : "+(rank+1)+" / "+table.Count,"muted");
+            Text(standings,"PLACE · CLUB / MJ / DIFF / PTS","eyebrow");
+            int first=Math.Max(0,Math.Min(rank-2,table.Count-5));
+            for(int i=first;i<Math.Min(table.Count,first+5);i++){var t=table[i];var row=Row(standings,"calendar-table-row");row.name="manager-standing-"+t.club;Text(row,(i+1)+". "+ClubName(t.club)+(t.club==Career.club?" · vous":""),"calendar-team");Text(row,t.played+" / "+(t.gf-t.ga)+" / "+t.points);}
+            Button(standings,"Classement complet",()=>{calendarCompetition=division.id;Navigate("Calendrier");});
+        }
         void ManagerInbox(VisualElement parent)
         {
             var life=Career.life;var inbox=Card(parent,"manager-inbox");var heading=Row(inbox);Text(heading,"DERNIERS MESSAGES","eyebrow");

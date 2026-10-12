@@ -3,6 +3,7 @@
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Bureau : cinq derniers résultats et extrait du classement autour du club, avec accès direct au calendrier et au tableau complet.
 - Tactique : remplacement en touchant le nom sur le banc, consignes individuelles repliables et défilement unique de la composition en mode plié.
 - Match délégué : affichage automatique du score final, des buteurs avec leurs minutes et des statistiques avant de revenir au bureau.
 - Android : préparation de la version0.65/code58, consolidant les correctifs de recrutement, prêts, rapports financiers et contacts des relances/touches.

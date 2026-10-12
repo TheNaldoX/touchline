@@ -87,6 +87,7 @@ namespace Touchline.Editor
             if(Path.GetFileName(Output).StartsWith("ui-scroll-memory-",StringComparison.Ordinal))return BuildScrollMemorySteps();
             if(Path.GetFileName(Output).StartsWith("ui-recruitment-cache-",StringComparison.Ordinal))return BuildRecruitmentCacheSteps();
             if(Path.GetFileName(Output).StartsWith("ui-scout-snapshot-",StringComparison.Ordinal))return BuildScoutSnapshotSteps();
+            if(Path.GetFileName(Output).StartsWith("ui-dashboard-results-",StringComparison.Ordinal))return BuildDashboardResultsSteps();
             if(FocusedImmersion)return BuildFocusedImmersionSteps();
             if(FocusedCareer)return BuildCareerReviewSteps();
             if(FocusedCell)return BuildFocusedCellSteps();
@@ -175,6 +176,18 @@ namespace Touchline.Editor
             audit.AppendLine("Relance contextuelle synthétique : notification actionnable et accès aux décisions de départ, deux formats ; aucune vente ni sauvegarde personnelle.");return list;
         }
 
+        static List<Action> BuildDashboardResultsSteps()
+        {
+            var list=new List<Action>();
+            list.Add(()=>{var c=App.Career;c.EnsureWorld(App.Database);var f=c.world.fixtures.First(x=>x.home==c.club||x.away==c.club);f.played=true;f.hg=2;f.ag=1;f.day=c.life.day;c.world.history.Add(f);});
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Club");});
+                list.Add(()=>Root.Q<ScrollView>("manager-dashboard").ScrollTo(Root.Q("manager-sporting-summary")));
+                list.Add(()=>{if(Root.Q("manager-recent-results").Query<VisualElement>(className:"manager-result").ToList().Count!=1)throw new Exception("Dashboard must deduplicate fixture history");if(Root.Q("manager-standing-"+App.Career.club)==null)throw new Exception("Own club missing from standings");Capture(screen.tag+"-resultats-classement");Click("Classement complet");});
+                list.Add(()=>{if(Root.Q<Foldout>(className:"calendar-standings")==null)throw new Exception("Standings destination missing");});
+            }
+            audit.AppendLine("Résultat synthétique2-1 dupliqué en archives : une seule ligne, club présent au classement, accès tableau complet, deux formats.");return list;
+        }
         static List<Action> BuildChanceReviewSteps()
         {
             var list=new List<Action>();
