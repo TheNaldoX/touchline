@@ -1,3 +1,4 @@
+- Validation : le test de migration des gardiens reproduit le chargement d’une ancienne sauvegarde et contrôle son idempotence.
 - Android : prépare la version 0.68/code61 avec les correctifs de tête, d’entrée des contrôles et de bandeau replay.
 - Animations : les contrôles poitrine et cuisse démarrent avec leur horloge physique, sans saut initial du geste capturé.
 - Interface : bandeau de replay compact, sans mots fragmentés sur écran plié.
