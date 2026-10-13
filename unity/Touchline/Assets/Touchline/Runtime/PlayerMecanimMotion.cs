@@ -181,6 +181,8 @@ namespace Touchline
         public static float StrafeBlend(float current,float target,float dt)=>Mathf.Lerp(current,Mathf.Clamp01(target),1-Mathf.Exp(-Mathf.Max(0,dt)*LocomotionBlendRate));
         bool MecanimRender(Actor actor,float remaining,float dt,bool reset,float poseSpeed,PlayerMotionContext context)
         {
+            // A zero-progress reception still owns the outgoing pose, even if a render frame elapsed.
+            if(!reset&&MatchSimulation.IsBodyControl(actor)&&remaining>=MatchSimulation.BodyControlDuration(actor.actionKind)-.00001f)dt=0;
             bool carrying=context.carrying;
             if(!UseMecanim||!EnsureMecanimGraph(actor.slot==0))return false;leftFootedNow=leftFooted;mecanimPoseSpeed=poseSpeed;
             if(reset){moveBlend=Mathf.SmoothStep(0,1,Mathf.InverseLerp(MoveBlendFrom,MoveBlendTo,poseSpeed));dribbleBlend=carrying?1:0;}

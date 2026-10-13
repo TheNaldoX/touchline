@@ -1,3 +1,4 @@
+- Animations : la pose de course reste intacte au début physique des contrôles poitrine/cuisse, y compris sur plusieurs images à progression nulle.
 - Animations : contrôles poitrine/cuisse capturés adaptés au point de contact physique, avec appui mesuré sur la semelle et enchaînement des réceptions corrigé.
 - Caméra : portrait moins plongeant, cadrage rapproché entre ballon et but, marges homogènes pour supprimer la dérive en pause.
 - Android : version0.71/code64 avec corrections caméra, moments clés, suivi des jeunes réels et décisions de tir.

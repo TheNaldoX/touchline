@@ -46,6 +46,7 @@ namespace Touchline
         {
             if(!MatchSimulation.IsBodyControl(actor))return;
             float duration=MatchSimulation.BodyControlDuration(actor.actionKind),elapsed=Mathf.Clamp(duration-remaining,0,duration);
+            if(elapsed<=0)return; // Preserve the exact outgoing joints before physical cushioning begins.
             float contact=MatchSimulation.BodyControlContactTime;
             float approach=Mathf.SmoothStep(0,1,elapsed/contact),release=Mathf.SmoothStep(0,1,(elapsed-contact)/(duration-contact));
             float weight=approach*(1-release),absorb=Mathf.Sin(release*Mathf.PI);
