@@ -128,7 +128,7 @@ namespace Touchline.Editor
                     Point Dir(float degrees)=>new Point(Mathf.Sin(degrees*Mathf.Deg2Rad),Mathf.Cos(degrees*Mathf.Deg2Rad));
                     void Begin(Actor a,string action,string kind,float duration,float contact,Point aim,float height){if(a.action==action&&a.actionKind==kind)return;a.action=action;a.actionKind=kind;a.actionSequence++;a.actionTime=duration;a.actionContactTime=contact;a.actionTarget=aim;a.actionHeight=height;}
                     var contactBall=GameObject.CreatePrimitive(PrimitiveType.Sphere);contactBall.name="Recorded pass contact";contactBall.transform.SetParent(root.transform);contactBall.transform.localScale=Vector3.one*.22f;contactBall.GetComponent<Renderer>().sharedMaterial=PlayerView.Material(Color.white);contactBall.SetActive(false);
-                    void Scenario(string label,float seconds,Action<Actor,float> script){
+                    void Scenario(string label,float seconds,Action<Actor,float> script,Func<float,PlayerMotionContext> context=null){
                         var actor=new Actor{id=player.id,slot=5,action="idle",angle=0,position=new Point(0,-4),previous=new Point(0,-4)};
                         script(actor,0);view.ResetPresentation();float clock=0;int start=frame;var slides=new List<float>();var lastFeet=new Vector3[2];var seen=new List<string>();
                         int frames=Mathf.RoundToInt(seconds*Fps);
@@ -136,9 +136,10 @@ namespace Touchline.Editor
                             float t=f/(float)Fps;
                             while(clock+MatchSimulation.Step<=t+1e-4f){clock+=MatchSimulation.Step;actor.previous=actor.position;script(actor,clock);actor.position=actor.previous+actor.velocity*MatchSimulation.Step;}
                             var forward=new Vector3(Mathf.Sin(actor.angle),0,Mathf.Cos(actor.angle));var ball=new Vector3(actor.position.x,.11f,actor.position.z)+forward*.6f;
-                            if(actor.action=="kick")ball=new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z);
-                            contactBall.SetActive(actor.action=="kick");contactBall.transform.position=ball;
-                            view.Render(actor,Mathf.Clamp01((t-clock)/MatchSimulation.Step),f==0?0:1f/Fps,ball,default);
+                            bool contactAction=actor.action=="kick"||actor.action=="throw"||actor.action=="dive";
+                            if(contactAction)ball=new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z);
+                            contactBall.SetActive(contactAction);contactBall.transform.position=ball;
+                            view.Render(actor,Mathf.Clamp01((t-clock)/MatchSimulation.Step),f==0?0:1f/Fps,ball,context==null?default:context(t));
                             if(view.MecanimGestureClip!=null&&!seen.Contains(view.MecanimGestureClip))seen.Add(view.MecanimGestureClip);
                             for(int s=0;s<2;s++){var foot=view.FootPosition(s==0);if(f>1&&foot.y<.12f&&lastFeet[s].y<.12f){var d=foot-lastFeet[s];d.y=0;slides.Add(d.magnitude*Fps);}lastFeet[s]=foot;}
                             var hips=animator.GetBoneTransform(HumanBodyBones.Hips);var focus=hips.position+Vector3.up*.05f;
@@ -186,6 +187,31 @@ namespace Touchline.Editor
                             else{a.action="idle";a.actionKind=null;a.actionTime=0;}
                         });
                     }
+                    foreach(int variant in new[]{0,1,2}){
+                        view.ChangeIdentity(new PlayerData{id="rohr-strike",heightCm=182,preferredFoot=variant==0?"Left":"Right"});
+                        Scenario("frappe-rohr-"+variant,1.8f,(a,t)=>{
+                            a.angle=0;a.velocity=new Point();
+                            if(t>=.4f&&t<1.04f){Begin(a,"kick","shot",.64f,.18f,a.position+new Point(0,.42f),.11f);a.actionSequence=variant==2?3:2;a.actionTime=.64f-(t-.4f);}
+                            else{a.action="idle";a.actionKind=null;a.actionTime=0;}
+                        });
+                    }
+                    Scenario("celebration-rohr",3.6f,(a,t)=>{a.action="idle";a.actionTime=0;a.velocity=new Point();},t=>new PlayerMotionContext{reaction=t<3?2:0,reactionTime=t});
+                    foreach(int height in new[]{160,182,200}){
+                        view.ChangeIdentity(new PlayerData{id="rohr-throw",heightCm=height});
+                        Scenario("touche-rohr-"+height,2f,(a,t)=>{
+                            a.slot=9;a.angle=0;a.velocity=new Point();
+                            if(t>=.4f&&t<1.5f){Begin(a,"throw","throw",1.1f,.5f,a.position+new Point(0,.42f),height*.01f);a.actionTime=1.1f-(t-.4f);}
+                            else{a.action="idle";a.actionKind=null;a.actionTime=0;}
+                        });
+                    }
+                    foreach(float height in new[]{.22f,.6f}){
+                        view.ChangeIdentity(new PlayerData{id="rohr-keeper",heightCm=182});
+                        Scenario("prise-basse-rohr-"+height,2f,(a,t)=>{
+                            a.slot=0;a.angle=0;a.velocity=new Point();
+                            if(t>=.4f&&t<1.6f){Begin(a,"dive","save-catch",1.2f,.2f,a.position+new Point(.2f,.65f),height);a.actionTime=1.2f-(t-.4f);}
+                            else{a.action="idle";a.actionKind=null;a.actionTime=0;}
+                        });
+                    }
                     File.WriteAllText(Path.Combine(output,"lab.txt"),lab.ToString());info.AppendLine().Append(lab); // lab.txt n'est pas publié par le workflow ; info.txt l'est
                 }
                 File.WriteAllText(Path.Combine(output,"info.txt"),info.ToString());
@@ -209,7 +235,7 @@ namespace Touchline.Editor
             var skins=new List<SkinnedMeshRenderer>();var proxies=new List<GameObject>();var meshes=new List<Mesh>();var previous=RenderTexture.active;Texture2D image=null;
             try{
                 foreach(var skin in root.GetComponentsInChildren<SkinnedMeshRenderer>()){
-                    if(!skin.enabled||!skin.gameObject.activeInHierarchy)continue;var mesh=new Mesh();skin.BakeMesh(mesh);meshes.Add(mesh);
+                    if(!skin.enabled||!skin.gameObject.activeInHierarchy)continue;var mesh=new Mesh();skin.BakeMesh(mesh,true);meshes.Add(mesh); // Proxy inherits stature scale; compensate it during baking rather than applying it twice.
                     var proxy=new GameObject("Baked skin");proxy.layer=skin.gameObject.layer;proxy.transform.SetParent(skin.transform,false);
                     proxy.AddComponent<MeshFilter>().sharedMesh=mesh;proxy.AddComponent<MeshRenderer>().sharedMaterials=skin.sharedMaterials;proxies.Add(proxy);skins.Add(skin);skin.enabled=false;
                 }

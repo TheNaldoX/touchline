@@ -31,7 +31,7 @@ namespace Touchline.Tests
                     Assert.AreEqual(Vector3.zero,go.transform.position,"Presentation must not move the physical actor");
                     Assert.That(Vector3.Distance(hip.position,knee.position)+Vector3.Distance(knee.position,ankle.position),Is.EqualTo(length).Within(.0001f),"No limb stretching");
                     if(frame%Mathf.Max(1,fps/20)!=0)continue;
-                    foreach(var skin in skins){skin.BakeMesh(mesh);foreach(var vertex in mesh.vertices)lowest=Mathf.Min(lowest,skin.transform.TransformPoint(vertex).y);}
+                    foreach(var skin in skins){skin.BakeMesh(mesh,true);foreach(var vertex in mesh.vertices)lowest=Mathf.Min(lowest,skin.transform.TransformPoint(vertex).y);}
                     foreach(var boot in boots)foreach(var vertex in boot.sharedMesh.vertices)lowest=Mathf.Min(lowest,boot.transform.TransformPoint(vertex).y);
                 }
                 TestContext.WriteLine($"extension={extension:F4}; contact={contact:F4}; surface={lowest:F4}; hipStep={maxHipStep:F4}");

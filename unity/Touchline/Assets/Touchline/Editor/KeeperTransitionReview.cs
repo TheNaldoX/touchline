@@ -62,7 +62,7 @@ namespace Touchline.Editor
                 // an earlier sample cannot make the still disagree with them.
                 foreach(var skin in camera.transform.parent.GetComponentsInChildren<SkinnedMeshRenderer>()){
                     if(!skin.enabled||!skin.gameObject.activeInHierarchy)continue;
-                    var mesh=new Mesh();skin.BakeMesh(mesh);meshes.Add(mesh);
+                    var mesh=new Mesh();skin.BakeMesh(mesh,true);meshes.Add(mesh);
                     var proxy=new GameObject("Current diagnostic skin");proxy.transform.SetParent(skin.transform,false);proxy.AddComponent<MeshFilter>().sharedMesh=mesh;proxy.AddComponent<MeshRenderer>().sharedMaterials=skin.sharedMaterials;
                     proxies.Add(proxy);skins.Add(skin);skin.enabled=false;
                 }

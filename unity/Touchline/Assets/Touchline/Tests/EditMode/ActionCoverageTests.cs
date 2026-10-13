@@ -16,6 +16,23 @@ namespace Touchline.Tests
                 var setup=new BallState{setupStart=new Point(0,.3f),setupHeight=.11f,start=a.actionTarget,startHeight=a.actionHeight,end=new Point(0,8)};
                 for(int i=0;i<=fps/2;i++){a.actionTime=1.1f-i/(float)fps;var point=MatchSimulation.ThrowPreparation(setup,i/(fps*.5f),out float y);v.Render(a,1,1f/fps,new Vector3(point.x,y,point.z));}
                 var ball=new Vector3(0,height*.01f,.42f);
+                if(v.MecanimGestureClip=="Rohr_07_Throw_In"){
+                    // The avatar maps source .L to anatomical right. Check anatomy and
+                    // actual palm/finger contact, not a wrist-centre proxy inside the ball.
+                    var animator=go.GetComponentInChildren<Animator>();
+                    Assert.Less(animator.GetBoneTransform(HumanBodyBones.LeftHand).position.x,ball.x);
+                    Assert.Greater(animator.GetBoneTransform(HumanBodyBones.RightHand).position.x,ball.x);
+                    var skin=go.GetComponentInChildren<SkinnedMeshRenderer>();var mesh=new Mesh();
+                    try{
+                        skin.BakeMesh(mesh,true);var vertices=mesh.vertices;var weights=skin.sharedMesh.boneWeights;var bones=skin.bones;
+                        foreach(var side in new[]{".L",".R"}){
+                            float distance=float.MaxValue;
+                            for(int i=0;i<vertices.Length;i++){string name=bones[weights[i].boneIndex0].name;if((name.StartsWith("finger")||name.StartsWith("wrist"))&&name.EndsWith(side))distance=Mathf.Min(distance,Vector3.Distance(skin.transform.TransformPoint(vertices[i]),ball));}
+                            Assert.That(distance,Is.InRange(.07f,.135f),"Both hand surfaces must meet the 11cm-radius ball without penetrating its centre");
+                        }
+                    }finally{Object.DestroyImmediate(mesh);}
+                    return;
+                }
                 foreach(var hand in go.GetComponentsInChildren<Transform>())if(hand.name=="wrist.L"||hand.name=="wrist.R"){
                     Assert.That(Vector3.Distance(hand.position,ball),Is.LessThan(.17f),hand.name);
                     Assert.That(hand.name=="wrist.L"?-hand.position.x:hand.position.x,Is.GreaterThan(0),"The arms must not cross through the ball.");

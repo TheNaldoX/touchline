@@ -25,7 +25,7 @@ namespace Touchline.Tests
                     float t=frame*dt;actor.action=t<=1.2f?"dive":"idle";actor.actionTime=Mathf.Max(0,1.2f-t);
                     view.Render(actor,1,dt,new Vector3(side*1.1f,.22f,.42f));
                     if(t<.6f)continue; // Recovery, after the ball contact; full-body coverage remains in the test below.
-                    skin.BakeMesh(baked);var vertices=baked.vertices;
+                    skin.BakeMesh(baked,true);var vertices=baked.vertices;
                     for(int v=0;v<vertices.Length;v++){
                         if(!bones[weights[v].boneIndex0].name.StartsWith("lowerleg"))continue;
                         lowest=Mathf.Min(lowest,skin.transform.TransformPoint(vertices[v]).y);samples++;
@@ -101,7 +101,7 @@ namespace Touchline.Tests
                     view.Render(actor,1,.02f,ball);
                     if(frame%5!=0)continue;
                     foreach(var skin in skins){
-                        skin.BakeMesh(baked);var vertices=baked.vertices;float before=lowest;
+                        skin.BakeMesh(baked,true);var vertices=baked.vertices;float before=lowest;
                         Measure(vertices,skin.transform.localToWorldMatrix,skin.name,time,ref lowest,ref lowestPart,ref lowestTime);
                         if(lowest<before){
                             int index=0;float heightMin=float.PositiveInfinity;

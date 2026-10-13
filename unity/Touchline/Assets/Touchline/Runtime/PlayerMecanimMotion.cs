@@ -19,13 +19,20 @@ namespace Touchline
         static Dictionary<string,AnimationClip> mecanimClips;
         static Dictionary<string,AnimationClip> MecanimClips{get{
             if(mecanimClips==null){mecanimClips=new Dictionary<string,AnimationClip>();foreach(var clip in Resources.LoadAll<AnimationClip>("Animations/Mixamo"))if(clip!=null&&!clip.name.StartsWith("__preview__"))mecanimClips[clip.name]=clip;
-                // Load only the validated gesture, not the entire personal capture library.
+                // Load only the selected gestures, not the entire personal capture library.
                 var soccerPass=Resources.Load<AnimationClip>("Animations/RohrSoccer/"+CapturedInsidePass);
                 if(soccerPass!=null&&soccerPass.humanMotion)mecanimClips[CapturedInsidePass]=soccerPass;
+                foreach(var name in new[]{CapturedPowerKick,CapturedPlacedKick,CapturedDrivenKick,CapturedCelebration,CapturedThrow,CapturedLowCatch}){
+                    var capture=Resources.Load<AnimationClip>("Animations/RohrSoccer/"+name);
+                    if(capture!=null&&capture.humanMotion)mecanimClips[name]=capture;
+                }
             }
             return mecanimClips;}}
         const string IdleClip="Soccer Idle",JogClip="Jog Forward",DribbleClip="Dribble",KeeperIdleClip="Goalkeeper Idle";
         const string CapturedInsidePass="Rohr_08_Side_Foot_Kick";
+        const string CapturedPowerKick="Rohr_09_Power_Kick",CapturedPlacedKick="Rohr_10_Penalty_Kick_01",CapturedDrivenKick="Rohr_11_Penalty_Kick_02";
+        const string CapturedCelebration="Rohr_13_Goal_Celebration_02";
+        const string CapturedThrow="Rohr_07_Throw_In",CapturedLowCatch="Rohr_17_Goalkeeper_Save_03";
         const string RunClip="Standard Run",SprintClip="Two Cycle Sprint",JogBackClip="Jog Backward",RunBackClip="Run Backward",StrafeLeftClip="Jog Strafe Left",StrafeRightClip="Jog Strafe Right";
         public static bool MecanimReady=>MecanimClips.ContainsKey(IdleClip)&&MecanimClips.ContainsKey(JogClip);
 
@@ -51,6 +58,8 @@ namespace Touchline
         // Mesuré sur les clips (vitesse maximale du membre, voir MecanimPrototypeFilm).
         static readonly Dictionary<string,float> ClipContact=new Dictionary<string,float>{
             {CapturedInsidePass,1.4f}, // s: right-foot speed peak measured on the Touchline avatar at 60 Hz, excluding initial pose settling.
+            {CapturedPowerKick,2.617f},{CapturedPlacedKick,6.583f},{CapturedDrivenKick,4.933f}, // seconds: striking-foot peaks; approach trimmed to the engine preparation.
+            {CapturedThrow,6.60f},{CapturedLowCatch,7.20f}, // seconds: overhead release and low gather, checked in full native captures (not global hand-speed peaks).
             // Pic de vitesse du pied qui frappe (analyse 60 Hz des clips Mixamo).
             {"Kick Soccerball",.517f},{"Kick Soccerball (1)",.417f},{"Soccer Pass",.433f},{"Chip",.483f},{"Soccer Penalty Kick",.733f},{"Strike Forward Jog",.467f},{"Goalkeeper Drop Kick",2.083f},
             // Pic de vitesse des mains.
@@ -129,6 +138,10 @@ namespace Touchline
                     // Slow right-foot deliveries only; deterministic variety, with the existing
                     // capture as fallback when the licensed personal pack is not installed.
                     if(!leftFootedNow&&ShortPass(actor)&&actor.actionHeight>0&&mecanimPoseSpeed<ReceiveMaxSpeed&&actor.actionSequence%3==2&&MecanimClips.ContainsKey(CapturedInsidePass))clip=CapturedInsidePass;
+                    if(actor.actionKind=="shot"&&actor.actionHeight>0&&actor.actionHeight<.3f&&mecanimPoseSpeed<ReceiveMaxSpeed){
+                        string strike=leftFootedNow?CapturedPowerKick:actor.actionSequence%2==0?CapturedPlacedKick:CapturedDrivenKick;
+                        if(MecanimClips.ContainsKey(strike))clip=strike;
+                    }
                     if(actor.slot==0&&MecanimClips.ContainsKey("Goalkeeper Drop Kick")&&actor.actionKind=="clearance")clip="Goalkeeper Drop Kick";
                     simContact=.18f;break;
                 case "header":clip="Header";simContact=actor.actionContactTime>0?actor.actionContactTime:.12f;break;
@@ -149,13 +162,14 @@ namespace Touchline
                     clip=BallOnLeft(actor)?StandingTackleClip+" (miroir)":StandingTackleClip;simContact=actor.actionContactTime>0?actor.actionContactTime:MatchSimulation.TacklePreparation;break;
                 case "keeper-roll":clip="Goalkeeper Pass";simContact=actor.actionContactTime>0?actor.actionContactTime:MatchSimulation.KeeperDistributionContact;break;
                 case "keeper-throw":clip=KeeperThrowClip;simContact=actor.actionContactTime>0?actor.actionContactTime:MatchSimulation.KeeperDistributionContact;break;
-                case "throw":clip=actor.slot==0?(MecanimClips.ContainsKey(KeeperThrowClip)?KeeperThrowClip:"Goalkeeper Pass"):"Throw In";simContact=actor.actionContactTime>0?actor.actionContactTime:.5f;break;
+                case "throw":clip=actor.slot==0?(MecanimClips.ContainsKey(KeeperThrowClip)?KeeperThrowClip:"Goalkeeper Pass"):actor.actionHeight>0&&MecanimClips.ContainsKey(CapturedThrow)?CapturedThrow:"Throw In";simContact=actor.actionContactTime>0?actor.actionContactTime:.5f;break;
                 case "dive":{
                     var local=transform.InverseTransformPoint(new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z));
                     // Standing chest capture: only reachable central catches, not low scoops,
                     // overhead claims or parries. The selected clip is held for the whole action.
                     bool chest=actor.actionKind=="save-catch"&&local.y>=.75f&&local.y<=1.8f&&KeeperCompactCatch.Weight(local)>=.9999f;
                     clip=chest?"Goalkeeper Catch":(actor.diveSide>=0)==(DiveClipSide>0)?"Goalkeeper Diving Save":"Goalkeeper Diving Save (miroir)";
+                    if(actor.actionKind=="save-catch"&&local.y>=.15f&&local.y<.75f&&KeeperCompactCatch.Weight(local)>=.9999f&&MecanimClips.ContainsKey(CapturedLowCatch))clip=CapturedLowCatch;
                     simContact=actor.actionContactTime>0?actor.actionContactTime:.2f;break;}
                 case "claim":clip="Goalkeeper Catch";simContact=.2f;break;
             }
@@ -165,8 +179,9 @@ namespace Touchline
         // Retourne false si l'animation capturée n'est pas disponible (repli procédural).
         // Exact exponential response keeps reversals continuous at 30, 60 and 120 Hz.
         public static float StrafeBlend(float current,float target,float dt)=>Mathf.Lerp(current,Mathf.Clamp01(target),1-Mathf.Exp(-Mathf.Max(0,dt)*LocomotionBlendRate));
-        bool MecanimRender(Actor actor,float remaining,float dt,bool reset,float poseSpeed,bool carrying)
+        bool MecanimRender(Actor actor,float remaining,float dt,bool reset,float poseSpeed,PlayerMotionContext context)
         {
+            bool carrying=context.carrying;
             if(!UseMecanim||!EnsureMecanimGraph(actor.slot==0))return false;leftFootedNow=leftFooted;mecanimPoseSpeed=poseSpeed;
             if(reset){moveBlend=Mathf.SmoothStep(0,1,Mathf.InverseLerp(MoveBlendFrom,MoveBlendTo,poseSpeed));dribbleBlend=carrying?1:0;}
             float k=1-Mathf.Exp(-dt*LocomotionBlendRate);
@@ -189,6 +204,8 @@ namespace Touchline
 
             // Gestes : nouveau geste → emplacement libre, fondu d'entrée, temps calé sur le contact.
             bool acting=MecanimAction(actor,out var clipName,out var simContact),turnGesture=false;
+            bool celebrating=!acting&&context.reaction==2&&context.reactionTime>=0&&context.reactionTime<3&&poseSpeed<ReceiveMaxSpeed&&(actor.action=="idle"||actor.action=="run")&&MecanimClips.ContainsKey(CapturedCelebration);
+            if(celebrating){acting=true;clipName=CapturedCelebration;mecanimPhased=true;}
             if(!acting)acting=turnGesture=MecanimSharpTurn(actor,poseSpeed,carrying,out clipName);else turning=false;
             // Un geste garde le clip choisi à son début, même si la vitesse change ensuite.
             if(acting&&!turnGesture&&!mecanimPhased&&mecanimActionKey!=null&&actor.actionSequence==mecanimActionSequence)clipName=mecanimActionKey;
@@ -200,6 +217,8 @@ namespace Touchline
                 mecanimGraph.Connect(actionPlayables[slot],0,mecanimMixer,ActionInput+slot);actionLive[slot]=true;if(activeAction>=0)actionLive[activeAction]=false;
                 actionNames[slot]=clipName;activeAction=slot;mecanimActionKey=key;mecanimActionSequence=actor.actionSequence;mecanimActionElapsed=0;
                 mecanimActionContact=(ClipContact.TryGetValue(clipName,out var c)?c:clip.length*.4f)-simContact;
+                if(celebrating)mecanimActionContact=0;
+                if(PersonalFacing(clipName))ClipYawCurve(clipName);
                 if(turnGesture)mecanimActionContact=TurnClipStart(clipName);
                 if(turnSlot==slot)turnSlot=-1;if(turnGesture)turnSlot=slot;
                 if(reset)actionWeights[slot]=1;
@@ -208,6 +227,7 @@ namespace Touchline
                 // Contact gestures share the interpolated match clock even when a highlight joins mid-action.
                 float duration=CapturedActionDuration(actor);
                 mecanimActionElapsed=duration>0?Mathf.Clamp(duration-remaining,0,duration):mecanimActionElapsed+dt;var playable=actionPlayables[activeAction];float length=(float)playable.GetAnimationClip().length;
+                if(celebrating)mecanimActionElapsed=context.reactionTime;
                 if(actor.action=="fall"&&mecanimActionKey=="Soccer Trip")mecanimActionElapsed=Mathf.Max(0,MatchSimulation.ContactFallDuration-remaining);
                 playable.SetTime(Mathf.Clamp(mecanimActionContact+mecanimActionElapsed,0,length-.001f));playable.SetSpeed(0);
             }
@@ -220,6 +240,7 @@ namespace Touchline
                 float fadeOut=actionClip=="Soccer Trip"?FallGroundFade:actionClip==FallenClip||actionClip==StandUpClip?FallRecoveryFade:ActionFadeOut;
                 float target=actionLive[i]?1:0;float rate=actionLive[i]?1/fadeIn:1/fadeOut;
                 actionWeights[i]=Mathf.MoveTowards(actionWeights[i],target,rate*dt);
+                if(celebrating&&i==activeAction)actionWeights[i]=Mathf.SmoothStep(0,1,context.reactionTime/.25f)*(1-Mathf.SmoothStep(0,1,(context.reactionTime-2.6f)/.4f)); // seconds: enter/leave inside the three-second goal reaction.
                 // Do not start headers or body receptions before their physical action clock advances.
                 if(i==activeAction&&(actor.action=="header"||MatchSimulation.IsBodyControl(actor)||actor.action=="fall"&&mecanimActionKey=="Soccer Trip"))actionWeights[i]=Mathf.Min(actionWeights[i],Mathf.Clamp01(mecanimActionElapsed/fadeIn));
                 if(!actionLive[i]){actionPlayables[i].SetSpeed(1);} // le geste finit naturellement pendant le fondu de sortie
@@ -247,8 +268,17 @@ namespace Touchline
             mecanimMixer.SetInputWeight(ActionInput,a0);mecanimMixer.SetInputWeight(ActionInput+1,a1);
             body.localPosition=Vector3.zero;body.localRotation=Quaternion.identity;
             mecanimGraph.Evaluate(reset?0:Mathf.Max(0,dt));
+            // Recorded run-ups do not necessarily face the actor's forward axis at impact.
+            // Rotate the capture, not the actor or the authoritative ball trajectory.
+            for(int slot=0;slot<2;slot++)if(PersonalFacing(actionNames[slot])&&actionPlayables[slot].IsValid()){
+                var curve=ClipYawCurve(actionNames[slot]);float sample=ClipContact[actionNames[slot]]*YawCurveRate;
+                int index=Mathf.Clamp((int)sample,0,curve.Length-2);
+                float yaw=Mathf.Lerp(curve[index],curve[index+1],sample-index);
+                body.localRotation*=Quaternion.Euler(0,-yaw*(slot==0?a0:a1),0);
+            }
             if(turnWeight>0)MecanimTurnYaw(turnWeight);
             MecanimFootLock(dt,reset);
+            MecanimStrikeSupport(actor,remaining);
             MecanimPassContact(actor,remaining);
             // Retargeted clips can lower a rotated boot below the pitch during
             // action recovery. Preserve the captured knee plane and foot rotation.
@@ -274,20 +304,47 @@ namespace Touchline
         void MecanimPassContact(Actor actor,float remaining)
         {
             // Older saved actions may have no contact metadata; leave their capture untouched.
-            if(actor.action!="kick"||!ShortPass(actor)||actor.actionHeight<=0)return;
+            bool strike=PersonalStrike(mecanimActionKey);
+            if(actor.action!="kick"||(!ShortPass(actor)&&!strike)||actor.actionHeight<=0)return;
             const float duration=.64f,contact=.18f,blendWindow=.14f; // seconds: engine kick and smooth correction around impact
             const float maxCorrection=.35f; // metres: never pull a foot to an unreachable distant ball
             const float minBallOffset=.15f; // metres: ignore missing contact points directly under the pelvis
             float elapsed=duration-remaining;
             float weight=1-Mathf.SmoothStep(0,1,Mathf.Abs(elapsed-contact)/blendWindow);
             if(weight<=0)return;
-            var foot=Limb(leftFootedNow?"L":"R").foot;
+            bool rigLeft=(strike||mecanimActionKey==CapturedInsidePass)&&HumanSidesSwapped?!leftFootedNow:leftFootedNow;
+            var foot=Limb(rigLeft?"L":"R").foot;
             var ball=new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z);
             if(Vector3.ProjectOnPlane(ball-transform.position,Vector3.up).sqrMagnitude<minBallOffset*minBallOffset)return;
-            var correction=Vector3.ClampMagnitude(ball-InsideFootContactPosition(leftFootedNow),maxCorrection);
+            bool personal=strike||mecanimActionKey==CapturedInsidePass;
+            if(personal){
+                var forward=Vector3.ProjectOnPlane(foot.forward,Vector3.up);
+                if(forward.sqrMagnitude>.001f)foot.rotation=Quaternion.Slerp(foot.rotation,Quaternion.LookRotation(forward,Vector3.up),weight);
+            }
+            const float personalReach=.55f; // metres: wider recorded swing; leg IK still enforces anatomical reach.
+            var correction=Vector3.ClampMagnitude(ball-(strike?BootContactPosition(rigLeft):InsideFootContactPosition(rigLeft)),personal?personalReach:maxCorrection);
             var rotation=foot.rotation;
-            SolveLeg(leftFootedNow?"L":"R",foot.position+correction*weight);
+            SolveLeg(rigLeft?"L":"R",foot.position+correction*weight);
             foot.rotation=rotation;
+        }
+        static bool PersonalStrike(string clip)=>clip==CapturedPowerKick||clip==CapturedPlacedKick||clip==CapturedDrivenKick;
+        static bool PersonalFacing(string clip)=>PersonalStrike(clip)||clip==CapturedThrow||clip==CapturedLowCatch;
+        void MecanimStrikeSupport(Actor actor,float remaining)
+        {
+            if(actor.action!="kick"||!PersonalStrike(mecanimActionKey))return;
+            float elapsed=.64f-remaining;
+            float weight=Mathf.SmoothStep(0,1,elapsed/.10f)*(1-Mathf.SmoothStep(0,1,(elapsed-.22f)/.25f)); // seconds: settle before impact, then release into follow-through.
+            bool rigLeft=HumanSidesSwapped?!leftFootedNow:leftFootedNow;
+            string side=rigLeft?"R":"L";var leg=Limb(side);var support=leg.foot;var rotation=support.rotation;
+            var center=rotation*new Vector3(0,.02f,.075f);
+            float extent=Mathf.Abs((rotation*Vector3.right).y)*.057f+Mathf.Abs((rotation*Vector3.up).y)*.085f+Mathf.Abs((rotation*Vector3.forward).y)*.145f;
+            var target=support.position;target.y=.01f-(center.y-extent)*transform.localScale.y;
+            var pole=leg.lowerLeg.position-leg.upperLeg.position;
+            float reach=Vector3.Distance(leg.upperLeg.position,leg.lowerLeg.position)+Vector3.Distance(leg.lowerLeg.position,support.position)-.005f;
+            var delta=leg.upperLeg.position-target;
+            float lowering=Mathf.Max(0,delta.y-Mathf.Sqrt(Mathf.Max(0,reach*reach-delta.x*delta.x-delta.z*delta.z)));
+            body.position-=Vector3.up*Mathf.Min(lowering,MotionStature*.25f)*weight; // Only lower the pelvis when extending the support knee cannot reach the pitch.
+            SolveCapturedSupport(side,Vector3.Lerp(support.position,target,weight),pole);support.rotation=rotation;
         }
 
         // Virage serré en course : au lieu de pivoter tout le corps d'un bloc pendant que

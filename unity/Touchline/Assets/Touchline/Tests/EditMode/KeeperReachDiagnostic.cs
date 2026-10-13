@@ -30,7 +30,7 @@ namespace Touchline.Tests
                     }
                     float closest=100;
                     foreach(var skin in go.GetComponentsInChildren<SkinnedMeshRenderer>())if(skin.name.Contains("glove")||skin.name.Contains("Glove")){
-                        skin.BakeMesh(mesh);foreach(var v in mesh.vertices)closest=Mathf.Min(closest,Vector3.Distance(skin.transform.TransformPoint(v),ball));
+                        skin.BakeMesh(mesh,true);foreach(var v in mesh.vertices)closest=Mathf.Min(closest,Vector3.Distance(skin.transform.TransformPoint(v),ball));
                     }
                     Assert.Less(closest,100,"Find actual glove geometry for diagnostic");
                     float armAfter=Vector3.Distance(shoulder.position,elbow.position)+Vector3.Distance(elbow.position,wrist.position);

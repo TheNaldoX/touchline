@@ -177,12 +177,29 @@ namespace Touchline
                 SolveLeg(side,target,leg.lowerLeg.position-leg.upperLeg.position);foot.rotation=rotation;
             }
             var aim=elapsed<=contact?ball:new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z);
-            for(int i=0;i<2;i++){
+            if(mecanimActionKey==CapturedThrow){
+                // The source performer crouches. At release, extend within this player's
+                // leg lengths instead of lifting their feet to reach the simulated release.
+                var l=Limb("L");var r=Limb("R");var left=l.foot.position;var right=r.foot.position;
+                float ReachLength(LimbRig leg)=>Vector3.Distance(leg.upperLeg.position,leg.lowerLeg.position)+Vector3.Distance(leg.lowerLeg.position,leg.foot.position);
+                var hip=(l.upperLeg.position+r.upperLeg.position)*.5f;
+                var target=(left+right)*.5f+Vector3.up*(Mathf.Min(ReachLength(l),ReachLength(r))*.97f);
+                body.position+=Vector3.ClampMagnitude(target-hip,.45f)*weight; // metres; retain a slightly bent support knee.
+                for(int i=0;i<2;i++){var side=Sides[i];var leg=Limb(side);var rotation=leg.foot.rotation;SolveCapturedSupport(side,i==0?left:right,leg.lowerLeg.position-leg.upperLeg.position);leg.foot.rotation=rotation;}
+                Aim("spine05","neck01",new Vector3(0,1,.2f),weight);
+            }
+            bool personalThrow=mecanimActionKey==CapturedThrow;
+            if(personalThrow)gripOffset=Vector3.up*.11f*weight; // metres from the wrist pair to the ball centre; fingers, not wrists, touch its surface.
+            void Reach(){for(int i=0;i<2;i++){
                 string side=i==0?"L":"R";
                 var hand=Limb(side).wrist;var rotation=hand.rotation;
-                var target=aim+transform.right*(side=="L"?-gripHalfWidth:gripHalfWidth);
+                bool left=personalThrow&&HumanSidesSwapped?side=="R":side=="L";
+                float halfWidth=personalThrow?.135f:gripHalfWidth; // metres: 11cm ball radius plus palm thickness; do not bury the hands in the ball.
+                var target=aim+transform.right*(left?-halfWidth:halfWidth)-(personalThrow?gripOffset+transform.forward*.06f:Vector3.zero);
                 SolveArm(side,Vector3.Lerp(hand.position,target,weight),-body.up);hand.rotation=rotation;
-            }
+                if(personalThrow){OrientKeeperHand(i,aim);hand.rotation=Quaternion.Slerp(rotation,hand.rotation,weight);}
+            }}
+            Reach();
         }
         void ThrowPose(Actor actor,float remaining,Vector3 ball)
         {

@@ -82,7 +82,7 @@ namespace Touchline.Editor
                 // CPU bake the current bones to avoid stale GPU skinning data.
                 foreach(var skin in root.GetComponentsInChildren<SkinnedMeshRenderer>()) {
                     if(!skin.enabled||!skin.gameObject.activeInHierarchy)continue;
-                    var mesh=new Mesh();skin.BakeMesh(mesh);meshes.Add(mesh);
+                    var mesh=new Mesh();skin.BakeMesh(mesh,true);meshes.Add(mesh);
                     var proxy=new GameObject("Current readiness skin");proxy.layer=skin.gameObject.layer;proxy.transform.SetParent(skin.transform,false);
                     proxy.AddComponent<MeshFilter>().sharedMesh=mesh;proxy.AddComponent<MeshRenderer>().sharedMaterials=skin.sharedMaterials;
                     proxies.Add(proxy);skins.Add(skin);skin.enabled=false;
