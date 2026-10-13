@@ -1,3 +1,4 @@
+- Caméra : boutons et pincement appliquent un zoom progressif au lieu de réinitialiser instantanément le cadrage.
 - Validation : pivots et redémarrages mesurés sur le virage capturé et les positions simulées, avec pause vérifiée à trois cadences.
 - Animations : rotation du plan des genoux bornée dans le temps au redémarrage, sans déplacer les contacts des pieds ni rompre l’entrée des contrôles.
 - Android : préparation de la version 0.72-preview (code 65), regroupant les corrections validées de caméra, moteur, formation et animations.
