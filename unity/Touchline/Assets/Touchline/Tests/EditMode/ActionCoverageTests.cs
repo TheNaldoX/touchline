@@ -6,6 +6,16 @@ namespace Touchline.Tests
 {
     public class ActionCoverageTests
     {
+        [TestCase(0)] [TestCase(9)]
+        public void ThrowSelectionUsesThePhysicalPlayerRole(int slot)
+        {
+            var go=new GameObject("Throw role");try{var view=View(go);
+                var actor=new Actor{slot=slot,action="throw",actionKind="throw",actionTime=.6f,actionContactTime=.5f,actionSequence=1,actionTarget=new Point(0,.42f),actionHeight=1.8f};
+                view.Render(actor,1,1f/60,new Vector3(0,1.8f,.42f));
+                if(slot==0)StringAssert.StartsWith("Goalkeeper",view.MecanimGestureClip);
+                else Assert.IsTrue(view.MecanimGestureClip=="Rohr_07_Throw_In"||view.MecanimGestureClip=="Throw In");
+            }finally{Object.DestroyImmediate(go);}
+        }
         [TestCase(30,160)] [TestCase(60,160)] [TestCase(120,160)]
         [TestCase(30,180)] [TestCase(60,180)] [TestCase(120,180)]
         [TestCase(30,205)] [TestCase(60,205)] [TestCase(120,205)]
@@ -67,10 +77,18 @@ namespace Touchline.Tests
         }
         [TestCase(160)] [TestCase(180)] [TestCase(205)] public void ThrowReleaseHasTwoHandsOnBallAndGroundedFeet(int height)
         {
-            var go=new GameObject("Throw-in contact");try{var v=View(go);v.ChangeIdentity(new PlayerData{id="throw",heightCm=height});var a=new Actor{action="throw",actionTime=.6f,actionContactTime=.5f,actionSequence=1,actionTarget=new Point(0,.42f),actionHeight=height*.01f};var ball=new Vector3(0,height*.01f,.42f);
+            var go=new GameObject("Throw-in contact");try{var v=View(go);v.ChangeIdentity(new PlayerData{id="throw",heightCm=height});var a=new Actor{slot=9,action="throw",actionKind="throw",actionTime=.6f,actionContactTime=.5f,actionSequence=1,actionTarget=new Point(0,.42f),actionHeight=height*.01f};var ball=new Vector3(0,height*.01f,.42f);
                 var setup=new BallState{setupStart=new Point(0,.3f),setupHeight=.11f,start=a.actionTarget,startHeight=a.actionHeight,end=new Point(0,8)};
                 for(int i=0;i<=50;i++){a.actionTime=1.1f-i*.01f;var point=MatchSimulation.ThrowPreparation(setup,i/50f,out float y);v.Render(a,1,.01f,new Vector3(point.x,y,point.z));}
-                var hands=go.GetComponentsInChildren<Transform>();foreach(var hand in hands)if(hand.name=="wrist.L"||hand.name=="wrist.R")Assert.That(Vector3.Distance(hand.position,ball),Is.LessThan(.17f),hand.name);
+                // A wrist centre is behind the palm, not the ball-contact surface.
+                var skin=go.GetComponentInChildren<SkinnedMeshRenderer>();var mesh=new Mesh();
+                try{skin.BakeMesh(mesh,true);var vertices=mesh.vertices;var weights=skin.sharedMesh.boneWeights;
+                    foreach(string side in new[]{".L",".R"}){float gap=float.MaxValue;
+                        for(int i=0;i<vertices.Length;i++){string bone=skin.bones[weights[i].boneIndex0].name;
+                            if((bone.StartsWith("finger")||bone.StartsWith("wrist"))&&bone.EndsWith(side))gap=Mathf.Min(gap,Vector3.Distance(skin.transform.TransformPoint(vertices[i]),ball));}
+                        Assert.That(gap,Is.InRange(.07f,.135f),"Hand surface meets the 11cm-radius ball");
+                    }
+                }finally{Object.DestroyImmediate(mesh);}
                 Assert.That(v.FootPosition(true).y,Is.InRange(.04f,.14f));Assert.That(v.FootPosition(false).y,Is.InRange(.04f,.14f));
             }finally{Object.DestroyImmediate(go);}
         }

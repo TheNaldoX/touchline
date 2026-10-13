@@ -15,15 +15,15 @@ namespace Touchline.Tests
         {
             for(int variant=0;variant<6;variant++){
                 var go=new GameObject("Contact test");try{var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="contact-"+variant,preferredFoot=left?"Left":"Right"},0,9,Color.white);
-                    var actor=new Actor{id="contact-"+variant,position=new Point(4,6),previous=new Point(4,6),angle=variant*Mathf.PI/3,action="kick",actionSequence=variant+1};var direction=new Vector3(Mathf.Sin(actor.angle),0,Mathf.Cos(actor.angle));var ball=new Vector3(4,.11f,6)+direction*.42f;actor.actionTarget=new Point(ball.x,ball.z);actor.actionHeight=ball.y;go.transform.rotation=Quaternion.Euler(0,actor.angle*Mathf.Rad2Deg,0);
+                    var actor=new Actor{slot=9,id="contact-"+variant,position=new Point(4,6),previous=new Point(4,6),angle=variant*Mathf.PI/3,action="kick",actionKind="pass",actionSequence=variant+1};var direction=new Vector3(Mathf.Sin(actor.angle),0,Mathf.Cos(actor.angle));var ball=new Vector3(4,.11f,6)+direction*.42f;actor.actionTarget=new Point(ball.x,ball.z);actor.actionHeight=ball.y;go.transform.rotation=Quaternion.Euler(0,actor.angle*Mathf.Rad2Deg,0);
                     for(int frame=0;frame<=18;frame++){actor.actionTime=.64f-frame*.01f;view.Render(actor,1,.01f,ball);}
-                    float gap=Vector3.Distance(view.BootContactPosition(left),ball);Assert.That(gap,Is.LessThan(.06f),"variant "+variant+" gap "+gap);
+                    bool contactSide=view.MecanimGestureClip=="Rohr_08_Side_Foot_Kick"?!left:left;float gap=Vector3.Distance(view.InsideFootContactPosition(contactSide),ball);Assert.That(gap,Is.LessThan(.06f),"variant "+variant+" gap "+gap);
                 }finally{Object.DestroyImmediate(go);}
             }
         }
         [Test] public void LocomotionKeepsFeetAbovePitchAndHasNoFrameTeleport()
         {
-            var go=new GameObject("Gait test");try{var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="running",preferredFoot="Right"},0,9,Color.white);var actor=new Actor{id="running",action="run",velocity=new Point(0,3.5f)};Vector3 previous=default;
+            var go=new GameObject("Gait test");try{var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="running",preferredFoot="Right"},0,9,Color.white);var actor=new Actor{slot=9,id="running",action="run",velocity=new Point(0,3.5f)};Vector3 previous=default;
                 for(int frame=0;frame<180;frame++){actor.previous=actor.position;actor.position.z=frame*3.5f/60;view.Render(actor,1,1f/60);var foot=view.FootPosition(true);Assert.That(foot.y,Is.GreaterThan(.035f));if(frame>2)Assert.That(Vector3.Distance(previous,foot),Is.LessThan(.42f),"frame "+frame);previous=foot;}
             }finally{Object.DestroyImmediate(go);}
         }
@@ -35,34 +35,34 @@ namespace Touchline.Tests
         {
             var go=new GameObject("Running kick transition");try{
                 var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="transition",preferredFoot=left?"Left":"Right"},0,9,Color.white);
-                var actor=new Actor{id="transition",action="run",velocity=new Point(0,3.5f)};
+                var actor=new Actor{slot=9,id="transition",action="run",velocity=new Point(0,3.5f)};
                 for(int i=0;i<45;i++){actor.previous=actor.position;actor.position.z+=3.5f/60;view.Render(actor,1,1f/60);}
-                var prior=view.FootPosition(left);actor.previous=actor.position;actor.velocity=new Point();actor.action="kick";actor.actionSequence=1;
+                var prior=view.FootPosition(left);actor.previous=actor.position;actor.velocity=new Point();actor.action="kick";actor.actionKind="pass";actor.actionSequence=1;
                 var ball=new Vector3(actor.position.x,.11f,actor.position.z+.42f);actor.actionTarget=new Point(ball.x,ball.z);actor.actionHeight=.11f;
                 for(int frame=0;frame<=18;frame++){
                     actor.actionTime=.64f-frame*.01f;view.Render(actor,1,.01f,ball);
                     if(frame==0)Assert.That(Vector3.Distance(prior,view.FootPosition(left)),Is.LessThan(.15f),"Action entry snaps the boot");
                     Assert.That(view.FootPosition(left).y,Is.GreaterThan(.03f));
                 }
-                Assert.That(Vector3.Distance(view.BootContactPosition(left),ball),Is.LessThan(.06f),"Transition delayed the strike contact");
+                Assert.That(Vector3.Distance(view.InsideFootContactPosition(left),ball),Is.LessThan(.06f),"Transition delayed the strike contact");
             }finally{Object.DestroyImmediate(go);}
         }
         [Test] public void LateFirstKickFrameStillMeetsBall()
         {
             var go=new GameObject("Late observed strike");try{
                 var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="late",preferredFoot="Right"},0,9,Color.white);
-                var actor=new Actor{action="run",velocity=new Point(0,3)};view.Render(actor,1,1f/60);
-                actor.velocity=new Point();actor.action="kick";actor.actionTime=.46f;actor.actionSequence=1;actor.actionTarget=new Point(0,.42f);actor.actionHeight=.11f;
+                var actor=new Actor{slot=9,action="run",velocity=new Point(0,3)};view.Render(actor,1,1f/60);
+                actor.velocity=new Point();actor.action="kick";actor.actionKind="pass";actor.actionTime=.46f;actor.actionSequence=1;actor.actionTarget=new Point(0,.42f);actor.actionHeight=.11f;
                 var ball=new Vector3(0,.11f,.42f);view.Render(actor,1,1f/120,ball);
-                Assert.That(Vector3.Distance(view.BootContactPosition(false),ball),Is.LessThan(.06f));
+                Assert.That(Vector3.Distance(view.InsideFootContactPosition(false),ball),Is.LessThan(.06f));
             }finally{Object.DestroyImmediate(go);}
         }
         [TestCase(-.23f,false)] [TestCase(.23f,true)] public void ReceptionUsesTheFootOnTheBallSide(float lateral,bool left)
         {
             var go=new GameObject("Reception contact");try{
                 var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="receiver",preferredFoot=left?"Right":"Left"},0,9,Color.white);
-                var actor=new Actor{action="run",velocity=new Point(0,2)};view.Render(actor,1,1f/60);
-                actor.action="control";actor.velocity=new Point();var ball=new Vector3(lateral,.11f,.42f);
+                var actor=new Actor{slot=9,action="run",velocity=new Point(0,2)};view.Render(actor,1,1f/60);
+                actor.action="control";actor.actionKind="control-foot";actor.actionSequence=1;actor.velocity=new Point();var ball=new Vector3(lateral,.11f,.42f);actor.actionTarget=new Point(ball.x,ball.z);actor.actionHeight=ball.y;
                 for(int frame=0;frame<=12;frame++){actor.actionTime=.3f-frame*.01f;view.Render(actor,1,.01f,ball);}
                 Assert.That(Vector3.Distance(view.BootContactPosition(left),ball),Is.LessThan(.06f),"Control reaches for the ball rather than a fixed point ahead");
                 Assert.That(view.FootPosition(!left).y,Is.GreaterThan(.03f));
