@@ -167,9 +167,10 @@ namespace Touchline
                 case "throw":clip=actor.slot==0?(MecanimClips.ContainsKey(KeeperThrowClip)?KeeperThrowClip:"Goalkeeper Pass"):actor.actionHeight>0&&MecanimClips.ContainsKey(CapturedThrow)?CapturedThrow:"Throw In";simContact=actor.actionContactTime>0?actor.actionContactTime:.5f;break;
                 case "dive":{
                     var local=transform.InverseTransformPoint(new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z));
-                    // Standing chest capture: only reachable central catches, not low scoops,
-                    // overhead claims or parries. The selected clip is held for the whole action.
-                    bool chest=actor.actionKind=="save-catch"&&local.y>=.75f&&local.y<=1.8f&&KeeperCompactCatch.Weight(local)>=.9999f;
+                    // A fully compact catch includes reachable overhead balls.
+                    // Its geometry already bounds height and reach; an extra
+                    // chest-height cutoff incorrectly chose a sideways dive.
+                    bool chest=actor.actionKind=="save-catch"&&local.y>=.75f&&KeeperCompactCatch.Weight(local)>=.9999f;
                     clip=chest?"Goalkeeper Catch":(actor.diveSide>=0)==(DiveClipSide>0)?"Goalkeeper Diving Save":"Goalkeeper Diving Save (miroir)";
                     if(actor.actionKind=="save-catch"&&local.y>=.15f&&local.y<.75f&&KeeperCompactCatch.Weight(local)>=.9999f&&MecanimClips.ContainsKey(CapturedLowCatch))clip=CapturedLowCatch;
                     simContact=actor.actionContactTime>0?actor.actionContactTime:.2f;break;}

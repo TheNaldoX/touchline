@@ -59,7 +59,25 @@ namespace Touchline
             // Retarget only residual reach, with a continuous envelope; never alter the simulated ball.
             var anchor=parry?Limb(Sides[near]).wrist.position+transform.forward*.06f:HeldBallPosition;
             body.position+=Vector3.ClampMagnitude(ball-anchor,MaximumWarpMetres)*weight;
-            Reach();KeepBootsAbovePitch(body.forward,true);MecanimKeeperGroundSupport(actor,elapsed);KeeperElbowClearance();
+            Reach();
+            if(!parry&&actor.actionHeight>=.75f&&KeeperCompactCatch.Weight(transform.InverseTransformPoint(ball))>=.9999f){
+                // Reaching upward must not lift both supports with the torso
+                // warp. Extend the legs first and lower only the residual
+                // height that prevents either support reaching the turf.
+                float lowering=float.MaxValue;
+                for(int i=0;i<2;i++){
+                    var leg=Limb(Sides[i]);var rotation=leg.foot.rotation;
+                    float extent=Mathf.Abs((rotation*Vector3.right).y)*.057f+Mathf.Abs((rotation*Vector3.up).y)*.085f+Mathf.Abs((rotation*Vector3.forward).y)*.145f;
+                    var target=leg.foot.position;target.y=.01f-((rotation*new Vector3(0,.02f,.075f)).y-extent)*transform.localScale.y;
+                    keeperGroundFeet[i]=target;var delta=leg.upperLeg.position-target;
+                    float length=Vector3.Distance(leg.upperLeg.position,leg.lowerLeg.position)+Vector3.Distance(leg.lowerLeg.position,leg.foot.position)-.005f;
+                    lowering=Mathf.Min(lowering,Mathf.Max(0,delta.y-Mathf.Sqrt(Mathf.Max(0,length*length-delta.x*delta.x-delta.z*delta.z))));
+                }
+                body.position-=Vector3.up*lowering*weight;
+                for(int i=0;i<2;i++){var leg=Limb(Sides[i]);var rotation=leg.foot.rotation;SolveCapturedSupport(Sides[i],Vector3.Lerp(leg.foot.position,keeperGroundFeet[i],weight),body.forward);leg.foot.rotation=rotation;}
+                Reach();
+            }
+            KeepBootsAbovePitch(body.forward,true);MecanimKeeperGroundSupport(actor,elapsed);KeeperElbowClearance();
         }
         void MecanimKeeperGroundSupport(Actor actor,float elapsed)
         {

@@ -6,6 +6,27 @@ namespace Touchline.Tests
 {
     public class KeeperCompactCatchTests
     {
+        [TestCase(30,1.85f)] [TestCase(60,1.85f)] [TestCase(120,1.85f)]
+        [TestCase(30,2.0f)] [TestCase(60,2.0f)] [TestCase(120,2.0f)]
+        public void ReachableOverheadCatchStaysUprightWithGroundSupport(int fps,float height)
+        {
+            var root=new GameObject("Central overhead gather");try{
+                var view=root.AddComponent<PlayerView>();view.Build(new PlayerData{id="overhead-central",heightCm=182},0,0,Color.yellow);
+                var actor=new Actor{slot=0,action="idle"};view.Render(actor,1,0);var animator=root.GetComponentInChildren<Animator>();
+                actor.action="dive";actor.actionKind="save-catch";actor.actionSequence=1;actor.actionContactTime=.2f;actor.actionHeight=height;actor.actionTarget=new Point(.2f,.65f);
+                var ball=new Vector3(.2f,height,.65f);
+                float Sole(HumanBodyBones bone){var foot=animator.GetBoneTransform(bone);var r=foot.rotation;float extent=Mathf.Abs((r*Vector3.right).y)*.057f+Mathf.Abs((r*Vector3.up).y)*.085f+Mathf.Abs((r*Vector3.forward).y)*.145f;return foot.position.y+((r*new Vector3(0,.02f,.075f)).y-extent)*root.transform.localScale.y;}
+                for(int f=0;f<=fps*1.2f;f++){
+                    float t=f/(float)fps;actor.actionTime=1.2f-t;string before=JsonUtility.ToJson(actor);view.Render(actor,1,1f/fps,ball);
+                    Assert.AreEqual("Goalkeeper Catch",view.MecanimGestureClip);
+                    var hips=animator.GetBoneTransform(HumanBodyBones.Hips);var chest=animator.GetBoneTransform(HumanBodyBones.Chest);
+                    Assert.Less(Vector3.Angle(chest.position-hips.position,Vector3.up),35,"Central overhead gather must not fall sideways");
+                    float left=Sole(HumanBodyBones.LeftFoot),right=Sole(HumanBodyBones.RightFoot);Assert.GreaterOrEqual(Mathf.Min(left,right),-.025f,"Visible soles stay above the turf");
+                    if(f==fps/5){Assert.Less(Vector3.Distance(view.HeldBallPosition,ball),.15f);Assert.Less(Mathf.Min(left,right),.08f,"A reachable overhead gather retains a grounded support");}
+                    Assert.AreEqual(before,JsonUtility.ToJson(actor));Assert.AreEqual(Vector3.zero,root.transform.position);
+                }
+            }finally{Object.DestroyImmediate(root);}
+        }
         [TestCase(30)] [TestCase(60)] [TestCase(120)]
         public void CapturedChestCatchKeepsTheAnatomicalTorsoUpright(int fps)
         {
@@ -57,7 +78,9 @@ namespace Touchline.Tests
                 var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="wide",heightCm=182},0,0,Color.yellow);
                 var actor=new Actor{slot=0,action="dive",actionKind="save-catch",actionSequence=1,actionTime=1,actionContactTime=.2f,actionTarget=new Point(side*1.1f,.3f),actionHeight=.6f,diveSide=side};
                 view.Render(actor,1,.01f,new Vector3(side*1.1f,.6f,.3f));
-                Assert.Greater(Quaternion.Angle(go.transform.Find("Rig").localRotation,Quaternion.identity),50);
+                var animator=go.GetComponentInChildren<Animator>();
+                var torso=animator.GetBoneTransform(HumanBodyBones.Chest).position-animator.GetBoneTransform(HumanBodyBones.Hips).position;
+                Assert.Greater(Vector3.Angle(torso,Vector3.up),50,"The anatomical torso, not the capture container, must dive sideways");
                 Assert.Less(Vector3.Distance(view.HeldBallPosition,new Vector3(side*1.1f,.6f,.3f)),.17f);
             }finally{Object.DestroyImmediate(go);}
         }

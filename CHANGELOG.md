@@ -1,3 +1,4 @@
+- Animations : prises hautes centrales debout avec appui au sol, sans déclencher un plongeon latéral pour un ballon accessible.
 - Animations : le gardien suit le ballon du regard sur les prises centrales, avec rotation du cou bornée et retour progressif à la pose capturée.
 - Validation : récupération des tacles comparée à la bonne phase capturée et rotations des têtes contrôlées en vitesse, sans relâcher les contacts.
 - Animations : seconde célébration capturée avec retour debout et entrée progressive après une frappe encore en cours.
