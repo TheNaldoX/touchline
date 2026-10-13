@@ -8,6 +8,36 @@ namespace Touchline
         Quaternion[] compactCatchPose;
         const float KeeperKneeSurfaceRadius=.085f; // metres: bent recovery knee and shorts envelope
         readonly Vector3[] keeperGroundHands=new Vector3[2],keeperGroundFeet=new Vector3[2];
+        Quaternion capturedKeeperGaze=Quaternion.identity;
+        Quaternion capturedKeeperHeadPose=Quaternion.identity;bool capturedKeeperGazeTracked;
+        void MecanimKeeperGaze(Actor actor,float remaining,float dt,bool reset)
+        {
+            if(!bones.TryGetValue("head",out var head))return;
+            var correction=Quaternion.identity;bool tracking=false;
+            if(actor.slot==0&&actor.action=="dive"){
+                var impact=new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z);
+                float compact=KeeperCompactCatch.Weight(transform.InverseTransformPoint(impact));
+                float contact=Mathf.Clamp(actor.actionContactTime>0?actor.actionContactTime:.2f,.02f,.4f);
+                float elapsed=Mathf.Clamp(1.2f-remaining,0,1.2f);
+                float weight=compact*Mathf.SmoothStep(0,1,elapsed/contact)*(1-Mathf.SmoothStep(0,1,(elapsed-contact)/.5f));
+                tracking=compact>0;
+                var direction=head.parent.InverseTransformDirection(impact-head.position);
+                float pitch=Mathf.Clamp(-Mathf.Atan2(direction.y,new Vector2(direction.x,direction.z).magnitude)*Mathf.Rad2Deg,-30,35);
+                float yaw=Mathf.Clamp(Mathf.Atan2(direction.x,direction.z)*Mathf.Rad2Deg,-25,25);
+                correction=Quaternion.Slerp(Quaternion.identity,Quaternion.Euler(pitch,yaw,0)*Quaternion.Inverse(head.localRotation),weight);
+            }
+            const float NeckCorrectionSpeed=180,HeadPoseSpeed=360; // degrees/second, including release into the captured recovery.
+            capturedKeeperGaze=reset?correction:Quaternion.RotateTowards(capturedKeeperGaze,correction,Mathf.Max(0,dt)*NeckCorrectionSpeed);
+            var target=capturedKeeperGaze*head.localRotation;
+            // Captured head motion and the correction can otherwise add their
+            // angular velocities at a high catch. Bound the final pose too.
+            if(reset){capturedKeeperHeadPose=target;capturedKeeperGazeTracked=tracking;}
+            else if(tracking||capturedKeeperGazeTracked){
+                capturedKeeperHeadPose=Quaternion.RotateTowards(capturedKeeperHeadPose,target,Mathf.Max(0,dt)*HeadPoseSpeed);
+                capturedKeeperGazeTracked=tracking||Quaternion.Angle(capturedKeeperGaze,Quaternion.identity)>.01f||Quaternion.Angle(capturedKeeperHeadPose,target)>.01f;
+            }else capturedKeeperHeadPose=target;
+            head.localRotation=capturedKeeperHeadPose;
+        }
         void MecanimKeeperDiveContact(Actor actor,float remaining)
         {
             if(actor.action!="dive"||actor.actionSequence<=0)return;
