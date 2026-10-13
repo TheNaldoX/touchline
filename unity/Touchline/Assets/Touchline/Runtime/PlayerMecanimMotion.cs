@@ -301,6 +301,7 @@ namespace Touchline
             }
             if(turnWeight>0)MecanimTurnYaw(turnWeight);
             MecanimFootLock(dt,reset);
+            MecanimStandingSupport(actor,poseSpeed,dt,reset);
             bool wasSettling=stoppingSteps.Active;
             StopStepFootwork(actor,dt,reset,context,true);
             MecanimStopRelease(actor,wasSettling,dt,reset,context);
@@ -318,7 +319,7 @@ namespace Touchline
             }
             // Retargeted clips can lower a rotated boot below the pitch during
             // action recovery. Preserve the captured knee plane and foot rotation.
-            KeepBootsAbovePitch(Vector3.forward,true);
+            KeepBootSurfacesAbovePitch(Vector3.forward,true,actor.action=="idle"||actor.action=="run");
             return true;
         }
 

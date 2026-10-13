@@ -1,3 +1,4 @@
+using System.Linq;
 using NUnit.Framework;
 using Touchline.Core;
 using UnityEngine;
@@ -28,7 +29,17 @@ namespace Touchline.Tests
      var foot=view.FootPosition(true);float movement=Vector3.Distance(last,foot);peak=Mathf.Max(peak,movement);last=foot;
      Assert.Less(movement,.03f+5f/fps,"The interruption must not defer its snap to a later recovery frame.");
     }
-    TestContext.WriteLine($"{fps}fps shoulder={shoulderContact} recoveryPeak={peak:F6} finalFootY={last.y:F6}");Assert.Less(last.y,.15f,"Readiness must actually return to a grounded stance after cancellation.");
+    var boot=go.GetComponentsInChildren<MeshFilter>().Single(b=>b.name=="Football boot"&&b.transform.parent.name=="foot.L");
+    float sole=boot.sharedMesh.vertices.Min(v=>boot.transform.TransformPoint(v).y);
+    // A real replacement footstep may still be in flight at the old fixed
+    // 350ms sample. Allow one bounded 180ms step plus a frame margin, while
+    // retaining the same per-frame continuity constraint throughout.
+    for(int frame=0;sole>.06f&&frame<Mathf.CeilToInt(.22f*fps);frame++){
+     view.Render(actor,1,1f/fps,new Vector3(.23f,.95f,.3f),context);
+     var foot=view.FootPosition(true);Assert.Less(Vector3.Distance(last,foot),.03f+5f/fps);last=foot;
+     sole=boot.sharedMesh.vertices.Min(v=>boot.transform.TransformPoint(v).y);
+    }
+    TestContext.WriteLine($"{fps}fps shoulder={shoulderContact} recoveryPeak={peak:F6} finalFootY={last.y:F6} visibleSole={sole:F6}");Assert.That(sole,Is.InRange(-.005f,.06f),"The visible sole must settle after cancellation and at most one replacement step.");
    }finally{Object.DestroyImmediate(go);}
   }
  }

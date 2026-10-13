@@ -7,6 +7,46 @@ namespace Touchline
     {
         readonly StopStepMotion stoppingSteps=new StopStepMotion();
         bool movedBeforeStop;Vector3 stoppingRoot;
+        float standingSupportWeight;
+        readonly Vector3[] standingSupportTargets=new Vector3[2];
+        void MecanimStandingSupport(Actor actor,float speed,float dt,bool reset)
+        {
+            bool stationary=actor.action=="idle"||actor.action=="run";
+            float desired=stationary?1-Mathf.InverseLerp(.08f,.5f,speed):0; // m/s: leave support correction as the stride accelerates.
+            if(receptionPreparationWeight>.05f)desired=0; // The receiving overlay owns the raised leg and support.
+            if(reset&&MatchSimulation.IsBodyControl(actor))desired=1;
+            const float SupportBlendRate=8; // weight per second, shared by both geometric solver passes.
+            standingSupportWeight=reset?desired:Mathf.MoveTowards(standingSupportWeight,desired,Mathf.Max(0,dt)*SupportBlendRate);
+            if(standingSupportWeight<=0)return;
+            if(receptionBootVertices==null)receptionBootVertices=FootballBootMesh.Shared.vertices;
+            const float StandingSoleClearance=.01f,MaximumSupportDrop=.20f; // metres; preserve the captured ankle orientation.
+            // Refine once from the visible mesh after solving both supports:
+            // reaching the ankle target alone does not guarantee a grounded
+            // sole in the resulting pose. Do not advance time twice.
+            const float MaximumPelvisDrop=.10f; // metres per rendered pose, shared between refinements.
+            float remainingPelvisDrop=MaximumPelvisDrop;
+            for(int refinement=0;refinement<2;refinement++){
+            float pelvisDrop=0;
+            for(int i=0;i<2;i++){
+                var leg=Limb(Sides[i]);float low=float.PositiveInfinity;
+                foreach(var vertex in receptionBootVertices)low=Mathf.Min(low,leg.foot.TransformPoint(vertex).y);
+                float drop=footStep[i]>0?0:Mathf.Clamp(low-StandingSoleClearance,0,MaximumSupportDrop)*standingSupportWeight;
+                var target=standingSupportTargets[i]=leg.foot.position-Vector3.up*drop;
+                float reach=Vector3.Distance(leg.upperLeg.position,leg.lowerLeg.position)+Vector3.Distance(leg.lowerLeg.position,leg.foot.position)-.005f;
+                var delta=leg.upperLeg.position-target;
+                if(delta.magnitude>reach)pelvisDrop=Mathf.Max(pelvisDrop,(delta.magnitude-reach)/Mathf.Max(.5f,delta.normalized.y)+.002f);
+            }
+            // Only settle the pelvis enough to make the ground targets reachable;
+            // moving the authoritative player root would change the match.
+            float appliedPelvisDrop=Mathf.Min(remainingPelvisDrop,pelvisDrop);
+            body.position-=Vector3.up*appliedPelvisDrop;remainingPelvisDrop-=appliedPelvisDrop;
+            for(int i=0;i<2;i++){
+                var leg=Limb(Sides[i]);
+                var rotation=leg.foot.rotation;
+                SolveCapturedSupport(Sides[i],standingSupportTargets[i],leg.lowerLeg.position-leg.upperLeg.position);leg.foot.rotation=rotation;
+            }
+            }
+        }
         const float StopReleaseDuration=.12f; // seconds: hand grounded supports back to the captured stride.
         float stopReleaseRemaining;
         readonly Vector3[] stopReleaseFrom=new Vector3[2];
