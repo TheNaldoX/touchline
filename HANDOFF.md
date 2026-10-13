@@ -2,8 +2,8 @@
 Lire AGENTS.md. Une tâche/branche/PR, une Unity locale OU CI ; aucun Assets modifié pendant compilation/test/capture/build. Aucun nouvel agent. Préserver sauvegardes/APK/pack privé. Ne jamais imprimer database.json (132Mo).
 
 ## Demande / état
-Six chantiers actifs sans échéance : caméra, IA/tactique, équilibre multi-graines, contacts/clips adaptés, U19 réels,196échecs puis consolidation main. Aucun joueur fictif initial. Ancienne automation PAUSED. Quota45%utilisé, réserver livraison à95%.
-Main non fusionnée (d74e9a9/PR38). Drafts empilées PR146–164 : caméra portrait, contacts/anticipation/appuis, gardiens/tacles, contrôle couru, ligne défensive, U19, gestes sociaux et fixtures corrigées. Historique/preuves dans PR. Base ec106da/PR164, lot fix/captured-foot-reception validé.
+Six chantiers actifs sans échéance : caméra, IA/tactique, équilibre multi-graines, contacts/clips adaptés, U19 réels,196échecs puis consolidation main. Aucun joueur fictif initial. Ancienne automation PAUSED. Quota48%utilisé, réserver livraison à95%.
+Main non fusionnée (d74e9a9/PR38). Drafts empilées PR146–164 : caméra portrait, contacts/anticipation/appuis, gardiens/tacles, contrôle couru, ligne défensive, U19, gestes sociaux et fixtures corrigées. Historique/preuves dans PR. PR165/05fc17c contrôles au pied validés ; base pour lot suivant.
 
 ## Validations acquises
 - Core1046/1046 ; dernière globale achevée2537/2606,69anciens/0nouveau (.validation/captured-foot-reception-planted-global.xml).127des196initiaux résolus, dont corrections de fixtures explicitement documentées.
@@ -18,7 +18,7 @@ Globale finale2537/2606 :69anciens échecs, neuf résolus (septfixturesPR164 + d
 
 ## Restant / diagnostics
 - Moteur PR154/b5ddb3d :800matchs4graines, buts2.752→2.680,tirs25.550→24.948,touches49.478→50.115,penalties.185→.197,sorties13.825→13.720,favoris59.56→59.81%. Ligne seed2/200paires : surplus tirs8.83→1.75, avantage défensif persiste. .validation/defensive-line-four-seed-summary.csv, defensive-line-shape-after-200-seed1..4.txt =baselineCoreactuelle.
-- Prochaine piste IA NON MODIFIÉE : OpponentCoach.ExploitHighLine utilise moyenne du match entière, donc réaction lente après changement réel de ligne. Étudier fenêtres observées10min, étatpersisté, hystérésis et absence de nouveaux échantillons ; tests +200matchs appariés/multigraines, retirer si dérive.
+- Essai fenêtre récente OpponentCoach REJETÉ/stash : trois tests/Core1049 expérimentaux,800matchs graines1–4 +200paires ligne seed2. Touches50.115→50.373, penalties.1975→.19 ; avantage buts contre de lignehaute−.81→−.88. Réaction plus récente mais pas amélioration équilibrage. Preuves opponent-line-window-after-200-seed1..4.txt et opponent-line-window-line-seed2.txt. Aucun changement Core retenu,1046 référence.
 - Rejetés/isolés stash : open-space-carrying400matchs dérive buts/favoris ; claims capturés corrige7contacts mais casse3continuités (préparation portée35cm vs cible1,05m), traiter anticipation globale. through-pass-run-lead80 et target-reading rejetés. Ne pas réappliquer aveuglément. Stash1f2bae2 déjà réappliqué anciennement.
 - Autres animations : dribble, claims/gaze, pivots, genoux en reprise, doigts/chutes, headers ; quelques anciennes fixtures SlidingExtension comparent bassin à phase idle différente.7/21clips privés actifs. Pas nouvellemocap ni fluiditéFold prouvée.
 - Caméra portrait améliorée37tests/6vues, confort rapide et Fold encore non validés. Main ne pas fusionner avec dette restante.
@@ -27,4 +27,5 @@ Globale finale2537/2606 :69anciens échecs, neuf résolus (septfixturesPR164 + d
 .validation/run-local-unity.ps1 -Mode Test -Name unique -Filter Touchline.Tests. Après arrêt .validation/cleanup-unity-imports.ps1 et restaurer scène/ProjectSettings générés. Dotnet .tools/dotnet/dotnet.exe, DOTNET_CLI_HOME=.tools/cli. API .validation/github-api.ps1 ; corpsJSONfichier ; attachePRéchoue limite100, ne pas supprimer anciens.
 APK0.71.0-preview.1/code64 inchangée : https://github.com/TheNaldoX/touchline/releases/download/v0.71.0-preview.1/Touchline-Unity-0.71-preview.apk
 Source0cf0a80a61609df4be7d4e16e44766a6fc547ed1,CI38334925329 ; .validation/apk071/{verified.json,source.json,published-asset.json}. SHA256CD91D99BF80E41AD42E4CA4790A5116379C9CB455701BD7043670467803CF4AB ; cert130917e6d2b4ea2dcca487587dcff03b1356b14e7de39c3e01657097ad57ee13 ; fr.personal.touchline.unity ARM64. Prochaine>=0.72/code65. Aucun tous-tests-verts/Fold/paritéFM revendiqué.
+
 
