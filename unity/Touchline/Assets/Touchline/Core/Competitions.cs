@@ -62,7 +62,7 @@ namespace Touchline.Core
         }
         public void EnsureWorld(Database db)
         {
-            EnsureLife(db);if(world!=null&&world.divisions!=null&&world.divisions.Count>0){ImportFreeAgents(db);EnsureStaffMarket(db);EnsureAiClubAccounts(db);EnsureBoardObjective(db);return;}
+            EnsureLife(db);if(world!=null&&world.divisions!=null&&world.divisions.Count>0){ImportFreeAgents(db);EnsureStaffMarket(db);EnsureAiClubAccounts(db);EnsureBoardObjective(db);EnsureExistingYouthPaths(db);return;}
             world=new CareerWorld();world.year=Date.Month>=6?Date.Year:Date.Year-1;
             foreach(var league in db.leagues??Array.Empty<LeagueData>()){
                 if(league.scoutingOnly)continue;
@@ -71,7 +71,7 @@ namespace Touchline.Core
             }
             if(world.divisions.Count==0)world.divisions.Add(new Division{id="local",clubs=db.clubs.Select(c=>c.id).ToList()});
             world.capacity=(int)Mathx.Clamp((float)Math.Sqrt(life.revenue)*3,4000,85000);world.ticket=(int)Mathx.Clamp((float)Math.Sqrt(life.revenue)/400,8,90);
-            GenerateSeason(db,true);InitializeEmployment(db);EnsureAiClubAccounts(db);CreateIntake(db);
+            GenerateSeason(db,true);InitializeEmployment(db);EnsureAiClubAccounts(db);CreateIntake(db);EnsureExistingYouthPaths(db);
             Mail("Secrétariat sportif","La carrière est ouverte","Le calendrier relie désormais les résultats, les classements et la saison suivante. Les rencontres importées conservent leur source ; les autres affiches et tous les résultats de départ sont simulés.");
             foreach(var f in world.fixtures.Where(f=>!f.played&&f.day<life.day).OrderBy(f=>f.day))SimulateFixture(db,f);
             EnsureBoardObjective(db);WorldDay(db);

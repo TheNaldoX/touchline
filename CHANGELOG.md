@@ -1,3 +1,4 @@
+- Formation : suivi des jeunes professionnels réels de 16 à 21 ans dès la première saison, y compris dans les anciennes sauvegardes, sans déplacer les joueurs.
 - Match : zoom progressif avec ballon conservé dans le cadre et sélection plus stricte des Moments clés.
 - Android : version 0.70/code63 avec import vérifié du pack personnel et contrôle des animations réellement incluses dans l’APK.
 - Animations : trois frappes capturées, touche à deux mains, prise basse et célébration ; contacts anatomiques et captures de contrôle corrigés selon la taille.

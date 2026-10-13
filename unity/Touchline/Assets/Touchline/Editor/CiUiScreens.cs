@@ -79,6 +79,7 @@ namespace Touchline.Editor
 
         static List<Action> BuildSteps()
         {
+            if(Path.GetFileName(Output).StartsWith("ui-existing-youth-",StringComparison.Ordinal))return BuildExistingYouthSteps();
             if(Path.GetFileName(Output).StartsWith("ui-transfer-form-",StringComparison.Ordinal))return BuildTransferFormSteps();
             if(Path.GetFileName(Output).StartsWith("ui-free-kick-wait-",StringComparison.Ordinal))return BuildFreeKickWaitSteps();
             if(Path.GetFileName(Output).StartsWith("ui-button-motion-",StringComparison.Ordinal))return BuildButtonMotionSteps();
@@ -182,6 +183,23 @@ namespace Touchline.Editor
             audit.AppendLine("Relance contextuelle synthétique : notification actionnable et accès aux décisions de départ, deux formats ; aucune vente ni sauvegarde personnelle.");return list;
         }
 
+        static List<Action> BuildExistingYouthSteps()
+        {
+            var steps=new List<Action>();string player=null;int count=0;
+            steps.Add(()=>{
+                var db=TouchlineCatalogue.Load();var career=new Career{club="176",youthGenerationFromYear=2027};career.lineup=Career.Select(db,career.club,career.tactic);var initial=new HashSet<string>(db.players.Select(p=>p.id));
+                career.EnsureWorld(db); // The normal start also imports referenced real free agents.
+                var paths=career.AcademyPaths(db).ToArray();count=paths.Length;if(count==0||paths.Any(p=>p.group!="senior"||!initial.Contains(p.player)))throw new Exception("Real young professionals missing or fabricated");player=paths[0].player;
+                typeof(TouchlineApp).GetProperty("Database").SetValue(App,db);typeof(TouchlineApp).GetProperty("Career").SetValue(App,career);
+                audit.AppendLine("Real catalogue youth: "+string.Join(", ",paths.Select(p=>db.Find(p.player).name))+"; no generated youth.");
+            });
+            foreach(var screen in Screens){
+                steps.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Formation");});
+                steps.Add(()=>{if(Root.Query<VisualElement>(className:"academy-player").ToList().Count!=count)throw new Exception("Youth cards missing");Capture(screen.tag+"-real-youth");Click("academy-plan-"+player);});
+                steps.Add(()=>{if(Root.Q("academy-plan")==null)throw new Exception("Professional pathway inaccessible");Capture(screen.tag+"-real-youth-plan");Call("CloseModal");});
+            }
+            return steps;
+        }
         static List<Action> BuildTransferFormSteps()
         {
             var list=new List<Action>();string player=null;long cash=0;int offers=0;

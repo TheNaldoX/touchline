@@ -6,6 +6,21 @@ namespace Touchline.Core
 {
     public partial class Career
     {
+        // Track existing young professionals without inventing an intake or changing their squad.
+        void EnsureExistingYouthPaths(Database db)
+        {
+            var tracked=new HashSet<string>(world.youth.Select(y=>y.player));
+            var loans=world.contracts.Where(c=>c.loanUntil>life.day&&c.parent!=null&&c.player!=null).GroupBy(c=>c.player).ToDictionary(g=>g.Key,g=>g.First());
+            foreach(var p in db.players){
+                if(p.age<16||p.age>21||tracked.Contains(p.id))continue;
+                loans.TryGetValue(p.id,out var loan);
+                bool ownedHere=p.team==club&&(loan==null||loan.parent==club);
+                bool loanedOut=loan!=null&&loan.parent==club&&loan.club==p.team;
+                if(!ownedHere&&!loanedOut)continue;
+                world.youth.Add(new YouthPath{player=p.id,group=loanedOut?"loan":"senior",lastAcademyDay=life.day,lastReview=life.day,loanReviewedThrough=life.day,loanAppearances=loanedOut?loan.appearancesAtSigning:0});
+                tracked.Add(p.id);
+            }
+        }
         public IEnumerable<YouthPath> AcademyPaths(Database db)=>world.youth.Where(y=>{
             var p=db.Find(y.player);return p!=null&&(p.team=="academy-"+club||p.team==club||world.contracts.Any(c=>c.player==p.id&&c.parent==club&&c.club==p.team&&c.loanUntil>life.day));
         });
