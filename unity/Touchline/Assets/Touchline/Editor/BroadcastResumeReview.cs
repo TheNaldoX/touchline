@@ -44,7 +44,7 @@ namespace Touchline.Editor
                     var target=new RenderTexture(size.x,size.y,24){antiAliasing=2};target.Create();var camera=arena.MatchCamera;camera.targetTexture=target;camera.aspect=(float)size.x/size.y;
                     arena.RenderFrame(1f/60);var first=camera.transform.position;var viewport=camera.WorldToViewportPoint(arena.BallDisplayPosition);string file=$"resume-{size.x}x{size.y}-{end}.png";Capture(camera,target,root,Path.Combine(output,file));
                     for(int i=0;i<240;i++)arena.RenderFrame(1f/60);float drift=Vector3.Distance(first,camera.transform.position);
-                    if(drift>.25f||viewport.x<.1f||viewport.x>.9f||viewport.y<.1f||viewport.y>.9f||state.clock!=1800)throw new Exception("Resume framing failed");
+                    if(drift>.25f||viewport.x<.1f||viewport.x>.9f||viewport.y<.1f||viewport.y>.9f||state.clock!=1800)throw new Exception($"Resume framing failed: {size}, end={end}, drift={drift}, ball={viewport}, clock={state.clock}");
                     shots.Add(new Shot{file=file,width=size.x,height=size.y,end=end,cameraDrift=drift,ballViewport=viewport});camera.targetTexture=null;target.Release();UnityEngine.Object.DestroyImmediate(target);UnityEngine.Object.DestroyImmediate(root);
                 }
                 File.WriteAllText(Path.Combine(output,"report.json"),JsonUtility.ToJson(new Report{passed=true,scenes=shots.ToArray()},true));Debug.Log("TOUCHLINE_CAMERA_RESUME_OK");passed=true;

@@ -11,7 +11,7 @@ namespace Touchline
         public static Vector3 ConfineActionFocus(Camera camera,Vector3 focus,Vector3 ball,float distance)
         {
             var forward=camera.transform.forward;var right=camera.transform.right;var up=camera.transform.up;
-            float vertical=Mathf.Tan(camera.fieldOfView*.5f*Mathf.Deg2Rad)*.76f;
+            float vertical=Mathf.Tan(camera.fieldOfView*.5f*Mathf.Deg2Rad)*.76f; // same 12% margin as ConfineActionFocus
             float horizontal=vertical*Mathf.Max(.2f,camera.aspect);
             bool Fits(Vector3 center){return PointFits(ball-center)&&PointFits(ball+Vector3.up*2.2f-center);}
             bool PointFits(Vector3 relative){float depth=distance+Vector3.Dot(relative,forward);return depth>0&&Mathf.Abs(Vector3.Dot(relative,right))<=depth*horizontal&&Mathf.Abs(Vector3.Dot(relative,up))<=depth*vertical;}
@@ -24,19 +24,29 @@ namespace Touchline
         // Portrait, unfolded and ultra-wide layouts must retain the ball.
         // Pente de la caméra télé (descente par mètre d'avancée) : 0,58 ≈ 30°, proche des plans de diffusion.
         public const float BroadcastPitch=.58f;
+        const float PortraitGoalApproachStart=8f; // m : ouverture plus étalée pour le champ horizontal étroit du téléphone
         const float GoalApproachStart=18f,GoalApproachFull=28f; // m depuis le milieu : ouverture progressive avant le dernier tiers
         const float GoalFocusStart=39f,GoalFocusFull=29f;       // m entre le regard et la ligne de but
         const float PortraitBallWide=24f,PortraitBallCentral=18f,PortraitFocusWide=18f,PortraitFocusCentral=12f; // m du centre en largeur
         // Portrait (Fold plié) : caméra inclinée dans l'axe du terrain (but +x en haut de l'écran), plus vue
         // du dessus. Les joueurs debout gagnent de la hauteur à l'écran ; les couloirs de passe dans la
         // longueur restent entiers, la largeur gardée autour du ballon est réduite (écran 2,3× plus haut que large).
-        public const float PortraitTiltDegrees=52f;   // ° sous l'horizontale (90 = vue du dessus, ancienne vue)
-        public const float PortraitLaneHalfWidth=8f;  // m de part et d'autre du regard en largeur (paysage : 12)
+        public const float PortraitTiltDegrees=45f;   // ° sous l'horizontale (90 = vue du dessus, ancienne vue)
+        public const float PortraitLaneHalfWidth=5.5f;  // m : couloir proche lisible sur écran plié (paysage : 12)
         const float LaneHalfLength=18f,LaneHalfWidth=12f; // m : couloirs de passe gardés autour du regard (paysage)
         const float PortraitMinimumDistance=38f,MinimumDistance=46f,WideDistance=70f; // m à zoom 1
         public const float PortraitFocusFollow=.8f,PortraitFocusLimit=27f; // part de l'écart latéral du ballon suivie, borne (m)
         // Point regardé par la caméra télé : suit la longueur, n'accompagne qu'une partie de l'écart latéral.
-        public static Vector3 LiveTarget(Vector3 ball,bool portrait,bool setPiece)=>new Vector3(Mathf.Clamp(ball.x*.90f,-46,46),.6f,portrait?Mathf.Clamp(ball.z*PortraitFocusFollow,-PortraitFocusLimit,PortraitFocusLimit):Mathf.Clamp(ball.z*(setPiece?.46f:.58f),-19,19));
+        public static Vector3 LiveTarget(Vector3 ball,bool portrait,bool setPiece)
+        {
+            float lateral=portrait?Mathf.Clamp(ball.z*PortraitFocusFollow,-PortraitFocusLimit,PortraitFocusLimit):Mathf.Clamp(ball.z*(setPiece?.46f:.58f),-19,19);
+            if(portrait){
+                // Follow 35% of lateral ball displacement near goal, balancing ball and far post.
+                float goalWeight=Ramp(PortraitGoalApproachStart,GoalApproachFull,Mathf.Abs(ball.x))*Ramp(PortraitBallWide,PortraitBallCentral,Mathf.Abs(ball.z));
+                lateral=Mathf.Lerp(lateral,ball.z*.35f,goalWeight);
+            }
+            return new Vector3(Mathf.Clamp(ball.x*.90f,-46,46),.6f,lateral);
+        }
         public static void Apply(Camera camera,Vector3 focus,Vector3 ball,bool wide,bool goal,int direction,float zoom)
         {
             bool portrait=camera.aspect<.8f;
@@ -45,7 +55,7 @@ namespace Touchline
             var forward=portrait?(wide?new Vector3(0,-1,-.08f).normalized:new Vector3(Mathf.Cos(tilt),-Mathf.Sin(tilt),0)):new Vector3(-.035f,-BroadcastPitch,-1).normalized;
             var rotation=Quaternion.LookRotation(forward,portrait&&wide?Vector3.right:Vector3.up);
             var right=rotation*Vector3.right;var up=rotation*Vector3.up;
-            float vertical=Mathf.Tan(camera.fieldOfView*.5f*Mathf.Deg2Rad)*.78f;
+            float vertical=Mathf.Tan(camera.fieldOfView*.5f*Mathf.Deg2Rad)*.76f; // same 12% margin as ConfineActionFocus
             float horizontal=vertical*Mathf.Max(.2f,camera.aspect);
             zoom=Mathf.Clamp(zoom,.7f,1.4f);
             float distance=(wide?WideDistance:portrait?PortraitMinimumDistance:MinimumDistance)*zoom;
@@ -59,7 +69,7 @@ namespace Touchline
             // In portrait a corner and the whole goal cannot both fill a
             // readable frame. Follow the taker, then follow delivery centrally.
             if(goal&&!wide){
-                float blend=Ramp(GoalApproachStart,GoalApproachFull,Mathf.Abs(ball.x))*Ramp(GoalFocusStart,GoalFocusFull,Mathf.Abs(direction*52.5f-focus.x));
+                float blend=Ramp(portrait?PortraitGoalApproachStart:GoalApproachStart,GoalApproachFull,Mathf.Abs(ball.x))*Ramp(GoalFocusStart,GoalFocusFull,Mathf.Abs(direction*52.5f-focus.x));
                 if(portrait)blend*=Ramp(PortraitBallWide,PortraitBallCentral,Mathf.Abs(ball.z))*Ramp(PortraitFocusWide,PortraitFocusCentral,Mathf.Abs(focus.z));
                 float actionDistance=distance;
                 // Fitting only the crossbar leaves the near post's ground

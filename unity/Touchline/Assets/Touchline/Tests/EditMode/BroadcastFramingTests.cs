@@ -7,6 +7,17 @@ namespace Touchline.Tests
 {
     public class BroadcastFramingTests
     {
+        [TestCase(-1)] [TestCase(1)]
+        public void PortraitAttackingFrameKeepsBallAndGoalWithoutExcessiveRetreat(int end)
+        {
+            var go=new GameObject("Readable portrait attack");try{
+                var c=go.AddComponent<Camera>();c.aspect=.43f;c.fieldOfView=46;
+                var ball=new Vector3(end*47,.11f,end*18);var focus=BroadcastFraming.LiveTarget(ball,true,false);
+                BroadcastFraming.Apply(c,focus,ball,false,true,end,1);Check(c,ball);
+                foreach(float z in new[]{-3.66f,3.66f})Check(c,new Vector3(end*52.5f,0,z));
+                Assert.Less(Vector3.Distance(c.transform.position,focus),90f,"Keep attack readable instead of the previous >100m frame");
+            }finally{Object.DestroyImmediate(go);}
+        }
         [TestCase(30)] [TestCase(60)] [TestCase(120)]
         public void CameraPullbackAndReturnAreBothBounded(int fps)
         {

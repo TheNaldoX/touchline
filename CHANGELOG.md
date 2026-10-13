@@ -1,3 +1,4 @@
+- Caméra : portrait moins plongeant, cadrage rapproché entre ballon et but, marges homogènes pour supprimer la dérive en pause.
 - Android : version0.71/code64 avec corrections caméra, moments clés, suivi des jeunes réels et décisions de tir.
 - Match : un tir proche devenu ouvert peut remplacer une passe en retrait encore en préparation, avec pivot progressif et protection des angles fermés.
 - Formation : suivi des jeunes professionnels réels de 16 à 21 ans dès la première saison, y compris dans les anciennes sauvegardes, sans déplacer les joueurs.
