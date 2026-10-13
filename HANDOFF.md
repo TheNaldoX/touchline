@@ -2,7 +2,7 @@
 Lire AGENTS.md. Claude/Codex alternent. Une seule Unity locale/CI ; ne pas modifier Assets pendant test/capture/build. Préserver sauvegardes, APK et preuves ; historique Git/PR, pas de journal docs.
 
 ## État — 13 octobre 2026
-- PR140/e5361a3, branche feat/captured-football-deliveries, empilée sur feat/soccer-capture-review-window (PR139/24583ca). Main non fusionnée. Utilisateur : « Finis toutes les animations ». Nouvelle demande explicite : construire et livrer maintenant la0.70/code63. Branche feat/android-070-mocap-build ; compilation locale et34/34tests pack réussis. CI importe le pack Drive par hash, exporte21clips et contrôle leur présence dans le BuildReport ; aucun FBX brut publié. Ce n'est PAS terminé.
+- PR141, branche feat/android-070-mocap-build, empilée sur PR140/e5361a3. Main non fusionnée. Utilisateur : « Finis toutes les animations ». Nouvelle demande explicite : construire et livrer maintenant la0.70/code63. Branche feat/android-070-mocap-build ; compilation locale et34/34tests pack réussis. CI importe le pack Drive par hash, exporte21clips et contrôle leur présence dans le BuildReport ; aucun FBX brut publié. Ce n'est PAS terminé.
 - Pack personnel : 7/21 clips activés. Passe08 corrigée pour le pied anatomique ; nouvelles frappes09/10/11 à faible vitesse, touche07, prise basse centrale17, célébration13. Horloge physique conservée, IK bornée, appui et orientation adaptés. Core inchangé.
 - Ciblés52/52, Core1023/1023. Globale finale2301/2497 :196anciens échecs/0nouveau, .validation/captured-deliveries-verified-global.xml. Référence avant2271/2467 avec196anciens échecs (.validation/rohr-global.xml). Premier global du lot2292/2497 :9écarts sur des assertions de poignets inversés, corrigées par mesure de surface réelle et anatomie ; repli Mixamo préservé.
 - Preuves : .validation/captured-throw-anatomy-regression.xml ; captured-deliveries-final-native, impacts651/705/759, célébration826, touches931/991/1051, prises1102/1162 et récupération1130 revus. Tests30/60/120Hz, statures160–205cm. Le ballon de laboratoire est un marqueur de contact, pas une trajectoire complète de match. Glissements ponctuels jusqu'à3,13m/s, récupérations encore raides ; Fold non testé.
@@ -14,7 +14,9 @@ Lire AGENTS.md. Claude/Codex alternent. Une seule Unity locale/CI ; ne pas modif
 - Auteur : https://andersonrohr.gumroad.com/l/mocap_pack5 ; usage personnel/commercial autorisé, redistribution autonome interdite. Descriptif .validation/football-mocap-description.txt. Restaurer en CI/nouveau checkout : tools/import-soccer-mocap.ps1 -Archive <zip>, puis Unity Touchline.Editor.SoccerMocapImport.Batch. Sans pack : repli Mixamo, tests spécifiques ignorés. Ne pas prétendre qu'une APK l'inclut sans restauration.
 -21avertissements FBX préexistants encore à qualifier. Pas de diagnostic C# sur le lot. Mocap existante Mixamo71clips. PR137 prise centrale buste, PR138 import, PR139 fenêtres temporelles de revue ; détails/proofs dans Git/PR.
 
-## Dernière APK — inchangée
+## Dernière APK — 0.70 livrée
+-0.70.0-preview.1/code63 : artifacts/Touchline-Unity-0.70-preview.apk,80966720octets. Source7dc2d440d6b6e25ddc78e29d19a41a27e26cb59a, PR141, CI38327598348 réussie, artefact11782063641. Preuves .validation/apk070/verified.json,source.json,mocap-content.txt ;21clips réellement inclus,7activés. Aucun FBX privé dans le BuildReport. Signature habituelle, package et IL2CPP ARM64 vérifiés ; Fold non testé.
+- SHA256B171BAD48571FD82F0CD44EAC05CE88DAEE8321F7909606433F69E251D4CA6A6.0.69 ci-dessous conservée.
 -0.69.0-preview.1/code62 : artifacts/Touchline-Unity-0.69-preview.apk,73962234octets. Source23db17fc647d6bdefd77f175f11890c30cf87c76, PR127, CI38259606891, preuve .validation/apk069/verified.json.
 - SHA256ED11A6D85480674D002D3DDF871EE0EF3372F34D9CBD359CB4A5429F17C2256F ; certificat130917e6d2b4ea2dcca487587dcff03b1356b14e7de39c3e01657097ad57ee13 ; packagefr.personal.touchline.unity, ARM64 IL2CPP vérifiés. Fold non testé.
 
