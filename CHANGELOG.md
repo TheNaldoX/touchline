@@ -1,3 +1,4 @@
+- Android : préparation de la version 0.72-preview (code 65), regroupant les corrections validées de caméra, moteur, formation et animations.
 - Animations : accélération et freinage du torse, vigilance du gardien raccordées aux poses capturées sans déplacer les appuis.
 - Match : le gardien évite de préparer un plongeon vers une interception imaginaire quand la trajectoire passe nettement à côté du but.
 - Validation : réceptions de tête contrôlées sur les semelles et le bassin animés, jusqu'au retour au repos, des deux pieds à trois cadences.
