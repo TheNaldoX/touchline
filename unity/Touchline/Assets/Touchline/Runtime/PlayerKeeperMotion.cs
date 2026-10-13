@@ -15,7 +15,7 @@ namespace Touchline
             float elapsed=Mathf.Clamp(1.2f-remaining,0,1.2f);
             const float ReleaseSeconds=.30f,MaximumWarpMetres=1.1f;
             float weight=Mathf.SmoothStep(0,1,elapsed/contact)*(1-Mathf.SmoothStep(0,1,(elapsed-contact)/ReleaseSeconds));
-            if(weight<=0){KeeperElbowClearance();return;}
+            if(weight<=0){MecanimKeeperGroundSupport(actor,elapsed);KeeperElbowClearance();return;}
             var ball=new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z);
             bool parry=actor.actionKind=="save-parry";int near=transform.InverseTransformPoint(ball).x>=0?0:1;
             gripOffset=parry?Vector3.zero:body.up*.075f;
@@ -29,7 +29,37 @@ namespace Touchline
             // Retarget only residual reach, with a continuous envelope; never alter the simulated ball.
             var anchor=parry?Limb(Sides[near]).wrist.position+transform.forward*.06f:HeldBallPosition;
             body.position+=Vector3.ClampMagnitude(ball-anchor,MaximumWarpMetres)*weight;
-            Reach();KeepBootsAbovePitch(body.forward,true);KeeperElbowClearance();
+            Reach();KeepBootsAbovePitch(body.forward,true);MecanimKeeperGroundSupport(actor,elapsed);KeeperElbowClearance();
+        }
+        void MecanimKeeperGroundSupport(Actor actor,float elapsed)
+        {
+            var local=transform.InverseTransformPoint(new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z));
+            float lateral=1-KeeperCompactCatch.Weight(local);
+            if(lateral<=0)return;
+            if(actor.actionKind=="save-parry"){
+                int near=local.x>=0?0:1;var arm=Limb(Sides[near]);
+                float brace=Mathf.SmoothStep(0,1,(elapsed-.38f)/.20f)*(1-Mathf.SmoothStep(0,1,(elapsed-.72f)/.18f))*lateral;
+                var support=transform.TransformPoint(new Vector3(local.x*.65f,.10f,local.z+.22f));
+                SolveArm(Sides[near],Vector3.Lerp(arm.wrist.position,support,brace),body.forward);
+                // A planted palm cannot follow a still-moving captured torso.
+                // Move only the residual reach, within a quarter-metre envelope.
+                body.position+=Vector3.ClampMagnitude(support-arm.wrist.position,.25f)*brace;
+                SolveArm(Sides[near],Vector3.Lerp(arm.wrist.position,support,brace),body.forward);
+                var palmDown=Quaternion.LookRotation(transform.forward,Vector3.down)*Quaternion.Inverse(Quaternion.LookRotation(handAxes[near],handPalmAxes[near]));
+                arm.wrist.rotation=Quaternion.Slerp(arm.wrist.rotation,palmDown,brace);
+            }
+            // Establish the landing-side support before swinging the trailing
+            // boot underneath. Times follow the existing 1.2-second recovery.
+            for(int i=0;i<2;i++){
+                bool near=(local.x>=0)==(i==0);
+                float plant=Mathf.SmoothStep(0,1,(elapsed-(near?.66f:.84f))/.18f)*lateral;
+                if(plant<=0)continue;
+                var leg=Limb(Sides[i]);var target=transform.TransformPoint(new Vector3(i==0?.18f:-.18f,.08f,0));
+                target=Vector3.Lerp(leg.foot.position,target,plant)+Vector3.up*(Mathf.Sin(plant*Mathf.PI)*.10f*transform.localScale.y);
+                SolveCapturedSupport(Sides[i],target,body.forward,KeeperKneeSurfaceRadius);
+                leg.foot.rotation=Quaternion.Slerp(leg.foot.rotation,transform.rotation,plant);
+            }
+            KeepBootsAbovePitch(body.forward,true);
         }
         void KeeperElbowClearance()
         {
