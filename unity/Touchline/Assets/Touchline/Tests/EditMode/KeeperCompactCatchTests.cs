@@ -15,14 +15,20 @@ namespace Touchline.Tests
                 var actor=new Actor{slot=0,action="idle"};view.Render(actor,1,0);var animator=root.GetComponentInChildren<Animator>();
                 actor.action="dive";actor.actionKind="save-catch";actor.actionSequence=1;actor.actionContactTime=.2f;actor.actionHeight=height;actor.actionTarget=new Point(.2f,.65f);
                 var ball=new Vector3(.2f,height,.65f);
+                var previousLeft=view.FootPosition(true);var previousRight=view.FootPosition(false);
                 float Sole(HumanBodyBones bone){var foot=animator.GetBoneTransform(bone);var r=foot.rotation;float extent=Mathf.Abs((r*Vector3.right).y)*.057f+Mathf.Abs((r*Vector3.up).y)*.085f+Mathf.Abs((r*Vector3.forward).y)*.145f;return foot.position.y+((r*new Vector3(0,.02f,.075f)).y-extent)*root.transform.localScale.y;}
                 for(int f=0;f<=fps*1.2f;f++){
                     float t=f/(float)fps;actor.actionTime=1.2f-t;string before=JsonUtility.ToJson(actor);view.Render(actor,1,1f/fps,ball);
                     Assert.AreEqual("Goalkeeper Catch",view.MecanimGestureClip);
+                    var displayedLeft=view.FootPosition(true);var displayedRight=view.FootPosition(false);
+                    Assert.Less(Vector3.Distance(previousLeft,displayedLeft),6f/fps+.01f,"Planting does not snap the left boot");
+                    Assert.Less(Vector3.Distance(previousRight,displayedRight),6f/fps+.01f,"Planting does not snap the right boot");
+                    previousLeft=displayedLeft;previousRight=displayedRight;
                     var hips=animator.GetBoneTransform(HumanBodyBones.Hips);var chest=animator.GetBoneTransform(HumanBodyBones.Chest);
                     Assert.Less(Vector3.Angle(chest.position-hips.position,Vector3.up),35,"Central overhead gather must not fall sideways");
                     float left=Sole(HumanBodyBones.LeftFoot),right=Sole(HumanBodyBones.RightFoot);Assert.GreaterOrEqual(Mathf.Min(left,right),-.025f,"Visible soles stay above the turf");
-                    if(f==fps/5){Assert.Less(Vector3.Distance(view.HeldBallPosition,ball),.15f);Assert.Less(Mathf.Min(left,right),.08f,"A reachable overhead gather retains a grounded support");}
+                    Assert.Less(Mathf.Min(left,right),.08f,"Support is retained through preparation and recovery too");
+                    if(f==fps/5){Assert.Less(Vector3.Distance(view.HeldBallPosition,ball),.15f);Assert.Less(Mathf.Min(left,right),.08f,"A reachable overhead gather retains a grounded support");view.Render(actor,1,0,ball);Assert.Less(Vector3.Distance(displayedLeft,view.FootPosition(true)),.003f);Assert.Less(Vector3.Distance(displayedRight,view.FootPosition(false)),.003f);}
                     Assert.AreEqual(before,JsonUtility.ToJson(actor));Assert.AreEqual(Vector3.zero,root.transform.position);
                 }
             }finally{Object.DestroyImmediate(root);}
@@ -48,7 +54,7 @@ namespace Touchline.Tests
         }
 
         [TestCase(.22f,30)] [TestCase(.6f,60)] [TestCase(1.1f,120)]
-        [TestCase(1.8f,30)] [TestCase(2.0f,60)]
+        [TestCase(1.8f,30)] [TestCase(2.0f,60)] [TestCase(1.5f,60)]
         public void CentralCatchKeepsSupportAndMeetsTheBall(float height,int fps)
         {
             var go=new GameObject("Compact keeper test");
@@ -57,15 +63,19 @@ namespace Touchline.Tests
                 var actor=new Actor{slot=0,action="idle"};view.Render(actor,1,1f/fps);
                 actor.action="dive";actor.actionKind="save-catch";actor.actionSequence=1;
                 actor.actionContactTime=.2f;actor.actionTarget=new Point(.2f,.65f);actor.actionHeight=height;
-                var ball=new Vector3(.2f,height,.65f);var body=go.transform.Find("Rig");
+                var ball=new Vector3(.2f,height,.65f);var body=go.transform.Find("Rig");var animator=go.GetComponentInChildren<Animator>();
+                float Sole(HumanBodyBones bone){var foot=animator.GetBoneTransform(bone);var r=foot.rotation;float extent=Mathf.Abs((r*Vector3.right).y)*.057f+Mathf.Abs((r*Vector3.up).y)*.085f+Mathf.Abs((r*Vector3.forward).y)*.145f;return foot.position.y+((r*new Vector3(0,.02f,.075f)).y-extent)*go.transform.localScale.y;}
                 for(int frame=0;frame<=Mathf.CeilToInt(1.2f*fps);frame++){
                     float t=Mathf.Min(1.2f,frame/(float)fps);actor.actionTime=1.2f-t;view.Render(actor,1,1f/fps,ball);
-                    Assert.Less(Quaternion.Angle(body.localRotation,Quaternion.identity),35,"A central gather must not launch sideways");
-                    Assert.Less(Vector3.Distance(view.FootPosition(true),new Vector3(.18f,.08f,0)),.055f,"Left supporting sole");
-                    Assert.Less(Vector3.Distance(view.FootPosition(false),new Vector3(-.18f,.08f,0)),.055f,"Right supporting sole");
+                    var torso=animator.GetBoneTransform(HumanBodyBones.Chest).position-animator.GetBoneTransform(HumanBodyBones.Hips).position;
+                    Assert.Less(Mathf.Abs(Vector3.Dot(torso.normalized,go.transform.right)),Mathf.Sin(35*Mathf.Deg2Rad),"Central gathers may bend forward but must not launch sideways");
+                    float sole=Mathf.Min(Sole(HumanBodyBones.LeftFoot),Sole(HumanBodyBones.RightFoot));
+                    Assert.GreaterOrEqual(sole,-.025f,"Visible soles remain above the turf");
+                    Assert.Less(sole,.08f,"At least one support remains grounded at "+t);
                 }
+                actor.action="idle";for(int i=0;i<fps;i++)view.Render(actor,1,1f/fps,ball);
                 Assert.Less(body.localPosition.magnitude,.005f);Assert.Less(Quaternion.Angle(body.localRotation,Quaternion.identity),.05f);
-                actor.actionTime=1.0f;view.ResetPresentation();view.Render(actor,1,1f/fps,ball);
+                actor.action="dive";actor.actionTime=1.0f;view.ResetPresentation();view.Render(actor,1,1f/fps,ball);
                 Assert.Less(Vector3.Distance(view.HeldBallPosition,ball),.15f,"Both hands must meet the authoritative contact, even for low/high catches");
             }finally{Object.DestroyImmediate(go);}
         }

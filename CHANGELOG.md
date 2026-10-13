@@ -1,3 +1,4 @@
+- Animations : appuis des prises centrales stabilisés dès la préparation, avec continuité et pause contrôlées à 30/60/120 Hz.
 - Validation : audit des contacts en matchs simulés étendu aux ballons chipés sous pression et isolé sur quatre graines.
 - Animations : entrée des têtes sans avancer la course tant que le saut physique n'a pas commencé, appuis préservés à 30/60/120 Hz.
 - Animations : prises hautes centrales debout avec appui au sol, sans déclencher un plongeon latéral pour un ballon accessible.
