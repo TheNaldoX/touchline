@@ -6,6 +6,7 @@ namespace Touchline
     public sealed partial class PlayerView
     {
         Quaternion[] compactCatchPose;
+        readonly Vector3[] keeperGroundHands=new Vector3[2],keeperGroundFeet=new Vector3[2];
         void MecanimKeeperDiveContact(Actor actor,float remaining)
         {
             if(actor.action!="dive"||actor.actionSequence<=0)return;
@@ -31,6 +32,21 @@ namespace Touchline
         }
         void KeeperElbowClearance()
         {
+            // A bent elbow alone cannot clear a sleeve whose shoulder is below
+            // the turf. Settle the captured torso on its shoulder surface while
+            // preserving the existing hand and foot contacts through IK.
+            const float ShoulderSurfaceRadius=.065f; // metres, shoulder/short sleeve envelope at standard stature
+            float shoulderFloor=.005f+ShoulderSurfaceRadius*transform.localScale.y;
+            float liftBody=Mathf.Max(0,shoulderFloor-Mathf.Min(Limb("L").upperArm.position.y,Limb("R").upperArm.position.y));
+            if(liftBody>0){
+                for(int i=0;i<2;i++){keeperGroundHands[i]=Limb(Sides[i]).wrist.position;keeperGroundFeet[i]=Limb(Sides[i]).foot.position;}
+                body.position+=Vector3.up*liftBody;
+                for(int i=0;i<2;i++){
+                    var limb=Limb(Sides[i]);var handRotation=limb.wrist.rotation;var footRotation=limb.foot.rotation;
+                    SolveArm(Sides[i],keeperGroundHands[i],limb.lowerArm.position-limb.upperArm.position);limb.wrist.rotation=handRotation;
+                    SolveLeg(Sides[i],keeperGroundFeet[i],limb.lowerLeg.position-limb.upperLeg.position);limb.foot.rotation=footRotation;
+                }
+            }
             const float ElbowSurfaceRadius=.06f; // metres at standard stature, including sleeve
             for(int i=0;i<2;i++){
                 var arm=Limb(Sides[i]);var shoulder=arm.upperArm.position;var elbow=arm.lowerArm.position;var hand=arm.wrist.position;

@@ -9,6 +9,32 @@ namespace Touchline.Tests
         [TestCase(-1,30,160)] [TestCase(1,30,205)]
         [TestCase(-1,60,185)] [TestCase(1,60,185)]
         [TestCase(-1,120,205)] [TestCase(1,120,160)]
+        public void CapturedDiveKeepsShoulderSleevesAboveTurfWithoutMovingActor(int side,int hz,int stature)
+        {
+            bool mode=PlayerView.UseMecanim;PlayerView.UseMecanim=true;
+            var go=new GameObject("Keeper shoulder contact");var baked=new Mesh();
+            try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="shoulder-clearance",heightCm=stature},0,0,Color.yellow);
+                var actor=new Actor{slot=0,action="idle"};float dt=1f/hz;
+                for(int i=0;i<hz;i++)view.Render(actor,1,dt);
+                actor.action="dive";actor.actionKind="save-catch";actor.actionSequence=1;
+                actor.actionContactTime=.18f;actor.actionTarget=new Point(side*1.1f,.42f);actor.actionHeight=.22f;actor.diveSide=side;
+                var skin=go.GetComponentInChildren<SkinnedMeshRenderer>();var weights=skin.sharedMesh.boneWeights;
+                float lowest=100;int samples=0;
+                for(int frame=0;frame<=hz;frame++){
+                    actor.actionTime=1.2f-frame*dt;view.Render(actor,1,dt,new Vector3(side*1.1f,.22f,.42f));
+                    Assert.Less(go.transform.position.sqrMagnitude,.000001f,"Visual ground contact must not displace the simulated actor");
+                    skin.BakeMesh(baked,true);var vertices=baked.vertices;
+                    for(int v=0;v<vertices.Length;v++)if(skin.bones[weights[v].boneIndex0].name.StartsWith("upperarm01")){
+                        lowest=Mathf.Min(lowest,skin.transform.TransformPoint(vertices[v]).y);samples++;
+                    }
+                }
+                Assert.Greater(samples,0);Assert.GreaterOrEqual(lowest,-.002f,"Sleeve surface below pitch");
+            }finally{Object.DestroyImmediate(baked);Object.DestroyImmediate(go);PlayerView.UseMecanim=mode;}
+        }
+        [TestCase(-1,30,160)] [TestCase(1,30,205)]
+        [TestCase(-1,60,185)] [TestCase(1,60,185)]
+        [TestCase(-1,120,205)] [TestCase(1,120,160)]
         public void DiveRecoveryKeepsTheShinSurfaceAbovePitch(int side,int hz,int stature)
         {
             bool mode=PlayerView.UseMecanim;PlayerView.UseMecanim=true;
