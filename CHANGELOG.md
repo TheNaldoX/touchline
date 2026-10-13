@@ -1,3 +1,4 @@
+- Animations : les doigts et les paumes restent au-dessus du terrain pendant les chutes capturées, y compris en pause.
 - Animations : contrôles au pied capturés raccordés progressivement au ballon du côté reçu, sans dérive des appuis en pause.
 - Validation : scénarios de passes et touches explicites, contrôle du côté anatomique et des surfaces de main plutôt que du centre des poignets.
 - Formation : six jeunes nantais réels ajoutés, identités et naissances sourcées auprès du Mondial de Montaigu, évaluations provisoires explicites.

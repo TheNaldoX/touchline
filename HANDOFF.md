@@ -29,3 +29,7 @@ APK0.71.0-preview.1/code64 inchangée : https://github.com/TheNaldoX/touchline/r
 Source0cf0a80a61609df4be7d4e16e44766a6fc547ed1,CI38334925329 ; .validation/apk071/{verified.json,source.json,published-asset.json}. SHA256CD91D99BF80E41AD42E4CA4790A5116379C9CB455701BD7043670467803CF4AB ; cert130917e6d2b4ea2dcca487587dcff03b1356b14e7de39c3e01657097ad57ee13 ; fr.personal.touchline.unity ARM64. Prochaine>=0.72/code65. Aucun tous-tests-verts/Fold/paritéFM revendiqué.
 
 
+
+## Lot validé : fix/captured-fall-hands
+BasePR165/f9cfac3. Hypothèse conserver doigts capturés rejetée (pénétration quasi identique), code non retenu. Correction actuelle : extrémités des doigts mises en cache, clearance main par IK au-dessus du sol, aucune modificationCore. Deux anciens défauts doigts−9/−11cm résolus ciblés ; six nouveaux cas30/60/120Hz tailles160/205 : surfaces, pause<3mm, acteur inchangé. AnimationGroundSurfaceTests69/69 (.validation/captured-fall-hands-pause.xml).
+Globale2545/2612,67anciens échecs/0nouveau (.validation/captured-fall-hands-global.xml), deux anciens doigts résolus.129des196initiaux résolus, incluant fixtures documentées. Native422images terminée0, fall-left69/fall-right81 revues ; chute/relevé restent raides, pasFold. Aucun diagnosticC#. Unity arrêtée/imports/scène/settings nettoyés. Prochain : contacts debout ContextBody ignorés dans chemin capturé (4BodyContactMotionTests), extraire overlay torse/bras progressif sans toucher pieds/root. Nouvel essai IA fenêtre ligne reste stash REJETÉ, Core1046 référence ; main etAPKinchangées.

@@ -6,6 +6,27 @@ namespace Touchline.Tests
 {
     public class AnimationGroundSurfaceTests
     {
+        [TestCase(30,160)] [TestCase(60,160)] [TestCase(120,160)]
+        [TestCase(30,205)] [TestCase(60,205)] [TestCase(120,205)]
+        public void FallingHandSupportRemainsAboveTurfAndStillWhenPaused(int fps,int stature)
+        {
+            var go=new GameObject("Falling fingers");var mesh=new Mesh();try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="falling-hands",heightCm=stature},0,6,Color.white);
+                var actor=new Actor{slot=6,action="idle"};for(int i=0;i<fps/2;i++)view.Render(actor,1,1f/fps);
+                var skin=go.GetComponentInChildren<SkinnedMeshRenderer>();var weights=skin.sharedMesh.boneWeights;
+                for(int i=0;i<=fps*2.4f;i++){
+                    float time=i/(float)fps;actor.action=time<MatchSimulation.ContactFallDuration?"fall":"idle";actor.actionKind="tackled-fall";actor.actionSequence=1;actor.actionTime=Mathf.Max(0,MatchSimulation.ContactFallDuration-time);
+                    string state=JsonUtility.ToJson(actor);view.Render(actor,1,1f/fps);
+                    skin.BakeMesh(mesh,true);var vertices=mesh.vertices;
+                    for(int v=0;v<vertices.Length;v++)if(skin.bones[weights[v].boneIndex0].name.StartsWith("finger"))
+                        Assert.GreaterOrEqual(skin.transform.TransformPoint(vertices[v]).y,-.025f,"Visible finger penetrates at "+time);
+                    var left=go.GetComponentsInChildren<Transform>();var positions=new Vector3[left.Length];for(int b=0;b<left.Length;b++)positions[b]=left[b].position;
+                    for(int pause=0;pause<5;pause++)view.Render(actor,1,0);
+                    for(int b=0;b<left.Length;b++)if(left[b].name.StartsWith("finger"))Assert.Less(Vector3.Distance(positions[b],left[b].position),.003f,"Paused finger moved at "+time);
+                    Assert.AreEqual(state,JsonUtility.ToJson(actor));Assert.AreEqual(Vector3.zero,go.transform.position);
+                }
+            }finally{Object.DestroyImmediate(mesh);Object.DestroyImmediate(go);}
+        }
         [TestCase(-1,30,160)] [TestCase(1,30,205)]
         [TestCase(-1,60,185)] [TestCase(1,60,185)]
         [TestCase(-1,120,205)] [TestCase(1,120,160)]
