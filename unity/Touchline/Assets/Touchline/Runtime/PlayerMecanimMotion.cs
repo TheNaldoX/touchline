@@ -313,7 +313,7 @@ namespace Touchline
             // neither pull on their legs nor survive into the recovery.
             // At exact zero progress a reception still owns the outgoing
             // standing anchors; release them only as cushioning actually starts.
-            bool contactSupports=actor.action=="slide"||MatchSimulation.IsBodyControl(actor)&&remaining<MatchSimulation.BodyControlDuration(actor.actionKind)-.00001f;
+            bool contactSupports=actor.action=="slide"||actor.action=="control"&&actor.actionKind=="control-foot"&&remaining<.3f-.00001f||MatchSimulation.IsBodyControl(actor)&&remaining<MatchSimulation.BodyControlDuration(actor.actionKind)-.00001f;
             MecanimFootLock(dt,reset||contactSupports||capturedContactSupports);
             capturedContactSupports=contactSupports;
             MecanimStandingSupport(actor,poseSpeed,dt,reset);

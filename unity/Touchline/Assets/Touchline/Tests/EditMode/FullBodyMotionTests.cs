@@ -6,6 +6,28 @@ namespace Touchline.Tests
 {
     public class FullBodyMotionTests
     {
+        [TestCase(30,-1)] [TestCase(60,-1)] [TestCase(120,-1)]
+        [TestCase(30,1)] [TestCase(60,1)] [TestCase(120,1)]
+        public void CapturedFootControlKeepsPauseAndContactWithoutMovingActor(int fps,int side)
+        {
+            var go=new GameObject("Foot cushioning continuity");try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="foot-cushion",preferredFoot=side>0?"Right":"Left"},0,9,Color.white);
+                var actor=new Actor{slot=9,action="run",velocity=new Point(0,2)};
+                for(int i=0;i<fps/2;i++)view.Render(actor,1,1f/fps);
+                var ball=new Vector3(side*.23f,.11f,.42f);var prior=view.FootPosition(side>0);
+                actor.action="control";actor.actionKind="control-foot";actor.actionSequence=1;actor.velocity=new Point();actor.actionTarget=new Point(ball.x,ball.z);actor.actionHeight=ball.y;
+                for(int i=0;i<=fps/2;i++){
+                    float t=i/(float)fps;actor.actionTime=Mathf.Max(0,.3f-t);if(t>.3f)actor.action="idle";
+                    string state=JsonUtility.ToJson(actor);view.Render(actor,1,1f/fps,ball);
+                    var foot=view.FootPosition(side>0);Assert.Less(Vector3.Distance(prior,foot),.30f,"No foot teleport during entry or recovery");prior=foot;
+                    Assert.AreEqual(state,JsonUtility.ToJson(actor));Assert.AreEqual(Vector3.zero,go.transform.position);
+                    if(t>=.10f&&t<=.18f){Assert.Less(Vector3.Distance(view.BootContactPosition(side>0),ball),.06f);
+                        Assert.Less(view.FootPosition(side<0).y,.12f,"The other foot supports the control instead of kicking empty space");}
+                    for(int paused=0;paused<5;paused++)view.Render(actor,1,0,ball);
+                    Assert.Less(Vector3.Distance(foot,view.FootPosition(side>0)),.003f,"Paused render must not advance cushioning at "+t);
+                }
+            }finally{Object.DestroyImmediate(go);}
+        }
         [Test] public void CapturesHaveFiniteJointsAndMetreScaleCadence()
         {
             Assert.That(FullBodyMotion.Available,Is.True);Assert.That(FullBodyMotion.Stride(1.4f),Is.InRange(1.2f,1.8f));Assert.That(FullBodyMotion.Stride(4),Is.InRange(2f,3f));var joints=new Vector3[19];
