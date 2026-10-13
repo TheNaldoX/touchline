@@ -65,6 +65,25 @@ namespace Touchline
         readonly float[] signalWeights=new float[2];
         readonly Vector3[] signalTargets=new Vector3[2];
         readonly bool[] signalClap=new bool[2];
+        Vector3 uprightContactPush;
+        void MecanimUprightContact(Actor actor,float dt,bool reset,PlayerMotionContext context)
+        {
+            bool upright=actor.action=="idle"||actor.action=="run";
+            if(reset||!upright)uprightContactPush=Vector3.zero;
+            if(!upright)return;
+            const float ContactBlendRate=8; // normalized pressure/second: ease into and out of a shoulder contact
+            var target=new Vector3(context.contactDirection.x,0,context.contactDirection.z)*Mathf.Clamp01(context.contactWeight);
+            uprightContactPush=Vector3.MoveTowards(uprightContactPush,target,Mathf.Max(0,dt)*ContactBlendRate);
+            float weight=Mathf.Clamp01(uprightContactPush.magnitude);if(weight<=0)return;
+            var push=transform.InverseTransformDirection(uprightContactPush);
+            // Same balance response as ContextBody, layered over the captured
+            // torso only: lower-body supports and the physical root stay intact.
+            bones["spine02"].localRotation*=Quaternion.Euler(push.z*7,0,-push.x*8);
+            for(int i=0;i<2;i++){
+                Limb(Sides[i]).upperArm.localRotation*=Quaternion.Euler(-8*weight,0,(i==0?-1:1)*12*weight);
+                Limb(Sides[i]).lowerArm.localRotation*=Quaternion.Euler(12*weight,0,0);
+            }
+        }
         void MecanimSignals(Actor actor,float dt,bool reset,PlayerMotionContext context)
         {
             bool free=actor.action=="idle"||actor.action=="run";
