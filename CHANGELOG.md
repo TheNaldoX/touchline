@@ -1,3 +1,4 @@
+- Validation : récupération des tacles comparée à la bonne phase capturée et rotations des têtes contrôlées en vitesse, sans relâcher les contacts.
 - Animations : seconde célébration capturée avec retour debout et entrée progressive après une frappe encore en cours.
 - Animations : le torse et les bras réagissent progressivement aux contacts debout dans le rendu capturé, sans déplacer les appuis.
 - Animations : les doigts et les paumes restent au-dessus du terrain pendant les chutes capturées, y compris en pause.

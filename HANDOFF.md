@@ -2,8 +2,8 @@
 Lire AGENTS.md. Une tâche/branche/PR, une Unity locale OU CI, aucun Assets modifié pendant compilation/test/capture/build. Aucun nouvel agent. Préserver sauvegardes/APK/pack privé. Ne jamais imprimer database.json (132Mo).
 
 ## Demande / état
-Six chantiers sans échéance : caméra, IA/tactique, équilibre multi-graines, contacts/clips adaptés, U19 réels,196échecs puis consolidation main. Aucun joueur fictif initial. Automation ancienne PAUSED. Quota53%utilisé ; réserver livraison à95%.
-Main non fusionnée (d74e9a9/PR38), drafts empilées PR146–167. Dernier commit368293f/fix/captured-upright-contact. Branche actuelle feat/captured-goal-variant NON COMMITTÉE.
+Six chantiers sans échéance : caméra, IA/tactique, équilibre multi-graines, contacts/clips adaptés, U19 réels,196échecs puis consolidation main. Aucun joueur fictif initial. Automation ancienne PAUSED. Quota55%utilisé ; réserver livraison à95%.
+Main non fusionnée (d74e9a9/PR38), drafts empilées PR146–167. PR168/0dc35d9 célébrérations validées ; branche actuelle fix/animation-recovery-observations.
 
 ## Preuves retenues
 Core1046/1046 inchangé depuis PR154. Dernière globale complète2555/2618 :63anciens échecs,0nouveau,133des196initiaux résolus (certaines fixtures corrigées, ne pas confondre avec bugs du jeu). .validation/captured-upright-contact-global.xml.
@@ -31,3 +31,6 @@ Autres vrais défauts : dribble2, gardiens claims/gaze/readiness, pivots, repris
 .validation/run-local-unity.ps1 -Mode Test -Name unique -Filter Touchline.Tests ; aprèsarrêt .validation/cleanup-unity-imports.ps1 puis restaurer scène/ProjectSettings générés. Dotnet .tools/dotnet/dotnet.exe,DOTNET_CLI_HOME=.tools/cli. API .validation/github-api.ps1 corpsJSONfichier. AttachePRlimite100, ne pas supprimeranciens.
 APK0.71.0-preview.1/code64 inchangée : https://github.com/TheNaldoX/touchline/releases/download/v0.71.0-preview.1/Touchline-Unity-0.71-preview.apk
 Source0cf0a80a61609df4be7d4e16e44766a6fc547ed1,CI38334925329 ; .validation/apk071/verified.json/source.json/published-asset.json. SHA256CD91D99BF80E41AD42E4CA4790A5116379C9CB455701BD7043670467803CF4AB ; cert130917e6d2b4ea2dcca487587dcff03b1356b14e7de39c3e01657097ad57ee13 ; fr.personal.touchline.unity ARM64. Prochaine>=0.72/code65. Aucun tous-tests-verts/Fold/paritéFM revendiqué.
+
+## Lot tests-only récupération
+BasePR168/0dc35d9. SlidingExtension compare bassin au témoin idle même phase/cadence, conserve contact<3/10cm,extension>.76,longueur jambes,sol>=−2.5cm,pas bassin<24cm ; ajoute pause<3mm et cas182cm60Hz. HeaderFacing garde contact<12cm mais remplace ancien Slerp non borné par limite600deg/s du runtime existant. Ciblés16/16 (.validation/recovery-observation-targeted.xml),11anciens fixtures résolus. Aucune modification runtime/Core, globale reste dernière preuve63anciens ;52attendus à confirmer dans prochaine globale. Pas gain visuel revendiqué.
