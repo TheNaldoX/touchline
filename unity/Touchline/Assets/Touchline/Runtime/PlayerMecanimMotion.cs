@@ -187,6 +187,7 @@ namespace Touchline
             // A zero-progress reception still owns the outgoing pose, even if a render frame elapsed.
             if(!reset&&MatchSimulation.IsBodyControl(actor)&&remaining>=MatchSimulation.BodyControlDuration(actor.actionKind)-.00001f)dt=0;
             if(!reset&&actor.action=="slide"&&remaining>=MatchSimulation.SlidingDuelDuration-.00001f)dt=0;
+            if(!reset&&actor.action=="header"&&remaining>=MatchSimulation.AerialContestDuration-.00001f)dt=0;
             bool carrying=context.carrying;
             if(!UseMecanim||!EnsureMecanimGraph(actor.slot==0))return false;leftFootedNow=leftFooted;mecanimPoseSpeed=poseSpeed;
             PrepareCapturedReception(actor,dt,reset,context);

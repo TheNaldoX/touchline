@@ -1,3 +1,4 @@
+- Animations : entrée des têtes sans avancer la course tant que le saut physique n'a pas commencé, appuis préservés à 30/60/120 Hz.
 - Animations : prises hautes centrales debout avec appui au sol, sans déclencher un plongeon latéral pour un ballon accessible.
 - Animations : le gardien suit le ballon du regard sur les prises centrales, avec rotation du cou bornée et retour progressif à la pose capturée.
 - Validation : récupération des tacles comparée à la bonne phase capturée et rotations des têtes contrôlées en vitesse, sans relâcher les contacts.
