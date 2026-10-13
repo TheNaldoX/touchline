@@ -138,4 +138,6 @@
   <ExcludedTest Include="WithdrawnDuelTests.cs" />
   <ExcludedTest Include="SoccerMocapTests.cs" />
   <ExcludedTest Include="CapturedBodyReceptionContactTests.cs" />
+  <ExcludedTest Include="CapturedIdleGroundingTests.cs" />
+  <ExcludedTest Include="CapturedSlideContactTests.cs" />
 </ItemGroup></Project>

@@ -109,6 +109,7 @@ namespace Touchline
 
         // Geste du moteur → (clip, instant de contact côté moteur en s depuis le début du geste).
         bool leftFootedNow;float mecanimPoseSpeed;
+        bool capturedContactSupports;
         const string RunningStrikeClip="Strike Forward Jog",KeeperThrowClip="Goalkeeper Overhand Throw";
         const float RunningStrikeSpeed=2.5f; // m/s : au-delà, le tireur frappe dans sa course
         const string ReceiveClip="Receive Soccerball",FallenClip="Fallen Idle",StandUpClip="Standing Up";
@@ -183,9 +184,11 @@ namespace Touchline
         {
             // A zero-progress reception still owns the outgoing pose, even if a render frame elapsed.
             if(!reset&&MatchSimulation.IsBodyControl(actor)&&remaining>=MatchSimulation.BodyControlDuration(actor.actionKind)-.00001f)dt=0;
+            if(!reset&&actor.action=="slide"&&remaining>=MatchSimulation.SlidingDuelDuration-.00001f)dt=0;
             bool carrying=context.carrying;
             if(!UseMecanim||!EnsureMecanimGraph(actor.slot==0))return false;leftFootedNow=leftFooted;mecanimPoseSpeed=poseSpeed;
             PrepareCapturedReception(actor,dt,reset,context);
+            PrepareCapturedSlide(actor,reset);
             if(reset){moveBlend=Mathf.SmoothStep(0,1,Mathf.InverseLerp(MoveBlendFrom,MoveBlendTo,poseSpeed));dribbleBlend=carrying?1:0;}
             float k=1-Mathf.Exp(-dt*LocomotionBlendRate);
             moveBlend=Mathf.Lerp(moveBlend,Mathf.SmoothStep(0,1,Mathf.InverseLerp(MoveBlendFrom,MoveBlendTo,poseSpeed)),k);
@@ -266,6 +269,12 @@ namespace Touchline
                     if(actor.tackleWithdrawFrom>0){float withdrawal=Mathf.Min(actor.tackleWithdrawFrom,MatchSimulation.TackleRecovery*.35f);envelope*=Mathf.SmoothStep(0,1,remaining/Mathf.Max(.001f,withdrawal));}
                     actionWeights[i]=Mathf.Min(actionWeights[i],envelope);
                 }
+                if(i==activeAction&&actor.action=="slide"){
+                    // Finish the captured grounded gesture before the physical
+                    // recovery releases the player back into locomotion.
+                    float envelope=Mathf.Clamp01(mecanimActionElapsed/ActionFadeIn)*(1-Mathf.SmoothStep(0,1,Mathf.InverseLerp(.78f,MatchSimulation.SlidingDuelDuration,mecanimActionElapsed)));
+                    actionWeights[i]=Mathf.Min(actionWeights[i],envelope);
+                }
                 if(!actionLive[i]){actionPlayables[i].SetSpeed(1);} // le geste finit naturellement pendant le fondu de sortie
                 if(!actionLive[i]&&actionWeights[i]<=0){mecanimGraph.Disconnect(mecanimMixer,ActionInput+i);actionPlayables[i].Destroy();if(activeAction==i)activeAction=-1;if(turnSlot==i)turnSlot=-1;}
             }
@@ -300,7 +309,13 @@ namespace Touchline
                 body.localRotation*=Quaternion.Euler(0,-yaw*(slot==0?a0:a1),0);
             }
             if(turnWeight>0)MecanimTurnYaw(turnWeight);
-            MecanimFootLock(dt,reset);
+            // Retargeted contacts own their supports. A standing anchor must
+            // neither pull on their legs nor survive into the recovery.
+            // At exact zero progress a reception still owns the outgoing
+            // standing anchors; release them only as cushioning actually starts.
+            bool contactSupports=actor.action=="slide"||MatchSimulation.IsBodyControl(actor)&&remaining<MatchSimulation.BodyControlDuration(actor.actionKind)-.00001f;
+            MecanimFootLock(dt,reset||contactSupports||capturedContactSupports);
+            capturedContactSupports=contactSupports;
             MecanimStandingSupport(actor,poseSpeed,dt,reset);
             bool wasSettling=stoppingSteps.Active;
             StopStepFootwork(actor,dt,reset,context,true);

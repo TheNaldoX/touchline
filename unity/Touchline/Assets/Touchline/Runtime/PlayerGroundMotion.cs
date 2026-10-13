@@ -6,6 +6,40 @@ namespace Touchline
     public sealed partial class PlayerView
     {
         bool slideHasEntryPose;
+        Vector3[] capturedSlidePositions;
+        Vector3[] capturedSlideBasePositions;
+        Quaternion[] capturedSlideBaseRotations;
+        void PrepareCapturedSlide(Actor actor,bool reset)
+        {
+            bool changed=poseAction!=actor.action||poseSequence!=actor.actionSequence;
+            PrepareGroundEntry(actor,reset,changed);
+            if(actor.action!="slide"||reset||!changed)return;
+            if(capturedSlidePositions==null)capturedSlidePositions=new Vector3[skeleton.Length];
+            transitionBodyPosition=body.localPosition;transitionBodyRotation=body.localRotation;
+            for(int i=0;i<skeleton.Length;i++){capturedSlidePositions[i]=skeleton[i].localPosition;transitionPose[i]=skeleton[i].localRotation;}
+        }
+        void MecanimSlideContact(Actor actor,float remaining,Vector3 renderedBall)
+        {
+            if(actor.action!="slide")return;
+            float elapsed=Mathf.Clamp(MatchSimulation.SlidingDuelDuration-remaining,0,MatchSimulation.SlidingDuelDuration);
+            const float SlideReturnDuration=.5f; // seconds: return to the current captured locomotion, not an arbitrary rest pose.
+            float release=Mathf.SmoothStep(0,1,Mathf.InverseLerp(MatchSimulation.SlidingDuelDuration-SlideReturnDuration,MatchSimulation.SlidingDuelDuration,elapsed));
+            var basePosition=body.localPosition;var baseRotation=body.localRotation;
+            if(release>0){
+                if(capturedSlideBasePositions==null){capturedSlideBasePositions=new Vector3[skeleton.Length];capturedSlideBaseRotations=new Quaternion[skeleton.Length];}
+                for(int i=0;i<skeleton.Length;i++){capturedSlideBasePositions[i]=skeleton[i].localPosition;capturedSlideBaseRotations[i]=skeleton[i].localRotation;}
+            }
+            SlidingContactPose(actor,remaining,renderedBall,true);
+            KeepBootsAbovePitch(transform.forward,true);
+            if(release>0){
+                body.localPosition=Vector3.Lerp(body.localPosition,basePosition,release);body.localRotation=Quaternion.Slerp(body.localRotation,baseRotation,release);
+                for(int i=0;i<skeleton.Length;i++){skeleton[i].localPosition=Vector3.Lerp(skeleton[i].localPosition,capturedSlideBasePositions[i],release);skeleton[i].localRotation=Quaternion.Slerp(skeleton[i].localRotation,capturedSlideBaseRotations[i],release);}
+                KeepBootsAbovePitch(transform.forward,true);
+            }
+            if(!slideHasEntryPose||capturedSlidePositions==null||elapsed>=.15f)return;
+            float blend=Mathf.SmoothStep(0,1,elapsed/.15f); // seconds: the existing slide entry, before accepted impact.
+            for(int i=0;i<skeleton.Length;i++)skeleton[i].localPosition=Vector3.Lerp(capturedSlidePositions[i],skeleton[i].localPosition,blend);
+        }
         // Called before PlayerView replaces the outgoing skeleton. Its existing
         // transitionPose/body snapshot remains valid through this slide action.
         void PrepareGroundEntry(Actor actor,bool reset,bool actionChanged)
@@ -51,7 +85,7 @@ namespace Touchline
             SolveArm(balance,transform.TransformPoint(new Vector3(-sign*(.24f+.16f*down),1.08f-.20f*down,.23f)));
         }
 
-        void SlidingContactPose(Actor actor,float remaining,Vector3 renderedBall)
+        void SlidingContactPose(Actor actor,float remaining,Vector3 renderedBall,bool captured=false)
         {
             float t=Mathf.Clamp(MatchSimulation.SlidingDuelDuration-remaining,0,MatchSimulation.SlidingDuelDuration);
             float launch=Mathf.SmoothStep(0,1,t/MatchSimulation.SlidingDuelContact),rise=Mathf.SmoothStep(0,1,(t-.78f)/.92f),down=launch*(1-rise);
@@ -73,6 +107,13 @@ namespace Touchline
             float hipBack=Mathf.Clamp(local.z-.72f,-1.02f,-.12f);
             var rotation=Quaternion.Euler(-46*down,0,sign*36*down);var pelvis=new Vector3(-sign*.035f*down,.95f-.64f*down,hipBack*extend);
             body.localRotation=rotation;body.localPosition=pelvis-rotation*new Vector3(0,.95f,0);
+            if(captured){
+                // Mecanim already translates/rotates the humanoid hips. Place
+                // those actual hips, rather than applying a second full drop.
+                var hips=bones["root"];
+                body.localRotation=rotation*Quaternion.Inverse(hips.localRotation);
+                body.localPosition=pelvis-body.localRotation*hips.localPosition;
+            }
             Rotate("spine02",4*down,0,0);Rotate("head",23*down,0,0);
             var rest=transform.TransformPoint(new Vector3(sign*.18f,.08f,0));
             // A ball beside the pelvis requires the ankle behind the toe's
@@ -89,8 +130,8 @@ namespace Touchline
                 // engaged leg and accepted impact remain authoritative.
                 body.position+=Vector3.ClampMagnitude(delta.normalized*(delta.magnitude-reach),.24f)*extend;
             }
-            SolveLeg(lead,leadTarget);reaching.foot.rotation=transform.rotation;
-            SolveLeg(trail,transform.TransformPoint(new Vector3(-sign*.21f,.08f,hipBack*extend-.18f*down)),transform.up+transform.forward*.25f);Limb(trail).foot.rotation=transform.rotation;
+            SolveCapturedSupport(lead,leadTarget,transform.forward);reaching.foot.rotation=transform.rotation;
+            SolveCapturedSupport(trail,transform.TransformPoint(new Vector3(-sign*.21f,.08f,hipBack*extend-.18f*down)),transform.up+transform.forward*.25f);Limb(trail).foot.rotation=transform.rotation;
             for(int i=0;i<2;i++){
                 float s=i==0?1:-1;var hand=Limb(Sides[i]).wrist;var anchor=transform.TransformPoint(new Vector3(s*.38f,.20f,hipBack*extend-.06f));
                 SolveArm(Sides[i],Vector3.Lerp(hand.position,anchor,down),transform.forward);

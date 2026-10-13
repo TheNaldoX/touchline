@@ -1,3 +1,4 @@
+- Animations : tacles glissés raccordés au contact enregistré et au relevé, jambes sans étirement et ancrages de locomotion libérés pendant les contacts corporels.
 - Animations : appuis capturés immobiles ajustés sur la semelle visible, avec stabilisation progressive après les contrôles annulés.
 - Animations : préparation visible des contrôles poitrine/cuisse capturés, pose conservée à l’entrée et raccord progressif jusqu’au contact physique.
 - Animations : petits pas de stabilisation actifs en mode capturé, appuis conservés en pause et raccord progressif au redémarrage.
