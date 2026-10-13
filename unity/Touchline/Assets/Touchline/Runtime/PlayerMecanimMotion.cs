@@ -231,6 +231,11 @@ namespace Touchline
                 mecanimActionElapsed=duration>0?Mathf.Clamp(duration-remaining,0,duration):mecanimActionElapsed+dt;var playable=actionPlayables[activeAction];float length=(float)playable.GetAnimationClip().length;
                 if(celebrating)mecanimActionElapsed=context.reactionTime;
                 if(actor.action=="fall"&&mecanimActionKey=="Soccer Trip")mecanimActionElapsed=Mathf.Max(0,MatchSimulation.ContactFallDuration-remaining);
+                if(actor.action=="tackle"&&actor.actionKind==MatchSimulation.StandingDuel&&actor.tackleWithdrawFrom>0){
+                    float withdrawal=Mathf.Min(actor.tackleWithdrawFrom,MatchSimulation.TackleRecovery*.35f);
+                    // An abandoned poke must not continue into its recorded strike.
+                    mecanimActionElapsed=Mathf.Max(0,MatchSimulation.TacklePreparation+MatchSimulation.TackleRecovery-actor.tackleWithdrawFrom-Mathf.Max(0,remaining-withdrawal));
+                }
                 float clipTime=mecanimActionContact+mecanimActionElapsed;
                 if(actor.action=="dive"&&(mecanimActionKey=="Goalkeeper Diving Save"||mecanimActionKey=="Goalkeeper Diving Save (miroir)")){
                     // Keep impact at its recorded instant, then finish recovery
@@ -255,6 +260,11 @@ namespace Touchline
                 if(celebrating&&i==activeAction)actionWeights[i]=Mathf.SmoothStep(0,1,context.reactionTime/.25f)*(1-Mathf.SmoothStep(0,1,(context.reactionTime-2.6f)/.4f)); // seconds: enter/leave inside the three-second goal reaction.
                 // Do not start headers or body receptions before their physical action clock advances.
                 if(i==activeAction&&(actor.action=="header"||MatchSimulation.IsBodyControl(actor)||actor.action=="fall"&&mecanimActionKey=="Soccer Trip"))actionWeights[i]=Mathf.Min(actionWeights[i],Mathf.Clamp01(mecanimActionElapsed/fadeIn));
+                if(i==activeAction&&actor.action=="tackle"&&actor.actionKind==MatchSimulation.StandingDuel){
+                    float envelope=Mathf.Clamp01(mecanimActionElapsed/fadeIn);
+                    if(actor.tackleWithdrawFrom>0){float withdrawal=Mathf.Min(actor.tackleWithdrawFrom,MatchSimulation.TackleRecovery*.35f);envelope*=Mathf.SmoothStep(0,1,remaining/Mathf.Max(.001f,withdrawal));}
+                    actionWeights[i]=Mathf.Min(actionWeights[i],envelope);
+                }
                 if(!actionLive[i]){actionPlayables[i].SetSpeed(1);} // le geste finit naturellement pendant le fondu de sortie
                 if(!actionLive[i]&&actionWeights[i]<=0){mecanimGraph.Disconnect(mecanimMixer,ActionInput+i);actionPlayables[i].Destroy();if(activeAction==i)activeAction=-1;if(turnSlot==i)turnSlot=-1;}
             }
@@ -292,6 +302,15 @@ namespace Touchline
             MecanimFootLock(dt,reset);
             MecanimStrikeSupport(actor,remaining);
             MecanimPassContact(actor,remaining);
+            if(actor.action=="tackle"||actor.action=="block"){
+                if(reset||poseAction!=actor.action||poseSequence!=actor.actionSequence){
+                    float contactLateral=transform.InverseTransformPoint(new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z)).x;
+                    contactLeft=Mathf.Abs(contactLateral)<.06f?leftFooted:contactLateral>0;
+                }
+                // Retarget the captured gesture to the authoritative impact.
+                // DuelReach supplies the physical preparation/recovery envelope.
+                FinalDuelContact(actor,remaining);
+            }
             // Retargeted clips can lower a rotated boot below the pitch during
             // action recovery. Preserve the captured knee plane and foot rotation.
             KeepBootsAbovePitch(Vector3.forward,true);

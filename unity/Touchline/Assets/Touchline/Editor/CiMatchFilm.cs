@@ -55,6 +55,13 @@ namespace Touchline.Editor
                         if(Arg("-touchlineFilmSeconds",null)==null)seconds=GoalFilmSeconds;break;
                     }
                 }
+                if(Arg("-touchlineFilmDuel","")=="true"){
+                    var probe=NewMatch(seed);
+                    bool Tackling()=>probe.State.actors.Any(p=>p.action=="tackle"&&p.actionKind==MatchSimulation.StandingDuel&&p.tackleWithdrawFrom<=0);
+                    while(!probe.State.halfTime&&!probe.State.finished&&!Tackling())probe.Advance(MatchSimulation.Step);
+                    if(!Tackling())throw new Exception("No prepared standing duel found in first half.");
+                    start=Mathf.Max(0,probe.State.clock-.5f);goalNote+=$" standing_duel_clock={probe.State.clock:0.0}";
+                }
                 if(Arg("-touchlineFilmMovingControl","")=="true"){
                     var probe=NewMatch(seed);
                     bool Receiving()=>probe.State.actors.Any(p=>p.action=="control"&&p.actionKind=="control-foot"&&p.velocity.Length>1.5f&&Point.Dot(p.velocity.Normalized,(p.carryTarget-p.position).Normalized)>.7f);

@@ -30,7 +30,7 @@ namespace Touchline
         {
             if(actor.action!="tackle"&&(actor.action!="block"||actor.actionHeight>=.65f))return;
             float weight=DuelReach(actor,remaining);
-            if(weight<=0)return;
+            if(weight<=.00001f)return;
             var point=new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z);
             var offset=point-transform.position;offset.y=0;
             // An interception records the actual impact. Recover from that
@@ -38,7 +38,7 @@ namespace Touchline
             if(offset.magnitude>1.25f)return;
             var side=contactLeft?"L":"R";var support=contactLeft?"R":"L";
             var leg=Limb(side);var supportFoot=Limb(support).foot;
-            var supportTarget=supportFoot.position;supportTarget.y=.08f;
+            var supportTarget=supportFoot.position;supportTarget.y=Mathf.Lerp(supportTarget.y,.08f,weight);
             var facing=offset.sqrMagnitude>.01f?Vector3.RotateTowards(transform.forward,offset.normalized,65*Mathf.Deg2Rad,0):transform.forward;
             var rotation=Quaternion.Slerp(transform.rotation,Quaternion.LookRotation(facing,Vector3.up),weight);
             var ankle=point-rotation*new Vector3(0,0,.22f*transform.localScale.y+.11f);
@@ -49,8 +49,9 @@ namespace Touchline
                 var shift=delta.normalized*(delta.magnitude-reach);
                 body.position+=Vector3.ClampMagnitude(shift,.38f)*weight;
             }
-            SolveLeg(support,supportTarget);supportFoot.rotation=transform.rotation;
-            SolveLeg(side,Vector3.Lerp(leg.foot.position,ankle,weight));leg.foot.rotation=rotation;
+            var supportRotation=supportFoot.rotation;var contactRotation=leg.foot.rotation;
+            SolveLeg(support,supportTarget);supportFoot.rotation=Quaternion.Slerp(supportRotation,transform.rotation,weight);
+            SolveLeg(side,Vector3.Lerp(leg.foot.position,ankle,weight));leg.foot.rotation=Quaternion.Slerp(contactRotation,rotation,weight);
         }
     }
 }
