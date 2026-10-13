@@ -1,3 +1,4 @@
+- Match : un tir proche devenu ouvert peut remplacer une passe en retrait encore en préparation, avec pivot progressif et protection des angles fermés.
 - Formation : suivi des jeunes professionnels réels de 16 à 21 ans dès la première saison, y compris dans les anciennes sauvegardes, sans déplacer les joueurs.
 - Match : zoom progressif avec ballon conservé dans le cadre et sélection plus stricte des Moments clés.
 - Android : version 0.70/code63 avec import vérifié du pack personnel et contrôle des animations réellement incluses dans l’APK.

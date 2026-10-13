@@ -50,7 +50,7 @@ namespace Touchline.Core
  public string Decide(Actor p)  
  {  
  if(State.ball.owner==p.id&&(State.ball.held||p.action=="keeper-rise"))return "hold";  
- if(State.ball.owner==p.id&&PreparingFootDelivery(p)){State.decision=Step;return "prepare";}  
+ if(State.ball.owner==p.id&&PreparingFootDelivery(p)){ReconsiderPreparedBackpass(p);State.decision=Step;return "prepare";}  
  bool prepared=p.actionKind==PreparedFootDelivery;if(prepared)p.actionKind=null;  
  var m=State;int dir=Direction(p.side);var t=Tactic(p.side);float pressure=Space(p.position,1-p.side,true);float distance=Point.Distance(p.position,new Point(dir*52.5f,0));  
  float depth=Math.Max(.5f,52.5f-p.position.x*dir);float opening=(float)(Math.Atan2(3.66f-p.position.z,depth)-Math.Atan2(-3.66f-p.position.z,depth));  

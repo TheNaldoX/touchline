@@ -18,6 +18,28 @@ namespace Touchline.Tests {
    }
    Assert.IsTrue(shot,"A clear finish must eventually be executed after preparation.");Assert.AreEqual(1,sim.State.shots[side]);Assert.Less(Delta(p.angle,sim.Direction(side)*(float)Math.PI/2),.35f);
   }
+  [TestCase(0,1)] [TestCase(1,1)] [TestCase(0,2)] [TestCase(1,2)]
+  public void NewlyOpenFinishCanReplacePreparedRecyclingPassWithoutInstantRotation(int side,int period){
+   var sim=Prepare(side,period,0,out var p,out var k);int dir=sim.Direction(side);p.angle=dir*(float)Math.PI/2;
+   Assert.IsTrue((bool)Invoke(sim,"BeginFootDeliveryPreparation",p,new Point(dir*20,0),"pass"));
+   p.angle=0; // Fixture: halfway through the original pivot when the corridor opens.
+   float angle=p.angle;uint seed=sim.State.seed;sim.Decide(p);
+   Assert.AreEqual("shot",p.actionKind);Assert.AreEqual(angle,p.angle);Assert.AreEqual(seed,sim.State.seed);Assert.AreEqual(p.id,sim.State.ball.owner);Assert.AreEqual(0,sim.State.shots[side]);
+   float duration=p.actionTime;sim.Decide(p);Assert.AreEqual(duration,p.actionTime,"A prepared shot must not restart its own pivot");
+   for(int n=0;n<15&&sim.State.shots[side]==0;n++){float before=p.angle;sim.Advance(.1);Assert.LessOrEqual(Delta(p.angle,before),.501f);}
+   Assert.AreEqual(1,sim.State.shots[side]);
+  }
+  [Test] public void BlockedFinishDoesNotInterruptPreparedBackpass(){
+   var sim=Prepare(0,1,0,out var p,out var k);p.angle=(float)Math.PI/2;Invoke(sim,"BeginFootDeliveryPreparation",p,new Point(20,0),"pass");
+   var defender=sim.State.actors[13];defender.sentOff=false;defender.position=new Point(40,0);float remaining=p.actionTime;sim.Decide(p);
+   Assert.AreEqual("pass",p.actionKind);Assert.AreEqual(remaining,p.actionTime);
+  }
+  [Test] public void NarrowBylineAngleDoesNotRepeatedlyReplaceUsefulBackpass(){
+   var sim=Prepare(0,1,0,out var p,out var k);p.position=new Point(52,9);p.angle=(float)Math.PI/2;
+   sim.State.ball.position=p.position;Invoke(sim,"BeginFootDeliveryPreparation",p,new Point(20,9),"pass");
+   Assert.Greater(sim.ShotQuality(p),.08f);float duration=p.actionTime;
+   sim.Decide(p);sim.Decide(p);Assert.AreEqual("pass",p.actionKind);Assert.AreEqual(duration,p.actionTime);
+  }
   [Test] public void AlreadyFacingGoalShootsWithoutArtificialWaiting(){var sim=Prepare(0,1,0,out var p,out var k);p.angle=(float)Math.PI/2;Assert.AreEqual("shot",sim.Decide(p));Assert.AreEqual(1,sim.State.shots[0]);Assert.IsFalse(MatchSimulation.PreparingFootDelivery(p));}
   [Test] public void DefenderCanCommitAndWinBallDuringPreparation(){
    bool won=false;for(uint seed=1;seed<=16;seed++){
