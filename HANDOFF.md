@@ -4,7 +4,7 @@ Lire AGENTS.md. Claude/Codex alternent. Une seule Unity locale/CI ; ne pas modif
 ## Livraison active — 0.71
 - PR144/311c71d IA validée ; PR145 source0cf0a80a61609df4be7d4e16e44766a6fc547ed1 version0.71.0-preview.1/code64. Branche feat/android-071-match-fixes. Aucun nouveau lot : marge réservée à livraison (dernier quota94%).
 - CI38334925329 en cours, session7530 exécute .validation/deliver-apk071.ps1 : attente45s, téléchargement, signature/version/package/ARM64/hash et inventaire21clips. Vérifier .validation/apk071/verified.json et source.json avant toute annonce. Ne pas lancer Unity locale ni modifier Assets pendant CI.
-- Après vérification : publier v0.71.0-preview.1 (pas tag apk-), via adaptation .validation/publish-apk070.ps1 avec source du build, preuve071 et descriptif des correctifs. Contrôler digest distant puis relire release après publication pour lien définitif. Préserver0.70 et tous fichiers privés. Livrer honnêtement puis désactiver automation à seuil quota/fin, pas de nouveau chantier.
+- Après vérification : publier v0.71.0-preview.1 (pas tag apk-), via .validation/publish-apk071.ps1 préparé avec source exacte, preuve071 et descriptif des correctifs. Contrôler source.json avant exécution. Contrôler digest distant puis relire release après publication pour lien définitif. Préserver0.70 et tous fichiers privés. Livrer honnêtement puis désactiver automation à seuil quota/fin, pas de nouveau chantier.
 
 ## Lot en cours — nuit du 13 octobre
 - Autorisation jusqu’à08h30 Paris, seuil APK95%utilisés (5%restants), remplace92%. Dernier quota94%. Automatisation active toutes10min ; aucun nouvel agent.
