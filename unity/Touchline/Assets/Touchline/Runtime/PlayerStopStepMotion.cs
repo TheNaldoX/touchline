@@ -7,6 +7,24 @@ namespace Touchline
     {
         readonly StopStepMotion stoppingSteps=new StopStepMotion();
         bool movedBeforeStop;Vector3 stoppingRoot;
+        void MecanimKneeContinuity(Actor actor,float dt,bool reset)
+        {
+            bool heldReception=MatchSimulation.IsBodyControl(actor)&&actor.actionTime>=MatchSimulation.BodyControlDuration(actor.actionKind)-.00001f;
+            if(reset||actor.slot==0||(actor.action!="idle"&&actor.action!="run"&&!heldReception))return;
+            if(heldReception)dt=0;
+            const float KneePlaneRate=540; // degrees/second: limit IK pole flips without moving the ankle contact.
+            for(int i=0;i<2;i++){
+                var leg=Limb(Sides[i]);var hip=leg.upperLeg.position;var foot=leg.foot.position;var rotation=leg.foot.rotation;
+                var axis=(foot-hip).normalized;
+                var before=Vector3.ProjectOnPlane(previousKnees[i]-hip,axis);
+                var after=Vector3.ProjectOnPlane(leg.lowerLeg.position-hip,axis);
+                if(before.sqrMagnitude<.000001f||after.sqrMagnitude<.000001f)continue;
+                float angle=Vector3.SignedAngle(before,after,axis),limit=KneePlaneRate*Mathf.Max(0,dt);
+                if(Mathf.Abs(angle)<=limit)continue;
+                var pole=Quaternion.AngleAxis(Mathf.Clamp(angle,-limit,limit),axis)*before.normalized;
+                SolveCapturedSupport(Sides[i],foot,pole);leg.foot.rotation=rotation;
+            }
+        }
         float standingSupportWeight;
         readonly Vector3[] standingSupportTargets=new Vector3[2];
         void MecanimStandingSupport(Actor actor,float speed,float dt,bool reset)

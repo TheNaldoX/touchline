@@ -41,7 +41,14 @@ namespace Touchline.Tests
                         actor.action=running>0?"run":"idle";actor.actionKind="";actor.actionTime=0;actor.angle=running>0?heading*Mathf.Deg2Rad:0;
                         actor.velocity=new Point(direction.x*speed,direction.z*speed);actor.position=new Point(direction.x*d,travel+direction.z*d);
                     }
-                    actor.stride+=Point.Distance(actor.previous,actor.position);view.Render(actor,1,1f/fps,ball);
+                    // Render the same 10 Hz authoritative trajectory at every
+                    // display rate; per-frame snapshots otherwise divide speed by fps.
+                    float simulationEnd=(Mathf.Floor(time/MatchSimulation.Step)+1)*MatchSimulation.Step;
+                    float DistanceAt(float t){float r=Mathf.Max(0,t-1.8f);return r<=.8f?3*r*r:1.92f+(r-.8f)*4.8f;}
+                    float d0=DistanceAt(simulationEnd-MatchSimulation.Step),d1=DistanceAt(simulationEnd);
+                    actor.previous=new Point(direction.x*d0,travel+direction.z*d0);actor.position=new Point(direction.x*d1,travel+direction.z*d1);
+                    actor.stride=DistanceAt(time);float alpha=(time-(simulationEnd-MatchSimulation.Step))/MatchSimulation.Step;
+                    view.Render(actor,alpha,1f/fps,ball);
                     for(int j=0;j<joints.Length;j++){
                         var local=go.transform.InverseTransformPoint(joints[j].position);float speed=Vector3.Distance(previous[j],local)*fps*go.transform.localScale.y;
                         if(time>=1.7f&&time<=2.35f)maximum[j]=Mathf.Max(maximum[j],speed);previous[j]=local;
