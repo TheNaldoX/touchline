@@ -62,6 +62,36 @@ namespace Touchline
         {
             for(int i=0;i<2;i++){SolveLeg(Sides[i],transform.TransformPoint(new Vector3(i==0?width:-width,.08f,0)));Limb(Sides[i]).foot.rotation=transform.rotation;}
         }
+        readonly float[] signalWeights=new float[2];
+        readonly Vector3[] signalTargets=new Vector3[2];
+        readonly bool[] signalClap=new bool[2];
+        void MecanimSignals(Actor actor,float dt,bool reset,PlayerMotionContext context)
+        {
+            bool free=actor.action=="idle"||actor.action=="run";
+            for(int i=0;i<2;i++){
+                if(reset||!free)signalWeights[i]=0;
+                if(!free)continue;
+                float desired=0;int sign=i==0?1:-1;
+                if(context.reaction==1){
+                    signalClap[i]=true;
+                    float t=context.reactionTime;
+                    desired=Mathf.SmoothStep(0,1,t/.22f)*(1-Mathf.SmoothStep(0,1,(t-2.45f)/.55f));
+                    float gap=Mathf.Lerp(.22f,.035f,(.5f+.5f*Mathf.Cos(t*15))*desired);
+                    signalTargets[i]=new Vector3(sign*gap,1.3f,.38f);
+                }else if(context.reaction==0&&context.requestSide==sign&&context.requestWeight>0){
+                    signalClap[i]=false;
+                    desired=context.requestWeight;signalTargets[i]=new Vector3(sign*.32f,1.67f,.14f);
+                }
+                const float SignalBlendRate=5; // weight/second: enter and release the upper-body gesture progressively.
+                signalWeights[i]=Mathf.MoveTowards(signalWeights[i],desired,SignalBlendRate*Mathf.Max(0,dt));
+                float weight=signalWeights[i];if(weight<=0)continue;
+                var wrist=Limb(Sides[i]).wrist;
+                SolveArm(Sides[i],Vector3.Lerp(wrist.position,transform.TransformPoint(signalTargets[i]),weight),-transform.up);
+                var upright=Quaternion.FromToRotation(wrist.TransformDirection(handAxes[i]),transform.up+transform.forward*.2f)*wrist.rotation;
+                if(signalClap[i])upright=Quaternion.LookRotation(transform.up,-sign*transform.right)*Quaternion.Inverse(Quaternion.LookRotation(handAxes[i],handPalmAxes[i]));
+                wrist.rotation=Quaternion.Slerp(wrist.rotation,upright,weight);
+            }
+        }
         void ContextBody(Actor actor,float dt,bool reset,Vector3 ball,PlayerMotionContext context)
         {
             float speed=actor.velocity.Length;
