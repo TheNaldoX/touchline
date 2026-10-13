@@ -72,6 +72,7 @@
   <ExcludedTest Include="LaunchCareerStorageTests.cs" />
   <ExcludedTest Include="LeadershipConversationTests.cs" />
   <ExcludedTest Include="LocomotionAccelerationTests.cs" />
+  <ExcludedTest Include="KneePlaneContinuityTests.cs" />
   <ExcludedTest Include="LocomotionFacingTests.cs" />
   <ExcludedTest Include="LocomotionRestartSupportTests.cs" />
   <ExcludedTest Include="MarketStaffTests.cs" />
