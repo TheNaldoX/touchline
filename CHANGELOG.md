@@ -1,3 +1,4 @@
+- Match : le gardien évite de préparer un plongeon vers une interception imaginaire quand la trajectoire passe nettement à côté du but.
 - Validation : réceptions de tête contrôlées sur les semelles et le bassin animés, jusqu'au retour au repos, des deux pieds à trois cadences.
 - Animations : tacle debout et retrait raccordés à l'appui initial, sans double mouvement du pied ni saut au retour à la locomotion.
 - Animations : appuis des prises centrales stabilisés dès la préparation, avec continuité et pause contrôlées à 30/60/120 Hz.
