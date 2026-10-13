@@ -2,10 +2,14 @@
 Lire AGENTS.md. Une tâche/branche/PR, une Unity locale OU CI, aucun Assets modifié pendant compilation/test/capture/build. Aucun nouvel agent. Préserver sauvegardes/APK/pack privé. Ne jamais imprimer database.json (132Mo).
 
 ## Demande et état
-Six chantiers : caméra, IA/tactique, équilibre multi-graines, contacts/clips adaptés, U19 réels,196échecs puis consolidation main. Aucun joueur fictif initial. Automation PAUSED. Quota62% utilisé ; réserver livraison à95%. Main non fusionnée, PR146–173 empilées draft. APK0.71 inchangée.
-Branche fix/captured-central-preparation-support, base PR173/659d322, lot validé à publier.
+Six chantiers : caméra, IA/tactique, équilibre multi-graines, contacts/clips adaptés, U19 réels,196échecs puis consolidation main. Aucun joueur fictif initial. Automation PAUSED. Quota63% utilisé ; réserver livraison à95%. Main non fusionnée, PR146–174 empilées draft. APK0.71 inchangée.
+PR174/7c26be2 appuis gardien publiée. Branche fix/standing-duel-foot-trajectory, lot validé à publier.
 
-## Dernier lot validé
+## Lot tacle debout validé
+BasePR174/7c26be2. Pied repart de son appui visible initial, pas du swing déjà joué par clip. Retrait revient à cet appui, ancrages course libérés et raccord final via mélange des supports existant(.12s). Premier essai sans raccord créait saut en idle60Hz, rejeté ; preuves préservées.
+Ciblés40/40, sixcadences/côtés30/60/120, pause<3mm, acteur inchangé ; contacts simulés4graines toujours valides. Retrait30Hz pasmax.275→.157m, préparation.363→.287m, seuils.18/.3inchangés. Native standing-duel-foot-trajectory-native422images, left33/37,right40 revues ; geste construit annulé, pas match/Fold. Globale2610/2649,39anciens/0nouveau (.validation/standing-duel-foot-trajectory-global.xml),157/196 initiaux résolus. Aucun diagnosticC#. Unity arrêtée/imports nettoyés. Core1046inchangé.
+
+## Lot précédent gardien
 MecanimKeeperDiveContact : appui atteint plus tôt que les mains (poids×4), corrige 9–10cm de décollage en préparation centrale haute. Tests sur semelles réelles/torse anatomique, récupération observée après idle ; anciennes coordonnées de chevilles procédurales retirées. Exigences sol>=−2.5cm, un appui<8cm, contact<15cm conservées. Ajout cas1.5m60Hz ; sixcas hauts30/60/120Hz contrôlent continuité et pause<3mm.
 Ciblés31/31 puis22/22 continuité. Native central-catch-preparation-support-native : high008/high020/low120 revues, pas Fold. Globale2607/2647,40anciens échecs/0nouveau (.validation/central-catch-preparation-support-global.xml),156des196initiaux résolus, dont corrections de fixtures. Aucun diagnosticC#. Unity arrêtée/imports nettoyés. Core1046/1046 inchangé depuis PR154.
 PR173 tests-only : fixture simulait les pressure-pokes sans rendre l'acteur ; filtre corrigé, root<1mm et58contacts sur4graines, écartboot<4micromètres, seuil18cm conservé. PR172/19e9f09 tête progression nulle garde dt0, pieds29→30=0m natif. PR171/a30f1ce prise haute centrale choisit catch debout, appuis/contact corrigés. PR170/03c28b6 regard gardien borné360deg/s ; PR169/ff4056e récupération comparée à phase idle identique. PR168/0dc35d9 clip14 célébration debout avec entrée .55s :8/21clips actifs, clip12 agenouillé sans relevé reste inactif. Preuves détaillées dans PR/Git et .validation.
@@ -16,8 +20,8 @@ Rejets stashes à préserver : OpponentCoach fenêtre récente800matchs/200paire
 Pistes non implémentées : anticipation corps entier pour claims (préparation limitée35cm vs impact1.05m), valeur future de la réception pour les passes en profondeur ; tout changement moteur exige mêmes graines/calibration et rejet si dérive.
 
 ## Prochain travail
-40échecs : dribble2, claims7, distant keeper2, readiness2, headerlanding3, withdrawnduel30Hz1, pivots/redémarrages/supports, entre autres. Liste exacte dans dernière XML. Ne pas desserrer les contacts physiques pour verdir.
-WithdrawnDuel30Hzside1 : préparation pas.36288m, retrait.27517m vs seuils.3/.18 ; voir PlayerDuelContact.FinalDuelContact et PlayerMecanimMotion244/280, pose capturée+retarget. Aucune correction écrite.
+39échecs : dribble2, claims7, distant keeper2, readiness2, headerlanding3,  pivots/redémarrages/supports, entre autres. Liste exacte dans dernière XML. Ne pas desserrer les contacts physiques pour verdir.
+Prochaine piste : HeaderLanding3 fixtures slot0implicite et bassinRig au lieu de hanches réelles, ordre des pieds imposé par préférence plutôt que capture. Vérifier contact/sol/absorption réels sans desserrer exigences physiques. Claims7 nécessitent anticipation corporelle ; anciens retarget directs rejetés.
 PR146 caméra portrait37tests/6vues, confort rapide/Fold toujours non validés. Main ne pas fusionner avec dette restante.
 
 ## Données : attention dates

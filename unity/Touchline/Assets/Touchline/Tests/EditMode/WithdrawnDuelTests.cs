@@ -21,7 +21,7 @@ namespace Touchline.Tests
             Assert.AreEqual(0,last);
             var restored=JsonUtility.FromJson<Actor>(JsonUtility.ToJson(a));Assert.AreEqual(Reach(a,duration*.7f),Reach(restored,duration*.7f));
         }
-        [TestCase(30,1)] [TestCase(60,1)] [TestCase(120,-1)] [TestCase(60,-1)]
+        [TestCase(30,1)] [TestCase(60,1)] [TestCase(120,-1)] [TestCase(60,-1)] [TestCase(30,-1)] [TestCase(120,1)]
         public void CancelledBootRetractsWithoutTeleportOrRootMovement(int fps,int side)
         {
             var go=new GameObject("Withdrawn duel");try{
@@ -33,7 +33,8 @@ namespace Touchline.Tests
                     float time=i/(float)fps;
                     if(time<.1f)a.actionTime=.75f-time;
                     else {a.tackleWithdrawFrom=.65f;a.actionTime=Mathf.Max(0,MatchSimulation.TackleRecovery*.35f-(time-.1f));if(a.actionTime<=0)a.action="idle";}
-                    view.Render(a,1,1f/fps,ball);var boot=view.BootContactPosition(side>0);float step=Vector3.Distance(boot,previous);maxStep=Mathf.Max(maxStep,step);if(time>.1001f)maxWithdrawal=Mathf.Max(maxWithdrawal,step);if(step>.18f)TestContext.WriteLine("time="+time+" step="+step+" remaining="+a.actionTime+" reach="+Reach(a,a.actionTime)+" boot="+boot);previous=boot;
+                    string before=JsonUtility.ToJson(a);view.Render(a,1,1f/fps,ball);Assert.AreEqual(before,JsonUtility.ToJson(a));var boot=view.BootContactPosition(side>0);float step=Vector3.Distance(boot,previous);maxStep=Mathf.Max(maxStep,step);if(time>.1001f)maxWithdrawal=Mathf.Max(maxWithdrawal,step);if(step>.18f)TestContext.WriteLine("time="+time+" step="+step+" remaining="+a.actionTime+" reach="+Reach(a,a.actionTime)+" boot="+boot);previous=boot;
+                    if(i==fps/5){view.Render(a,1,0,ball);Assert.Less(Vector3.Distance(boot,view.BootContactPosition(side>0)),.003f,"Paused withdrawal retains its pose");}
                     Assert.Greater(view.FootPosition(side<0).y,.025f);
                 }
                 TestContext.WriteLine("Maximum frame displacement: "+maxStep+" m; withdrawal: "+maxWithdrawal+" m");

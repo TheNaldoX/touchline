@@ -5,6 +5,9 @@ namespace Touchline
 {
     public sealed partial class PlayerView
     {
+        Vector3 standingDuelEntryFoot;
+        Quaternion standingDuelEntryRotation;
+        bool standingDuelWasCaptured;
         static float DuelReach(Actor actor,float remaining)
         {
             if(actor.action=="tackle"&&actor.actionKind==MatchSimulation.StandingDuel&&actor.tackleWithdrawFrom>0){
@@ -26,7 +29,7 @@ namespace Touchline
             float elapsed=Mathf.Max(0,MatchSimulation.TacklePreparation+MatchSimulation.TackleRecovery-remaining);
             return elapsed<MatchSimulation.TacklePreparation?Mathf.SmoothStep(0,1,elapsed/MatchSimulation.TacklePreparation):1-Mathf.SmoothStep(0,1,(elapsed-MatchSimulation.TacklePreparation)/MatchSimulation.TackleRecovery);
         }
-        void FinalDuelContact(Actor actor,float remaining)
+        void FinalDuelContact(Actor actor,float remaining,bool capturedStanding=false)
         {
             if(actor.action!="tackle"&&(actor.action!="block"||actor.actionHeight>=.65f))return;
             float weight=DuelReach(actor,remaining);
@@ -51,7 +54,18 @@ namespace Touchline
             }
             var supportRotation=supportFoot.rotation;var contactRotation=leg.foot.rotation;
             SolveLeg(support,supportTarget);supportFoot.rotation=Quaternion.Slerp(supportRotation,transform.rotation,weight);
-            SolveLeg(side,Vector3.Lerp(leg.foot.position,ankle,weight));leg.foot.rotation=Quaternion.Slerp(contactRotation,rotation,weight);
+            var startingFoot=leg.foot.position;
+            if(capturedStanding){
+                // A captured poke already swings the foot. Retarget from the
+                // visible entry support instead of adding a second swing.
+                // Cancellation returns to the original support; blending in
+                // the abandoned clip's opposite swing would reverse it again.
+                float release=actor.tackleWithdrawFrom>0?0:1-remaining/MatchSimulation.TackleRecovery;
+                release=Mathf.SmoothStep(0,1,release);
+                startingFoot=Vector3.Lerp(transform.TransformPoint(standingDuelEntryFoot),startingFoot,release);
+                contactRotation=Quaternion.Slerp(transform.rotation*standingDuelEntryRotation,contactRotation,release);
+            }
+            SolveLeg(side,Vector3.Lerp(startingFoot,ankle,weight));leg.foot.rotation=Quaternion.Slerp(contactRotation,rotation,weight);
         }
     }
 }

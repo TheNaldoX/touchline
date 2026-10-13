@@ -324,13 +324,16 @@ namespace Touchline
             // neither pull on their legs nor survive into the recovery.
             // At exact zero progress a reception still owns the outgoing
             // standing anchors; release them only as cushioning actually starts.
-            bool contactSupports=actor.action=="slide"||actor.action=="control"&&actor.actionKind=="control-foot"&&remaining<.3f-.00001f||MatchSimulation.IsBodyControl(actor)&&remaining<MatchSimulation.BodyControlDuration(actor.actionKind)-.00001f;
+            bool contactSupports=actor.action=="slide"||actor.action=="tackle"&&actor.actionKind==MatchSimulation.StandingDuel||actor.action=="control"&&actor.actionKind=="control-foot"&&remaining<.3f-.00001f||MatchSimulation.IsBodyControl(actor)&&remaining<MatchSimulation.BodyControlDuration(actor.actionKind)-.00001f;
             MecanimFootLock(dt,reset||contactSupports||capturedContactSupports);
             capturedContactSupports=contactSupports;
             MecanimStandingSupport(actor,poseSpeed,dt,reset);
             bool wasSettling=stoppingSteps.Active;
             StopStepFootwork(actor,dt,reset,context,true);
-            MecanimStopRelease(actor,wasSettling,dt,reset,context);
+            // The cancelled clip can still be fading when its physical timer
+            // ends. Hand its visible feet back through the same support blend.
+            MecanimStopRelease(actor,wasSettling||standingDuelWasCaptured&&actor.action!="tackle",dt,reset,context);
+            standingDuelWasCaptured=actor.action=="tackle"&&actor.actionKind==MatchSimulation.StandingDuel;
             BodyReceptionPreparation(actor,context);
             MecanimStrikeSupport(actor,remaining);
             MecanimPassContact(actor,remaining);
@@ -338,10 +341,13 @@ namespace Touchline
                 if(reset||poseAction!=actor.action||poseSequence!=actor.actionSequence){
                     float contactLateral=transform.InverseTransformPoint(new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z)).x;
                     contactLeft=Mathf.Abs(contactLateral)<.06f?leftFooted:contactLateral>0;
+                    int footIndex=contactLeft?0:1;
+                    standingDuelEntryFoot=transform.InverseTransformPoint(reset?Limb(Sides[footIndex]).foot.position:previousFeet[footIndex]);
+                    standingDuelEntryRotation=Quaternion.Inverse(transform.rotation)*(reset?Limb(Sides[footIndex]).foot.rotation:previousFootRotations[footIndex]);
                 }
                 // Retarget the captured gesture to the authoritative impact.
                 // DuelReach supplies the physical preparation/recovery envelope.
-                FinalDuelContact(actor,remaining);
+                FinalDuelContact(actor,remaining,actor.action=="tackle"&&actor.actionKind==MatchSimulation.StandingDuel);
             }
             // Retargeted clips can lower a rotated boot below the pitch during
             // action recovery. Preserve the captured knee plane and foot rotation.
