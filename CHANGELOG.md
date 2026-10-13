@@ -1,3 +1,4 @@
+- Validation : contrôles anatomiques adaptés aux animations capturées, contact intérieur des passes et flocage skinné vérifiés.
 - Animations : appui de la main après parade et reprise successive des pieds pendant le relevé du gardien capturé.
 - Animations : tacles glissés raccordés au contact enregistré et au relevé, jambes sans étirement et ancrages de locomotion libérés pendant les contacts corporels.
 - Animations : appuis capturés immobiles ajustés sur la semelle visible, avec stabilisation progressive après les contrôles annulés.
