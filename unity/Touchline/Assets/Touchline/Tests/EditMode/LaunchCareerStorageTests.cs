@@ -15,19 +15,34 @@ namespace Touchline.Tests
         [Test] public void NewCatalogueContainsImportedPlayersWithoutFictionalExtension()
         {
             var fresh=TouchlineCatalogue.Load();
-            Assert.AreEqual(21831,fresh.players.Length);
+            Assert.AreEqual(21837,fresh.players.Length);
             Assert.IsFalse(fresh.players.Any(p=>GeneratedWorld.IsGenerated(p.id)));
             Assert.IsFalse(fresh.clubs.Any(c=>GeneratedWorld.IsGenerated(c.id)));
             var academy=fresh.players.Where(p=>p.id.StartsWith("real-academy-",StringComparison.Ordinal)).ToArray();
-            Assert.AreEqual(16,academy.Length);
+            Assert.AreEqual(22,academy.Length);
             Assert.AreEqual(12,academy.Count(p=>p.team=="academy-176"));
-            Assert.AreEqual(4,academy.Count(p=>p.team=="academy-165"));
+            Assert.AreEqual(10,academy.Count(p=>p.team=="academy-165"));
             Assert.IsTrue(fresh.players.Except(academy).All(p=>p.source.StartsWith("https://www.espn.com/",StringComparison.Ordinal)));
             Assert.IsTrue(academy.All(p=>(p.team=="academy-176"&&new Uri(p.rosterSource).Host=="www.om.fr"||p.team=="academy-165"&&new Uri(p.rosterSource).Host=="www.fcnantes.com")&&
-                (new Uri(p.source).Host=="www.fff.fr"||new Uri(p.source).Host=="media.fff.fr"||new Uri(p.source).Host=="mediterranee.fff.fr"||new Uri(p.source).Host=="provence.fff.fr")&&
+                (new Uri(p.source).Host=="www.fff.fr"||new Uri(p.source).Host=="media.fff.fr"||new Uri(p.source).Host=="mediterranee.fff.fr"||new Uri(p.source).Host=="provence.fff.fr"||new Uri(p.source).Host=="www.mondial-football-montaigu.fr")&&
                 PlayerChronology.TryAge(p,new DateTime(2026,6,15),out var age)&&age==p.age));
         }
-        [TestCase("176",12)][TestCase("165",4)]
+        [TestCase("Quentin Forget","2008-05-02")][TestCase("Amed Aiki","2008-08-02")]
+        [TestCase("Jalen Foucan","2008-12-16")][TestCase("Joshua Dago","2009-05-10")]
+        [TestCase("Loan Merrifield","2009-03-29")][TestCase("Nayad Khenissi","2008-04-07")]
+        public void MontaiguIdentityIsUniqueAndKeepsUnknownSalaryExplicit(string name,string birth)
+        {
+            var fresh=TouchlineCatalogue.Load();var p=fresh.players.Single(x=>x.name==name);
+            Assert.AreEqual(birth,p.birthDate);Assert.AreEqual("academy-165",p.team);
+            Assert.AreEqual(0,p.wage);StringAssert.Contains("inconnue",p.salarySource);
+            StringAssert.Contains("provisoires",p.assessment);StringAssert.Contains("page 4",p.assessment);
+            Assert.AreEqual("www.mondial-football-montaigu.fr",new Uri(p.source).Host);
+            var loanTeam="loan-validation";p.team=loanTeam;
+            var supplement=JsonUtility.FromJson<Database>(Resources.Load<TextAsset>("Data/real-academy").text);
+            Assert.AreEqual(0,RealAcademyCatalogue.Append(fresh,supplement));
+            Assert.AreEqual(loanTeam,p.team,"Adding source records cannot revoke an existing loan.");
+        }
+        [TestCase("176",12)][TestCase("165",10)]
         public void SourcedAcademiesExposeOwnedPathsAndAgeAppropriateGroups(string club,int expected)
         {
             var fresh=TouchlineCatalogue.Load();var career=new Career{club=club,youthGenerationFromYear=2027};
@@ -103,3 +118,4 @@ namespace Touchline.Tests
         [Test] public void MissingLegacyCountersAreRepairedButWrongLengthsRejected(){var c=State();c.match=MatchSimulation.Create(db,c,"b").State;c.match.metrics=null;c.match.completedPasses=null;File.WriteAllText(path,JsonUtility.ToJson(c));var restored=LaunchCareerStorage.Read(path,"Principal",db);Assert.IsTrue(restored.Valid,restored.Error);Assert.AreEqual(2,restored.State.match.metrics.Length);Assert.IsNotNull(restored.State.match.metrics[0]);Assert.AreEqual(2,restored.State.match.completedPasses.Length);c.match.passes=new[]{1};File.WriteAllText(path,JsonUtility.ToJson(c));Assert.IsFalse(LaunchCareerStorage.Read(path,"Principal",db).Valid);}
     }
 }
+

@@ -192,7 +192,7 @@ namespace Touchline.Editor
                 career.EnsureWorld(db); // The normal start also imports referenced real free agents.
                 var paths=career.AcademyPaths(db).ToArray();count=paths.Length;
                 if(count==0||paths.Any(p=>!initial.Contains(p.player)||(p.group!="senior"&&!(p.group=="academy"&&db.Find(p.player).team=="academy-"+career.club))))throw new Exception("Real youth missing or fabricated");
-                int expected=club=="176"?12:club=="165"?4:db.players.Count(p=>p.team=="academy-"+club);
+                int expected=club=="176"?12:club=="165"?10:db.players.Count(p=>p.team=="academy-"+club);
                 if(paths.Count(p=>db.Find(p.player).team=="academy-"+club)!=expected)throw new Exception("Verified academy supplement missing");
                 player=paths.First(p=>p.group=="academy").player;
                 typeof(TouchlineApp).GetProperty("Database").SetValue(App,db);typeof(TouchlineApp).GetProperty("Career").SetValue(App,career);

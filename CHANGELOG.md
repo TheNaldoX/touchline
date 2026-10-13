@@ -1,3 +1,4 @@
+- Formation : six jeunes nantais réels ajoutés, identités et naissances sourcées auprès du Mondial de Montaigu, évaluations provisoires explicites.
 - Animations : appels de balle et applaudissements visibles sur le squelette capturé, avec transitions des bras et pause stable.
 - Validation : contrôles anatomiques adaptés aux animations capturées, contact intérieur des passes et flocage skinné vérifiés.
 - Animations : appui de la main après parade et reprise successive des pieds pendant le relevé du gardien capturé.
@@ -164,3 +165,4 @@ Une ligne par pull request, la plus récente en haut.
 - Import dans Git depuis Google Drive. `MatchDecisions.bak.cs` retiré (doublon compilé de `MatchDecisions.cs`).
 - Animations : les prises centrales à hauteur du buste utilisent une capture debout plutôt qu’un plongeon latéral, avec contact conservé.
 - Animations : import local des 21 captures Soccer d’Anderson Rohr et première variante de passe intérieure droite, synchronisée au ballon ; fichiers sous licence exclus du dépôt public.
+

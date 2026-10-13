@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "provenance": "Complément réel sourcé : 16 identités OM/Nantes ; effectifs incomplets, évaluations provisoires explicites, observations consultées le 13/10/2026.",
+  "provenance": "Complément réel sourcé : 22 identités OM/Nantes ; effectifs incomplets, évaluations provisoires explicites, observations consultées le 13/10/2026.",
   "players": [
     {
       "valueSource": "Valeur de simulation provisoire de 50 000 €, aucune cotation individuelle vérifiée.",
@@ -2176,6 +2176,858 @@
         "MIL"
       ],
       "surname": "Oissa",
+      "position": "MIL",
+      "attributes": [
+        {
+          "key": "sprintSpeed",
+          "value": 45
+        },
+        {
+          "key": "acceleration",
+          "value": 45
+        },
+        {
+          "key": "agility",
+          "value": 45
+        },
+        {
+          "key": "balance",
+          "value": 45
+        },
+        {
+          "key": "stamina",
+          "value": 45
+        },
+        {
+          "key": "strength",
+          "value": 45
+        },
+        {
+          "key": "shortPassing",
+          "value": 45
+        },
+        {
+          "key": "longPassing",
+          "value": 45
+        },
+        {
+          "key": "finishing",
+          "value": 45
+        },
+        {
+          "key": "shotPower",
+          "value": 45
+        },
+        {
+          "key": "vision",
+          "value": 45
+        },
+        {
+          "key": "composure",
+          "value": 45
+        },
+        {
+          "key": "reactions",
+          "value": 45
+        },
+        {
+          "key": "positioning",
+          "value": 45
+        },
+        {
+          "key": "defensiveAwareness",
+          "value": 45
+        },
+        {
+          "key": "interceptions",
+          "value": 45
+        },
+        {
+          "key": "dribbling",
+          "value": 45
+        },
+        {
+          "key": "ballControl",
+          "value": 45
+        },
+        {
+          "key": "crossing",
+          "value": 45
+        },
+        {
+          "key": "headingAccuracy",
+          "value": 45
+        },
+        {
+          "key": "standingTackle",
+          "value": 45
+        },
+        {
+          "key": "slidingTackle",
+          "value": 45
+        },
+        {
+          "key": "jumping",
+          "value": 45
+        },
+        {
+          "key": "penalties",
+          "value": 45
+        },
+        {
+          "key": "longShots",
+          "value": 45
+        },
+        {
+          "key": "freeKickAccuracy",
+          "value": 45
+        },
+        {
+          "key": "curve",
+          "value": 45
+        },
+        {
+          "key": "volleys",
+          "value": 45
+        },
+        {
+          "key": "aggression",
+          "value": 45
+        }
+      ]
+    },
+    {
+      "valueSource": "Valeur de simulation provisoire de 50 000 €, aucune cotation individuelle vérifiée.",
+      "name": "Quentin Forget",
+      "givenNames": "Quentin",
+      "source": "https://www.mondial-football-montaigu.fr/wp-content/uploads/sites/132/2024/04/LISTES-CLUBS.pdf?x34472=",
+      "potential": 65,
+      "rosterAsOf": "2026-10-13",
+      "value": 50000,
+      "birthDate": "2008-05-02",
+      "wage": 0,
+      "morale": 70,
+      "fitness": 95,
+      "assessment": "Identité et naissance : liste officielle des clubs du Mondial de Montaigu 2024, page 4. Poste de milieu et formation : effectif officiel FC Nantes U19 2025–2026, consulté le 13/10/2026. Niveau 45 et potentiel 65 : paramètres provisoires faute de mesure individuelle vérifiée, forte incertitude. Ni le potentiel ni les attributs ne sont des faits établis. Aucun résultat postérieur au début de carrière utilisé.",
+      "salarySource": "Rémunération réelle inconnue ; aucune charge salariale individuelle ajoutée avant promotion, fonctionnement couvert par le budget du centre.",
+      "rating": 45,
+      "id": "real-academy-nantes-quentin-forget",
+      "team": "academy-165",
+      "rosterSource": "https://www.fcnantes.com/formation/20252026/effectifU19.php",
+      "positions": [
+        "MIL"
+      ],
+      "surname": "Forget",
+      "position": "MIL",
+      "attributes": [
+        {
+          "key": "sprintSpeed",
+          "value": 45
+        },
+        {
+          "key": "acceleration",
+          "value": 45
+        },
+        {
+          "key": "agility",
+          "value": 45
+        },
+        {
+          "key": "balance",
+          "value": 45
+        },
+        {
+          "key": "stamina",
+          "value": 45
+        },
+        {
+          "key": "strength",
+          "value": 45
+        },
+        {
+          "key": "shortPassing",
+          "value": 45
+        },
+        {
+          "key": "longPassing",
+          "value": 45
+        },
+        {
+          "key": "finishing",
+          "value": 45
+        },
+        {
+          "key": "shotPower",
+          "value": 45
+        },
+        {
+          "key": "vision",
+          "value": 45
+        },
+        {
+          "key": "composure",
+          "value": 45
+        },
+        {
+          "key": "reactions",
+          "value": 45
+        },
+        {
+          "key": "positioning",
+          "value": 45
+        },
+        {
+          "key": "defensiveAwareness",
+          "value": 45
+        },
+        {
+          "key": "interceptions",
+          "value": 45
+        },
+        {
+          "key": "dribbling",
+          "value": 45
+        },
+        {
+          "key": "ballControl",
+          "value": 45
+        },
+        {
+          "key": "crossing",
+          "value": 45
+        },
+        {
+          "key": "headingAccuracy",
+          "value": 45
+        },
+        {
+          "key": "standingTackle",
+          "value": 45
+        },
+        {
+          "key": "slidingTackle",
+          "value": 45
+        },
+        {
+          "key": "jumping",
+          "value": 45
+        },
+        {
+          "key": "penalties",
+          "value": 45
+        },
+        {
+          "key": "longShots",
+          "value": 45
+        },
+        {
+          "key": "freeKickAccuracy",
+          "value": 45
+        },
+        {
+          "key": "curve",
+          "value": 45
+        },
+        {
+          "key": "volleys",
+          "value": 45
+        },
+        {
+          "key": "aggression",
+          "value": 45
+        }
+      ]
+    },
+    {
+      "valueSource": "Valeur de simulation provisoire de 50 000 €, aucune cotation individuelle vérifiée.",
+      "name": "Amed Aiki",
+      "givenNames": "Amed",
+      "source": "https://www.mondial-football-montaigu.fr/wp-content/uploads/sites/132/2024/04/LISTES-CLUBS.pdf?x34472=",
+      "potential": 65,
+      "rosterAsOf": "2026-10-13",
+      "value": 50000,
+      "birthDate": "2008-08-02",
+      "wage": 0,
+      "morale": 70,
+      "fitness": 95,
+      "assessment": "Identité et naissance : liste officielle des clubs du Mondial de Montaigu 2024, page 4. Poste de milieu et formation : effectif officiel FC Nantes U19 2025–2026, consulté le 13/10/2026. Niveau 45 et potentiel 65 : paramètres provisoires faute de mesure individuelle vérifiée, forte incertitude. Ni le potentiel ni les attributs ne sont des faits établis. Aucun résultat postérieur au début de carrière utilisé.",
+      "salarySource": "Rémunération réelle inconnue ; aucune charge salariale individuelle ajoutée avant promotion, fonctionnement couvert par le budget du centre.",
+      "rating": 45,
+      "id": "real-academy-nantes-amed-aiki",
+      "team": "academy-165",
+      "rosterSource": "https://www.fcnantes.com/formation/20252026/effectifU19.php",
+      "positions": [
+        "MIL"
+      ],
+      "surname": "Aiki",
+      "position": "MIL",
+      "attributes": [
+        {
+          "key": "sprintSpeed",
+          "value": 45
+        },
+        {
+          "key": "acceleration",
+          "value": 45
+        },
+        {
+          "key": "agility",
+          "value": 45
+        },
+        {
+          "key": "balance",
+          "value": 45
+        },
+        {
+          "key": "stamina",
+          "value": 45
+        },
+        {
+          "key": "strength",
+          "value": 45
+        },
+        {
+          "key": "shortPassing",
+          "value": 45
+        },
+        {
+          "key": "longPassing",
+          "value": 45
+        },
+        {
+          "key": "finishing",
+          "value": 45
+        },
+        {
+          "key": "shotPower",
+          "value": 45
+        },
+        {
+          "key": "vision",
+          "value": 45
+        },
+        {
+          "key": "composure",
+          "value": 45
+        },
+        {
+          "key": "reactions",
+          "value": 45
+        },
+        {
+          "key": "positioning",
+          "value": 45
+        },
+        {
+          "key": "defensiveAwareness",
+          "value": 45
+        },
+        {
+          "key": "interceptions",
+          "value": 45
+        },
+        {
+          "key": "dribbling",
+          "value": 45
+        },
+        {
+          "key": "ballControl",
+          "value": 45
+        },
+        {
+          "key": "crossing",
+          "value": 45
+        },
+        {
+          "key": "headingAccuracy",
+          "value": 45
+        },
+        {
+          "key": "standingTackle",
+          "value": 45
+        },
+        {
+          "key": "slidingTackle",
+          "value": 45
+        },
+        {
+          "key": "jumping",
+          "value": 45
+        },
+        {
+          "key": "penalties",
+          "value": 45
+        },
+        {
+          "key": "longShots",
+          "value": 45
+        },
+        {
+          "key": "freeKickAccuracy",
+          "value": 45
+        },
+        {
+          "key": "curve",
+          "value": 45
+        },
+        {
+          "key": "volleys",
+          "value": 45
+        },
+        {
+          "key": "aggression",
+          "value": 45
+        }
+      ]
+    },
+    {
+      "valueSource": "Valeur de simulation provisoire de 50 000 €, aucune cotation individuelle vérifiée.",
+      "name": "Jalen Foucan",
+      "givenNames": "Jalen",
+      "source": "https://www.mondial-football-montaigu.fr/wp-content/uploads/sites/132/2024/04/LISTES-CLUBS.pdf?x34472=",
+      "potential": 65,
+      "rosterAsOf": "2026-10-13",
+      "value": 50000,
+      "birthDate": "2008-12-16",
+      "wage": 0,
+      "morale": 70,
+      "fitness": 95,
+      "assessment": "Identité et naissance : liste officielle des clubs du Mondial de Montaigu 2024, page 4. Poste de milieu et formation : effectif officiel FC Nantes U19 2025–2026, consulté le 13/10/2026. Niveau 45 et potentiel 65 : paramètres provisoires faute de mesure individuelle vérifiée, forte incertitude. Ni le potentiel ni les attributs ne sont des faits établis. Aucun résultat postérieur au début de carrière utilisé.",
+      "salarySource": "Rémunération réelle inconnue ; aucune charge salariale individuelle ajoutée avant promotion, fonctionnement couvert par le budget du centre.",
+      "rating": 45,
+      "id": "real-academy-nantes-jalen-foucan",
+      "team": "academy-165",
+      "rosterSource": "https://www.fcnantes.com/formation/20252026/effectifU19.php",
+      "positions": [
+        "MIL"
+      ],
+      "surname": "Foucan",
+      "position": "MIL",
+      "attributes": [
+        {
+          "key": "sprintSpeed",
+          "value": 45
+        },
+        {
+          "key": "acceleration",
+          "value": 45
+        },
+        {
+          "key": "agility",
+          "value": 45
+        },
+        {
+          "key": "balance",
+          "value": 45
+        },
+        {
+          "key": "stamina",
+          "value": 45
+        },
+        {
+          "key": "strength",
+          "value": 45
+        },
+        {
+          "key": "shortPassing",
+          "value": 45
+        },
+        {
+          "key": "longPassing",
+          "value": 45
+        },
+        {
+          "key": "finishing",
+          "value": 45
+        },
+        {
+          "key": "shotPower",
+          "value": 45
+        },
+        {
+          "key": "vision",
+          "value": 45
+        },
+        {
+          "key": "composure",
+          "value": 45
+        },
+        {
+          "key": "reactions",
+          "value": 45
+        },
+        {
+          "key": "positioning",
+          "value": 45
+        },
+        {
+          "key": "defensiveAwareness",
+          "value": 45
+        },
+        {
+          "key": "interceptions",
+          "value": 45
+        },
+        {
+          "key": "dribbling",
+          "value": 45
+        },
+        {
+          "key": "ballControl",
+          "value": 45
+        },
+        {
+          "key": "crossing",
+          "value": 45
+        },
+        {
+          "key": "headingAccuracy",
+          "value": 45
+        },
+        {
+          "key": "standingTackle",
+          "value": 45
+        },
+        {
+          "key": "slidingTackle",
+          "value": 45
+        },
+        {
+          "key": "jumping",
+          "value": 45
+        },
+        {
+          "key": "penalties",
+          "value": 45
+        },
+        {
+          "key": "longShots",
+          "value": 45
+        },
+        {
+          "key": "freeKickAccuracy",
+          "value": 45
+        },
+        {
+          "key": "curve",
+          "value": 45
+        },
+        {
+          "key": "volleys",
+          "value": 45
+        },
+        {
+          "key": "aggression",
+          "value": 45
+        }
+      ]
+    },
+    {
+      "valueSource": "Valeur de simulation provisoire de 50 000 €, aucune cotation individuelle vérifiée.",
+      "name": "Joshua Dago",
+      "givenNames": "Joshua",
+      "source": "https://www.mondial-football-montaigu.fr/wp-content/uploads/sites/132/2024/04/LISTES-CLUBS.pdf?x34472=",
+      "potential": 65,
+      "rosterAsOf": "2026-10-13",
+      "value": 50000,
+      "birthDate": "2009-05-10",
+      "wage": 0,
+      "morale": 70,
+      "fitness": 95,
+      "assessment": "Identité et naissance : liste officielle des clubs du Mondial de Montaigu 2024, page 4. Poste de milieu et formation : effectif officiel FC Nantes U19 2025–2026, consulté le 13/10/2026. Niveau 45 et potentiel 65 : paramètres provisoires faute de mesure individuelle vérifiée, forte incertitude. Ni le potentiel ni les attributs ne sont des faits établis. Aucun résultat postérieur au début de carrière utilisé.",
+      "salarySource": "Rémunération réelle inconnue ; aucune charge salariale individuelle ajoutée avant promotion, fonctionnement couvert par le budget du centre.",
+      "rating": 45,
+      "id": "real-academy-nantes-joshua-dago",
+      "team": "academy-165",
+      "rosterSource": "https://www.fcnantes.com/formation/20252026/effectifU19.php",
+      "positions": [
+        "MIL"
+      ],
+      "surname": "Dago",
+      "position": "MIL",
+      "attributes": [
+        {
+          "key": "sprintSpeed",
+          "value": 45
+        },
+        {
+          "key": "acceleration",
+          "value": 45
+        },
+        {
+          "key": "agility",
+          "value": 45
+        },
+        {
+          "key": "balance",
+          "value": 45
+        },
+        {
+          "key": "stamina",
+          "value": 45
+        },
+        {
+          "key": "strength",
+          "value": 45
+        },
+        {
+          "key": "shortPassing",
+          "value": 45
+        },
+        {
+          "key": "longPassing",
+          "value": 45
+        },
+        {
+          "key": "finishing",
+          "value": 45
+        },
+        {
+          "key": "shotPower",
+          "value": 45
+        },
+        {
+          "key": "vision",
+          "value": 45
+        },
+        {
+          "key": "composure",
+          "value": 45
+        },
+        {
+          "key": "reactions",
+          "value": 45
+        },
+        {
+          "key": "positioning",
+          "value": 45
+        },
+        {
+          "key": "defensiveAwareness",
+          "value": 45
+        },
+        {
+          "key": "interceptions",
+          "value": 45
+        },
+        {
+          "key": "dribbling",
+          "value": 45
+        },
+        {
+          "key": "ballControl",
+          "value": 45
+        },
+        {
+          "key": "crossing",
+          "value": 45
+        },
+        {
+          "key": "headingAccuracy",
+          "value": 45
+        },
+        {
+          "key": "standingTackle",
+          "value": 45
+        },
+        {
+          "key": "slidingTackle",
+          "value": 45
+        },
+        {
+          "key": "jumping",
+          "value": 45
+        },
+        {
+          "key": "penalties",
+          "value": 45
+        },
+        {
+          "key": "longShots",
+          "value": 45
+        },
+        {
+          "key": "freeKickAccuracy",
+          "value": 45
+        },
+        {
+          "key": "curve",
+          "value": 45
+        },
+        {
+          "key": "volleys",
+          "value": 45
+        },
+        {
+          "key": "aggression",
+          "value": 45
+        }
+      ]
+    },
+    {
+      "valueSource": "Valeur de simulation provisoire de 50 000 €, aucune cotation individuelle vérifiée.",
+      "name": "Loan Merrifield",
+      "givenNames": "Loan",
+      "source": "https://www.mondial-football-montaigu.fr/wp-content/uploads/sites/132/2024/04/LISTES-CLUBS.pdf?x34472=",
+      "potential": 65,
+      "rosterAsOf": "2026-10-13",
+      "value": 50000,
+      "birthDate": "2009-03-29",
+      "wage": 0,
+      "morale": 70,
+      "fitness": 95,
+      "assessment": "Identité et naissance : liste officielle des clubs du Mondial de Montaigu 2024, page 4. Poste de milieu et formation : effectif officiel FC Nantes U19 2025–2026, consulté le 13/10/2026. Niveau 45 et potentiel 65 : paramètres provisoires faute de mesure individuelle vérifiée, forte incertitude. Ni le potentiel ni les attributs ne sont des faits établis. Aucun résultat postérieur au début de carrière utilisé.",
+      "salarySource": "Rémunération réelle inconnue ; aucune charge salariale individuelle ajoutée avant promotion, fonctionnement couvert par le budget du centre.",
+      "rating": 45,
+      "id": "real-academy-nantes-loan-merrifield",
+      "team": "academy-165",
+      "rosterSource": "https://www.fcnantes.com/formation/20252026/effectifU19.php",
+      "positions": [
+        "MIL"
+      ],
+      "surname": "Merrifield",
+      "position": "MIL",
+      "attributes": [
+        {
+          "key": "sprintSpeed",
+          "value": 45
+        },
+        {
+          "key": "acceleration",
+          "value": 45
+        },
+        {
+          "key": "agility",
+          "value": 45
+        },
+        {
+          "key": "balance",
+          "value": 45
+        },
+        {
+          "key": "stamina",
+          "value": 45
+        },
+        {
+          "key": "strength",
+          "value": 45
+        },
+        {
+          "key": "shortPassing",
+          "value": 45
+        },
+        {
+          "key": "longPassing",
+          "value": 45
+        },
+        {
+          "key": "finishing",
+          "value": 45
+        },
+        {
+          "key": "shotPower",
+          "value": 45
+        },
+        {
+          "key": "vision",
+          "value": 45
+        },
+        {
+          "key": "composure",
+          "value": 45
+        },
+        {
+          "key": "reactions",
+          "value": 45
+        },
+        {
+          "key": "positioning",
+          "value": 45
+        },
+        {
+          "key": "defensiveAwareness",
+          "value": 45
+        },
+        {
+          "key": "interceptions",
+          "value": 45
+        },
+        {
+          "key": "dribbling",
+          "value": 45
+        },
+        {
+          "key": "ballControl",
+          "value": 45
+        },
+        {
+          "key": "crossing",
+          "value": 45
+        },
+        {
+          "key": "headingAccuracy",
+          "value": 45
+        },
+        {
+          "key": "standingTackle",
+          "value": 45
+        },
+        {
+          "key": "slidingTackle",
+          "value": 45
+        },
+        {
+          "key": "jumping",
+          "value": 45
+        },
+        {
+          "key": "penalties",
+          "value": 45
+        },
+        {
+          "key": "longShots",
+          "value": 45
+        },
+        {
+          "key": "freeKickAccuracy",
+          "value": 45
+        },
+        {
+          "key": "curve",
+          "value": 45
+        },
+        {
+          "key": "volleys",
+          "value": 45
+        },
+        {
+          "key": "aggression",
+          "value": 45
+        }
+      ]
+    },
+    {
+      "valueSource": "Valeur de simulation provisoire de 50 000 €, aucune cotation individuelle vérifiée.",
+      "name": "Nayad Khenissi",
+      "givenNames": "Nayad",
+      "source": "https://www.mondial-football-montaigu.fr/wp-content/uploads/sites/132/2024/04/LISTES-CLUBS.pdf?x34472=",
+      "potential": 65,
+      "rosterAsOf": "2026-10-13",
+      "value": 50000,
+      "birthDate": "2008-04-07",
+      "wage": 0,
+      "morale": 70,
+      "fitness": 95,
+      "assessment": "Identité et naissance : liste officielle des clubs du Mondial de Montaigu 2024, page 4. Poste de milieu et formation : effectif officiel FC Nantes U19 2025–2026, consulté le 13/10/2026. Niveau 45 et potentiel 65 : paramètres provisoires faute de mesure individuelle vérifiée, forte incertitude. Ni le potentiel ni les attributs ne sont des faits établis. Aucun résultat postérieur au début de carrière utilisé.",
+      "salarySource": "Rémunération réelle inconnue ; aucune charge salariale individuelle ajoutée avant promotion, fonctionnement couvert par le budget du centre.",
+      "rating": 45,
+      "id": "real-academy-nantes-nayad-khenissi",
+      "team": "academy-165",
+      "rosterSource": "https://www.fcnantes.com/formation/20252026/effectifU19.php",
+      "positions": [
+        "MIL"
+      ],
+      "surname": "Khenissi",
       "position": "MIL",
       "attributes": [
         {
