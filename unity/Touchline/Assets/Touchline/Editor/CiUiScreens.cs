@@ -187,11 +187,13 @@ namespace Touchline.Editor
         {
             var steps=new List<Action>();string player=null;int count=0;
             steps.Add(()=>{
-                var db=TouchlineCatalogue.Load();var career=new Career{club="176",youthGenerationFromYear=2027};career.lineup=Career.Select(db,career.club,career.tactic);var initial=new HashSet<string>(db.players.Select(p=>p.id));
+                string club=Environment.GetCommandLineArgs().FirstOrDefault(a=>a.StartsWith("-touchlineYouthClub="))?.Split('=')[1]??"176";
+                var db=TouchlineCatalogue.Load();var career=new Career{club=club,youthGenerationFromYear=2027};career.lineup=Career.Select(db,career.club,career.tactic);var initial=new HashSet<string>(db.players.Select(p=>p.id));
                 career.EnsureWorld(db); // The normal start also imports referenced real free agents.
                 var paths=career.AcademyPaths(db).ToArray();count=paths.Length;
                 if(count==0||paths.Any(p=>!initial.Contains(p.player)||(p.group!="senior"&&!(p.group=="academy"&&db.Find(p.player).team=="academy-"+career.club))))throw new Exception("Real youth missing or fabricated");
-                if(paths.Count(p=>p.player.StartsWith("real-academy-om-",StringComparison.Ordinal))!=5)throw new Exception("Verified academy supplement missing");
+                int expected=club=="176"?12:club=="165"?4:db.players.Count(p=>p.team=="academy-"+club);
+                if(paths.Count(p=>db.Find(p.player).team=="academy-"+club)!=expected)throw new Exception("Verified academy supplement missing");
                 player=paths.First(p=>p.group=="academy").player;
                 typeof(TouchlineApp).GetProperty("Database").SetValue(App,db);typeof(TouchlineApp).GetProperty("Career").SetValue(App,career);
                 audit.AppendLine("Real catalogue youth: "+string.Join(", ",paths.Select(p=>db.Find(p.player).name))+"; no generated youth.");

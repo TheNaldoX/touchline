@@ -15,15 +15,32 @@ namespace Touchline.Tests
         [Test] public void NewCatalogueContainsImportedPlayersWithoutFictionalExtension()
         {
             var fresh=TouchlineCatalogue.Load();
-            Assert.AreEqual(21820,fresh.players.Length);
+            Assert.AreEqual(21831,fresh.players.Length);
             Assert.IsFalse(fresh.players.Any(p=>GeneratedWorld.IsGenerated(p.id)));
             Assert.IsFalse(fresh.clubs.Any(c=>GeneratedWorld.IsGenerated(c.id)));
-            var academy=fresh.players.Where(p=>p.id.StartsWith("real-academy-om-",StringComparison.Ordinal)).ToArray();
-            Assert.AreEqual(5,academy.Length);
+            var academy=fresh.players.Where(p=>p.id.StartsWith("real-academy-",StringComparison.Ordinal)).ToArray();
+            Assert.AreEqual(16,academy.Length);
+            Assert.AreEqual(12,academy.Count(p=>p.team=="academy-176"));
+            Assert.AreEqual(4,academy.Count(p=>p.team=="academy-165"));
             Assert.IsTrue(fresh.players.Except(academy).All(p=>p.source.StartsWith("https://www.espn.com/",StringComparison.Ordinal)));
-            Assert.IsTrue(academy.All(p=>p.team=="academy-176"&&p.rosterSource=="https://www.om.fr/fr/equipe-u17-2025-2026"&&
-                (new Uri(p.source).Host=="www.fff.fr"||new Uri(p.source).Host=="media.fff.fr"||new Uri(p.source).Host=="mediterranee.fff.fr")&&
+            Assert.IsTrue(academy.All(p=>(p.team=="academy-176"&&new Uri(p.rosterSource).Host=="www.om.fr"||p.team=="academy-165"&&new Uri(p.rosterSource).Host=="www.fcnantes.com")&&
+                (new Uri(p.source).Host=="www.fff.fr"||new Uri(p.source).Host=="media.fff.fr"||new Uri(p.source).Host=="mediterranee.fff.fr"||new Uri(p.source).Host=="provence.fff.fr")&&
                 PlayerChronology.TryAge(p,new DateTime(2026,6,15),out var age)&&age==p.age));
+        }
+        [TestCase("176",12)][TestCase("165",4)]
+        public void SourcedAcademiesExposeOwnedPathsAndAgeAppropriateGroups(string club,int expected)
+        {
+            var fresh=TouchlineCatalogue.Load();var career=new Career{club=club,youthGenerationFromYear=2027};
+            career.lineup=Career.Select(fresh,club,career.tactic);career.EnsureWorld(fresh);
+            var academy=fresh.players.Where(p=>p.team=="academy-"+club).ToArray();
+            Assert.AreEqual(expected,academy.Length);
+            foreach(var player in academy){
+                var path=career.AcademyPaths(fresh).Single(y=>y.player==player.id);
+                Assert.AreEqual(player.age<19?"U19":"Réserve",Career.AcademyGroup(player,path));
+                StringAssert.Contains("provisoire",player.assessment.ToLowerInvariant());
+            }
+            Assert.AreEqual(1,fresh.players.Count(p=>p.id=="3122300"),"Existing Yanel Zézé is not duplicated.");
+            Assert.AreEqual(1,fresh.players.Count(p=>p.id=="3131702"),"Existing Klaus Camara is not duplicated.");
         }
         [Test] public void RealCareerDoesNotLoadLegacyExtension()
         {

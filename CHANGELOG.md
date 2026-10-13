@@ -1,3 +1,4 @@
+- Formation : onze jeunes réels supplémentaires de Marseille et Nantes, sources FFF et clubs, classement U19/réserve selon âge et absence de doublons.
 - Tactique : la ligne défensive rapproche progressivement défense et milieu sans déplacer artificiellement les attaquants ; audit sur quatre graines.
 - Animations : le pied des tacles et blocs capturés rejoint le contact physique ; préparation et annulation sont fondues progressivement.
 - Match : les contrôles au pied dans le sens de la course conservent l’élan ; demi-tours et amortis du corps gardent leur freinage.
