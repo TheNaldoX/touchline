@@ -1,3 +1,4 @@
+- Animations : récupération des plongeons capturés achevée avant le retour au jeu, avec contact ballon conservé et genoux dégagés du terrain.
 - Formation : cinq jeunes OM réels sourcés ajoutés au groupe U19, plans persistants et évaluations provisoires explicitement distinguées des identités vérifiées.
 - Animations : épaules et manches des gardiens dégagées du terrain pendant les plongeons, avec conservation des contacts par IK.
 - Animations : la pose de course reste intacte au début physique des contrôles poitrine/cuisse, y compris sur plusieurs images à progression nulle.

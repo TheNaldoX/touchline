@@ -231,7 +231,17 @@ namespace Touchline
                 mecanimActionElapsed=duration>0?Mathf.Clamp(duration-remaining,0,duration):mecanimActionElapsed+dt;var playable=actionPlayables[activeAction];float length=(float)playable.GetAnimationClip().length;
                 if(celebrating)mecanimActionElapsed=context.reactionTime;
                 if(actor.action=="fall"&&mecanimActionKey=="Soccer Trip")mecanimActionElapsed=Mathf.Max(0,MatchSimulation.ContactFallDuration-remaining);
-                playable.SetTime(Mathf.Clamp(mecanimActionContact+mecanimActionElapsed,0,length-.001f));playable.SetSpeed(0);
+                float clipTime=mecanimActionContact+mecanimActionElapsed;
+                if(actor.action=="dive"&&(mecanimActionKey=="Goalkeeper Diving Save"||mecanimActionKey=="Goalkeeper Diving Save (miroir)")){
+                    // Keep impact at its recorded instant, then finish recovery
+                    // inside the physical action instead of cutting a prone clip
+                    // into idle. Smoothstep preserves sampling speed at both ends.
+                    float impact=actor.actionContactTime>0?actor.actionContactTime:.2f;
+                    float recovery=Mathf.InverseLerp(impact,duration,mecanimActionElapsed);
+                    float missingTail=Mathf.Max(0,length-.001f-(mecanimActionContact+duration));
+                    clipTime+=missingTail*Mathf.SmoothStep(0,1,recovery);
+                }
+                playable.SetTime(Mathf.Clamp(clipTime,0,length-.001f));playable.SetSpeed(0);
             }
             for(int i=0;i<2;i++){
                 if(!actionPlayables[i].IsValid())continue;
@@ -478,15 +488,15 @@ namespace Touchline
                 SolveCapturedSupport(side,target,kneePole);foot.rotation=rotation;
             }
         }
-        void SolveCapturedSupport(string side,Vector3 target,Vector3 pole)
+        void SolveCapturedSupport(string side,Vector3 target,Vector3 pole,float surfaceRadius=.075f)
         {
             var leg=Limb(side);var hip=leg.upperLeg.position;
             float upper=Vector3.Distance(hip,leg.lowerLeg.position),lower=Vector3.Distance(leg.lowerLeg.position,leg.foot.position);
             var direction=(target-hip).normalized;float distance=Mathf.Clamp(Vector3.Distance(target,hip),.10f,upper+lower-.005f);
             float along=(upper*upper+distance*distance-lower*lower)/(2*distance),lift=Mathf.Sqrt(Mathf.Max(0,upper*upper-along*along));
             var bend=Vector3.ProjectOnPlane(pole,direction).normalized;var up=Vector3.ProjectOnPlane(Vector3.up,direction).normalized;
-            const float KneeSurfaceRadius=.075f; // metres at standard stature: keep the kneecap above turf
-            float floor=.005f+KneeSurfaceRadius*transform.localScale.y,baseHeight=hip.y+direction.y*along;
+            // Metres at standard stature: clearance includes clothing around a bent knee.
+            float floor=.005f+surfaceRadius*transform.localScale.y,baseHeight=hip.y+direction.y*along;
             if(baseHeight+bend.y*lift<floor&&up.y>bend.y){
                 float low=0,high=1,angle=Vector3.SignedAngle(bend,up,direction);
                 // Rotate in the leg's plane even for opposite poles; a generic

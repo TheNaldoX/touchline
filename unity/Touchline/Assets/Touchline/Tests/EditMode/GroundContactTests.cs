@@ -21,7 +21,7 @@ namespace Touchline.Tests
                 var target=new Vector3(side=="L"?.18f:-.18f,.10f,.45f);
                 typeof(PlayerView).GetMethod("SolveLeg",flags).Invoke(view,new object[]{side,target,Vector3.down});
                 Assert.Less(knee.position.y,.075f,"The fixture must reproduce a knee intersecting the turf");
-                typeof(PlayerView).GetMethod("SolveCapturedSupport",flags).Invoke(view,new object[]{side,target,Vector3.down});
+                typeof(PlayerView).GetMethod("SolveCapturedSupport",flags).Invoke(view,new object[]{side,target,Vector3.down,System.Type.Missing});
                 Assert.GreaterOrEqual(knee.position.y,.079f,"The knee surface needs clearance above the pitch");
                 Assert.Less(Vector3.Distance(foot.position,target),.005f,"The support ankle stays in place during correction");
             }finally{Object.DestroyImmediate(go);}

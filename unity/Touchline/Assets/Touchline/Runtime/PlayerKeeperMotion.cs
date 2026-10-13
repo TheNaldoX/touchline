@@ -6,6 +6,7 @@ namespace Touchline
     public sealed partial class PlayerView
     {
         Quaternion[] compactCatchPose;
+        const float KeeperKneeSurfaceRadius=.085f; // metres: bent recovery knee and shorts envelope
         readonly Vector3[] keeperGroundHands=new Vector3[2],keeperGroundFeet=new Vector3[2];
         void MecanimKeeperDiveContact(Actor actor,float remaining)
         {
@@ -35,7 +36,7 @@ namespace Touchline
             // A bent elbow alone cannot clear a sleeve whose shoulder is below
             // the turf. Settle the captured torso on its shoulder surface while
             // preserving the existing hand and foot contacts through IK.
-            const float ShoulderSurfaceRadius=.065f; // metres, shoulder/short sleeve envelope at standard stature
+            const float ShoulderSurfaceRadius=.075f; // metres, including the rotated sleeve during the captured recovery
             float shoulderFloor=.005f+ShoulderSurfaceRadius*transform.localScale.y;
             float liftBody=Mathf.Max(0,shoulderFloor-Mathf.Min(Limb("L").upperArm.position.y,Limb("R").upperArm.position.y));
             if(liftBody>0){
@@ -44,10 +45,10 @@ namespace Touchline
                 for(int i=0;i<2;i++){
                     var limb=Limb(Sides[i]);var handRotation=limb.wrist.rotation;var footRotation=limb.foot.rotation;
                     SolveArm(Sides[i],keeperGroundHands[i],limb.lowerArm.position-limb.upperArm.position);limb.wrist.rotation=handRotation;
-                    SolveLeg(Sides[i],keeperGroundFeet[i],limb.lowerLeg.position-limb.upperLeg.position);limb.foot.rotation=footRotation;
+                    SolveCapturedSupport(Sides[i],keeperGroundFeet[i],limb.lowerLeg.position-limb.upperLeg.position,KeeperKneeSurfaceRadius);limb.foot.rotation=footRotation;
                 }
             }
-            const float ElbowSurfaceRadius=.06f; // metres at standard stature, including sleeve
+            const float ElbowSurfaceRadius=.07f; // metres at standard stature, including the rotated sleeve
             for(int i=0;i<2;i++){
                 var arm=Limb(Sides[i]);var shoulder=arm.upperArm.position;var elbow=arm.lowerArm.position;var hand=arm.wrist.position;
                 float floor=.005f+ElbowSurfaceRadius*transform.localScale.y;if(elbow.y>=floor)continue;
@@ -59,6 +60,10 @@ namespace Touchline
                 float low=0,high=1,angle=Vector3.SignedAngle(bend,up,direction);
                 for(int n=0;n<10;n++){float mid=(low+high)*.5f;var trial=Quaternion.AngleAxis(angle*mid,direction)*bend;if(baseHeight+trial.y*lift<floor)low=mid;else high=mid;}
                 var rotation=arm.wrist.rotation;SolveArm(Sides[i],hand,Quaternion.AngleAxis(angle*high,direction)*bend);arm.wrist.rotation=rotation;
+            }
+            for(int i=0;i<2;i++){
+                var leg=Limb(Sides[i]);var rotation=leg.foot.rotation;
+                SolveCapturedSupport(Sides[i],leg.foot.position,leg.lowerLeg.position-leg.upperLeg.position,KeeperKneeSurfaceRadius);leg.foot.rotation=rotation;
             }
         }
         void KeeperDivePose(Actor actor,float remaining)
