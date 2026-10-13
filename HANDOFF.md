@@ -2,7 +2,7 @@
 Lire AGENTS.md. Une tâche/branche/PR ; une Unity locale OU CI, aucun Assets modifié pendant compilation/test/capture/build. Aucun nouvel agent. Préserver sauvegardes/APK/pack privé. Ne jamais imprimer database.json (132Mo).
 
 ## Demande / état
-Six chantiers : caméra, IA/tactique, équilibre multi-graines, contacts/clips adaptés, U19 réels, 196échecs puis consolidation main. Aucun joueur fictif initial. Automation PAUSED. Quota69% utilisé ; réserver livraison à95%. Main non fusionnée, PR146–178 empilées draft. APK0.71 inchangée.
+Six chantiers : caméra, IA/tactique, équilibre multi-graines, contacts/clips adaptés, U19 réels, 196échecs puis consolidation main. Aucun joueur fictif initial. Automation PAUSED. Quota69% utilisé ; réserver livraison à95%. Main non fusionnée, PR146–178 empilées draft. APK0.71 préservée ; APK0.72 publiée.
 PR178/11c6867 publiée, branche fix/captured-locomotion-context. Branche de diagnostic fix/distant-keeper-contact sans correction retenue.
 
 ## Dernier lot validé
@@ -28,3 +28,6 @@ Recherche non intégrée : départs Forget/Khenissi/Oissa annoncés TribuneNanta
 .validation/run-local-unity.ps1 -Mode Test -Name unique -Filter Touchline.Tests. Après arrêt CIM escaladé : cleanup-unity-imports.ps1 puis restaurer scène/ProjectSettings générés. API .validation/github-api.ps1 avec corpsJSONfichier. AttachePRlimite100, ne pas supprimer anciennes.
 APK https://github.com/TheNaldoX/touchline/releases/download/v0.71.0-preview.1/Touchline-Unity-0.71-preview.apk ; source0cf0a80a61609df4be7d4e16e44766a6fc547ed1, CI38334925329, preuves .validation/apk071. Packagefr.personal.touchline.unity ARM64 signature habituelle. Prochaine>=0.72/code65, pack privé seulement compilé. Aucun tous-tests-verts/Fold/paritéFM revendiqué.
 Diagnostic distant-high : .validation/distant-keeper-contact-stages.log prouve gant déjà éloigné après Reach, aucune dérive due au sol/coude. Résidu avant warp1.68m, limite translation1.1m, contact final.533/.472m. Essai rotation autour bassin45 puis70deg réduit à~.27m mais reste hors17cm : retiré, pas intégré. Traces/candidats XML préservés (distant-keeper-high-direction-targeted/expanded). Pas relancer suite complète car runtime revenu exactement PR178. Prochaine piste : clip de plongeon haut réellement adapté ou validation de portée physique, sans desserrer les tests ni augmenter arbitrairement le warp.
+
+## Livraison demandée et terminée
+PR179, branche feat/android-072-validated-fixes. APK0.72.0-preview.1/code65 source6fde23a92c8c7acc27e7a732b6277946186fe9d1, CI38414356508 réussie. Compilation versionnée + ciblés12/12 ; code de jeu identique à PR178 (globale2628/2661,33anciens,Core1052). Packagefr.personal.touchline.unity, signature stable, ARM64IL2CPP,21clips vérifiés. SHA256EDD3E691E5AF230DAAD52E25AB5DD74A539C830726459AC26BCC128242994E45,80990102octets. Tag source et hash distant contrôlés ; preuves .validation/apk072/{verified,source,published-asset}.json. Lien https://github.com/TheNaldoX/touchline/releases/download/v0.72.0-preview.1/Touchline-Unity-0.72-preview.apk . Fold non testé, main non fusionnée, sixchantiers non achevés. Aucun nouvel essai moteur intégré.
