@@ -1,3 +1,4 @@
+- Match : les contrôles au pied dans le sens de la course conservent l’élan ; demi-tours et amortis du corps gardent leur freinage.
 - Animations : récupération des plongeons capturés achevée avant le retour au jeu, avec contact ballon conservé et genoux dégagés du terrain.
 - Formation : cinq jeunes OM réels sourcés ajoutés au groupe U19, plans persistants et évaluations provisoires explicitement distinguées des identités vérifiées.
 - Animations : épaules et manches des gardiens dégagées du terrain pendant les plongeons, avec conservation des contacts par IK.

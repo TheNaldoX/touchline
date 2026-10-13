@@ -38,7 +38,7 @@ namespace Touchline.Core
                 if(!has&&p.slot>0){InstructionWithoutBall(p,t,ref q);if(slot.y<38)q.x-=LineStagger(p);}
                 q=q*dir;
                 if(p.slot==0){p.intent="keeper";q=KeeperTarget(p);}
-                else if(p==owner){if(Point.Distance(p.carryTarget,p.position)<1)m.decision=Math.Min(m.decision,.1f);q=p.carryTarget;p.intent="carry";if(p.controlTime>0)q=p.position;}
+                else if(p==owner){if(Point.Distance(p.carryTarget,p.position)<1)m.decision=Math.Min(m.decision,.1f);q=p.carryTarget;p.intent="carry";if(p.controlTime>0&&!MovingFootControl(p))q=p.position;}
                 // Until contact, keep the visible supporting run instead of chasing the random endpoint.
                 else if(b.to==p.id&&b.kind!="none"&&b.elapsed>=0){q=ReceptionTarget(p);p.intent="receive";}
                 else if(!has){
@@ -147,6 +147,13 @@ namespace Touchline.Core
                 if(InOwnArea(p,intercept)&&keeperTime+.15f<attackerTime){q=intercept;p.intent="sweep";}
             }
             return AnticipateKeeperShot(p,q);
+        }
+        static bool MovingFootControl(Actor p)
+        {
+            const float RunningTouchSpeed=1.5f; // m/s: a planted reception must not start a new sprint
+            const float AlignedTouchCosine=.7f; // retain motion only within about 45 degrees of the carry
+            return p.action=="control"&&p.actionKind=="control-foot"&&p.velocity.Length>RunningTouchSpeed
+                &&Point.Dot(p.velocity.Normalized,(p.carryTarget-p.position).Normalized)>AlignedTouchCosine;
         }
         void MoveActor(Actor p,Point target,float maxSpeed)
         {

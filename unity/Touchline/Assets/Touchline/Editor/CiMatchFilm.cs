@@ -55,6 +55,13 @@ namespace Touchline.Editor
                         if(Arg("-touchlineFilmSeconds",null)==null)seconds=GoalFilmSeconds;break;
                     }
                 }
+                if(Arg("-touchlineFilmMovingControl","")=="true"){
+                    var probe=NewMatch(seed);
+                    bool Receiving()=>probe.State.actors.Any(p=>p.action=="control"&&p.actionKind=="control-foot"&&p.velocity.Length>1.5f&&Point.Dot(p.velocity.Normalized,(p.carryTarget-p.position).Normalized)>.7f);
+                    while(!probe.State.halfTime&&!probe.State.finished&&!Receiving())probe.Advance(MatchSimulation.Step);
+                    if(!Receiving())throw new Exception("No moving foot reception found in first half.");
+                    start=Mathf.Max(0,probe.State.clock-.5f);goalNote+=$" moving_control_clock={probe.State.clock:0.0}";
+                }
                 if(Arg("-touchlineFilmHeader","")=="true"){
                     var probe=NewMatch(seed);
                     while(!probe.State.halfTime&&!probe.State.finished&&!probe.State.actors.Any(p=>p.action=="header"))probe.Advance(MatchSimulation.Step);
