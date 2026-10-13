@@ -4,7 +4,12 @@ Lire AGENTS.md. Une branche/PR par tâche. Une seule Unity locale/CI ; aucun Ass
 ## Travail demandé le 13 octobre (nouvelle autorisation après 0.71)
 Six chantiers : caméra portrait/confort ; IA et tactique ; calibration multi-graines ; contacts/animations et clips adaptés ; U19 réels sourcés ; résorption des 196 échecs puis consolidation main. Quota réinitialisé (0% au début). Ancienne automation PAUSED, ne pas réactiver une échéance périmée.
 
-## Lot caméra validé localement
+## Lot contrôles capturés validé localement
+- Branche fix/captured-body-reception-contact, base b326101/PR146. Overlay de contrôle désormais appliqué au chemin Mecanim ; côté de réception renouvelé par événement ; bassin corrigé au maximum10cm selon semelle réelle, enveloppe physique progressive, acteur/ballon inchangés.
+- Core1029/1029 ; six nouveaux tests contact/semelle passent (160–205cm,30/60/120Hz). Globale2331/2520 :189anciens échecs,7résolus,aucun nouveau (.validation/captured-body-contact-global.xml). Aucun test existant assoupli.
+- Revue native artifacts/unity/captured-body-contact-native : contrôles issus de Core sur fixture construite, entrée/contact/récupération revus ; à80ms écart poitrine2–3cm,cuisse<1cm. Pas une séquence complète de match ni validation Fold. Reste anticipation, entrée à30Hz, récupération/appuis et autres189échecs.
+
+## Lot caméra — PR146
 - Branche fix/portrait-action-framing, base a7815ed (feat/android-071-match-fixes). Portrait 45° au lieu de52°, couloir ±5,5m ; regard recentré entre ballon et but, ouverture progressive dès8m. Marges12% identiques entre calcul du cadre et confinement : supprime la dérive en pause observée pendant les essais.
 - Core1029/1029 (.validation/portrait-frame-core.txt) ; caméra37/37 (.validation/portrait-close-targeted-final.xml) ; globale2318/2514 (.validation/portrait-close-global.xml), mêmes196 anciens échecs, aucun nouveau ; aucun diagnostic C#.
 - Six captures natives revues artifacts/unity/portrait-close-native-verified/report.json : ballon dans le cadre, dérive0 après240images en pause. Profondeur ballon portrait85,51m contre105–108 précédemment. Pas de test physique Fold ni preuve subjective vidéo du confort. Essais précédents rejetés conservés.

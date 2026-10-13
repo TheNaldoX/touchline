@@ -14,6 +14,34 @@ namespace Touchline
         {
             if(bones.TryGetValue(name,out var bone))bone.localRotation=Quaternion.Slerp(bone.localRotation,Quaternion.Euler(x,y,z),weight);
         }
+        static Vector3[] receptionBootVertices;
+        void MecanimBodyReceptionContact(Actor actor,float remaining,bool reset)
+        {
+            if(!MatchSimulation.IsBodyControl(actor))return;
+            if(reset||poseAction!="control"||poseSequence!=actor.actionSequence){
+                var contact=new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z);
+                float lateral=transform.InverseTransformPoint(contact).x;
+                receivingLeft=Mathf.Abs(lateral)<.06f?leftFooted:lateral>0;
+            }
+            // The captured clip supplies the motion; the saved physical contact supplies
+            // the small cushioning overlay, just as in the procedural fallback.
+            BodyReceptionPose(actor,remaining);
+            float duration=MatchSimulation.BodyControlDuration(actor.actionKind),elapsed=Mathf.Clamp(duration-remaining,0,duration);
+            float contactTime=MatchSimulation.BodyControlContactTime;
+            float weight=Mathf.SmoothStep(0,1,elapsed/contactTime)*(1-Mathf.SmoothStep(0,1,(elapsed-contactTime)/(duration-contactTime)));
+            // Cushion into the support leg when the chest adaptation has exhausted
+            // its reach. Measure the actual boot rather than its ankle pivot.
+            if(receptionBootVertices==null)receptionBootVertices=FootballBootMesh.Shared.vertices;
+            float lowest=float.PositiveInfinity;
+            for(int i=0;i<2;i++){
+                if(actor.actionKind==MatchSimulation.ThighControl&&((i==0)==receivingLeft))continue;
+                var foot=Limb(Sides[i]).foot;
+                foreach(var vertex in receptionBootVertices)lowest=Mathf.Min(lowest,foot.TransformPoint(vertex).y);
+            }
+            const float SoleClearance=.01f,MaximumSettle=.10f; // metres, bounded pelvis correction during cushioning
+            body.position-=Vector3.up*Mathf.Clamp(lowest-SoleClearance,0,MaximumSettle)*weight;
+            KeepBootsAbovePitch(transform.forward,true);
+        }
         void BodyReceptionPose(Actor actor,float remaining)
         {
             if(!MatchSimulation.IsBodyControl(actor))return;
