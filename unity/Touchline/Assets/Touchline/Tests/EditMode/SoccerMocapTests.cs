@@ -98,6 +98,46 @@ namespace Touchline.Tests
                 Assert.AreEqual(Vector3.zero,root.transform.position);
             }finally{Object.DestroyImmediate(root);PlayerView.UseMecanim=before;}
         }
+        [TestCase(30)] [TestCase(60)] [TestCase(120)]
+        public void TurningCelebrationUsesFullClipAndReturnsWithoutMovingActor(int fps)
+        {
+            RequirePack();var root=new GameObject("Turning celebration");try{
+                var view=root.AddComponent<PlayerView>();view.Build(new PlayerData{id="turning-scorer",heightCm=182},0,9,Color.blue);
+                var actor=new Actor{slot=9,action="idle",actionSequence=1};view.Render(actor,1,0);var animator=root.GetComponentInChildren<Animator>();
+                var hips=animator.GetBoneTransform(HumanBodyBones.Hips);var previous=hips.rotation;float peakHand=0;
+                for(int f=0;f<=fps*4;f++){
+                    float t=f/(float)fps;var context=new PlayerMotionContext{reaction=t<3?2:0,reactionTime=t};string before=JsonUtility.ToJson(actor);
+                    view.Render(actor,1,1f/fps,default,context);
+                    if(t>.25f&&t<2.6f)Assert.AreEqual("Rohr_14_Goal_Celebration_03",view.MecanimGestureClip);
+                    if(f>0)Assert.Less(Quaternion.Angle(previous,hips.rotation),600f/fps+1,"No instant body turn at entry or exit");previous=hips.rotation;
+                    peakHand=Mathf.Max(peakHand,animator.GetBoneTransform(HumanBodyBones.RightHand).position.y);
+                    if(f==fps){var pose=hips.position;for(int pause=0;pause<10;pause++)view.Render(actor,1,0,default,context);Assert.Less(Vector3.Distance(pose,hips.position),.003f);}
+                    Assert.AreEqual(before,JsonUtility.ToJson(actor));Assert.AreEqual(Vector3.zero,root.transform.position);
+                }
+                Assert.Greater(peakHand,1.5f);Assert.IsNull(view.MecanimGestureClip);
+            }finally{Object.DestroyImmediate(root);}
+        }
+        [TestCase(0,30)] [TestCase(0,60)] [TestCase(0,120)]
+        [TestCase(1,30)] [TestCase(1,60)] [TestCase(1,120)]
+        public void CelebrationJoinedAfterShotFadesFromCurrentPose(int sequence,int fps)
+        {
+            RequirePack();var root=new GameObject("Delayed celebration");var neutralRoot=new GameObject("Ordinary idle reference");try{
+                var view=root.AddComponent<PlayerView>();view.Build(new PlayerData{id="late-scorer",heightCm=182},0,9,Color.blue);
+                var actor=new Actor{slot=9,action="idle",actionSequence=sequence};view.Render(actor,1,0);
+                for(int warm=0;warm<fps;warm++)view.Render(actor,1,1f/fps);
+                var neutral=neutralRoot.AddComponent<PlayerView>();neutral.Build(new PlayerData{id="late-scorer",heightCm=182},0,9,Color.blue);neutral.Render(actor,1,0);
+                for(int warm=0;warm<fps;warm++)neutral.Render(actor,1,1f/fps);
+                neutral.Render(actor,1,1f/fps);var ordinaryHand=neutralRoot.GetComponentInChildren<Animator>().GetBoneTransform(HumanBodyBones.RightHand).position;
+                var animator=root.GetComponentInChildren<Animator>();var hand=animator.GetBoneTransform(HumanBodyBones.RightHand);var hips=animator.GetBoneTransform(HumanBodyBones.Hips);
+                var start=hand.position;var previous=hips.rotation;
+                for(int f=0;f<=fps;f++){
+                    var context=new PlayerMotionContext{reaction=2,reactionTime=1+f/(float)fps};view.Render(actor,1,1f/fps,default,context);
+                    if(f==0)Assert.Less(Vector3.Distance(ordinaryHand,hand.position),.003f,"Entry must retain the ordinary idle pose at the same clip phase");
+                    Assert.Less(Quaternion.Angle(previous,hips.rotation),600f/fps+1);previous=hips.rotation;
+                    var paused=hand.position;view.Render(actor,1,0,default,context);Assert.Less(Vector3.Distance(paused,hand.position),.003f);
+                }
+            }finally{Object.DestroyImmediate(root);Object.DestroyImmediate(neutralRoot);}
+        }
         [TestCase("Left",2,160,30)] [TestCase("Left",2,182,60)] [TestCase("Left",2,200,120)]
         [TestCase("Right",2,160,30)] [TestCase("Right",2,182,60)] [TestCase("Right",2,200,120)]
         [TestCase("Right",3,160,30)] [TestCase("Right",3,182,60)] [TestCase("Right",3,200,120)]

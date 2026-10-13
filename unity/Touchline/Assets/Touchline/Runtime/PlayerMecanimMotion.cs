@@ -22,7 +22,7 @@ namespace Touchline
                 // Load only the selected gestures, not the entire personal capture library.
                 var soccerPass=Resources.Load<AnimationClip>("Animations/RohrSoccer/"+CapturedInsidePass);
                 if(soccerPass!=null&&soccerPass.humanMotion)mecanimClips[CapturedInsidePass]=soccerPass;
-                foreach(var name in new[]{CapturedPowerKick,CapturedPlacedKick,CapturedDrivenKick,CapturedCelebration,CapturedThrow,CapturedLowCatch}){
+                foreach(var name in new[]{CapturedPowerKick,CapturedPlacedKick,CapturedDrivenKick,CapturedCelebration,CapturedTurnCelebration,CapturedThrow,CapturedLowCatch}){
                     var capture=Resources.Load<AnimationClip>("Animations/RohrSoccer/"+name);
                     if(capture!=null&&capture.humanMotion)mecanimClips[name]=capture;
                 }
@@ -32,6 +32,7 @@ namespace Touchline
         const string CapturedInsidePass="Rohr_08_Side_Foot_Kick";
         const string CapturedPowerKick="Rohr_09_Power_Kick",CapturedPlacedKick="Rohr_10_Penalty_Kick_01",CapturedDrivenKick="Rohr_11_Penalty_Kick_02";
         const string CapturedCelebration="Rohr_13_Goal_Celebration_02";
+        const string CapturedTurnCelebration="Rohr_14_Goal_Celebration_03";
         const string CapturedThrow="Rohr_07_Throw_In",CapturedLowCatch="Rohr_17_Goalkeeper_Save_03";
         const string RunClip="Standard Run",SprintClip="Two Cycle Sprint",JogBackClip="Jog Backward",RunBackClip="Run Backward",StrafeLeftClip="Jog Strafe Left",StrafeRightClip="Jog Strafe Right";
         public static bool MecanimReady=>MecanimClips.ContainsKey(IdleClip)&&MecanimClips.ContainsKey(JogClip);
@@ -77,7 +78,7 @@ namespace Touchline
         readonly AnimationClipPlayable[] actionPlayables=new AnimationClipPlayable[2];
         readonly string[] actionNames=new string[2]; // Cached once per gesture; Unity Object.name allocates on every read.
         readonly float[] actionWeights=new float[2];readonly bool[] actionLive=new bool[2];
-        int activeAction=-1;string mecanimActionKey;int mecanimActionSequence=-1;float mecanimActionElapsed,mecanimActionContact;
+        int activeAction=-1;string mecanimActionKey;int mecanimActionSequence=-1;float mecanimActionElapsed,mecanimActionContact,celebrationEntryTime;
         float moveBlend,dribbleBlend,backwardBlend,sideBlend,sideSign=1,strafeRightBlend=1;bool mecanimKeeper;
         AnimationClipPlayable strafeLeftPlayable,strafeRightPlayable;
 
@@ -210,8 +211,9 @@ namespace Touchline
 
             // Gestes : nouveau geste → emplacement libre, fondu d'entrée, temps calé sur le contact.
             bool acting=MecanimAction(actor,out var clipName,out var simContact),turnGesture=false;
-            bool celebrating=!acting&&context.reaction==2&&context.reactionTime>=0&&context.reactionTime<3&&poseSpeed<ReceiveMaxSpeed&&(actor.action=="idle"||actor.action=="run")&&MecanimClips.ContainsKey(CapturedCelebration);
-            if(celebrating){acting=true;clipName=CapturedCelebration;mecanimPhased=true;}
+            string celebrationClip=(actor.actionSequence&1)==1&&MecanimClips.ContainsKey(CapturedTurnCelebration)?CapturedTurnCelebration:CapturedCelebration;
+            bool celebrating=!acting&&context.reaction==2&&context.reactionTime>=0&&context.reactionTime<3&&poseSpeed<ReceiveMaxSpeed&&(actor.action=="idle"||actor.action=="run")&&MecanimClips.ContainsKey(celebrationClip);
+            if(celebrating){acting=true;clipName=celebrationClip;mecanimPhased=true;}
             if(!acting)acting=turnGesture=MecanimSharpTurn(actor,poseSpeed,carrying,out clipName);else turning=false;
             // Un geste garde le clip choisi à son début, même si la vitesse change ensuite.
             if(acting&&!turnGesture&&!mecanimPhased&&mecanimActionKey!=null&&actor.actionSequence==mecanimActionSequence)clipName=mecanimActionKey;
@@ -223,7 +225,7 @@ namespace Touchline
                 mecanimGraph.Connect(actionPlayables[slot],0,mecanimMixer,ActionInput+slot);actionLive[slot]=true;if(activeAction>=0)actionLive[activeAction]=false;
                 actionNames[slot]=clipName;activeAction=slot;mecanimActionKey=key;mecanimActionSequence=actor.actionSequence;mecanimActionElapsed=0;
                 mecanimActionContact=(ClipContact.TryGetValue(clipName,out var c)?c:clip.length*.4f)-simContact;
-                if(celebrating)mecanimActionContact=0;
+                if(celebrating){mecanimActionContact=0;celebrationEntryTime=reset?0:context.reactionTime;}
                 if(PersonalFacing(clipName))ClipYawCurve(clipName);
                 if(turnGesture)mecanimActionContact=TurnClipStart(clipName);
                 if(turnSlot==slot)turnSlot=-1;if(turnGesture)turnSlot=slot;
@@ -233,7 +235,9 @@ namespace Touchline
                 // Contact gestures share the interpolated match clock even when a highlight joins mid-action.
                 float duration=CapturedActionDuration(actor);
                 mecanimActionElapsed=duration>0?Mathf.Clamp(duration-remaining,0,duration):mecanimActionElapsed+dt;var playable=actionPlayables[activeAction];float length=(float)playable.GetAnimationClip().length;
-                if(celebrating)mecanimActionElapsed=context.reactionTime;
+                // The turning variant includes its own landing. Fit all of it
+                // into the existing three-second reaction before fading out.
+                if(celebrating)mecanimActionElapsed=context.reactionTime*(clipName==CapturedTurnCelebration?MecanimClips[clipName].length/3f:1f);
                 if(actor.action=="fall"&&mecanimActionKey=="Soccer Trip")mecanimActionElapsed=Mathf.Max(0,MatchSimulation.ContactFallDuration-remaining);
                 if(actor.action=="tackle"&&actor.actionKind==MatchSimulation.StandingDuel&&actor.tackleWithdrawFrom>0){
                     float withdrawal=Mathf.Min(actor.tackleWithdrawFrom,MatchSimulation.TackleRecovery*.35f);
@@ -261,7 +265,12 @@ namespace Touchline
                 float fadeOut=actionClip=="Soccer Trip"?FallGroundFade:actionClip==FallenClip||actionClip==StandUpClip?FallRecoveryFade:ActionFadeOut;
                 float target=actionLive[i]?1:0;float rate=actionLive[i]?1/fadeIn:1/fadeOut;
                 actionWeights[i]=Mathf.MoveTowards(actionWeights[i],target,rate*dt);
-                if(celebrating&&i==activeAction)actionWeights[i]=Mathf.SmoothStep(0,1,context.reactionTime/.25f)*(1-Mathf.SmoothStep(0,1,(context.reactionTime-2.6f)/.4f)); // seconds: enter/leave inside the three-second goal reaction.
+                if(celebrating&&i==activeAction){
+                    // The turning clip needs a longer entry when joined after
+                    // a shot, so its rotated pelvis does not snap into place.
+                    float entrySeconds=actionClip==CapturedTurnCelebration?.55f:.25f;
+                    actionWeights[i]=Mathf.SmoothStep(0,1,(context.reactionTime-celebrationEntryTime)/entrySeconds)*(1-Mathf.SmoothStep(0,1,(context.reactionTime-2.6f)/.4f));
+                }
                 // Do not start headers or body receptions before their physical action clock advances.
                 if(i==activeAction&&(actor.action=="header"||MatchSimulation.IsBodyControl(actor)||actor.action=="fall"&&mecanimActionKey=="Soccer Trip"))actionWeights[i]=Mathf.Min(actionWeights[i],Mathf.Clamp01(mecanimActionElapsed/fadeIn));
                 if(i==activeAction&&actor.action=="tackle"&&actor.actionKind==MatchSimulation.StandingDuel){

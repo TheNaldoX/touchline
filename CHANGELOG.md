@@ -1,3 +1,4 @@
+- Animations : seconde célébration capturée avec retour debout et entrée progressive après une frappe encore en cours.
 - Animations : le torse et les bras réagissent progressivement aux contacts debout dans le rendu capturé, sans déplacer les appuis.
 - Animations : les doigts et les paumes restent au-dessus du terrain pendant les chutes capturées, y compris en pause.
 - Animations : contrôles au pied capturés raccordés progressivement au ballon du côté reçu, sans dérive des appuis en pause.
