@@ -15,6 +15,7 @@ Lire AGENTS.md. Claude/Codex alternent. Une seule Unity locale/CI ; ne pas modif
 -21avertissements FBX préexistants encore à qualifier. Pas de diagnostic C# sur le lot. Mocap existante Mixamo71clips. PR137 prise centrale buste, PR138 import, PR139 fenêtres temporelles de revue ; détails/proofs dans Git/PR.
 
 ## Dernière APK — 0.70 livrée
+- Release GitHub publiée à la demande : https://github.com/TheNaldoX/touchline/releases/download/v0.70.0-preview.1/Touchline-Unity-0.70-preview.apk ; empreinte distante identique à la preuve locale, .validation/apk070/github-release.json.
 -0.70.0-preview.1/code63 : artifacts/Touchline-Unity-0.70-preview.apk,80966720octets. Source7dc2d440d6b6e25ddc78e29d19a41a27e26cb59a, PR141, CI38327598348 réussie, artefact11782063641. Preuves .validation/apk070/verified.json,source.json,mocap-content.txt ;21clips réellement inclus,7activés. Aucun FBX privé dans le BuildReport. Signature habituelle, package et IL2CPP ARM64 vérifiés ; Fold non testé.
 - SHA256B171BAD48571FD82F0CD44EAC05CE88DAEE8321F7909606433F69E251D4CA6A6.0.69 ci-dessous conservée.
 -0.69.0-preview.1/code62 : artifacts/Touchline-Unity-0.69-preview.apk,73962234octets. Source23db17fc647d6bdefd77f175f11890c30cf87c76, PR127, CI38259606891, preuve .validation/apk069/verified.json.
