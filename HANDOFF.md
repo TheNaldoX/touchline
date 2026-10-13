@@ -1,7 +1,15 @@
 # HANDOFF.md — Touchline
 Lire AGENTS.md. Claude/Codex alternent. Une seule Unity locale/CI ; ne pas modifier Assets pendant test/capture/build. Préserver sauvegardes, APK et preuves ; historique Git/PR, pas de journal docs.
 
-## État — 13 octobre 2026
+## Lot en cours — nuit du 13 octobre
+- Autorisation jusqu’à08h30 Paris, seuil APK95%utilisés (5%restants), remplace92%. Dernier quota89%. Automatisation active toutes10min ; aucun nouvel agent.
+- Branche fix/match-view-comfort, base0613a41 ; modifications non committées : zoom borné8m/s, recentrage minimal du ballon quand le zoom prend du retard, Moments clés seuil tir.18 et remises en jeu ordinaires masquées. Core inchangé. Core1023/1023 ; ciblés caméra35/35 après correction de3régressions de cadrage ; autres ciblés77/77 (.validation/view-comfort-targeted.xml contient aussi les3anciens échecs corrigés).
+- Globale Unity2308/2504,196anciens échecs/0nouveau (.validation/view-comfort-global.xml). Unity arrêtée. Captures artifacts/unity/view-comfort-native, rapport réussi6formats/extrémités, portrait et Fold revus : pas de dérive en pause, portrait encore éloigné. Aucun test physique Fold ni preuve filmée de confort.
+- Avant moteur200matchs/seed1 reconstruit : .validation/open-shot-before-200-seed1.txt ;2.59buts,49.89touches,.19penalties,13.82sorties,52.53%victoires favoris (99matchs). Aucun changement IA pour l’instant.
+- Prochain lot : jeunes réels absents car CreateIntake est différé2027 et aucun YouthPath pour les jeunes pros existants ; Marseille176 a4joueurs19–21ans. Ajouter suivi senior sans générer/déplacer de joueur, migrer sauvegardes idempotemment, vérifier droits prêt et tests. Puis reproduire passe en retrait/tir ouvert, corriger seulement avec200matchs appariés.
+- Prochaine APK au moins0.71/code64. Dernière0.70 publiée intacte. À95% terminer les validations et livrer uniquement code vérifié. À08h privilégier consolidation,08h30 arrêter nouveaux lots.
+
+## État précédent — 13 octobre 2026
 - PR141, branche feat/android-070-mocap-build, empilée sur PR140/e5361a3. Main non fusionnée. Utilisateur : « Finis toutes les animations ». Nouvelle demande explicite : construire et livrer maintenant la0.70/code63. Branche feat/android-070-mocap-build ; compilation locale et34/34tests pack réussis. CI importe le pack Drive par hash, exporte21clips et contrôle leur présence dans le BuildReport ; aucun FBX brut publié. Ce n'est PAS terminé.
 - Pack personnel : 7/21 clips activés. Passe08 corrigée pour le pied anatomique ; nouvelles frappes09/10/11 à faible vitesse, touche07, prise basse centrale17, célébration13. Horloge physique conservée, IK bornée, appui et orientation adaptés. Core inchangé.
 - Ciblés52/52, Core1023/1023. Globale finale2301/2497 :196anciens échecs/0nouveau, .validation/captured-deliveries-verified-global.xml. Référence avant2271/2467 avec196anciens échecs (.validation/rohr-global.xml). Premier global du lot2292/2497 :9écarts sur des assertions de poignets inversés, corrigées par mesure de surface réelle et anatomie ; repli Mixamo préservé.
@@ -22,8 +30,8 @@ Lire AGENTS.md. Claude/Codex alternent. Une seule Unity locale/CI ; ne pas modif
 - SHA256ED11A6D85480674D002D3DDF871EE0EF3372F34D9CBD359CB4A5429F17C2256F ; certificat130917e6d2b4ea2dcca487587dcff03b1356b14e7de39c3e01657097ad57ee13 ; packagefr.personal.touchline.unity, ARM64 IL2CPP vérifiés. Fold non testé.
 
 ## Autres limites / outils
-- Ligne haute encore trop avantageuse ; référence1000matchs :2,612buts,2,534xG,24,172tirs,7,44cadrés,9,96corners,20,508fautes,3,87jaunes,.206penalties,3,888hors-jeu,49,84touches,13,594sorties,76,232%passes ; favoris312/509. Refaire200paires minimum par essai moteur et plusieurs graines. Reconstruire Calibration : binaire courant ancien essai rejeté3c0a946.
+- Ligne haute encore trop avantageuse ; référence1000matchs :2,612buts,2,534xG,24,172tirs,7,44cadrés,9,96corners,20,508fautes,3,87jaunes,.206penalties,3,888hors-jeu,49,84touches,13,594sorties,76,232%passes ; favoris312/509. Refaire200paires minimum par essai moteur et plusieurs graines. Calibration reconstruite depuis0613a41, résultat200matchs ci-dessus.
 - PR125 salaires IA :30saisons/seed77, salaires/recettes médian35%, effectifs23/30/40, niveau64,3,133clubs endettés/384 ;61593joueurs identiques après sauvegardes +7jours. Preuve ai-replacement-wage-world30.txt, pas moteur3D.
 - Catalogue21815joueurs/715clubs/36ligues, aucun fictif initial, newgens dès2027. Portraits absents(initiales). Source auditée pour identités/URLs, pas vérification récente de tous les salaires. Management/UI : PR96–126 ; navigation tactique native validée PR130, pas Fold physique.
 - Unity6000.3.24f1/RTX5070Ti/D3D11. CIM avec escalade : sandbox peut masquer Unity. .validation/run-local-unity.ps1 ; après arrêt seulement cleanup-unity-imports.ps1, restaurer scène/paramètres générés. Aucun nouvel agent.
-- .tools/dotnet/dotnet.exe ; CoreTests/SeasonSim/Calibration ; ProfessionalTests exclus du runner léger, dernier206/206. Git/CI avec escalade ; .validation/github-api.ps1 via GCM sans secrets affichés. Dernier quota83%utilisé ; garde historique92% avant nouveau lot/livraison, vérifier avant de prolonger.
+- .tools/dotnet/dotnet.exe ; CoreTests/SeasonSim/Calibration ; ProfessionalTests exclus du runner léger, dernier206/206. Git/CI avec escalade ; .validation/github-api.ps1 via GCM sans secrets affichés. Dernier quota88%utilisé ; garde95% pendant cette autorisation, vérifier entre les lots.

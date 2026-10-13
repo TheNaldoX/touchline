@@ -8,7 +8,7 @@ namespace Touchline
     // contacts still run through the same fixed-step simulation and RNG.
     public sealed class MatchBroadcast
     {
-        const float KeyMomentShotQuality=.10f; // Internal xG threshold for selecting a shot, not changing its outcome.
+        const float KeyMomentShotQuality=.18f; // Internal xG threshold for selecting a clear chance, not changing its outcome.
         readonly MatchSimulation simulation;
         readonly ExitBroadcastWindow exitWindow=new ExitBroadcastWindow();
         int observedEvents;
@@ -101,6 +101,7 @@ namespace Touchline
                 if(m.HalfDuration==2700&&(m.phase=="goal"||m.restart>(Mode==MatchViewingMode.Extended?12:6))&&m.phase!="kickoff")return null;
                 if(m.phase=="goal")return "Célébration";
                 if(m.phase=="penalty")return "Penalty";
+                if(Mode==MatchViewingMode.KeyMoments)return m.phase=="free-kick"&&b.position.x*simulation.Direction(m.restartSide)>28.5f&&Math.Abs(b.position.z)<14?"Coup franc dangereux":null;
                 if(m.phase=="corner")return "Corner";
                 if(m.phase=="free-kick"&&b.position.x*simulation.Direction(m.restartSide)>16)return "Coup franc dangereux";
                 if(m.phase=="kickoff")return "Engagement";
@@ -120,7 +121,7 @@ namespace Touchline
             bool committed=(b.kind=="cross"||b.kind=="cutback"||b.kind=="through")&&b.end.x*direction>27&&Math.Abs(b.end.z)<24;
             bool penetrating=b.kind=="pass"&&b.end.x*direction>36&&Math.Abs(b.end.z)<18&&
                 (b.end.x-b.start.x)*direction>6&&receiver!=null&&simulation.ShotQuality(receiver)>.08f;
-            if(Mode==MatchViewingMode.KeyMoments){committed=committed&&b.end.x*direction>38&&Math.Abs(b.end.z)<14;penetrating=penetrating&&receiver!=null&&simulation.ShotQuality(receiver)>.18f;}
+            if(Mode==MatchViewingMode.KeyMoments){committed=committed&&b.end.x*direction>38&&Math.Abs(b.end.z)<14&&receiver!=null&&simulation.ShotQuality(receiver)>.18f;penetrating=penetrating&&receiver!=null&&simulation.ShotQuality(receiver)>.18f;}
             bool buildup=Mode==MatchViewingMode.Extended&&(b.kind=="pass"||b.kind=="through"||b.kind=="cross")&&b.end.x*direction>18&&((b.end.x-b.start.x)*direction>8||Math.Abs(b.end.z-b.start.z)>25);
             if(committed||penetrating||buildup){
                 int sequence=source?.actionSequence??0;

@@ -9,6 +9,14 @@ namespace Touchline.Tests
     {
         Database db;Career career;string opponent;
         [OneTimeSetUp] public void Setup(){db=JsonUtility.FromJson<Database>(Resources.Load<TextAsset>("Data/database").text);var clubs=db.clubs.Where(c=>c.playable).Take(2).ToArray();career=new Career{club=clubs[0].id};career.lineup=Career.Select(db,career.club,career.tactic);opponent=clubs[1].id;}
+        [TestCase("corner",48,30)] [TestCase("free-kick",20,0)] [TestCase("kickoff",0,0)]
+        public void KeyMomentsDoNotShowRoutineRestarts(string phase,float x,float z)
+        {
+            var sim=Create();var m=sim.State;var view=new MatchBroadcast(sim);view.SetMode(MatchViewingMode.KeyMoments);
+            m.clock=100;m.phase=phase;m.restart=2;m.restartSide=0;m.ball=new BallState{position=new Point(x,z)};
+            view.Refresh();Assert.IsTrue(view.Quiet,"Wait for a clear chance rather than every routine restart");
+            m.events.Add(new MatchEvent{kind="goal",side=0,time=m.clock});view.Refresh();Assert.IsFalse(view.Quiet,"Goals remain mandatory");
+        }
         MatchSimulation Create(uint seed=751){var independent=new Career{club=career.club,lineup=(string[])career.lineup.Clone(),tactic=JsonUtility.FromJson<Tactic>(JsonUtility.ToJson(career.tactic))};return MatchSimulation.Create(db,independent,opponent,seed);}
         static MatchBroadcast Calm(MatchSimulation sim)
         {
@@ -42,7 +50,7 @@ namespace Touchline.Tests
                 Assert.IsFalse(view.Quiet,kind+" was hidden");if(kind=="injury"||kind=="red"){Assert.IsTrue(view.PauseRequested);Assert.AreEqual(clock,m.clock);}
             }
         }
-        [TestCase(.03f,true)][TestCase(.25f,false)]
+        [TestCase(.03f,true)][TestCase(.12f,true)][TestCase(.25f,false)]
         public void KeyMomentsFilterWeakShotsWithoutMutatingSimulation(float quality,bool quiet)
         {
             var sim=Create();var view=new MatchBroadcast(sim);view.SetMode(MatchViewingMode.KeyMoments);var m=sim.State;

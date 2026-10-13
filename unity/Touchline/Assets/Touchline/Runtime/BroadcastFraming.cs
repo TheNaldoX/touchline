@@ -4,6 +4,22 @@ namespace Touchline
 {
     public static class BroadcastFraming
     {
+        // Metres/second: zoom changes use wall-clock time, including at x10 playback.
+        public static float SmoothDistance(float current,float target,ref float velocity,float dt)
+            =>dt>0?Mathf.SmoothDamp(current,target,ref velocity,.9f,8f,dt):current;
+        // Keep the ball and standing player inside a 12% screen margin while zoom catches up.
+        public static Vector3 ConfineActionFocus(Camera camera,Vector3 focus,Vector3 ball,float distance)
+        {
+            var forward=camera.transform.forward;var right=camera.transform.right;var up=camera.transform.up;
+            float vertical=Mathf.Tan(camera.fieldOfView*.5f*Mathf.Deg2Rad)*.76f;
+            float horizontal=vertical*Mathf.Max(.2f,camera.aspect);
+            bool Fits(Vector3 center){return PointFits(ball-center)&&PointFits(ball+Vector3.up*2.2f-center);}
+            bool PointFits(Vector3 relative){float depth=distance+Vector3.Dot(relative,forward);return depth>0&&Mathf.Abs(Vector3.Dot(relative,right))<=depth*horizontal&&Mathf.Abs(Vector3.Dot(relative,up))<=depth*vertical;}
+            if(Fits(focus))return focus;
+            var centered=new Vector3(ball.x,focus.y,ball.z);float low=0,high=1;
+            for(int i=0;i<12;i++){float blend=(low+high)*.5f;if(Fits(Vector3.Lerp(focus,centered,blend)))high=blend;else low=blend;}
+            return Vector3.Lerp(focus,centered,high);
+        }
         // Fit real world points using the actual viewport aspect ratio.
         // Portrait, unfolded and ultra-wide layouts must retain the ball.
         // Pente de la caméra télé (descente par mètre d'avancée) : 0,58 ≈ 30°, proche des plans de diffusion.

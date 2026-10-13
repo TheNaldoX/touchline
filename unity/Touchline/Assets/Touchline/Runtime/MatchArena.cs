@@ -178,11 +178,11 @@ namespace Touchline
             int direction=ball.position.x>=0?1:-1;var center=tactical?new Vector3(0,.6f,0):focus;
             BroadcastFraming.Apply(MatchCamera,center,ball.position,tactical,true,direction,zoom);
             float required=Vector3.Distance(MatchCamera.transform.position,center);
-            // Expanding the safe frame is immediate; contracting it is gradual.
+            // Both directions are gradual: an approaching goal must not cause a sudden pullback.
             // The second viewport pass must not advance smoothing twice per frame.
             if(cameraReset||Mathf.Abs(cameraAspect-MatchCamera.aspect)>.02f){cameraDistance=required;cameraDistanceVelocity=0;cameraReset=false;}
-            else if(required>cameraDistance){cameraDistance=required;cameraDistanceVelocity=0;}
-            else if(delta>0)cameraDistance=Mathf.SmoothDamp(cameraDistance,required,ref cameraDistanceVelocity,.8f,20,delta);
+            else cameraDistance=BroadcastFraming.SmoothDistance(cameraDistance,required,ref cameraDistanceVelocity,delta);
+            if(!tactical){center=BroadcastFraming.ConfineActionFocus(MatchCamera,center,ball.position,cameraDistance);focus=center;}
             cameraAspect=MatchCamera.aspect;MatchCamera.transform.position=center-MatchCamera.transform.forward*cameraDistance;
             MatchCamera.farClipPlane=Mathf.Max(270,cameraDistance+150);RenderSettings.fogStartDistance=Mathf.Max(110,cameraDistance+60);RenderSettings.fogEndDistance=Mathf.Max(240,cameraDistance+180);
         }

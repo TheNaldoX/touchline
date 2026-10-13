@@ -7,6 +7,16 @@ namespace Touchline.Tests
 {
     public class BroadcastFramingTests
     {
+        [TestCase(30)] [TestCase(60)] [TestCase(120)]
+        public void CameraPullbackAndReturnAreBothBounded(int fps)
+        {
+            float distance=50,velocity=0,dt=1f/fps;
+            foreach(float target in new[]{95f,45f})for(int i=0;i<fps*3;i++){
+                float next=BroadcastFraming.SmoothDistance(distance,target,ref velocity,dt);
+                Assert.LessOrEqual(Mathf.Abs(next-distance),8f*dt+.001f,"No instantaneous zoom on a changed action frame");distance=next;
+            }
+            float savedVelocity=velocity;Assert.AreEqual(distance,BroadcastFraming.SmoothDistance(distance,100,ref velocity,0));Assert.AreEqual(savedVelocity,velocity);
+        }
         [TestCase(.43f,-1,.1f)] [TestCase(.43f,1,.1f)] [TestCase(1.32f,-1,.1f)] [TestCase(1.32f,1,.1f)]
         [TestCase(.43f,-1,.5f)] [TestCase(.43f,1,.5f)] [TestCase(1.32f,-1,.5f)] [TestCase(1.32f,1,.5f)]
         public void EnteringTheLastThirdDoesNotCutToAWiderCamera(float aspect,int end,float step)
