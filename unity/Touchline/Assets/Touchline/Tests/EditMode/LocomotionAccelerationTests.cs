@@ -9,6 +9,29 @@ namespace Touchline.Tests
 {
     public class LocomotionAccelerationTests
     {
+        [TestCase(30)] [TestCase(60)] [TestCase(120)]
+        public void CapturedAccelerationTipsTorsoWithoutMovingTheSupports(int fps)
+        {
+            var root=new GameObject("Accelerating capture");var reference=new GameObject("Unmodulated capture");
+            try{
+                var view=root.AddComponent<PlayerView>();var neutral=reference.AddComponent<PlayerView>();
+                var player=new PlayerData{id="acceleration-overlay",heightCm=182};view.Build(player,0,9,Color.blue);neutral.Build(player,0,9,Color.blue);
+                var actor=new Actor{id=player.id,slot=9,action="run"};float accelerating=0,braking=0;
+                var spine=root.GetComponentsInChildren<Transform>().Single(t=>t.name=="spine02");var normalSpine=reference.GetComponentsInChildren<Transform>().Single(t=>t.name=="spine02");
+                for(int frame=0;frame<=fps*4;frame++){
+                    float t=frame/(float)fps,clock=(float)Math.Floor(t*10+.0001f)/10,speed=clock<1?clock*3:clock<2?3:clock<3?(3-clock)*3:0;
+                    actor.velocity=new Point(0,speed);actor.previous=actor.position;actor.position+=actor.velocity/fps;
+                    var context=new PlayerMotionContext{hasSimulationClock=true,simulationClock=100+clock};string before=JsonUtility.ToJson(actor);
+                    view.Render(actor,1,1f/fps,default,context);context.simulationClock=100;neutral.Render(actor,1,1f/fps,default,context);
+                    Assert.AreEqual(before,JsonUtility.ToJson(actor));Assert.AreEqual(reference.transform.position,root.transform.position);
+                    foreach(bool left in new[]{true,false})Assert.Less(Vector3.Distance(view.FootPosition(left),neutral.FootPosition(left)),.003f,"Torso response preserves captured feet");
+                    float tilt=Quaternion.Angle(spine.localRotation,normalSpine.localRotation);
+                    if(frame==fps/2)accelerating=tilt;if(frame==fps*5/2)braking=tilt;
+                    if(frame==fps/2){var rotation=spine.localRotation;context.simulationClock=100+clock;view.Render(actor,1,0,default,context);Assert.Less(Quaternion.Angle(rotation,spine.localRotation),.01f);}
+                }
+                Assert.Greater(accelerating,1,"Acceleration visibly tips the captured torso");Assert.Greater(braking,1,"Braking visibly changes torso balance");
+            }finally{UnityEngine.Object.DestroyImmediate(root);UnityEngine.Object.DestroyImmediate(reference);}
+        }
         [TestCase(30)][TestCase(60)][TestCase(120)]
         public void FixedTickRampHasContinuousLeanAtEveryRefreshRate(int fps)
         {

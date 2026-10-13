@@ -66,6 +66,29 @@ namespace Touchline
         readonly Vector3[] signalTargets=new Vector3[2];
         readonly bool[] signalClap=new bool[2];
         Vector3 uprightContactPush;
+        bool mecanimHasReadinessContext;
+        void MecanimLocomotionContext(Actor actor,float dt,bool reset,PlayerMotionContext context)
+        {
+            float speed=actor.velocity.Length;
+            accelerationLean=accelerationPresentation.Sample(speed,dt,context.hasSimulationClock,context.simulationClock,reset);
+            float readiness=keeperReadinessPresentation.Sample(context.keeperReadiness,dt,context.hasSimulationClock,context.simulationClock,reset);
+            if(reset)mecanimHasReadinessContext=false;
+            mecanimHasReadinessContext|=context.keeperReadiness.active;
+            if(actor.action!="idle"&&actor.action!="run"||context.reaction!=0||context.keeperClaim.active)return;
+            // Preserve the captured lower body: acceleration tips the torso,
+            // not the physical root or the planted feet.
+            bones["spine02"].localRotation*=Quaternion.Euler(accelerationLean*.65f,0,0);
+            if(actor.slot!=0||!mecanimHasReadinessContext||speed>=2.5f)return;
+            readiness*=1-Mathf.InverseLerp(1,2.5f,speed);
+            var left=Limb("L");var right=Limb("R");
+            var lf=left.foot.position;var rf=right.foot.position;var lr=left.foot.rotation;var rr=right.foot.rotation;
+            body.localPosition+=Vector3.down*(.085f*readiness); // metres: same contextual crouch as the procedural presentation.
+            bones["spine02"].localRotation*=Quaternion.Euler(10*readiness,0,0);
+            SolveCapturedSupport("L",lf,left.lowerLeg.position-left.upperLeg.position);left.foot.rotation=lr;
+            SolveCapturedSupport("R",rf,right.lowerLeg.position-right.upperLeg.position);right.foot.rotation=rr;
+            SolveArm("L",Vector3.Lerp(left.wrist.position,transform.TransformPoint(new Vector3(.37f,.95f,.27f)),readiness));
+            SolveArm("R",Vector3.Lerp(right.wrist.position,transform.TransformPoint(new Vector3(-.37f,.95f,.27f)),readiness));
+        }
         void MecanimUprightContact(Actor actor,float dt,bool reset,PlayerMotionContext context)
         {
             bool upright=actor.action=="idle"||actor.action=="run";
