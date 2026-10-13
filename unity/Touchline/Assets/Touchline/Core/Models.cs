@@ -113,7 +113,12 @@ namespace Touchline.Core
         {
             var p = (possession ? withBall : withoutBall)[slot];
             var baseX=-52.5f+p.y*1.05f;
-            var x=possession?baseX+ballX*.38f+(mentality-.5f)*12:baseX*.57f-10+(line-.45f)*27+ballX*.24f;
+            // Board depth is 0–100. Defenders follow the line fully; midfield
+            // follows progressively less, while forwards keep their engagement
+            // position. Raising the line must compress, not translate, the block.
+            const float DefensiveBandEnd=35,MidfieldBandEnd=55;
+            float lineShare=Mathx.Clamp((MidfieldBandEnd-p.y)/(MidfieldBandEnd-DefensiveBandEnd),0,1);
+            var x=possession?baseX+ballX*.38f+(mentality-.5f)*12:baseX*.57f-10+(line-.45f)*27*lineShare+ballX*.24f;
             if(possession&&slot>0)x=Math.Min(x,ballX+24);
             // Board left is the player's left while facing the opposing goal.
             // Local attack is +X, whose left-hand flank is world +Z. Rotate
