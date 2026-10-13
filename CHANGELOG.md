@@ -1,3 +1,4 @@
+- Android : version 0.70/code63 avec import vérifié du pack personnel et contrôle des animations réellement incluses dans l’APK.
 - Animations : trois frappes capturées, touche à deux mains, prise basse et célébration ; contacts anatomiques et captures de contrôle corrigés selon la taille.
 - Validation animations : revue native par fenêtre temporelle pour repérer les contacts tardifs des captures de football.
 - Graphismes : béton texturé et mat dans les tribunes, échelle homogène sur les pentes et grain de pelouse plus directionnel.

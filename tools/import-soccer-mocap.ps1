@@ -1,6 +1,6 @@
 param([Parameter(Mandatory=$true)][string]$Archive)
 $ErrorActionPreference='Stop'
-if(@(Get-CimInstance Win32_Process -Filter "Name='Unity.exe'").Count){throw 'Close Unity before installing the personal mocap files.'}
+if([Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT -and @(Get-CimInstance Win32_Process -Filter "Name='Unity.exe'").Count){throw 'Close Unity before installing the personal mocap files.'}
 $expected='1A26159823911A0B509CEE8B82E1F9916714DCF0DC71E90139ECE7FC99792C44'
 if((Get-FileHash -LiteralPath $Archive -Algorithm SHA256).Hash -ne $expected){throw 'This is not the verified Soccer pack 05 archive.'}
 $root=Split-Path $PSScriptRoot -Parent
