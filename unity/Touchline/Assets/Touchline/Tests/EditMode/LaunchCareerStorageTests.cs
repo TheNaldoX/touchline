@@ -15,10 +15,15 @@ namespace Touchline.Tests
         [Test] public void NewCatalogueContainsImportedPlayersWithoutFictionalExtension()
         {
             var fresh=TouchlineCatalogue.Load();
-            Assert.AreEqual(21815,fresh.players.Length);
+            Assert.AreEqual(21820,fresh.players.Length);
             Assert.IsFalse(fresh.players.Any(p=>GeneratedWorld.IsGenerated(p.id)));
             Assert.IsFalse(fresh.clubs.Any(c=>GeneratedWorld.IsGenerated(c.id)));
-            Assert.IsTrue(fresh.players.All(p=>p.source.StartsWith("https://www.espn.com/",StringComparison.Ordinal)));
+            var academy=fresh.players.Where(p=>p.id.StartsWith("real-academy-om-",StringComparison.Ordinal)).ToArray();
+            Assert.AreEqual(5,academy.Length);
+            Assert.IsTrue(fresh.players.Except(academy).All(p=>p.source.StartsWith("https://www.espn.com/",StringComparison.Ordinal)));
+            Assert.IsTrue(academy.All(p=>p.team=="academy-176"&&p.rosterSource=="https://www.om.fr/fr/equipe-u17-2025-2026"&&
+                (new Uri(p.source).Host=="www.fff.fr"||new Uri(p.source).Host=="media.fff.fr"||new Uri(p.source).Host=="mediterranee.fff.fr")&&
+                PlayerChronology.TryAge(p,new DateTime(2026,6,15),out var age)&&age==p.age));
         }
         [Test] public void RealCareerDoesNotLoadLegacyExtension()
         {

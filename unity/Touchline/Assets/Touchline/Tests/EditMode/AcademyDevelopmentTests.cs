@@ -9,6 +9,16 @@ namespace Touchline.Tests
 {
     public partial class ProfessionalTests
     {
+        [Test] public void ImportedAcademyYouthsGainPathsWithoutBackfilledMinutesOrDuplicateIntakes()
+        {
+            var p=new PlayerData{id="verified-academy",name="Verified fixture",team="academy-c0",age=15,rating=45,potential=65};
+            db.players=db.players.Concat(new[]{p}).ToArray();c.life.day=40;c.EnsureWorld(db);
+            var path=c.AcademyPaths(db).Single(y=>y.player==p.id);Assert.AreEqual("academy",path.group);Assert.AreEqual(40,path.lastAcademyDay);
+            Assert.AreEqual(0,path.minutes);Assert.AreEqual(0,path.trainingSessions);path.focus="technical";
+            var saved=JsonUtility.FromJson<Career>(JsonUtility.ToJson(c));saved.EnsureWorld(db);
+            Assert.AreEqual(1,saved.AcademyPaths(db).Count(y=>y.player==p.id));Assert.AreEqual("technical",saved.AcademyPaths(db).Single(y=>y.player==p.id).focus);
+            Assert.AreEqual("academy-c0",p.team);Assert.AreEqual(0,p.wage);
+        }
         [Test] public void ExistingYoungProfessionalsGainPersistentPathsWithoutInventingPlayersOrMinutes()
         {
             db.players=db.players.Where(p=>!p.team.StartsWith("academy-")).ToArray();

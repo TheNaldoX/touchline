@@ -12,6 +12,8 @@ namespace Touchline
         public static Database Load()
         {
             var db=JsonUtility.FromJson<Database>(Resources.Load<TextAsset>("Data/database").text);
+            var academy=Resources.Load<TextAsset>("Data/real-academy");
+            if(academy!=null)RealAcademyCatalogue.Append(db,JsonUtility.FromJson<Database>(academy.text));
             return db;
         }
 

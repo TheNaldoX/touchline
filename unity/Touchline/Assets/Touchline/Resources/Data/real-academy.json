@@ -1,0 +1,737 @@
+{
+  "schema": 1,
+  "provenance": "Complément réel sourcé, cinq identités OM ; effectif incomplet, évaluations provisoires explicites.",
+  "players": [
+    {
+      "valueSource": "Valeur de simulation provisoire de 50 000 €, aucune cotation individuelle vérifiée.",
+      "name": "Saïd Remadnia",
+      "givenNames": "Saïd",
+      "source": "https://www.fff.fr/equipe-nationale/joueur/11550-remadnia-said/fiche.html",
+      "potential": 65,
+      "rosterAsOf": "2026-10-13",
+      "value": 50000,
+      "birthDate": "2009-03-27",
+      "wage": 0,
+      "morale": 70,
+      "fitness": 95,
+      "assessment": "Identité et naissance vérifiées auprès de la FFF ; poste et appartenance à la formation OM : effectif officiel U17 2025–2026, consulté le 13/10/2026. Niveau 45 et potentiel 65 : paramètres provisoires identiques pour ce lot faute de mesure individuelle vérifiée, forte incertitude. Ni le potentiel ni les attributs ne sont des faits établis. Aucun résultat postérieur au début de carrière utilisé.",
+      "salarySource": "Rémunération réelle inconnue ; aucune charge salariale individuelle ajoutée avant promotion, fonctionnement couvert par le budget du centre.",
+      "rating": 45,
+      "id": "real-academy-om-said-remadnia",
+      "team": "academy-176",
+      "rosterSource": "https://www.om.fr/fr/equipe-u17-2025-2026",
+      "positions": [
+        "ATT"
+      ],
+      "surname": "Remadnia",
+      "position": "ATT",
+      "attributes": [
+        {
+          "key": "sprintSpeed",
+          "value": 45
+        },
+        {
+          "key": "acceleration",
+          "value": 45
+        },
+        {
+          "key": "agility",
+          "value": 45
+        },
+        {
+          "key": "balance",
+          "value": 45
+        },
+        {
+          "key": "stamina",
+          "value": 45
+        },
+        {
+          "key": "strength",
+          "value": 45
+        },
+        {
+          "key": "shortPassing",
+          "value": 45
+        },
+        {
+          "key": "longPassing",
+          "value": 45
+        },
+        {
+          "key": "finishing",
+          "value": 45
+        },
+        {
+          "key": "shotPower",
+          "value": 45
+        },
+        {
+          "key": "vision",
+          "value": 45
+        },
+        {
+          "key": "composure",
+          "value": 45
+        },
+        {
+          "key": "reactions",
+          "value": 45
+        },
+        {
+          "key": "positioning",
+          "value": 45
+        },
+        {
+          "key": "defensiveAwareness",
+          "value": 45
+        },
+        {
+          "key": "interceptions",
+          "value": 45
+        },
+        {
+          "key": "dribbling",
+          "value": 45
+        },
+        {
+          "key": "ballControl",
+          "value": 45
+        },
+        {
+          "key": "crossing",
+          "value": 45
+        },
+        {
+          "key": "headingAccuracy",
+          "value": 45
+        },
+        {
+          "key": "standingTackle",
+          "value": 45
+        },
+        {
+          "key": "slidingTackle",
+          "value": 45
+        },
+        {
+          "key": "jumping",
+          "value": 45
+        },
+        {
+          "key": "penalties",
+          "value": 45
+        },
+        {
+          "key": "longShots",
+          "value": 45
+        },
+        {
+          "key": "freeKickAccuracy",
+          "value": 45
+        },
+        {
+          "key": "curve",
+          "value": 45
+        },
+        {
+          "key": "volleys",
+          "value": 45
+        },
+        {
+          "key": "aggression",
+          "value": 45
+        }
+      ]
+    },
+    {
+      "valueSource": "Valeur de simulation provisoire de 50 000 €, aucune cotation individuelle vérifiée.",
+      "name": "Samy Bedja",
+      "givenNames": "Samy",
+      "source": "https://www.fff.fr/equipe-nationale/joueur/11371-bedja-samy/fiche.html",
+      "potential": 65,
+      "rosterAsOf": "2026-10-13",
+      "value": 50000,
+      "birthDate": "2010-07-21",
+      "wage": 0,
+      "morale": 70,
+      "fitness": 95,
+      "assessment": "Identité et naissance vérifiées auprès de la FFF ; poste et appartenance à la formation OM : effectif officiel U17 2025–2026, consulté le 13/10/2026. Niveau 45 et potentiel 65 : paramètres provisoires identiques pour ce lot faute de mesure individuelle vérifiée, forte incertitude. Ni le potentiel ni les attributs ne sont des faits établis. Aucun résultat postérieur au début de carrière utilisé.",
+      "salarySource": "Rémunération réelle inconnue ; aucune charge salariale individuelle ajoutée avant promotion, fonctionnement couvert par le budget du centre.",
+      "rating": 45,
+      "id": "real-academy-om-samy-bedja",
+      "team": "academy-176",
+      "rosterSource": "https://www.om.fr/fr/equipe-u17-2025-2026",
+      "positions": [
+        "MIL"
+      ],
+      "surname": "Bedja",
+      "position": "MIL",
+      "attributes": [
+        {
+          "key": "sprintSpeed",
+          "value": 45
+        },
+        {
+          "key": "acceleration",
+          "value": 45
+        },
+        {
+          "key": "agility",
+          "value": 45
+        },
+        {
+          "key": "balance",
+          "value": 45
+        },
+        {
+          "key": "stamina",
+          "value": 45
+        },
+        {
+          "key": "strength",
+          "value": 45
+        },
+        {
+          "key": "shortPassing",
+          "value": 45
+        },
+        {
+          "key": "longPassing",
+          "value": 45
+        },
+        {
+          "key": "finishing",
+          "value": 45
+        },
+        {
+          "key": "shotPower",
+          "value": 45
+        },
+        {
+          "key": "vision",
+          "value": 45
+        },
+        {
+          "key": "composure",
+          "value": 45
+        },
+        {
+          "key": "reactions",
+          "value": 45
+        },
+        {
+          "key": "positioning",
+          "value": 45
+        },
+        {
+          "key": "defensiveAwareness",
+          "value": 45
+        },
+        {
+          "key": "interceptions",
+          "value": 45
+        },
+        {
+          "key": "dribbling",
+          "value": 45
+        },
+        {
+          "key": "ballControl",
+          "value": 45
+        },
+        {
+          "key": "crossing",
+          "value": 45
+        },
+        {
+          "key": "headingAccuracy",
+          "value": 45
+        },
+        {
+          "key": "standingTackle",
+          "value": 45
+        },
+        {
+          "key": "slidingTackle",
+          "value": 45
+        },
+        {
+          "key": "jumping",
+          "value": 45
+        },
+        {
+          "key": "penalties",
+          "value": 45
+        },
+        {
+          "key": "longShots",
+          "value": 45
+        },
+        {
+          "key": "freeKickAccuracy",
+          "value": 45
+        },
+        {
+          "key": "curve",
+          "value": 45
+        },
+        {
+          "key": "volleys",
+          "value": 45
+        },
+        {
+          "key": "aggression",
+          "value": 45
+        }
+      ]
+    },
+    {
+      "valueSource": "Valeur de simulation provisoire de 50 000 €, aucune cotation individuelle vérifiée.",
+      "name": "Tom Beunaiche",
+      "givenNames": "Tom",
+      "source": "https://mediterranee.fff.fr/wp-content/uploads/sites/16/2022/03/Convocation-second-tour-r%C3%A9gional-P%C3%B4le-Espoirs-12-et-13-Avril-2022.pdf",
+      "potential": 65,
+      "rosterAsOf": "2026-10-13",
+      "value": 50000,
+      "birthDate": "2009-07-11",
+      "wage": 0,
+      "morale": 70,
+      "fitness": 95,
+      "assessment": "Identité et naissance vérifiées auprès de la FFF ; poste et appartenance à la formation OM : effectif officiel U17 2025–2026, consulté le 13/10/2026. Niveau 45 et potentiel 65 : paramètres provisoires identiques pour ce lot faute de mesure individuelle vérifiée, forte incertitude. Ni le potentiel ni les attributs ne sont des faits établis. Aucun résultat postérieur au début de carrière utilisé.",
+      "salarySource": "Rémunération réelle inconnue ; aucune charge salariale individuelle ajoutée avant promotion, fonctionnement couvert par le budget du centre.",
+      "rating": 45,
+      "id": "real-academy-om-tom-beunaiche",
+      "team": "academy-176",
+      "rosterSource": "https://www.om.fr/fr/equipe-u17-2025-2026",
+      "positions": [
+        "DEF"
+      ],
+      "surname": "Beunaiche",
+      "position": "DEF",
+      "attributes": [
+        {
+          "key": "sprintSpeed",
+          "value": 45
+        },
+        {
+          "key": "acceleration",
+          "value": 45
+        },
+        {
+          "key": "agility",
+          "value": 45
+        },
+        {
+          "key": "balance",
+          "value": 45
+        },
+        {
+          "key": "stamina",
+          "value": 45
+        },
+        {
+          "key": "strength",
+          "value": 45
+        },
+        {
+          "key": "shortPassing",
+          "value": 45
+        },
+        {
+          "key": "longPassing",
+          "value": 45
+        },
+        {
+          "key": "finishing",
+          "value": 45
+        },
+        {
+          "key": "shotPower",
+          "value": 45
+        },
+        {
+          "key": "vision",
+          "value": 45
+        },
+        {
+          "key": "composure",
+          "value": 45
+        },
+        {
+          "key": "reactions",
+          "value": 45
+        },
+        {
+          "key": "positioning",
+          "value": 45
+        },
+        {
+          "key": "defensiveAwareness",
+          "value": 45
+        },
+        {
+          "key": "interceptions",
+          "value": 45
+        },
+        {
+          "key": "dribbling",
+          "value": 45
+        },
+        {
+          "key": "ballControl",
+          "value": 45
+        },
+        {
+          "key": "crossing",
+          "value": 45
+        },
+        {
+          "key": "headingAccuracy",
+          "value": 45
+        },
+        {
+          "key": "standingTackle",
+          "value": 45
+        },
+        {
+          "key": "slidingTackle",
+          "value": 45
+        },
+        {
+          "key": "jumping",
+          "value": 45
+        },
+        {
+          "key": "penalties",
+          "value": 45
+        },
+        {
+          "key": "longShots",
+          "value": 45
+        },
+        {
+          "key": "freeKickAccuracy",
+          "value": 45
+        },
+        {
+          "key": "curve",
+          "value": 45
+        },
+        {
+          "key": "volleys",
+          "value": 45
+        },
+        {
+          "key": "aggression",
+          "value": 45
+        }
+      ]
+    },
+    {
+      "valueSource": "Valeur de simulation provisoire de 50 000 €, aucune cotation individuelle vérifiée.",
+      "name": "Ivan Guemdani",
+      "givenNames": "Ivan",
+      "source": "https://mediterranee.fff.fr/wp-content/uploads/sites/16/2022/03/Convocation-second-tour-r%C3%A9gional-P%C3%B4le-Espoirs-12-et-13-Avril-2022.pdf",
+      "potential": 65,
+      "rosterAsOf": "2026-10-13",
+      "value": 50000,
+      "birthDate": "2009-10-06",
+      "wage": 0,
+      "morale": 70,
+      "fitness": 95,
+      "assessment": "Identité et naissance vérifiées auprès de la FFF ; poste et appartenance à la formation OM : effectif officiel U17 2025–2026, consulté le 13/10/2026. Niveau 45 et potentiel 65 : paramètres provisoires identiques pour ce lot faute de mesure individuelle vérifiée, forte incertitude. Ni le potentiel ni les attributs ne sont des faits établis. Aucun résultat postérieur au début de carrière utilisé.",
+      "salarySource": "Rémunération réelle inconnue ; aucune charge salariale individuelle ajoutée avant promotion, fonctionnement couvert par le budget du centre.",
+      "rating": 45,
+      "id": "real-academy-om-ivan-guemdani",
+      "team": "academy-176",
+      "rosterSource": "https://www.om.fr/fr/equipe-u17-2025-2026",
+      "positions": [
+        "GK"
+      ],
+      "surname": "Guemdani",
+      "position": "GK",
+      "attributes": [
+        {
+          "key": "sprintSpeed",
+          "value": 45
+        },
+        {
+          "key": "acceleration",
+          "value": 45
+        },
+        {
+          "key": "agility",
+          "value": 45
+        },
+        {
+          "key": "balance",
+          "value": 45
+        },
+        {
+          "key": "stamina",
+          "value": 45
+        },
+        {
+          "key": "strength",
+          "value": 45
+        },
+        {
+          "key": "shortPassing",
+          "value": 45
+        },
+        {
+          "key": "longPassing",
+          "value": 45
+        },
+        {
+          "key": "finishing",
+          "value": 45
+        },
+        {
+          "key": "shotPower",
+          "value": 45
+        },
+        {
+          "key": "vision",
+          "value": 45
+        },
+        {
+          "key": "composure",
+          "value": 45
+        },
+        {
+          "key": "reactions",
+          "value": 45
+        },
+        {
+          "key": "positioning",
+          "value": 45
+        },
+        {
+          "key": "defensiveAwareness",
+          "value": 45
+        },
+        {
+          "key": "interceptions",
+          "value": 45
+        },
+        {
+          "key": "dribbling",
+          "value": 45
+        },
+        {
+          "key": "ballControl",
+          "value": 45
+        },
+        {
+          "key": "crossing",
+          "value": 45
+        },
+        {
+          "key": "headingAccuracy",
+          "value": 45
+        },
+        {
+          "key": "standingTackle",
+          "value": 45
+        },
+        {
+          "key": "slidingTackle",
+          "value": 45
+        },
+        {
+          "key": "jumping",
+          "value": 45
+        },
+        {
+          "key": "penalties",
+          "value": 45
+        },
+        {
+          "key": "longShots",
+          "value": 45
+        },
+        {
+          "key": "freeKickAccuracy",
+          "value": 45
+        },
+        {
+          "key": "curve",
+          "value": 45
+        },
+        {
+          "key": "volleys",
+          "value": 45
+        },
+        {
+          "key": "aggression",
+          "value": 45
+        },
+        {
+          "key": "gkReflexes",
+          "value": 45
+        },
+        {
+          "key": "gkDiving",
+          "value": 45
+        },
+        {
+          "key": "gkHandling",
+          "value": 45
+        },
+        {
+          "key": "gkKicking",
+          "value": 45
+        },
+        {
+          "key": "gkPositioning",
+          "value": 45
+        }
+      ]
+    },
+    {
+      "valueSource": "Valeur de simulation provisoire de 50 000 €, aucune cotation individuelle vérifiée.",
+      "name": "Gaëtan Cesarini",
+      "givenNames": "Gaëtan",
+      "source": "https://media.fff.fr/uploads/files/2c664f80987622ad67640cdcba95513b.pdf",
+      "potential": 65,
+      "rosterAsOf": "2026-10-13",
+      "value": 50000,
+      "birthDate": "2010-06-24",
+      "wage": 0,
+      "morale": 70,
+      "fitness": 95,
+      "assessment": "Identité et naissance vérifiées auprès de la FFF ; poste et appartenance à la formation OM : effectif officiel U17 2025–2026, consulté le 13/10/2026. Niveau 45 et potentiel 65 : paramètres provisoires identiques pour ce lot faute de mesure individuelle vérifiée, forte incertitude. Ni le potentiel ni les attributs ne sont des faits établis. Aucun résultat postérieur au début de carrière utilisé.",
+      "salarySource": "Rémunération réelle inconnue ; aucune charge salariale individuelle ajoutée avant promotion, fonctionnement couvert par le budget du centre.",
+      "rating": 45,
+      "id": "real-academy-om-gaetan-cesarini",
+      "team": "academy-176",
+      "rosterSource": "https://www.om.fr/fr/equipe-u17-2025-2026",
+      "positions": [
+        "DEF"
+      ],
+      "surname": "Cesarini",
+      "position": "DEF",
+      "attributes": [
+        {
+          "key": "sprintSpeed",
+          "value": 45
+        },
+        {
+          "key": "acceleration",
+          "value": 45
+        },
+        {
+          "key": "agility",
+          "value": 45
+        },
+        {
+          "key": "balance",
+          "value": 45
+        },
+        {
+          "key": "stamina",
+          "value": 45
+        },
+        {
+          "key": "strength",
+          "value": 45
+        },
+        {
+          "key": "shortPassing",
+          "value": 45
+        },
+        {
+          "key": "longPassing",
+          "value": 45
+        },
+        {
+          "key": "finishing",
+          "value": 45
+        },
+        {
+          "key": "shotPower",
+          "value": 45
+        },
+        {
+          "key": "vision",
+          "value": 45
+        },
+        {
+          "key": "composure",
+          "value": 45
+        },
+        {
+          "key": "reactions",
+          "value": 45
+        },
+        {
+          "key": "positioning",
+          "value": 45
+        },
+        {
+          "key": "defensiveAwareness",
+          "value": 45
+        },
+        {
+          "key": "interceptions",
+          "value": 45
+        },
+        {
+          "key": "dribbling",
+          "value": 45
+        },
+        {
+          "key": "ballControl",
+          "value": 45
+        },
+        {
+          "key": "crossing",
+          "value": 45
+        },
+        {
+          "key": "headingAccuracy",
+          "value": 45
+        },
+        {
+          "key": "standingTackle",
+          "value": 45
+        },
+        {
+          "key": "slidingTackle",
+          "value": 45
+        },
+        {
+          "key": "jumping",
+          "value": 45
+        },
+        {
+          "key": "penalties",
+          "value": 45
+        },
+        {
+          "key": "longShots",
+          "value": 45
+        },
+        {
+          "key": "freeKickAccuracy",
+          "value": 45
+        },
+        {
+          "key": "curve",
+          "value": 45
+        },
+        {
+          "key": "volleys",
+          "value": 45
+        },
+        {
+          "key": "aggression",
+          "value": 45
+        }
+      ]
+    }
+  ],
+  "importedAt": "2026-10-13"
+}

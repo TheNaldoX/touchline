@@ -12,12 +12,13 @@ namespace Touchline.Core
             var tracked=new HashSet<string>(world.youth.Select(y=>y.player));
             var loans=world.contracts.Where(c=>c.loanUntil>life.day&&c.parent!=null&&c.player!=null).GroupBy(c=>c.player).ToDictionary(g=>g.Key,g=>g.First());
             foreach(var p in db.players){
-                if(p.age<16||p.age>21||tracked.Contains(p.id))continue;
+                bool academy=p.team=="academy-"+club;
+                if(p.age<(academy?14:16)||p.age>21||tracked.Contains(p.id))continue;
                 loans.TryGetValue(p.id,out var loan);
-                bool ownedHere=p.team==club&&(loan==null||loan.parent==club);
+                bool ownedHere=(p.team==club||academy)&&(loan==null||loan.parent==club);
                 bool loanedOut=loan!=null&&loan.parent==club&&loan.club==p.team;
                 if(!ownedHere&&!loanedOut)continue;
-                world.youth.Add(new YouthPath{player=p.id,group=loanedOut?"loan":"senior",lastAcademyDay=life.day,lastReview=life.day,loanReviewedThrough=life.day,loanAppearances=loanedOut?loan.appearancesAtSigning:0});
+                world.youth.Add(new YouthPath{player=p.id,group=loanedOut?"loan":academy?"academy":"senior",lastAcademyDay=life.day,lastReview=life.day,loanReviewedThrough=life.day,loanAppearances=loanedOut?loan.appearancesAtSigning:0});
                 tracked.Add(p.id);
             }
         }
