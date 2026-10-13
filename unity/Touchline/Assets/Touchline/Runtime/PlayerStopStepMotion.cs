@@ -7,7 +7,30 @@ namespace Touchline
     {
         readonly StopStepMotion stoppingSteps=new StopStepMotion();
         bool movedBeforeStop;Vector3 stoppingRoot;
-        void StopStepFootwork(Actor actor,float dt,bool reset,PlayerMotionContext context)
+        const float StopReleaseDuration=.12f; // seconds: hand grounded supports back to the captured stride.
+        float stopReleaseRemaining;
+        readonly Vector3[] stopReleaseFrom=new Vector3[2];
+        readonly Quaternion[] stopReleaseRotation=new Quaternion[2];
+        void MecanimStopRelease(Actor actor,bool wasSettling,float dt,bool reset,PlayerMotionContext context)
+        {
+            bool locomotion=actor.action=="run"||actor.action=="idle";
+            if(reset||!locomotion||context.carrying||context.contactWeight>.1f||context.reaction!=0){stopReleaseRemaining=0;return;}
+            if(wasSettling&&!stoppingSteps.Active){
+                stopReleaseRemaining=StopReleaseDuration;
+                for(int i=0;i<2;i++){stopReleaseFrom[i]=previousFeet[i];stopReleaseRotation[i]=previousFootRotations[i];}
+            }
+            if(stoppingSteps.Active){stopReleaseRemaining=0;return;}
+            if(stopReleaseRemaining<=0)return;
+            stopReleaseRemaining=Mathf.Max(0,stopReleaseRemaining-Mathf.Max(0,dt));
+            float blend=Mathf.SmoothStep(0,1,1-stopReleaseRemaining/StopReleaseDuration);
+            for(int i=0;i<2;i++){
+                var leg=Limb(Sides[i]);var rotation=Quaternion.Slerp(stopReleaseRotation[i],leg.foot.rotation,blend);
+                var target=Vector3.Lerp(stopReleaseFrom[i],leg.foot.position,blend);
+                SolveCapturedSupport(Sides[i],target,leg.lowerLeg.position-leg.upperLeg.position);
+                leg.foot.rotation=rotation;footLockPoint[i]=leg.foot.position;
+            }
+        }
+        void StopStepFootwork(Actor actor,float dt,bool reset,PlayerMotionContext context,bool mecanim=false)
         {
             if(reset){capturePoseOverride[0]=false;capturePoseOverride[1]=false;}
             float speed=actor.velocity.Length;
@@ -40,6 +63,12 @@ namespace Touchline
                 // restart pins the foot to the anchor from before braking.
                 capturePlant[i]=planted[i];captureStance[i]=stoppingSteps.MovingFoot!=i;
                 captureReleaseTime[i]=0;captureReleaseOffset[i]=Vector3.zero;capturePoseOverride[i]=true;
+                if(mecanim){
+                    // Resume captured locomotion from the support actually shown,
+                    // not its anchor from before the two settling footsteps.
+                    footLockPoint[i]=stoppingSteps.Position(i);footStep[i]=0;
+                    footLocked[i]=stoppingSteps.MovingFoot!=i;footLockWeight[i]=footLocked[i]?1:0;
+                }
             }
         }
     }

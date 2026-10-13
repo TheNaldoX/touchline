@@ -1,3 +1,4 @@
+- Animations : petits pas de stabilisation actifs en mode capturé, appuis conservés en pause et raccord progressif au redémarrage.
 - Formation : onze jeunes réels supplémentaires de Marseille et Nantes, sources FFF et clubs, classement U19/réserve selon âge et absence de doublons.
 - Tactique : la ligne défensive rapproche progressivement défense et milieu sans déplacer artificiellement les attaquants ; audit sur quatre graines.
 - Animations : le pied des tacles et blocs capturés rejoint le contact physique ; préparation et annulation sont fondues progressivement.

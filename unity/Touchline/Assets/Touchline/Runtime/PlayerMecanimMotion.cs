@@ -300,6 +300,9 @@ namespace Touchline
             }
             if(turnWeight>0)MecanimTurnYaw(turnWeight);
             MecanimFootLock(dt,reset);
+            bool wasSettling=stoppingSteps.Active;
+            StopStepFootwork(actor,dt,reset,context,true);
+            MecanimStopRelease(actor,wasSettling,dt,reset,context);
             MecanimStrikeSupport(actor,remaining);
             MecanimPassContact(actor,remaining);
             if(actor.action=="tackle"||actor.action=="block"){

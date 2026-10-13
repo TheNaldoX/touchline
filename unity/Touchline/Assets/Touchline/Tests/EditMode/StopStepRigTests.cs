@@ -65,5 +65,27 @@ namespace Touchline.Tests
                 view.Render(actor,1,1f/60);Assert.IsFalse(Planner(view).Active);Assert.AreEqual(new Vector3(10,0,10),view.transform.position);
             }finally{Object.DestroyImmediate(go);}
         }
+        [TestCase(30)][TestCase(60)][TestCase(120)]
+        public void PausedCapturedStopKeepsBothSupportsAndResumesWithoutChangingTheActor(int fps)
+        {
+            var go=new GameObject("Captured stop pause");try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="stop-rig",heightCm=182},0,9,Color.blue);
+                Assert.IsTrue(PlayerView.UseMecanim&&PlayerView.MecanimReady);
+                int last=Mathf.CeilToInt(fps*1.2f);
+                for(int frame=0;frame<=last;frame++)view.Render(Pose((float)frame/fps),1,frame==0?0:1f/fps,new Vector3(0,.11f,4));
+                Assert.IsTrue(Planner(view).Active);var actor=Pose((float)last/fps);
+                string state=JsonUtility.ToJson(actor);var left=view.FootPosition(true);var right=view.FootPosition(false);
+                for(int frame=0;frame<30;frame++){
+                    view.Render(actor,1,0,new Vector3(0,.11f,4));
+                    Assert.Less(Vector3.Distance(left,view.FootPosition(true)),.002f);
+                    Assert.Less(Vector3.Distance(right,view.FootPosition(false)),.002f);
+                }
+                view.Render(actor,1,1f/fps,new Vector3(0,.11f,4));
+                Assert.Less(Vector3.Distance(left,view.FootPosition(true)),.08f);
+                Assert.Less(Vector3.Distance(right,view.FootPosition(false)),.08f);
+                Assert.AreEqual(state,JsonUtility.ToJson(actor));
+                Assert.AreEqual(new Vector3(actor.position.x,0,actor.position.z),view.transform.position);
+            }finally{Object.DestroyImmediate(go);}
+        }
     }
 }
