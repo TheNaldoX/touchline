@@ -41,6 +41,7 @@ namespace Touchline
             const float SoleClearance=.01f,MaximumSettle=.10f; // metres, bounded pelvis correction during cushioning
             body.position-=Vector3.up*Mathf.Clamp(lowest-SoleClearance,0,MaximumSettle)*weight;
             KeepBootsAbovePitch(transform.forward,true);
+            BlendCapturedReceptionEntry(actor,elapsed);
         }
         void BodyReceptionPose(Actor actor,float remaining)
         {

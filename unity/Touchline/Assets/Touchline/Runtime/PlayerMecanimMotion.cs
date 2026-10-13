@@ -185,6 +185,7 @@ namespace Touchline
             if(!reset&&MatchSimulation.IsBodyControl(actor)&&remaining>=MatchSimulation.BodyControlDuration(actor.actionKind)-.00001f)dt=0;
             bool carrying=context.carrying;
             if(!UseMecanim||!EnsureMecanimGraph(actor.slot==0))return false;leftFootedNow=leftFooted;mecanimPoseSpeed=poseSpeed;
+            PrepareCapturedReception(actor,dt,reset,context);
             if(reset){moveBlend=Mathf.SmoothStep(0,1,Mathf.InverseLerp(MoveBlendFrom,MoveBlendTo,poseSpeed));dribbleBlend=carrying?1:0;}
             float k=1-Mathf.Exp(-dt*LocomotionBlendRate);
             moveBlend=Mathf.Lerp(moveBlend,Mathf.SmoothStep(0,1,Mathf.InverseLerp(MoveBlendFrom,MoveBlendTo,poseSpeed)),k);
@@ -303,6 +304,7 @@ namespace Touchline
             bool wasSettling=stoppingSteps.Active;
             StopStepFootwork(actor,dt,reset,context,true);
             MecanimStopRelease(actor,wasSettling,dt,reset,context);
+            BodyReceptionPreparation(actor,context);
             MecanimStrikeSupport(actor,remaining);
             MecanimPassContact(actor,remaining);
             if(actor.action=="tackle"||actor.action=="block"){

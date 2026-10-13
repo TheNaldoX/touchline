@@ -1,3 +1,4 @@
+- Animations : préparation visible des contrôles poitrine/cuisse capturés, pose conservée à l’entrée et raccord progressif jusqu’au contact physique.
 - Animations : petits pas de stabilisation actifs en mode capturé, appuis conservés en pause et raccord progressif au redémarrage.
 - Formation : onze jeunes réels supplémentaires de Marseille et Nantes, sources FFF et clubs, classement U19/réserve selon âge et absence de doublons.
 - Tactique : la ligne défensive rapproche progressivement défense et milieu sans déplacer artificiellement les attaquants ; audit sur quatre graines.
