@@ -1,11 +1,12 @@
 # HANDOFF.md — Touchline
 Lire AGENTS.md. Claude/Codex alternent. Une seule Unity locale/CI ; ne pas modifier Assets pendant test/capture/build. Préserver sauvegardes, APK et preuves ; historique Git/PR, pas de journal docs.
 
-## Livraison active — 0.71
-- PR144/311c71d IA validée ; PR145 source0cf0a80a61609df4be7d4e16e44766a6fc547ed1 version0.71.0-preview.1/code64. Branche feat/android-071-match-fixes. Aucun nouveau lot : marge réservée à livraison (dernier quota94%).
-- CI38334925329 en cours, session7530 exécute .validation/deliver-apk071.ps1 : attente45s, téléchargement, signature/version/package/ARM64/hash et inventaire21clips. Vérifier .validation/apk071/verified.json et source.json avant toute annonce. Ne pas lancer Unity locale ni modifier Assets pendant CI.
-- Après vérification : publier v0.71.0-preview.1 (pas tag apk-), via .validation/publish-apk071.ps1 préparé avec source exacte, preuve071 et descriptif des correctifs. Contrôler source.json avant exécution. Contrôler digest distant puis relire release après publication pour lien définitif. Préserver0.70 et tous fichiers privés. Livrer honnêtement puis désactiver automation à seuil quota/fin, pas de nouveau chantier.
-
+## APK0.71 livrée — 13 octobre
+- Release : https://github.com/TheNaldoX/touchline/releases/download/v0.71.0-preview.1/Touchline-Unity-0.71-preview.apk
+- PR145, source0cf0a80a61609df4be7d4e16e44766a6fc547ed1, CI38334925329 réussie, artefact11784522479. Version0.71.0-preview.1/code64,80972000octets. Signature habituelle130917e6d2b4ea2dcca487587dcff03b1356b14e7de39c3e01657097ad57ee13, packagefr.personal.touchline.unity et ARM64 vérifiés.21clips inclus. Preuves .validation/apk071/verified.json,source.json,published-asset.json.
+- SHA256CD91D99BF80E41AD42E4CA4790A5116379C9CB455701BD7043670467803CF4AB ; digest GitHub identique. APK0.70 et sauvegardes préservées.
+- PR142caméra/Moments clés, PR143jeunes réels, PR144/311c71d choix tir pendant préparation. Core1029/1029 ; Unity2316/2512,196anciens échecs/0nouveau.200matchs : tirs24.78→24.79, buts2.59→2.61 ; sorties13.82 sous cible. Portrait encore éloigné, Fold non testé.
+- Quota95%consommé : seuil utilisateur atteint, travaux arrêtés après livraison, automatisation désactivée. Aucun autre lot à commencer sans nouvelle autorisation/marge. Prochaine étape : test physique0.71, cadrage portrait et dette de tests. Branches/PR empilées, main non fusionnée.
 ## Lot en cours — nuit du 13 octobre
 - Autorisation jusqu’à08h30 Paris, seuil APK95%utilisés (5%restants), remplace92%. Dernier quota94%. Automatisation active toutes10min ; aucun nouvel agent.
 - PR142/0938804, branche fix/match-view-comfort, base0613a41 ; modifications committées : zoom borné8m/s, recentrage minimal du ballon quand le zoom prend du retard, Moments clés seuil tir.18 et remises en jeu ordinaires masquées. Core inchangé. Core1023/1023 ; ciblés caméra35/35 après correction de3régressions de cadrage ; autres ciblés77/77 (.validation/view-comfort-targeted.xml contient aussi les3anciens échecs corrigés).
