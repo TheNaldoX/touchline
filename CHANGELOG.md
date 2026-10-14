@@ -1,3 +1,4 @@
+- Animations : rotation du plan des genoux bornée dans le temps au redémarrage, sans déplacer les contacts des pieds ni rompre l’entrée des contrôles.
 - Android : préparation de la version 0.72-preview (code 65), regroupant les corrections validées de caméra, moteur, formation et animations.
 - Animations : accélération et freinage du torse, vigilance du gardien raccordées aux poses capturées sans déplacer les appuis.
 - Match : le gardien évite de préparer un plongeon vers une interception imaginaire quand la trajectoire passe nettement à côté du but.

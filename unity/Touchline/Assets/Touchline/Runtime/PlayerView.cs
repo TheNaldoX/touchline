@@ -18,7 +18,7 @@ namespace Touchline
         public Vector3 LabelHeadPosition=>bones.TryGetValue("head",out var head)?head.position:transform.position+Vector3.up*1.8f;
         readonly Dictionary<string,Transform> bones=new Dictionary<string,Transform>();
         Transform body;Transform[] skeleton;Material shirt;Material[] ownedMaterials;
-        readonly Vector3[] planted=new Vector3[2],swingFrom=new Vector3[2],previousFeet=new Vector3[2];
+        readonly Vector3[] planted=new Vector3[2],swingFrom=new Vector3[2],previousFeet=new Vector3[2],previousKnees=new Vector3[2];
         readonly bool[] stance=new bool[2];
         // Pas d'ajustement à l'arrêt : un pied trop loin de sa position de repos
         // (pivot, replacement) est déplacé par un petit pas, l'autre reste posé.
@@ -95,7 +95,7 @@ namespace Touchline
             // positions. Otherwise procedural contacts update only at 10 Hz.
             float actionTime=actor.actionTime+Mathf.Clamp01(1-alpha)*MatchSimulation.Step;
             gripOffset=Vector3.zero;
-            if(initialized)for(int i=0;i<2;i++){previousFeet[i]=Limb(Sides[i]).foot.position;previousFootRotations[i]=Limb(Sides[i]).foot.rotation;}
+            if(initialized)for(int i=0;i<2;i++){previousFeet[i]=Limb(Sides[i]).foot.position;previousKnees[i]=Limb(Sides[i]).lowerLeg.position;previousFootRotations[i]=Limb(Sides[i]).foot.rotation;}
             rootCurve.Observe(actor.previous,actor.position,MatchSimulation.Step);
             var p=rootCurve.Position(actor.previous,actor.position,MatchSimulation.Step,alpha);transform.position=new Vector3(p.x,0,p.z);
             poseVelocity=rootCurve.Velocity(actor.previous,actor.position,MatchSimulation.Step,alpha);float poseSpeed=poseVelocity.Length;
@@ -124,7 +124,7 @@ namespace Touchline
             float run=Mathf.Clamp01(poseSpeed/7);
             var travelDirection=poseSpeed>.2f?new Vector3(poseVelocity.x,0,poseVelocity.z).normalized:transform.forward;
             // Animation par mouvements capturés (Mecanim) : remplace la pose procédurale.
-            if(UseMecanim&&MecanimRender(actor,actionTime,dt,reset,poseSpeed,context)){MecanimLocomotionContext(actor,dt,reset,context);MecanimUprightContact(actor,dt,reset,context);MecanimBodyReceptionContact(actor,actionTime,reset);MecanimFootReceptionContact(actor,actionTime,reset,ballPosition);HandPose(actor,actionTime,dt,reset,context);MecanimFallHandClearance(actor);MecanimSignals(actor,dt,reset,context);MecanimClaimReadiness(actor,context.keeperClaim,actionTime,dt,reset,ballPosition);MecanimKeeperPlacement(actor,actionTime,ballPosition,dt,reset);MecanimKeeperDistributionContact(actor,actionTime,ballPosition,dt,reset);MecanimThrowContact(actor,actionTime,ballPosition);MecanimKeeperDiveContact(actor,actionTime);MecanimKeeperGaze(actor,actionTime,dt,reset);MecanimHeaderContact(actor,actionTime);MecanimSlideContact(actor,actionTime,ballPosition);poseAction=actor.action;poseSequence=actor.actionSequence;lastPosition=transform.position;lastRotation=transform.rotation;initialized=true;return;}
+            if(UseMecanim&&MecanimRender(actor,actionTime,dt,reset,poseSpeed,context)){MecanimLocomotionContext(actor,dt,reset,context);MecanimUprightContact(actor,dt,reset,context);MecanimBodyReceptionContact(actor,actionTime,reset);MecanimFootReceptionContact(actor,actionTime,reset,ballPosition);HandPose(actor,actionTime,dt,reset,context);MecanimFallHandClearance(actor);MecanimSignals(actor,dt,reset,context);MecanimClaimReadiness(actor,context.keeperClaim,actionTime,dt,reset,ballPosition);MecanimKeeperPlacement(actor,actionTime,ballPosition,dt,reset);MecanimKeeperDistributionContact(actor,actionTime,ballPosition,dt,reset);MecanimThrowContact(actor,actionTime,ballPosition);MecanimKeeperDiveContact(actor,actionTime);MecanimKeeperGaze(actor,actionTime,dt,reset);MecanimHeaderContact(actor,actionTime);MecanimSlideContact(actor,actionTime,ballPosition);MecanimKneeContinuity(actor,dt,reset);poseAction=actor.action;poseSequence=actor.actionSequence;lastPosition=transform.position;lastRotation=transform.rotation;initialized=true;return;}
             var localTravel=transform.InverseTransformDirection(travelDirection);
             var previousBodyPosition=body.localPosition;var previousBodyRotation=body.localRotation;
             if(actor.action=="control"&&(reset||poseAction!="control"||poseSequence!=actor.actionSequence)){var contact=MatchSimulation.IsBodyControl(actor)?new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z):ballPosition;float lateral=transform.InverseTransformPoint(contact).x;receivingLeft=Mathf.Abs(lateral)<.06f?leftFooted:lateral>0;}
