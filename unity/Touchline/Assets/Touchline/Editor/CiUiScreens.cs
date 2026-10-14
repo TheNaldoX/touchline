@@ -8,6 +8,7 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Touchline.Core;
 
 namespace Touchline.Editor
 {
@@ -28,7 +29,7 @@ namespace Touchline.Editor
         // la mise en page et les petites transitions d'entrée se terminent.
         const int StepFrames=12;const float StepSeconds=.6f,BootTimeoutSeconds=180,RunTimeoutSeconds=3300;
         static readonly (string tag,int width,int height)[] Screens={("plie",1080,2520),("deplie",2184,1968)};
-        static int stage=-1,frames;static float stepAt,startedAt=-1;static RenderTexture target;static List<Action> steps;
+        static int stage=-1,frames,failures;static float stepAt,startedAt=-1;static RenderTexture target;static List<Action> steps;
         static readonly StringBuilder audit=new StringBuilder(),log=new StringBuilder();
         static CiUiScreens(){EditorApplication.update+=Tick;}
 
@@ -43,6 +44,18 @@ namespace Touchline.Editor
         }
 
         static string Output=>SessionState.GetString(OutputKey,"build/film/ui");
+        // Focused PR validation still renders at native Fold resolution. Three frames
+        // allow layout/repaint to settle without twelve expensive software-rendered frames.
+        static bool FocusedTactics=>Path.GetFileName(Output).StartsWith("ui-tactical-focus-",StringComparison.Ordinal);
+        static bool FocusedRecruitment=>Path.GetFileName(Output).StartsWith("ui-recruitment-focus-",StringComparison.Ordinal);
+        static bool FocusedLoan=>Path.GetFileName(Output).StartsWith("ui-loan-focus-",StringComparison.Ordinal);
+        static bool FocusedNegotiation=>Path.GetFileName(Output).StartsWith("ui-negotiation-focus-",StringComparison.Ordinal);
+        static bool FocusedBoard=>Path.GetFileName(Output).StartsWith("ui-board-focus-",StringComparison.Ordinal);
+        static bool FocusedDepth=>Path.GetFileName(Output).StartsWith("ui-recruitment-depth",StringComparison.Ordinal);
+        static bool FocusedCareer=>Path.GetFileName(Output).StartsWith("ui-career-review-",StringComparison.Ordinal);
+        static bool FocusedCell=>Path.GetFileName(Output).StartsWith("ui-recruitment-cell-",StringComparison.Ordinal);
+        static bool FocusedImmersion=>Path.GetFileName(Output).StartsWith("ui-immersion-focus-",StringComparison.Ordinal);
+        const int FocusedStepFrames=3;
         static TouchlineApp App=>TouchlineApp.Instance;
         static UIDocument Document=>App.GetComponent<UIDocument>();
         static VisualElement Root=>Document.rootVisualElement;
@@ -66,6 +79,31 @@ namespace Touchline.Editor
 
         static List<Action> BuildSteps()
         {
+            if(Path.GetFileName(Output).StartsWith("ui-existing-youth-",StringComparison.Ordinal))return BuildExistingYouthSteps();
+            if(Path.GetFileName(Output).StartsWith("ui-transfer-form-",StringComparison.Ordinal))return BuildTransferFormSteps();
+            if(Path.GetFileName(Output).StartsWith("ui-free-kick-wait-",StringComparison.Ordinal))return BuildFreeKickWaitSteps();
+            if(Path.GetFileName(Output).StartsWith("ui-button-motion-",StringComparison.Ordinal))return BuildButtonMotionSteps();
+            if(Path.GetFileName(Output).StartsWith("ui-sale-negotiation-",StringComparison.Ordinal))return BuildSaleNegotiationSteps();
+            if(Path.GetFileName(Output).StartsWith("ui-discussion-preview-",StringComparison.Ordinal))return BuildDiscussionPreviewSteps();
+            if(Path.GetFileName(Output).StartsWith("ui-agent-role-",StringComparison.Ordinal)||Path.GetFileName(Output).StartsWith("ui-transfer-cost-",StringComparison.Ordinal))return BuildAgentRoleSteps();
+            if(Path.GetFileName(Output).StartsWith("ui-finance-preview-",StringComparison.Ordinal))return BuildFinancePreviewSteps();
+            if(Path.GetFileName(Output).StartsWith("ui-loan-save-",StringComparison.Ordinal))return BuildLoanSaveSteps();
+            if(Path.GetFileName(Output).StartsWith("ui-departure-followup-",StringComparison.Ordinal))return BuildDepartureFollowupSteps();
+            if(Path.GetFileName(Output).StartsWith("ui-chance-review-",StringComparison.Ordinal))return BuildChanceReviewSteps();
+            if(Path.GetFileName(Output).StartsWith("ui-scroll-memory-",StringComparison.Ordinal))return BuildScrollMemorySteps();
+            if(Path.GetFileName(Output).StartsWith("ui-recruitment-cache-",StringComparison.Ordinal))return BuildRecruitmentCacheSteps();
+            if(Path.GetFileName(Output).StartsWith("ui-scout-snapshot-",StringComparison.Ordinal))return BuildScoutSnapshotSteps();
+            if(Path.GetFileName(Output).StartsWith("ui-dashboard-results-",StringComparison.Ordinal))return BuildDashboardResultsSteps();
+            if(Path.GetFileName(Output).StartsWith("ui-press-interview-",StringComparison.Ordinal))return BuildPressInterviewSteps();
+            if(FocusedImmersion)return BuildFocusedImmersionSteps();
+            if(FocusedCareer)return BuildCareerReviewSteps();
+            if(FocusedCell)return BuildFocusedCellSteps();
+            if(FocusedBoard)return BuildFocusedBoardSteps();
+            if(FocusedTactics)return BuildFocusedTacticSteps();
+            if(FocusedRecruitment)return BuildFocusedRecruitmentSteps();
+            if(FocusedLoan)return BuildFocusedLoanSteps();
+            if(FocusedNegotiation)return BuildFocusedNegotiationSteps();
+            if(FocusedDepth)return BuildFocusedDepthSteps();
             var list=new List<Action>();
             list.Add(()=>{App.Career.EnsureWorld(App.Database);});
             foreach(var s in Screens){
@@ -93,6 +131,8 @@ namespace Touchline.Editor
                 list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Match");});
                 list.Add(()=>{var arena=Arena;if(arena!=null)arena.Paused=true;});
                 list.Add(()=>{Capture(screen.tag+"-match-pause");var arena=Arena;if(arena!=null)arena.Paused=false;});
+                list.Add(()=>{Click("match-instructions-open");});
+                list.Add(()=>{Capture(screen.tag+"-consignes-rapides");bool paused=Arena.Paused;float speed=Arena.Speed;Click("quick-tactic-Pressing-2");if(App.Career.tactic.pressing!=.8f||App.Career.match.homeTactic.pressing!=.8f||Arena.Paused!=paused||Arena.Speed!=speed||Root.Q("match-instructions")!=null)throw new Exception("Consigne en deux touches : application/retour/pause incorrects");audit.AppendLine("Pressing intense en deux touches : tactique liée, retour au direct, pause et vitesse préservées.");});
                 for(int i=0;i<4;i++)list.Add(()=>{}); // quelques secondes de jeu
                 list.Add(()=>{Capture(screen.tag+"-match-direct");if(Root.Q<Button>("match-mentality-2")!=null){Click("match-mentality-2");audit.AppendLine("Mentalité offensive en une touche : "+App.Career.tactic.mentality.ToString(CultureInfo.InvariantCulture)+" · pause "+(Arena!=null&&Arena.Paused));}Call("MatchBench");});
                 list.Add(()=>{Capture(screen.tag+"-banc");Call("CloseModal");Call("MatchOptions");});
@@ -103,19 +143,747 @@ namespace Touchline.Editor
             return list;
         }
 
+        static List<Action> BuildFinancePreviewSteps()
+        {
+            var list=new List<Action>();list.Add(()=>App.Career.EnsureWorld(App.Database));
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);SetField("financeTab","Budget");Call("Navigate","Finances");});
+                list.Add(()=>{Capture(screen.tag+"-budget");Click("finance-tab-Billetterie");});
+                list.Add(()=>{App.Career.world.ticket=20;App.Career.world.supporterTrust=70;App.Career.world.lastTicketDay=App.Career.life.day-7;Call("Build");});
+                list.Add(()=>{Root.Q<IntegerField>("finance-ticket-price").value=30;if(App.Career.world.ticket!=20)throw new Exception("Preview changed ticket price before confirmation");if(!Root.Q<Button>("finance-ticket-apply").enabledInHierarchy)throw new Exception("Valid ticket change disabled");});
+                list.Add(()=>{Capture(screen.tag+"-billetterie-apercu");Click("finance-ticket-apply");});
+                list.Add(()=>{if(App.Career.world.ticket!=30||App.Career.world.supporterTrust!=65)throw new Exception("Ticket change not applied as previewed");Root.Q<IntegerField>("finance-ticket-price").value=35;if(Root.Q<Button>("finance-ticket-apply").enabledInHierarchy)throw new Exception("Weekly ticket limit ignored");Capture(screen.tag+"-billetterie-delai");Click("finance-tab-Partenaires");});
+                list.Add(()=>{Capture(screen.tag+"-partenaires");Click("finance-tab-Comptabilité");});
+                list.Add(()=>{Capture(screen.tag+"-comptabilite");App.Career.life.revenue=1000000;Call("Navigate","Club");});
+                list.Add(()=>{Click("manager-decision-payroll");if(Root.Q("finance-budget-explanation")==null)throw new Exception("Payroll alert did not open the Budget tab");});
+            }
+            audit.AppendLine("Finances : quatre onglets, aperçu sans mutation, confirmation et délai hebdomadaire vérifiés aux deux formats.");return list;
+        }
+        static List<Action> BuildLoanSaveSteps()
+        {
+            var list=new List<Action>();string id=null;
+            list.Add(()=>{var c=App.Career;c.EnsureWorld(App.Database);id=App.Database.players.First(x=>x.team!=c.club&&x.team!="free"&&x.team!="retired"&&x.age>=18).id;c.Contract(App.Database,id).parent="";});
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Recrutement");Call("TransferDialog",id);var loan=Root.Q<Toggle>("negotiation-loan");if(loan==null||!loan.enabledInHierarchy)throw new Exception("Empty lending club disables loan negotiation");loan.value=true;Root.Q("transfer-negotiation-form").Q<ScrollView>().ScrollTo(loan);});
+                list.Add(()=>Root.Q("transfer-negotiation-form").Q<ScrollView>().ScrollTo(Root.Q<Toggle>("negotiation-loan")));
+                list.Add(()=>{Capture(screen.tag+"-pret-apres-sauvegarde");Call("CloseModal");});
+            }
+            audit.AppendLine("Champ prêteur vide comme après désérialisation : option prêt activable aux deux formats ; vraie restauration vérifiée par CoreTests.");return list;
+        }
+
+        static List<Action> BuildDepartureFollowupSteps()
+        {
+            var list=new List<Action>();string id=null;int message=0;
+            list.Add(()=>{var c=App.Career;c.EnsureWorld(App.Database);var p=App.Database.Squad(c.club).First(x=>x.position!="GB"&&x.unavailableDays<=0&&c.Available(x.id));id=p.id;c.life.day+=28;var contract=c.Contract(App.Database,id);contract.role="starter";contract.playingTime=new PlayingTimeUsage{club=c.club};for(int i=0;i<6;i++)contract.playingTime.Add(false,0);c.Person(id).morale=30;c.Person(id).trust=30;c.departureRequests.Add(new DepartureRequest{club=c.club,player=id,status="refused",answered=c.life.day-28,since=c.life.day-28});c.ReviewDepartureRequests(App.Database);var mail=c.life.messages.Last(x=>x.subject=="Ma situation n’a pas changé");message=mail.id;if(!c.MessageNeedsDecision(mail))throw new Exception("Followup is not actionable");});
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Messages");Call("OpenMessage",message);});
+                list.Add(()=>{Capture(screen.tag+"-relance");Call("Conversation",id);});
+                list.Add(()=>{if(Root.Q<Button>("departure-refuse")==null||Root.Q<Button>("departure-allow")==null)throw new Exception("Followup lost departure choices");Capture(screen.tag+"-discussion");Call("CloseModal");});
+            }
+            audit.AppendLine("Relance contextuelle synthétique : notification actionnable et accès aux décisions de départ, deux formats ; aucune vente ni sauvegarde personnelle.");return list;
+        }
+
+        static List<Action> BuildExistingYouthSteps()
+        {
+            var steps=new List<Action>();string player=null;int count=0;
+            steps.Add(()=>{
+                string club=Environment.GetCommandLineArgs().FirstOrDefault(a=>a.StartsWith("-touchlineYouthClub="))?.Split('=')[1]??"176";
+                var db=TouchlineCatalogue.Load();var career=new Career{club=club,youthGenerationFromYear=2027};career.lineup=Career.Select(db,career.club,career.tactic);var initial=new HashSet<string>(db.players.Select(p=>p.id));
+                career.EnsureWorld(db); // The normal start also imports referenced real free agents.
+                var paths=career.AcademyPaths(db).ToArray();count=paths.Length;
+                if(count==0||paths.Any(p=>!initial.Contains(p.player)||(p.group!="senior"&&!(p.group=="academy"&&db.Find(p.player).team=="academy-"+career.club))))throw new Exception("Real youth missing or fabricated");
+                int expected=club=="176"?12:club=="165"?10:db.players.Count(p=>p.team=="academy-"+club);
+                if(paths.Count(p=>db.Find(p.player).team=="academy-"+club)!=expected)throw new Exception("Verified academy supplement missing");
+                player=paths.First(p=>p.group=="academy").player;
+                typeof(TouchlineApp).GetProperty("Database").SetValue(App,db);typeof(TouchlineApp).GetProperty("Career").SetValue(App,career);
+                audit.AppendLine("Real catalogue youth: "+string.Join(", ",paths.Select(p=>db.Find(p.player).name))+"; no generated youth.");
+            });
+            foreach(var screen in Screens){
+                steps.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Formation");});
+                steps.Add(()=>{if(Root.Query<VisualElement>(className:"academy-player").ToList().Count!=count)throw new Exception("Youth cards missing");Capture(screen.tag+"-real-youth");Click("academy-plan-"+player);});
+                steps.Add(()=>{if(Root.Q("academy-plan")==null)throw new Exception("Professional pathway inaccessible");Capture(screen.tag+"-real-youth-plan");Call("CloseModal");});
+            }
+            return steps;
+        }
+        static List<Action> BuildTransferFormSteps()
+        {
+            var list=new List<Action>();string player=null;long cash=0;int offers=0;
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{var c=App.Career;c.EnsureWorld(App.Database);player=App.Database.players.First(p=>p.team!=c.club&&p.team!="free"&&p.age>=24&&!c.HasActiveLoan(p.id)&&App.Database.clubs.Any(t=>t.id==p.team)).id;cash=c.life.cash;offers=c.world.offers.Count;Resize(screen.width,screen.height);Call("TransferDialog",player);});
+                list.Add(()=>{var button=Root.Q<Button>("negotiation-send");if(button.GetFirstAncestorOfType<ScrollView>()!=null||!Root.worldBound.Contains(button.worldBound.center))throw new Exception("Submit must remain outside scrolling content and visible");if(Root.Q<Foldout>("negotiation-extra-clauses").value||Root.Q("negotiation-loan-terms").resolvedStyle.display!=DisplayStyle.None)throw new Exception("Unused terms clutter initial form");Capture(screen.tag+"-transfert-principal");Root.Q<LongField>("negotiation-monthly-wage").value=10000;Root.Q<LongField>("negotiation-bonus").value=321;Root.Q<Toggle>("negotiation-loan").value=true;});
+                list.Add(()=>{if(Root.Q("negotiation-loan-terms").resolvedStyle.display==DisplayStyle.None)throw new Exception("Loan conditions hidden in loan mode");Root.Q("negotiation-loan-terms").GetFirstAncestorOfType<ScrollView>().ScrollTo(Root.Q("negotiation-loan-terms"));});
+                list.Add(()=>{Capture(screen.tag+"-pret-conditions");Root.Q<Toggle>("negotiation-loan").value=false;if(Root.Q<LongField>("negotiation-monthly-wage").value!=10000||Root.Q<LongField>("negotiation-bonus").value!=321||!Root.Q<Foldout>("negotiation-extra-clauses").value)throw new Exception("Permanent draft not restored with active clauses visible");if(App.Career.life.cash!=cash||App.Career.world.offers.Count!=offers)throw new Exception("Browsing submitted an offer");Call("CloseModal");});
+            }
+            audit.AppendLine("Bouton hors défilement, conditions pertinentes seulement, brouillon salaire10000 et prime321 conservé achat/prêt/achat, aucune offre envoyée.");return list;
+        }
+        static List<Action> BuildFreeKickWaitSteps()
+        {
+            var list=new List<Action>();
+            list.Add(()=>{var c=App.Career;c.EnsureWorld(App.Database);c.PrepareLineup(App.Database);var opponent=App.Database.clubs.First(x=>x.playable&&x.id!=c.club).id;var sim=MatchSimulation.Create(App.Database,c,opponent,731,2700);c.match=sim.State;c.ApplyMatchContext(sim);Call("CreateArena",sim);});
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Match");Arena.Paused=true;Arena.Broadcast.SetMode(MatchViewingMode.Highlights);var m=Arena.Simulation.State;m.clock+=30;m.phase="free-kick";m.restart=.2f;m.restartSide=0;m.restartTaker=null;m.restartWall.Clear();m.ball=new BallState{position=new Point(30,0),side=0};Arena.Broadcast.Refresh();});
+                list.Add(()=>{if(!Arena.QuietPresentation)throw new Exception("Preparation should be in statistical view");Capture(screen.tag+"-preparation-coup-franc");});
+            }
+            audit.AppendLine("État synthétique : coup franc, tireur pas encore désigné, compteur0,2s ; préparation expliquée dans la vue statistique. Simulation en pause pour capture.");return list;
+        }
+        static List<Action> BuildButtonMotionSteps()
+        {
+            var list=new List<Action>();int clicks=0;Button button=null;VisualElement panel=null;Vector2 point=default;Rect pressed=default,released=default;
+            list.Add(()=>{PlayerPrefs.SetInt("reduce-motion",0);Resize(1080,2520);Call("Navigate","Club");panel=(VisualElement)Call("Modal","Appui pendant l’ouverture");button=new Button(()=>clicks++){text="Action unique",name="entry-test-button"};panel.Add(button);});
+            list.Add(()=>{Call("AnimateEntry",panel,true);panel.schedule.Execute(()=>{
+                pressed=button.worldBound;point=new Vector2(pressed.center.x,pressed.yMax-1);
+                using(var e=PointerDownEvent.GetPooled(new Event{type=EventType.MouseDown,mousePosition=point,button=0})){e.target=button;button.SendEvent(e);}
+                panel.schedule.Execute(()=>{released=button.worldBound;using(var e=PointerUpEvent.GetPooled(new Event{type=EventType.MouseUp,mousePosition=point,button=0})){e.target=button;button.SendEvent(e);}}).StartingIn(250);
+            }).StartingIn(16);});
+            list.Add(()=>{audit.AppendLine("Pointer="+point+" downBounds="+pressed+" upBounds="+released+" clicks="+clicks);Capture("appui-ouverture-animee");if(!released.Contains(point)||clicks!=1)throw new Exception("Stationary press lost during entry: clicks="+clicks+", hit="+released.Contains(point));Call("CloseModal");PlayerPrefs.SetInt("reduce-motion",1);});
+            audit.AppendLine("Animations activées explicitement. Appui synthétique bord bas, relâchement au même point après250ms ; pas une validation Android.");return list;
+        }
+        static List<Action> BuildSaleNegotiationSteps()
+        {
+            var list=new List<Action>();TransferOffer offer=null;long cash=0;
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{var c=App.Career;c.EnsureWorld(App.Database);offer=null;var saleTimer=System.Diagnostics.Stopwatch.StartNew();
+                    foreach(var candidate in App.Database.Squad(c.club).OrderBy(p=>p.value)){
+                        foreach(var old in c.world.offers.Where(o=>o.player==candidate.id&&(o.status=="sale"||o.status=="sale-pending")))old.status="expired";
+                        try{c.ListForSale(App.Database,candidate.id);offer=c.world.offers.Last();break;}catch(InvalidOperationException){ }
+                    }
+                    saleTimer.Stop();audit.AppendLine("Search for a sale with sporting/financial interest on desktop: "+saleTimer.ElapsedMilliseconds+" ms");
+                    if(offer==null)throw new Exception("No feasible sale in the fixture squad");cash=c.life.cash;Resize(screen.width,screen.height);Call("SaleNegotiationDialog",offer);});
+                list.Add(()=>{if(Root.Q<Label>("sale-buyer-project")?.text.Contains(offer.saleReason)!=true)throw new Exception("Buyer project missing from sale dialog");Capture(screen.tag+"-negociation-vente");Click("sale-counter");if(offer.status!="sale-pending"||App.Career.life.cash!=cash)throw new Exception("Sale counter spent money or was not queued");if(Root.Q("sale-negotiation")!=null)throw new Exception("Sale modal remained after submission");});
+            }
+            audit.AppendLine("Deux formats, contre-proposition en attente sans transfert ni encaissement ; fermeture du dialogue après transmission. Fold non testé.");return list;
+        }
+        static List<Action> BuildDiscussionPreviewSteps()
+        {
+            var list=new List<Action>();string player=null;int messages=0;
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{var c=App.Career;player=c.lineup[9];c.Person(player).lastTalk=c.life.day-8;c.Person(player).promiseUntil=-1;messages=c.life.messages.Count;Resize(screen.width,screen.height);Call("PlayerDiscussionWorkspace",player);});
+                list.Add(()=>{var picker=Root.Q<DropdownField>("conversation-topic-picker");picker.value=PlayerDiscussionPresentation.From(App.Career,App.Database,player).topics.First(t=>t.key=="promise").title;});
+                list.Add(()=>{var preview=Root.Q<Label>("conversation-message-preview");if(preview==null||!preview.text.Contains(Career.DiscussionOpening("promise")))throw new Exception("Exact promise missing from preview");if(App.Career.life.messages.Count!=messages)throw new Exception("Preview sent a message");Capture(screen.tag+"-message-promesse");Click("conversation-send");});
+                list.Add(()=>{if(App.Career.life.messages.Last(m=>m.player==player&&m.sender=="Vous").text!=Career.DiscussionOpening("promise"))throw new Exception("Sent message differs from preview");Call("CloseModal");});
+            }
+            audit.AppendLine("Aperçu exact de la promesse sans envoi anticipé, envoi et message conservé identiques, deux formats. Navigation synthétique, Fold physique non testé.");return list;
+        }
+        static List<Action> BuildPressInterviewSteps()
+        {
+            var list=new List<Action>();
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{var c=App.Career;c.EnsureWorld(App.Database);c.world.press.Clear();c.life.medical.Clear();foreach(var player in App.Database.Squad(c.club).Take(3))c.life.medical.Add(new MedicalCase{player=player.id,remaining=10});c.life.day=c.NextFixture().day;Resize(screen.width,screen.height);Call("Navigate","Presse");Click("press-enter-before");});
+                list.Add(()=>{if(Root.Q("press-room")==null)throw new Exception("Press room missing");Capture(screen.tag+"-question-1");Click("press-answer-calm");});
+                list.Add(()=>{if(App.Career.world.press.Count!=0)throw new Exception("Premature press effect");Capture(screen.tag+"-question-2");Click("press-answer-protect");});
+                list.Add(()=>{if(!Root.Q("press-room").ClassListContains("press-room-discussion"))throw new Exception("Press decor not condensed");var lastAnswer=Root.Q<Button>("press-answer-protect");if(lastAnswer.worldBound.yMax>lastAnswer.GetFirstAncestorOfType<ScrollView>().contentViewport.worldBound.yMax)throw new Exception("Final answer needs scrolling");Capture(screen.tag+"-question-3");string expected=Core.Career.PressReply(App.Career.Conference("before"),2,"ambition");Click("press-answer-ambition");if(App.Career.world.press.Count!=1||App.Career.world.press[0].replies.Length!=3||App.Career.world.press[0].replies[2]!=expected)throw new Exception("Missing complete transcript");if(Root.Q("press-interview")!=null)throw new Exception("Interview not closed");});
+            }
+            audit.AppendLine("Trois questions et phrases concrètes, aucun effet avant fin, trois réponses archivées, deux formats. Salle stylisée UI, pas environnement3D.");return list;
+        }
+        static List<Action> BuildDashboardResultsSteps()
+        {
+            var list=new List<Action>();
+            list.Add(()=>{var c=App.Career;c.EnsureWorld(App.Database);var f=c.world.fixtures.First(x=>x.home==c.club||x.away==c.club);f.played=true;f.hg=2;f.ag=1;f.day=c.life.day;c.world.history.Add(f);});
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Club");});
+                list.Add(()=>Root.Q<ScrollView>("manager-dashboard").ScrollTo(Root.Q("manager-sporting-summary")));
+                list.Add(()=>{if(Root.Q("manager-recent-results").Query<VisualElement>(className:"manager-result").ToList().Count!=1)throw new Exception("Dashboard must deduplicate fixture history");if(Root.Q("manager-standing-"+App.Career.club)==null)throw new Exception("Own club missing from standings");Capture(screen.tag+"-resultats-classement");Click("Classement complet");});
+                list.Add(()=>{if(Root.Q<Foldout>(className:"calendar-standings")==null)throw new Exception("Standings destination missing");});
+            }
+            audit.AppendLine("Résultat synthétique2-1 dupliqué en archives : une seule ligne, club présent au classement, accès tableau complet, deux formats.");return list;
+        }
+        static List<Action> BuildChanceReviewSteps()
+        {
+            var list=new List<Action>();
+            list.Add(()=>{var c=App.Career;c.EnsureWorld(App.Database);c.PrepareLineup(App.Database);var opponent=App.Database.clubs.First(x=>x.playable&&x.id!=c.club).id;var sim=MatchSimulation.Create(App.Database,c,opponent,731,2700);c.match=sim.State;c.ApplyMatchContext(sim);sim.State.clock=35*sim.State.SecondsPerMinute;sim.State.shots[0]=10;sim.State.metrics[0].shotsOnTarget=2;sim.State.metrics[0].xg=.5f;c.EnsureStaffMarket(App.Database);c.Staff("assistant").tactics=18;Call("CreateArena",sim);});
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);App.Career.tactic.workIntoBox=false;Call("Navigate","Match");Arena.Paused=true;SetField("matchAnalysisTab","Adjoint");Call("MatchAnalysis");});
+                list.Add(()=>{if(Root.Q("match-chance-review")==null)throw new Exception("Chance review missing from assistant analysis");var action=Root.Q<Button>("apply-match-advice-patientShots");if(action==null)throw new Exception("Shot quality advice missing");action.GetFirstAncestorOfType<ScrollView>().ScrollTo(action);});
+                list.Add(()=>Capture(screen.tag+"-occasions"));
+                list.Add(()=>{Click("apply-match-advice-patientShots");if(!App.Career.match.homeTactic.workIntoBox)throw new Exception("Advice not applied to live tactic");Call("CloseModal");});
+            }
+            list.Add(()=>{App.Career.Staff("assistant").wage=0;Call("MatchAnalysis");if(Root.Q("match-chance-review")==null)throw new Exception("Chance data lost without assistant");Call("CloseModal");});
+            audit.AppendLine("Bilan des occasions : fixture synthétique10 tirs/0,50xG, conseil appliqué au match, données conservées sans adjoint, deux formats, sauvegarde personnelle intacte.");return list;
+        }
+
+        static List<Action> BuildScrollMemorySteps()
+        {
+            var list=new List<Action>();float saved=0;
+            list.Add(()=>App.Career.EnsureWorld(App.Database));
+            ScrollView MarketScroll()=>Root.Q<ListView>("recruit-list").Q<ScrollView>();
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);SetField("recruitmentTab","Marché");Call("Navigate","Recrutement");});
+                list.Add(()=>{foreach(var id in new[]{"recruit-role","recruit-market","recruit-order"})if(Root.Q(id).worldBound.width<48)throw new Exception("Recruitment filter is collapsed: "+id);MarketScroll().scrollOffset=new Vector2(0,240);});
+                list.Add(()=>{saved=MarketScroll().scrollOffset.y;if(saved<100)throw new Exception("Market fixture must be scrollable");Capture(screen.tag+"-marche-position");Click("recruit-tab-Rapports");});
+                list.Add(()=>{Capture(screen.tag+"-rapports");Click("recruit-tab-Marché");});
+                list.Add(()=>{Capture(screen.tag+"-marche-retour");if(Math.Abs(MarketScroll().scrollOffset.y-saved)>1)throw new Exception("Market scroll position lost after visiting reports");foreach(var row in Root.Query(className:"recruit-player-row").ToList()){var copy=row.Q(className:"recruit-copy");if(copy.worldBound.yMin<row.worldBound.yMin||copy.worldBound.yMax>row.worldBound.yMax)throw new Exception("Recruitment identity exceeds its row");}});
+            }
+            audit.AppendLine("Marché défilé puis Rapports puis Marché : position conservée dans les deux formats.");return list;
+        }
+
+        static List<Action> BuildRecruitmentCacheSteps()
+        {
+            var list=new List<Action>();string id=null;
+            list.Add(()=>{var c=App.Career;c.EnsureWorld(App.Database);c.revealAttributes=false;var p=App.Database.players.First(x=>x.team!=c.club&&x.team!="retired"&&x.attributes?.Length>0);id=p.id;p.positions=new[]{"RW"};p.position="ATT";c.world.reports.Clear();c.world.reports.Add(new ScoutReport{player=id,club=c.club,confidence=90,judging=15,estimate=70,potential=75,attributesObserved=true,started=c.life.day-20,due=c.life.day});SetField("scoutReportFilter","Tous");SetField("recruitmentTab","Rapports");});
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);App.Career.tactic.SetFormation("4-3-3");Call("Navigate","Recrutement");});
+                list.Add(()=>{var advice=Root.Q("scout-report-"+id).Q<Label>(className:"scout-report-advice").text;if(advice.Contains("hors postes du système"))throw new Exception("Winger must initially fit the formation");Capture(screen.tag+"-poste-initial");App.Career.tactic.withoutBall[10].role="ST";App.Career.tactic.withBall[10].role="ST";Call("Navigate","Recrutement");});
+                list.Add(()=>{Capture(screen.tag+"-poste-modifie");var advice=Root.Q("scout-report-"+id).Q<Label>(className:"scout-report-advice").text;if(!advice.Contains("hors postes du système"))throw new Exception("Recruitment still uses the former winger position after a same-day custom tactic change");});
+            }
+            audit.AppendLine("Poste AD remplacé par BT sans changer le nom4-3-3 ni le jour ; grade du rapport vérifié avant/après, deux résolutions, profil de test en mémoire.");return list;
+        }
+
+        static List<Action> BuildScoutSnapshotSteps()
+        {
+            var list=new List<Action>();string id=null;
+            list.Add(()=>{App.Career.EnsureWorld(App.Database);App.Career.revealAttributes=false;id=App.Database.players.First(p=>p.team!=App.Career.club&&p.team!="retired"&&p.attributes?.Length>0).id;});
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{var c=App.Career;Resize(screen.width,screen.height);c.world.reports.Clear();c.world.reports.Add(new ScoutReport{player=id,club=c.club,confidence=90,judging=15,estimate=70,potential=75,lastObserved=c.life.day,started=c.life.day-20,due=c.life.day,scout="Rapport de sauvegarde ancienne"});SetField("scoutReportFilter","Tous");SetField("recruitmentTab","Rapports");Call("Navigate","Recrutement");});
+                list.Add(()=>{if(Root.Q("scout-missing-snapshot-"+id)==null||Root.Q<Button>("scout-refresh-"+id)?.enabledInHierarchy!=true)throw new Exception("Ancien rapport : avertissement ou actualisation absent");Capture(screen.tag+"-ancien-rapport");Root.Q<DropdownField>("scout-report-filter").value="À actualiser";if(Root.Q("scout-report-"+id)==null)throw new Exception("Filtre des anciens rapports incorrect");});
+                list.Add(()=>{Capture(screen.tag+"-ancien-detail");Click("scout-refresh-"+id);var r=App.Career.ReportFor(id);if(!r.attributesObserved||r.observedAttributes?.Length==0)throw new Exception("Nouvelle observation non archivée");r.confidence=90;r.lastObserved=App.Career.life.day;SetField("scoutReportFilter","Tous");Call("Navigate","Recrutement");});
+                list.Add(()=>{if(Root.Q("scout-missing-snapshot-"+id)!=null||Root.Q("scout-range-ability-"+id)==null)throw new Exception("Nouveau rapport incohérent");Capture(screen.tag+"-rapport-archive");var notice=Root.Q("scout-report-"+id);notice.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(notice);});
+                list.Add(()=>{var range=Root.Q("scout-range-ability-"+id)?.Q<Label>();if(range==null||!range.text.Contains("★")||System.Text.RegularExpressions.Regex.IsMatch(range.text,"[0-9]"))throw new Exception("Le niveau doit rester en étoiles relatives, sans note globale numérique");Capture(screen.tag+"-rapport-detail");});
+                list.Add(()=>{SetField("recruitmentTab","Marché");SetField("recruitSearch",App.Database.Find(id).name);Call("Navigate","Recrutement");});
+                list.Add(()=>Capture(screen.tag+"-marche"));
+                list.Add(()=>{SetField("recruitmentTab","Synthèse");Call("Navigate","Recrutement");});
+                list.Add(()=>Capture(screen.tag+"-synthese"));
+            }
+            audit.AppendLine("Sauvegarde ancienne et observation renouvelée : deux résolutions, carrière en mémoire ; progression simulée pour la revue UI, vérifiée séparément par CoreTests.");return list;
+        }
+
+        // Immersion : préparation, briefing adverse, causeries, cris depuis la touche,
+        // vestiaire de mi-temps, lecture de l'adjoint et consigne individuelle.
+        static List<Action> BuildFocusedImmersionSteps()
+        {
+            audit.AppendLine("Parcours ciblé immersion : deux résolutions natives par écran.");
+            bool talksOnly=Path.GetFileName(Output).StartsWith("ui-immersion-focus-talks-",StringComparison.Ordinal);
+            var list=new List<Action>();var first=Screens[0];
+            void Both(string tag,Action prepare){foreach(var s in Screens){var screen=s;list.Add(()=>Resize(screen.width,screen.height));list.Add(()=>prepare?.Invoke());list.Add(()=>Capture(screen.tag+"-"+tag));}}
+            list.Add(()=>{App.Career.EnsureWorld(App.Database);Resize(first.width,first.height);Call("Navigate","Club");});
+            if(!talksOnly)Both("preparation",()=>{Call("Navigate","Club");var focus=Root.Q("manager-training-focus");if(focus==null)throw new Exception("Thème d'entraînement absent");Root.Q<ScrollView>()?.ScrollTo(focus);});
+            list.Add(()=>{Resize(first.width,first.height);App.Career.life.day=App.Career.life.nextFixture;Call("Navigate","Match");});
+            list.Add(()=>Click("Entrer sur le terrain"));
+            list.Add(()=>{if(App.Career.match?.mindset==null||App.Career.match.mindset.Length!=2)throw new Exception("État mental absent du match de carrière");SetField("introAutomatic",false);Call("IntroGo",1);});
+            if(!talksOnly)Both("briefing",()=>{var card=Root.Q("immersion-opponent");if(card==null)throw new Exception("Rapport adverse absent");Root.Q<ScrollView>("prematch-scroll").ScrollTo(card);});
+            list.Add(()=>Call("IntroGo",4));
+            Both("causerie-avant",()=>{var card=Root.Q("team-talk");if(card==null)throw new Exception("Causerie absente");Root.Q<ScrollView>("prematch-scroll").ScrollTo(card);});
+            list.Add(()=>{var b=Root.Q<Button>("team-talk-calm");var view=Root.Q<ScrollView>("prematch-scroll");if(b==null||b.resolvedStyle.whiteSpace!=WhiteSpace.Normal||!b.worldBound.Overlaps(view.contentViewport.worldBound))throw new Exception("Choix de causerie hors champ ou libellé non repliable");});
+            list.Add(()=>{float before=App.Career.match.mindset[0].composure.Average();Click("team-talk-calm");float after=App.Career.match.mindset[0].composure.Average();if(after<=before)throw new Exception("Causerie sans effet");audit.AppendLine("Causerie « Rassurer » : sang-froid moyen "+before.ToString("0.00",CultureInfo.InvariantCulture)+" → "+after.ToString("0.00",CultureInfo.InvariantCulture));});
+            Both("causerie-reaction",()=>{var card=Root.Q("team-talk");if(card!=null)Root.Q<ScrollView>("prematch-scroll").ScrollTo(card);});
+            list.Add(()=>{Resize(first.width,first.height);if(Root.Q<Button>("prematch-kickoff")!=null)Click("prematch-kickoff");});
+            if(!talksOnly){
+            list.Add(()=>{Arena.Paused=true;Arena.Simulation.Advance(20*App.Career.match.SecondsPerMinute);Click("match-instructions-open");});
+            Both("cris-touche",()=>{var card=Root.Q("touchline-shouts");if(card==null)throw new Exception("Cris depuis la touche absents");Root.Q("match-instructions").Q<ScrollView>().ScrollTo(card);});
+            list.Add(()=>{Click("shout-press");if(App.Career.match.events.Last().kind!="shout")throw new Exception("Cri non enregistré");audit.AppendLine("Cri « Pressez ! » enregistré, retour au match.");});
+            }
+            list.Add(()=>{var sim=Arena.Simulation;sim.Advance(sim.State.HalfDuration);if(!sim.State.halfTime)throw new Exception("Mi-temps non atteinte");Call("MatchAnalysis");});
+            Both("vestiaire-mi-temps",null);
+            list.Add(()=>Click("team-talk-encourage"));
+            Both("vestiaire-reaction",null);
+            if(talksOnly)return list;
+            list.Add(()=>Click("Adjoint"));
+            Both("adjoint-lecture",null);
+            list.Add(()=>{Call("CloseModal");SetField("tacticalTab","Composition");SetField("selectedSlot",1);Call("Navigate","Tactique");});
+            Both("consigne-individuelle",()=>{var field=Root.Q("tactics-player-instruction");if(field==null)throw new Exception("Consigne individuelle absente");});
+            return list;
+        }
+
+        static List<Action> BuildFocusedBoardSteps()
+        {
+            var list=new List<Action>();
+            list.Add(()=>App.Career.EnsureWorld(App.Database));
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Carrière");});
+                list.Add(()=>{
+                    if(Root.Q("board-season-objective")==null)throw new Exception("Objectif de direction absent");
+                    Capture(screen.tag+"-objectif-direction");
+                });
+            }
+            list.Add(()=>{
+                var c=App.Career;var objective=c.EnsureBoardObjective(App.Database);c.life.day+=30;int playedDay=c.life.day-6;
+                foreach(var f in c.world.fixtures.Where(f=>f.league==objective.division&&(f.home==c.club||f.away==c.club)).Take(6)){
+                    f.day=playedDay++;f.played=true;f.hg=f.home==c.club?0:2;f.ag=f.away==c.club?0:2;
+                }
+                c.ReviewBoardObjective(App.Database);
+                audit.AppendLine("Bilan direction : six défaites de championnat synthétiques, carrière de validation uniquement.");
+            });
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Carrière");});
+                list.Add(()=>Capture(screen.tag+"-bilan-direction"));
+            }
+            return list;
+        }
+
+        static List<Action> BuildCareerReviewSteps()
+        {
+            bool remaining=Path.GetFileName(Output).Contains("-remaining-");
+            var list=remaining?new List<Action>():BuildFocusedDepthSteps();if(!remaining)list.AddRange(BuildFocusedBoardSteps());string player=null;
+            list.Add(()=>{
+                var c=App.Career;c.EnsureWorld(App.Database);var f=c.world.fixtures.First(x=>x.home==c.club||x.away==c.club);
+                f.day=c.life.day;f.played=true;f.hg=f.home==c.club?0:2;f.ag=f.away==c.club?0:2;
+                player=App.Database.Squad(c.club).First(p=>!p.Goalkeeper&&c.Contract(App.Database,p.id).parent==null).id;
+                c.departureRequests.Add(new DepartureRequest{club=c.club,player=player,status="requested",since=c.life.day-28,opened=c.life.day});
+                audit.AppendLine("Conférence après défaite et demande de départ synthétiques ; aucune sauvegarde personnelle.");
+            });
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Presse");});
+                list.Add(()=>{Capture(screen.tag+"-presse-resultat");if(Root.Q("press-after-protect")==null)throw new Exception("Conférence contextuelle absente");});
+                list.Add(()=>Call("Conversation",player));
+                list.Add(()=>{if(Root.Q("departure-allow")==null||Root.Q("departure-refuse")==null)throw new Exception("Choix de départ absents");Capture(screen.tag+"-demande-depart");Call("CloseModal");});
+                list.Add(()=>{Call("Navigate","Carrière");});
+                list.Add(()=>{var news=Root.Q("club-news");if(news==null)throw new Exception("Actualités absentes");news.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(news);});
+                list.Add(()=>Capture(screen.tag+"-actualites-club"));
+            }
+            return list;
+        }
+
+        static List<Action> BuildAgentRoleSteps()
+        {
+            var list=new List<Action>();string player=null;long cash=0;int offers=0,messages=0;
+            list.Add(()=>{
+                App.Career.EnsureWorld(App.Database);
+                player=App.Database.players.First(p=>p.team!=App.Career.club&&p.team!="free"&&p.team!="retired"&&p.wage>0&&p.wage<100000&&!p.Goalkeeper&&!App.Career.HasActiveLoan(p.id)).id;
+                var contract=App.Career.Contract(App.Database,player);contract.parent=null;contract.until=App.Career.life.day+730;
+                cash=App.Career.life.cash;offers=App.Career.world.offers.Count;messages=App.Career.life.messages.Count;
+            });
+            foreach(var s in Screens){var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Recrutement");Call("TransferDialog",player);});
+                list.Add(()=>{
+                    Root.Q<LongField>("negotiation-monthly-wage").value=12340;Root.Q<LongField>("negotiation-fee").value=432100;
+                    Root.Q<DropdownField>("negotiation-role").value=PlayingTimeRoles.Label("starter");
+                    if(!Root.Q<Label>("negotiation-interest").text.Contains(PlayingTimeRoles.Label("starter")))throw new Exception("Avis agent non actualisé pour le titulaire");
+                });
+                if(Path.GetFileName(Output).StartsWith("ui-transfer-cost-",StringComparison.Ordinal)){
+                    list.Add(()=>{Root.Q<IntegerField>("negotiation-upfront").value=25;Root.Q<IntegerField>("negotiation-instalments").value=3;
+                        long expected=432100/4+Career.WeeklySalary(12340)*2;
+                        if(!Root.Q<Label>("negotiation-cost-now").text.Contains(expected.ToString("N0",System.Globalization.CultureInfo.GetCultureInfo("fr-FR"))))throw new Exception("Coût immédiat incorrect");
+                        Root.Q("negotiation-cost-preview").GetFirstAncestorOfType<ScrollView>().ScrollTo(Root.Q("negotiation-cost-preview"));});
+                    list.Add(()=>Capture(screen.tag+"-cout-echelonne"));
+                }
+                list.Add(()=>{Capture(screen.tag+"-agent-titulaire");Root.Q<DropdownField>("negotiation-role").value=PlayingTimeRoles.Label("rotation");});
+                list.Add(()=>{
+                    var text=Root.Q<Label>("negotiation-interest").text;
+                    if(!text.Contains(PlayingTimeRoles.Label("rotation"))||Root.Q<LongField>("negotiation-monthly-wage").value!=12340||Root.Q<LongField>("negotiation-fee").value!=432100)throw new Exception("Avis agent périmé ou proposition écrasée");
+                    Capture(screen.tag+"-agent-rotation");Root.Q<Toggle>("negotiation-loan").value=true;
+                });
+                if(Path.GetFileName(Output).StartsWith("ui-transfer-cost-",StringComparison.Ordinal))list.Add(()=>{
+                    Root.Q<IntegerField>("negotiation-loan-share").value=50;
+                    Root.Q("negotiation-cost-preview").GetFirstAncestorOfType<ScrollView>().ScrollTo(Root.Q("negotiation-cost-preview"));
+                });
+                list.Add(()=>{
+                    if(!Root.Q<Label>("negotiation-interest").text.StartsWith("Prêt :")||Root.Q<LongField>("negotiation-monthly-wage").value!=Career.MonthlySalary(App.Database.Find(player).wage))throw new Exception("Avis prêt incorrect");
+                    if(Path.GetFileName(Output).StartsWith("ui-transfer-cost-",StringComparison.Ordinal)){
+                        long monthly=Career.MonthlySalary(App.Database.Find(player).wage*50/100);
+                        if(!Root.Q<Label>("negotiation-cost-salary").text.Contains(monthly.ToString("N0",System.Globalization.CultureInfo.GetCultureInfo("fr-FR"))))throw new Exception("Part salariale non actualisée");
+                    }
+                    Capture(screen.tag+"-agent-pret");Root.Q<Toggle>("negotiation-loan").value=false;
+                    if(Root.Q<LongField>("negotiation-monthly-wage").value!=12340||!Root.Q<Label>("negotiation-interest").text.Contains(PlayingTimeRoles.Label("rotation")))throw new Exception("Brouillon permanent perdu");
+                    if(App.Career.life.cash!=cash||App.Career.world.offers.Count!=offers||App.Career.life.messages.Count!=messages)throw new Exception("Consulter l’agent ne doit engager aucune décision");
+                    audit.AppendLine(screen.tag+" : avis agent selon promesse, prêt au salaire parent, retour au brouillon conservé, aucune mutation financière/offre/message.");Call("CloseModal");
+                });
+            }
+            return list;
+        }
+        static List<Action> BuildFocusedNegotiationSteps()
+        {
+            bool reference=Path.GetFileName(Output).EndsWith("-before",StringComparison.Ordinal);
+            var list=new List<Action>();string player=null;long cash=0;int offers=0,ledger=0;VisualElement form=null;
+            void AssertUnchanged()
+            {
+                if(App.Career.life.cash!=cash||App.Career.world.offers.Count!=offers||App.Career.life.ledger.Count!=ledger)throw new Exception("Une offre invalide a modifié les finances ou les dossiers");
+            }
+            void AssertError()
+            {
+                var error=Root.Q<Label>("negotiation-error");
+                if(Root.Q("transfer-negotiation-form")!=form||error==null||string.IsNullOrEmpty(error.text)||error.resolvedStyle.display==DisplayStyle.None)throw new Exception("Le formulaire ou son erreur persistante a disparu");
+                AssertUnchanged();
+            }
+            list.Add(()=>{
+                var safe=typeof(TouchlineApp).GetProperty("VisualValidation",BindingFlags.Instance|BindingFlags.NonPublic);
+                if(safe==null||!(bool)safe.GetValue(App))throw new Exception("La validation doit isoler les sauvegardes personnelles");
+                App.Career.EnsureWorld(App.Database);
+                player=App.Database.players.First(p=>p.team!=App.Career.club&&p.team!="free"&&p.team!="retired"&&!p.team.StartsWith("academy-")&&p.age>=24).id;
+                // Isolated UI fixture: abundant budget and a valid parent contract avoid
+                // unrelated market restrictions when exercising corrected resubmission.
+                App.Career.life.cash=1000000000;App.Career.life.revenue=1000000000;
+                App.Career.life.day=(int)(new DateTime(2026,6,20)-Touchline.Core.Career.Epoch).TotalDays;
+                var contract=App.Career.Contract(App.Database,player);contract.parent=null;contract.until=App.Career.life.day+730;
+                App.Database.Find(player).wage=500;
+            });
+            foreach(var s in Screens)
+            {
+                var screen=s;
+                list.Add(()=>{
+                    Resize(screen.width,screen.height);App.Career.world.offers.RemoveAll(o=>o.player==player);
+                    Call("Navigate","Recrutement");Call("TransferDialog",player);
+                });
+                list.Add(()=>{
+                    form=Root.Q("transfer-negotiation-form");if(form==null)throw new Exception("Formulaire de négociation absent");
+                    Root.Q<Toggle>("negotiation-loan").value=true;
+                    Root.Q<IntegerField>("negotiation-loan-share").value=37;Root.Q<IntegerField>("negotiation-loan-days").value=60;
+                    Root.Q<LongField>("negotiation-loan-option").value=120000;Root.Q<LongField>("negotiation-fee").value=9000;Root.Q<LongField>("negotiation-bonus").value=111;
+                    Root.Q<Toggle>("negotiation-loan").value=false;
+                    Root.Q<LongField>("negotiation-monthly-wage").value=0;Root.Q<LongField>("negotiation-fee").value=50000;
+                    Root.Q<LongField>("negotiation-bonus").value=222;Root.Q<IntegerField>("negotiation-years").value=4;
+                    Root.Q<DropdownField>("negotiation-role").value=Touchline.Core.PlayingTimeRoles.Label("starter");
+                    form.Q<ScrollView>().ScrollTo(Root.Q<Button>("negotiation-send"));
+                    cash=App.Career.life.cash;offers=App.Career.world.offers.Count;ledger=App.Career.life.ledger.Count;
+                });
+                list.Add(()=>{Capture(screen.tag+"-negociation-conditions");Click("negotiation-send");});
+                if(reference)
+                {
+                    list.Add(()=>{AssertUnchanged();if(Root.Q("transfer-negotiation-form")!=null)throw new Exception("Le défaut de référence attendu n'est pas reproduit");Capture(screen.tag+"-negociation-erreur");audit.AppendLine("Référence : salaire nul rejeté, formulaire détruit, finances intactes.");});
+                    continue;
+                }
+                list.Add(()=>{
+                    AssertError();
+                    if(Root.Q<LongField>("negotiation-monthly-wage").value!=0||Root.Q<LongField>("negotiation-bonus").value!=222||Root.Q<IntegerField>("negotiation-years").value!=4||Root.Q<DropdownField>("negotiation-role").value!=Touchline.Core.PlayingTimeRoles.Label("starter"))throw new Exception("Conditions permanentes perdues");
+                    Capture(screen.tag+"-negociation-erreur");
+                    Root.Q<Toggle>("negotiation-loan").value=true;
+                    if(Root.Q<IntegerField>("negotiation-loan-share").value!=37||Root.Q<IntegerField>("negotiation-loan-days").value!=60||Root.Q<LongField>("negotiation-loan-option").value!=120000||Root.Q<LongField>("negotiation-bonus").value!=111||Root.Q<LongField>("negotiation-fee").value!=9000)throw new Exception("Brouillon de prêt perdu");
+                    Root.Q<LongField>("negotiation-fee").value=-1;form.Q<ScrollView>().ScrollTo(Root.Q<Button>("negotiation-send"));
+                });
+                list.Add(()=>{Click("negotiation-send");});
+                list.Add(()=>{
+                    AssertError();Capture(screen.tag+"-negociation-pret-erreur");
+                    if(Root.Q<IntegerField>("negotiation-loan-share").value!=37||Root.Q<LongField>("negotiation-loan-option").value!=120000)throw new Exception("Conditions de prêt perdues après erreur");
+                    Root.Q<LongField>("negotiation-fee").value=9000;Root.Q<Toggle>("negotiation-loan").value=false;
+                    if(Root.Q<LongField>("negotiation-fee").value!=50000||Root.Q<LongField>("negotiation-bonus").value!=222||Root.Q<LongField>("negotiation-monthly-wage").value!=0)throw new Exception("Retour au brouillon permanent incorrect");
+                    Root.Q<LongField>("negotiation-monthly-wage").value=10000;Click("negotiation-send");
+                });
+                list.Add(()=>{
+                    var offer=App.Career.world.offers.LastOrDefault(o=>o.player==player&&o.status=="pending");
+                    if(offer==null||offer.loan||offer.role!="starter"||offer.bonus!=222||offer.fee!=50000||offer.years!=4||offer.wage!=Touchline.Core.Career.WeeklySalary(10000)||Root.Q("transfer-negotiation-form")!=null)throw new Exception("Renvoi corrigé : offre ou sortie du formulaire incorrecte");
+                    if(App.Career.life.cash!=cash||App.Career.world.offers.Count!=offers+1)throw new Exception("La proposition doit créer exactement un dossier sans débit de signature");
+                    audit.AppendLine(screen.tag+" : salaire nul et indemnité négative refusés, formulaire et deux brouillons préservés, promesse et prime conservées, finances intactes ; offre corrigée créée une seule fois.");
+                    SetField("recruitmentTab","Négociations et prêts");Call("Navigate","Recrutement");
+                });
+                list.Add(()=>{Capture(screen.tag+"-negociation-envoyee");});
+            }
+            return list;
+        }
+
+        static List<Action> BuildFocusedTacticSteps()
+        {
+            bool reference=Path.GetFileName(Output).EndsWith("-before",StringComparison.Ordinal);
+            audit.AppendLine("Parcours ciblé : interface du match, deux résolutions natives. Les autres écrans ne sont pas revalidés par ce parcours.");
+            var list=new List<Action>();var first=Screens[0];
+            list.Add(()=>{App.Career.EnsureWorld(App.Database);Resize(first.width,first.height);App.Career.life.day=App.Career.life.nextFixture;Call("Navigate","Match");});
+            list.Add(()=>Click("Entrer sur le terrain"));
+            list.Add(()=>{if(Root.Q<Button>("prematch-kickoff")!=null)Click("prematch-kickoff");});
+            foreach(var s in Screens){
+                var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Match");});
+                list.Add(()=>{if(Arena==null)throw new Exception("Match absent");Arena.Paused=true;});
+                list.Add(()=>{Capture(screen.tag+"-match-pause");if(!reference)Click("match-instructions-open");});
+                if(!reference){
+                    list.Add(()=>{Capture(screen.tag+"-consignes-rapides");AssertQuickPressing(2,true);});
+                    list.Add(()=>{Arena.Paused=false;Arena.Speed=2;Click("match-instructions-open");});
+                    list.Add(()=>AssertQuickPressing(1,false));
+                    list.Add(()=>{Arena.Paused=true;Click("match-instructions-open");});
+                    list.Add(()=>Root.Q("match-instructions").Q<ScrollView>().ScrollTo(Root.Q<Button>("quick-tactic-Directness-2")));
+                    list.Add(()=>{
+                        Capture(screen.tag+"-consignes-fin");float speed=Arena.Speed;Click("quick-tactic-Directness-2");
+                        if(App.Career.tactic.directness!=.8f||App.Career.match.homeTactic.directness!=.8f||!Arena.Paused||Arena.Speed!=speed||Root.Q("match-instructions")!=null)
+                            throw new Exception("Dernière consigne après défilement : application/pause/vitesse incorrects");
+                        audit.AppendLine("Passes directes après défilement : tactique liée, pause/vitesse conservées, retour au match.");
+                        Arena.Paused=false;
+                    });
+                    list.Add(()=>{Capture(screen.tag+"-match-retour");Arena.Paused=true;});
+                }
+            }
+            return list;
+        }
+
+        static List<Action> BuildFocusedRecruitmentSteps()
+        {
+            bool reference=Path.GetFileName(Output).EndsWith("-before",StringComparison.Ordinal);
+            audit.AppendLine("Parcours ciblé recrutement : navigation, postes, missions, joueurs libres et rapports ; deux résolutions natives. Aucune sauvegarde personnelle.");
+            var list=new List<Action>();string role=null,searchRole=null,reportedPlayer=null;long cash=0;int missions=0;
+            list.Add(()=>{
+                var safe=typeof(TouchlineApp).GetProperty("VisualValidation",BindingFlags.Instance|BindingFlags.NonPublic);
+                if(safe==null||!(bool)safe.GetValue(App))throw new Exception("La validation doit isoler les sauvegardes personnelles");
+                App.Career.EnsureWorld(App.Database);App.Career.revealAttributes=false;
+                var p=App.Database.players.First(p=>p.team!=App.Career.club&&p.team!="free"&&p.team!="retired"&&!p.team.StartsWith("academy-")&&p.age>=18);
+                reportedPlayer=p.id;
+                App.Career.world.reports.Add(new Touchline.Core.ScoutReport{player=p.id,club=App.Career.club,scout="Cellule de test",started=App.Career.life.day-20,due=App.Career.life.day-1,lastObserved=App.Career.life.day,confidence=90,estimate=72,potential=78,judging=15,uncertainty=3,potentialUncertainty=5,advice="Rapport de contrôle : comparer le profil et les conditions financières."});
+            });
+            foreach(var s in Screens){
+                var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);SetField("recruitmentTab",reference?"Marché":"Synthèse");Call("Navigate","Recrutement");});
+                if(!reference){
+                    list.Add(()=>{
+                        Capture(screen.tag+"-recrutement-synthese");
+                        if(Path.GetFileName(Output).Contains("-polish"))foreach(var tab in Root.Query<Button>().ToList().Where(b=>b.name!=null&&b.name.StartsWith("recruit-tab-",StringComparison.Ordinal)))
+                            if(tab.worldBound.xMin<Root.worldBound.xMin||tab.worldBound.xMax>Root.worldBound.xMax)throw new Exception("Onglet de recrutement hors écran : "+tab.text);
+                        var candidate=Root.Q("recruit-hub-candidate-"+reportedPlayer);
+                        if(candidate==null)throw new Exception("Le profil observé doit figurer dans les pistes connues");
+                        var scroll=Root.Q<ScrollView>("recruit-hub");
+                        var profile=Root.Q<Button>("recruit-hub-profile-"+reportedPlayer);
+                        if(profile==null)throw new Exception("Bouton de fiche absent de la piste");
+                        // Target the actual action, not the top of a potentially tall card.
+                        // Run after the navigation's deferred scroll restoration (35 ms).
+                        scroll.schedule.Execute(()=>scroll.ScrollTo(profile)).StartingIn(100);
+                    });
+                    list.Add(()=>{
+                        var scroll=Root.Q<ScrollView>("recruit-hub");var profile=Root.Q<Button>("recruit-hub-profile-"+reportedPlayer);
+                        audit.AppendLine("Piste : offset="+scroll.scrollOffset.y+" / "+scroll.verticalScroller.highValue+" viewport="+scroll.contentViewport.worldBound+" contenu="+scroll.contentContainer.worldBound+" fiche="+profile?.worldBound);
+                        Capture(screen.tag+"-recrutement-pistes");
+                        if(profile==null||!profile.worldBound.Overlaps(scroll.contentViewport.worldBound))throw new Exception("La piste connue reste hors du défilement visible");
+                        Root.Q<ScrollView>("recruit-hub").scrollOffset=Vector2.zero;
+                    });
+                    if(Path.GetFileName(Output).Contains("-context")){
+                        list.Add(()=>{var comparison=Root.Q("recruit-hub-comparison-"+reportedPlayer);if(comparison==null||comparison.resolvedStyle.whiteSpace!=WhiteSpace.Normal)throw new Exception("Comparaison absente ou texte non repliable");Root.Q<ScrollView>("recruit-hub").ScrollTo(comparison);});
+                        list.Add(()=>Capture(screen.tag+"-comparaison-contextuelle"));
+                        if(Path.GetFileName(Output).Contains("-budget")){
+                            list.Add(()=>Call("Navigate","Finances"));
+                            list.Add(()=>{var budget=Root.Q("finance-budget-explanation");if(budget==null)throw new Exception("Explication du budget absente");budget.GetFirstAncestorOfType<ScrollView>().ScrollTo(budget);});
+                            list.Add(()=>Capture(screen.tag+"-budget-explique"));
+                        }
+                        continue;
+                    }
+                    if(Path.GetFileName(Output).Contains("-scroll"))continue;
+                    list.Add(()=>{
+                        var search=Root.Query<Button>().ToList().First(b=>b.name!=null&&b.name.StartsWith("recruit-hub-search-",StringComparison.Ordinal));
+                        role=search.name.Substring("recruit-hub-search-".Length);
+                        searchRole=role switch{"LM"=>"LW","RM"=>"RW","LWB"=>"LB","RWB"=>"RB","CF"=>"ST","SS"=>"ST",_=>role};Click(search.name);
+                    });
+                    list.Add(()=>{
+                        if(Root.Q<DropdownField>("recruit-role")?.value!=searchRole||Root.Q<ListView>("recruit-list")==null)throw new Exception("Le besoin ne filtre pas le marché au bon poste");
+                        Capture(screen.tag+"-recrutement-marche");Click("recruit-tab-Synthèse");
+                    });
+                    if(Path.GetFileName(Output).Contains("-polish")){
+                        list.Add(()=>{Click("recruit-hub-mission-"+role);Root.Q<LongField>("scout-mission-wage").value=0;});
+                        list.Add(()=>{
+                            var notice=Root.Q("scout-mission-blocked");var send=Root.Q<Button>("scout-mission-send");
+                            if(notice==null||notice.resolvedStyle.display==DisplayStyle.None||!Root.worldBound.Contains(notice.worldBound.min)||!Root.worldBound.Contains(notice.worldBound.max)||send.enabledSelf)throw new Exception("Le refus de mission doit être expliqué près du bouton visible");
+                            Capture(screen.tag+"-recrutement-mission-plafond");Root.Q<LongField>("scout-mission-wage").value=1000;
+                            if(!send.enabledSelf||notice.style.display.value!=DisplayStyle.None)throw new Exception("Le plafond positif doit réactiver la proposition sans envoyer la mission");
+                            Call("CloseModal");
+                        });
+                        list.Add(()=>Click("recruit-tab-Rapports"));
+                        list.Add(()=>{Capture(screen.tag+"-recrutement-rapports");var action=Root.Query<Button>().ToList().First(b=>b.text=="Contacter l’agent");action.GetFirstAncestorOfType<ScrollView>().ScrollTo(action);});
+                        list.Add(()=>Capture(screen.tag+"-recrutement-rapport-actions"));
+                        continue;
+                    }
+                    list.Add(()=>{cash=App.Career.life.cash;missions=App.Career.world.scoutMissions.Count;Click("recruit-hub-mission-"+role);});
+                    list.Add(()=>{
+                        if(Root.Q<DropdownField>("scout-mission-role")?.value!=searchRole||App.Career.life.cash!=cash||App.Career.world.scoutMissions.Count!=missions)throw new Exception("Préparation mission : poste ou engagement financier incorrect");
+                        Capture(screen.tag+"-recrutement-mission");Call("CloseModal");Click("recruit-hub-free");
+                        audit.AppendLine("Besoin → marché au bon poste ; mission préremplie sans dépense avant confirmation : "+screen.tag);
+                    });
+                    list.Add(()=>{
+                        var rows=Root.Q<ListView>("recruit-list")?.itemsSource;
+                        if(Root.Q<DropdownField>("recruit-market")?.value!="Libres"||rows==null||rows.Count==0||rows.Cast<Touchline.Core.PlayerData>().Any(p=>p.team!="free"))throw new Exception("Raccourci joueurs libres incohérent");
+                        Capture(screen.tag+"-recrutement-libres");Click("recruit-tab-Synthèse");
+                    });
+                    list.Add(()=>{
+                        Call("OpenRecruitmentMarket","Tous","Tous");Root.Q<Foldout>("recruit-advanced").value=true;
+                        Root.Q<DropdownField>("recruit-country").value="Norvège";
+                    });
+                    list.Add(()=>{
+                        var rows=Root.Q<ListView>("recruit-list")?.itemsSource;
+                        var country=typeof(ClubData).GetField("country");
+                        if(rows==null||country==null||!rows.Cast<PlayerData>().Any(p=>p.team=="2980")
+                            ||rows.Cast<PlayerData>().Any(p=>!App.Database.clubs.Any(c=>c.id==p.team&&(string)country.GetValue(c)=="Norvège")))
+                            throw new Exception("Le territoire Norvège doit inclure Bodø/Glimt sans joueurs d'autres pays");
+                        Capture(screen.tag+"-recrutement-norvege");cash=App.Career.life.cash;missions=App.Career.world.scoutMissions.Count;
+                        Call("NewScoutingMission");
+                    });
+                    list.Add(()=>{
+                        if(Root.Q<DropdownField>("scout-mission-country")?.value!="Norvège"||App.Career.life.cash!=cash||App.Career.world.scoutMissions.Count!=missions)
+                            throw new Exception("La mission doit conserver le territoire sans engagement préalable");
+                        Capture(screen.tag+"-recrutement-mission-norvege");Call("CloseModal");Click("recruit-tab-Synthèse");
+                        audit.AppendLine("Norvège : joueurs retrouvés, territoire conservé dans la mission sans dépense : "+screen.tag);
+                    });
+                    list.Add(()=>Click("recruit-hub-reports"));
+                }else{
+                    list.Add(()=>{Capture(screen.tag+"-recrutement-marche");Click("recruit-tab-Rapports");});
+                }
+                list.Add(()=>{
+                    if(Root.Q("scout-report-"+reportedPlayer)==null)throw new Exception("Rapport connu inaccessible");
+                    Capture(screen.tag+"-recrutement-rapports");
+                    if(App.Career.revealAttributes)throw new Exception("Le parcours a désactivé le masquage des attributs");
+                    audit.AppendLine("Rapport observé accessible, option d'attributs masqués préservée : "+screen.tag);
+                });
+                if(!reference){
+                    list.Add(()=>{
+                        var report=Root.Q("scout-report-"+reportedPlayer);
+                        var agent=report.Query<Button>().ToList().Single(b=>b.text=="Contacter l’agent");
+                        report.GetFirstAncestorOfType<ScrollView>().ScrollTo(agent);
+                    });
+                    list.Add(()=>Capture(screen.tag+"-recrutement-rapport-actions"));
+                }
+            }
+            return list;
+        }
+
+        // film/ui-recruitment-depth… : report cards with ranges/grades, sort, generated league market, comparison.
+        static List<Action> BuildFocusedDepthSteps()
+        {
+            audit.AppendLine("Parcours ciblé profondeur du recrutement : cartes de rapport (fourchettes, note A–E, forces/faiblesses, concurrence), tri, ligue générée Suède, comparaison ; deux résolutions natives, carrière en mémoire.");
+            var list=new List<Action>();string generated=null,real=null;
+            list.Add(()=>{
+                var safe=typeof(TouchlineApp).GetProperty("VisualValidation",BindingFlags.Instance|BindingFlags.NonPublic);
+                if(safe==null||!(bool)safe.GetValue(App))throw new Exception("La validation doit isoler les sauvegardes personnelles");
+                var c=App.Career;c.EnsureWorld(App.Database);c.revealAttributes=false;
+                if(!App.Database.leagues.Any(l=>GeneratedWorld.IsGeneratedLeague(l)))throw new Exception("Ligues générées absentes du catalogue chargé");
+                var g=App.Database.players.First(p=>p.team.StartsWith("fic-swe1-",StringComparison.Ordinal)&&p.age>=20&&!p.Goalkeeper);generated=g.id;
+                var r=App.Database.players.First(p=>p.team!=c.club&&p.team!="free"&&p.team!="retired"&&!p.team.StartsWith("academy-")&&!GeneratedWorld.IsGenerated(p.team)&&p.age>=18&&!p.Goalkeeper);real=r.id;
+                int day=c.life.day;
+                c.world.reports.Add(new ScoutReport{player=generated,club=c.club,scout="Cellule de test",started=day-20,due=day-1,lastObserved=day-1,confidence=90,judging=12,depth=1,estimate=60,potential=66,uncertainty=4,potentialUncertainty=7,advice="Rapport de contrôle."});
+                c.world.reports.Add(new ScoutReport{player=real,club=c.club,scout="Cellule de test",started=day-200,due=day-190,lastObserved=day-190,confidence=90,judging=16,estimate=70,potential=72,uncertainty=2,potentialUncertainty=5,advice="Rapport ancien de contrôle."});
+                if(!c.shortlist.Contains(generated))c.ToggleShortlist(generated);if(!c.shortlist.Contains(real))c.ToggleShortlist(real);
+                c.rivalBids.Add(new RivalBid{player=real,club=App.Database.clubs.First(t=>t.id!=c.club&&t.id!=r.team&&t.playable).id,seller=r.team,day=day,decision=day+10,fee=r.value,wage=r.wage});
+                audit.AppendLine("Joueur fictif "+generated+" ("+g.team+"), joueur réel "+real+" avec rapport ancien et offre rivale fictive de test.");
+            });
+            foreach(var s in Screens){
+                var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);SetField("scoutReportFilter","Tous");SetField("recruitmentTab","Rapports");Call("Navigate","Recrutement");});
+                list.Add(()=>{
+                    foreach(var id in new[]{generated,real}){if(Root.Q("scout-grade-"+id)==null||Root.Q("scout-range-ability-"+id)==null)throw new Exception("Carte de rapport incomplète : "+id);}
+                    if(Root.Q("scout-rival-"+real)==null)throw new Exception("Concurrence non affichée");
+                    var card=App.Career.ScoutReportCard(App.Database,generated);var old=App.Career.ScoutReportCard(App.Database,real);
+                    audit.AppendLine(screen.tag+" : fictif note "+card.grade+" niveau "+card.ability+" potentiel "+card.potential+" familiarité "+card.familiarityLabel+" ; ancien note "+old.grade+" niveau "+old.ability+" à actualiser="+old.stale);
+                    Capture(screen.tag+"-profondeur-rapports");
+                    var target=Root.Q("scout-report-"+generated);target.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(target);
+                });
+                list.Add(()=>{Capture(screen.tag+"-profondeur-carte-fictive");Root.Q<DropdownField>("scout-report-sort").value="Note";});
+                list.Add(()=>{Capture(screen.tag+"-profondeur-tri-note");Call("OpenRecruitmentMarket","Tous","Tous");Root.Q<Foldout>("recruit-advanced").value=true;Root.Q<DropdownField>("recruit-country").value="Suède";});
+                list.Add(()=>{
+                    var rows=Root.Q<ListView>("recruit-list")?.itemsSource;
+                    if(rows==null||!rows.Cast<PlayerData>().Any(p=>p.team.StartsWith("fic-swe1-",StringComparison.Ordinal)))throw new Exception("Le territoire Suède doit inclure la ligue générée");
+                    Root.Q<Foldout>("recruit-advanced").value=false;
+                    audit.AppendLine(screen.tag+" : Suède "+rows.Count+" profils, dont "+rows.Cast<PlayerData>().Count(p=>GeneratedWorld.IsGenerated(p.team))+" fictifs.");
+                    Capture(screen.tag+"-profondeur-marche-suede");Call("ComparePlayer",generated);
+                });
+                list.Add(()=>{if(Root.Q("player-comparison")==null)throw new Exception("Comparaison absente");Capture(screen.tag+"-profondeur-comparaison");Call("CloseModal");});
+            }
+            return list;
+        }
+
+        // film/ui-recruitment-cell… : scouting department, assignment, recommendations, report personality/interest,
+        // signings' settling and the negotiation's interest line. Synthetic in-memory data, never a personal save.
+        static List<Action> BuildFocusedCellSteps()
+        {
+            audit.AppendLine("Parcours ciblé cellule de recrutement : recruteurs et affectation, recommandations, personnalité/intérêt dans le rapport, intégration des recrues, intérêt en négociation ; deux résolutions natives, données synthétiques en mémoire.");
+            var list=new List<Action>();string target=null,local=null,extraKey=null;
+            list.Add(()=>{
+                var safe=typeof(TouchlineApp).GetProperty("VisualValidation",BindingFlags.Instance|BindingFlags.NonPublic);
+                if(safe==null||!(bool)safe.GetValue(App))throw new Exception("La validation doit isoler les sauvegardes personnelles");
+                var c=App.Career;var db=App.Database;c.EnsureWorld(db);c.revealAttributes=false;c.match=null;c.world.managerStatus="employed";c.EnsureStaffMarket(db);
+                string home=ScoutingGeography.Country(db,db.clubs.First(x=>x.id==c.club));
+                string abroad=home=="Espagne"?"Italie":"Espagne";
+                var abroadClubs=new HashSet<string>(ScoutingGeography.ClubIds(db,abroad));var homeClubs=new HashSet<string>(ScoutingGeography.ClubIds(db,home));
+                bool Usable(PlayerData p)=>p.team!=c.club&&p.age>=20&&p.age<=28&&!p.Goalkeeper&&p.wage>0;
+                var t=db.players.Where(p=>abroadClubs.Contains(p.team)&&Usable(p)).OrderByDescending(p=>p.rating).First();target=t.id;
+                var l=db.players.Where(p=>homeClubs.Contains(p.team)&&Usable(p)).OrderByDescending(p=>p.rating).First();local=l.id;
+                if(c.ScoutSlots<2)throw new Exception("Le club de validation doit pouvoir employer deux recruteurs");
+                var extra=c.staffMarket.First(m=>m.role=="scout"&&m.club==null);extra.club=c.club;extra.wage=Math.Max(extra.wage,400);extra.until=c.life.day+700;c.life.staff.members.Add(extra);extraKey=extra.id;
+                c.AssignScout(db,c.ScoutingDepartment(db).First(x=>x.chief).key,"needs");c.AssignScout(db,extraKey,"territory",abroad);
+                c.scoutRegions.Add(new ScoutRegionKnowledge{staff=extraKey,country=abroad,level=46});
+                int day=c.life.day;
+                c.world.reports.Add(new ScoutReport{player=target,club=c.club,scout=extra.name,mission="assign-"+extraKey,started=day-25,due=day-2,lastObserved=day-2,confidence=90,judging=extra.judging,depth=1,estimate=t.rating+t.development,potential=Math.Max(t.potential,t.rating),uncertainty=2.4f,potentialUncertainty=6.7f,advice="Rapport de contrôle."});
+                c.world.reports.Add(new ScoutReport{player=local,club=c.club,scout=c.Staff("scout").name,started=day-40,due=day-20,lastObserved=day-20,confidence=90,judging=c.Staff("scout").judging,estimate=l.rating+l.development,potential=Math.Max(l.potential,l.rating),uncertainty=2.4f,potentialUncertainty=5.4f,advice="Rapport de contrôle."});
+                c.scoutRecommendations.Add(local);c.scoutRecommendations.Add(target);
+                var own=db.Squad(c.club).Where(p=>!p.Goalkeeper).OrderByDescending(p=>p.rating).Take(2).ToArray();
+                c.signings.Add(new SigningRecord{player=own[0].id,from="test",fromCountry=abroad,day=day-30,settleDays=120,penalty=.05f,knowledge=90,estimate=own[0].rating+own[0].development-2,actual=own[0].rating+own[0].development});
+                c.signings.Add(new SigningRecord{player=own[1].id,from="test",fromCountry=home,day=day-200,settleDays=45,penalty=.02f,knowledge=0,actual=own[1].rating+own[1].development,settled=true});
+                audit.AppendLine("Cible étrangère "+target+" ("+t.team+", "+abroad+"), cible locale "+local+" ; deux recrues synthétiques ("+own[0].id+", "+own[1].id+") ; recruteur ajouté "+extraKey+".");
+            });
+            foreach(var s in Screens){
+                var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);SetField("recruitmentTab","Synthèse");Call("Navigate","Recrutement");});
+                list.Add(()=>{
+                    if(Root.Q("recruit-hub-recommendation-"+target)==null)throw new Exception("Recommandation de la cellule absente");
+                    if(Root.Q("recruit-hub-signings")==null)throw new Exception("Intégration des recrues absente");
+                    var section=Root.Q("recruit-hub-recommendations");section.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(section);
+                });
+                list.Add(()=>{Capture(screen.tag+"-cellule-recommandations");var section=Root.Q("recruit-hub-signings");section.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(section);});
+                list.Add(()=>{Capture(screen.tag+"-cellule-integration");SetField("recruitmentTab","Missions");Call("Navigate","Recrutement");});
+                list.Add(()=>{var panel=Root.Q("scout-department");panel?.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(panel);});
+                list.Add(()=>{Capture(screen.tag+"-cellule-chef");var member=Root.Q("scout-member-"+extraKey);member?.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(member);});
+                list.Add(()=>{
+                    if(Root.Q("scout-department")==null||Root.Q("scout-member-"+extraKey)==null||Root.Q("scout-skill-potential-"+extraKey)==null)throw new Exception("Cellule de recrutement incomplète");
+                    var assignment=Root.Q<Label>("scout-assignment-"+extraKey);if(assignment==null||!assignment.text.Contains("Exploration"))throw new Exception("Affectation non affichée");
+                    Capture(screen.tag+"-cellule-recruteurs");Click("scout-assign-"+extraKey);
+                });
+                list.Add(()=>{if(Root.Q("scout-assignment-dialog")==null||Root.Q("scout-assignment-hint")==null)throw new Exception("Dialogue d’affectation absent");Capture(screen.tag+"-cellule-affectation");Call("CloseModal");SetField("scoutReportFilter","Tous");SetField("recruitmentTab","Rapports");Call("Navigate","Recrutement");});
+                list.Add(()=>{
+                    foreach(var name in new[]{"scout-personality-","scout-interest-","scout-comparable-"})if(Root.Q(name+target)==null)throw new Exception("Rapport incomplet : "+name+target);
+                    var card=App.Career.ScoutReportCard(App.Database,target);
+                    audit.AppendLine(screen.tag+" : note "+card.grade+" niveau "+card.ability+" ambition "+card.ambition+" adaptabilité "+card.adaptability+" · "+card.comparable+" · intérêt "+card.interest);
+                    var report=Root.Q("scout-report-"+target);report.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(report);
+                });
+                list.Add(()=>{Capture(screen.tag+"-cellule-rapport");Call("TransferDialog",target);});
+                list.Add(()=>{if(Root.Q("negotiation-interest")==null)throw new Exception("Intérêt du joueur absent de la négociation");Capture(screen.tag+"-cellule-negociation");Call("CloseModal");});
+            }
+            return list;
+        }
+
+        static List<Action> BuildFocusedLoanSteps()
+        {
+            audit.AppendLine("Parcours ciblé : droits du prêteur, fiche, contrat de prêt et ancien accord. Carrière de validation en mémoire ; six captures natives, pas de sauvegarde personnelle ni d’achat exécuté.");
+            var list=new List<Action>();string playerId=null,ownerName=null;Employment loan=null;TransferOffer legacy=null;long cash=0;
+            list.Add(()=>{
+                var validation=typeof(TouchlineApp).GetProperty("VisualValidation",BindingFlags.Instance|BindingFlags.NonPublic);
+                if(validation==null||!(bool)validation.GetValue(App))throw new Exception("La carrière de validation sans sauvegarde est obligatoire");
+                var career=App.Career;career.EnsureWorld(App.Database);career.match=null;career.world.managerStatus="employed";career.life.managerBanUntil=career.life.day;
+                var player=App.Database.Squad(career.club).Where(p=>!p.Goalkeeper).OrderBy(p=>p.id,StringComparer.Ordinal).First();playerId=player.id;
+                var owner=App.Database.clubs.Where(c=>c.id!=career.club&&c.playable).OrderBy(c=>c.id,StringComparer.Ordinal).First();ownerName=owner.name;
+                loan=career.Contract(App.Database,playerId);loan.parent=owner.id;loan.parentUntil=loan.until;loan.club=career.club;loan.loanUntil=career.life.day+90;loan.until=loan.loanUntil;
+                // Representative UI fixture only: borrowing does not create ownership.
+                loan.terms=new MarketTerms{loanEndDay=loan.loanUntil,loanWagePercent=50,optionFee=100000};
+                legacy=new TransferOffer{player=playerId,seller=career.club,destination=career.club,status="accepted",renewal=true,wage=player.wage,years=3,role="starter",due=career.life.day};
+                career.world.offers.Add(legacy);cash=career.life.cash;
+            });
+            foreach(var s in Screens){
+                var screen=s;
+                list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Club");App.PlayerProfile(playerId);});
+                list.Add(()=>{
+                    if(!Root.Query<Button>().ToList().Any(b=>b.text=="Contrat de prêt")||Root.Query<Button>().ToList().Any(b=>b.text=="Contrat / prolonger"))
+                        throw new Exception("La fiche du joueur emprunté propose encore une prolongation");
+                    Capture(screen.tag+"-fiche-joueur-prete");Click("Contrat de prêt");
+                });
+                list.Add(()=>{
+                    var panel=Root.Q("loan-contract-ownership");var purchase=panel?.Q<Button>("loan-contract-purchase");
+                    if(panel==null||purchase==null||!purchase.enabledSelf||!panel.Query<TextElement>().ToList().Any(t=>t.text==ownerName))
+                        throw new Exception("Le contrat de prêt ne montre pas le propriétaire et l’option d’achat disponible");
+                    audit.AppendLine(screen.tag+" : fiche sans prolongation, contrat du prêteur et option de 100 000 € accessibles.");
+                    Capture(screen.tag+"-contrat-pret");Call("CloseModal");Call("TransferAgreementReview",legacy);
+                });
+                list.Add(()=>{
+                    var sign=Root.Q<Button>("agreement-sign-transfer");
+                    if(sign==null||sign.enabledSelf||!App.Career.HasActiveLoan(playerId)||loan.parent==null||App.Career.life.cash!=cash)
+                        throw new Exception("L’ancien accord ne protège pas les droits ou la trésorerie du prêt");
+                    audit.AppendLine(screen.tag+" : ancien accord affiché, signature désactivée, parent et trésorerie inchangés.");
+                    Capture(screen.tag+"-ancien-accord-bloque");Call("CloseModal");
+                });
+            }
+            return list;
+        }
+
+        static void AssertQuickPressing(int level,bool paused)
+        {
+            float expected=level==2?.8f:.5f;float speed=Arena.Speed;
+            if(Arena.Paused!=paused)throw new Exception("L'ouverture des consignes a changé la pause");
+            Click("quick-tactic-Pressing-"+level);
+            if(App.Career.tactic.pressing!=expected||App.Career.match.homeTactic.pressing!=expected||Arena.Paused!=paused||Arena.Speed!=speed||Root.Q("match-instructions")!=null)
+                throw new Exception("Consigne en deux touches : application/retour/pause/vitesse incorrects");
+            audit.AppendLine("Consigne en deux touches validée : pressing "+expected.ToString(CultureInfo.InvariantCulture)+", pause "+paused+", vitesse "+speed.ToString(CultureInfo.InvariantCulture)+", retour au match.");
+        }
+
         static void Tick()
         {
             if(!SessionState.GetBool(Flag,false)||!EditorApplication.isPlaying)return;
             float now=Time.realtimeSinceStartup;if(startedAt<0){startedAt=now;Application.logMessageReceived+=(m,st,t)=>{if(log.Length<200000)log.AppendLine(t+": "+m+(t==LogType.Exception?"\n"+st:""));};}
             if(TouchlineApp.Instance==null){if(now-startedAt>BootTimeoutSeconds)Finish("TouchlineApp absent");return;}
             if(now-startedAt>RunTimeoutSeconds){Finish("délai dépassé à l'étape "+stage);return;}
-            if(++frames<StepFrames||now-stepAt<StepSeconds)return;frames=0;stepAt=now;
+            if(++frames<(FocusedTactics||FocusedRecruitment||FocusedLoan||FocusedNegotiation||FocusedBoard||FocusedDepth||FocusedCareer||FocusedImmersion?FocusedStepFrames:StepFrames)||now-stepAt<StepSeconds)return;frames=0;stepAt=now;
             steps??=BuildSteps();
             if(stage<0)stage=0;
-            if(stage>=steps.Count){Finish(null);return;}
+            if(stage>=steps.Count){Finish(failures==0?null:failures+" étape(s) en échec");return;}
+            File.AppendAllText(Path.Combine(Output,"progress.txt"),DateTime.UtcNow.ToString("O")+" START "+stage+"\n");
+            var timer=System.Diagnostics.Stopwatch.StartNew();
             try{steps[stage]();}
-            catch(Exception e){var inner=e is TargetInvocationException t&&t.InnerException!=null?t.InnerException:e;audit.AppendLine("ERREUR étape "+stage+" : "+inner.Message);Debug.LogException(inner);}
-            stage++;
+            catch(Exception e){failures++;var inner=e is TargetInvocationException t&&t.InnerException!=null?t.InnerException:e;audit.AppendLine("ERREUR étape "+stage+" : "+inner.Message);Debug.LogException(inner);}
+            File.AppendAllText(Path.Combine(Output,"progress.txt"),DateTime.UtcNow.ToString("O")+" END "+stage+" "+timer.ElapsedMilliseconds+" ms\n");
+            File.WriteAllText(Path.Combine(Output,"audit-progress.txt"),audit.ToString());stage++;
         }
 
         static void Finish(string failure)

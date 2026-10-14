@@ -49,27 +49,32 @@ namespace Touchline
         {
             var p=Database.Find(id);if(p==null){Message("Ce joueur n’est plus disponible.");return;}
             if(p.team=="retired"||Career.PlayerRetirementEffective(id)){Message("La retraite de ce joueur est effective. Aucun nouveau contrat de joueur ne peut être négocié.");return;}
+            if(Career.HasActiveLoan(id)){ActiveLoanContractDialog(id);return;}
             var accepted=Career.world.offers.LastOrDefault(o=>o.player==id&&(o.destination==null||o.destination==Career.club)&&o.status=="accepted"&&o.due+7>=Career.life.day);if(accepted!=null){TransferAgreementReview(accepted);return;}var outgoing=Career.outgoingLoans.LastOrDefault(o=>o.player==id&&o.owner==Career.club&&o.status=="accepted"&&o.due+7>=Career.life.day);if(outgoing!=null){OutgoingLoanAgreementReview(outgoing);return;}
             var panel=Modal("Négociation · "+p.name);panel.name="transfer-negotiation-form";var s=Scroll(panel);bool own=p.team==Career.club;
             var previous=Career.world.offers.LastOrDefault(o=>o.player==id&&o.status=="counter"&&(o.destination==null||o.destination==Career.club)&&o.seller==p.team);
             var normalPrevious=previous?.loan==false?previous:null;var loanPrevious=previous?.loan==true?previous:null;
-            var range=Career.PlayerAgent(Database,id);var loanRange=Career.PlayerAgent(Database,id,true);var agent=Card(s);Text(agent,"AGENT · PREMIER ÉCHANGE","eyebrow");var agentMessage=Text(agent,range.message);agentMessage.name="negotiation-agent-message";
-            var agentConditions=Text(agent,"");agentConditions.name="negotiation-agent-conditions";
+            var range=Career.PlayerAgent(Database,id);var loanRange=Career.PlayerAgent(Database,id,true);var agent=Card(s);Text(agent,"AGENT · PREMIER ÉCHANGE","eyebrow");var agentMessage=Text(agent,range.message,"muted");agentMessage.name="negotiation-agent-message";
+            var agentInterest=own?null:Text(agent,"","scout-status");if(agentInterest!=null)agentInterest.name="negotiation-interest";
+            var agentConditions=Text(agent,"","muted");agentConditions.name="negotiation-agent-conditions";
             var contract=Career.Contract(Database,id);Text(s,"Échéance actuelle : "+Core.Career.Epoch.AddDays(contract.until).ToString("dd MMM yyyy",French)+(contract.estimated?" · estimation de jeu":""),"muted");
             var permanent=new TransferFormDraft{fee=own||p.team=="free"?0:normalPrevious?.fee??p.value,monthly=Core.Career.MonthlySalary(normalPrevious?.wage??(long)(p.wage*1.12f)),years=normalPrevious?.years??3,role=Array.IndexOf(PlayingTimeRoles.All,PlayingTimeRoles.Normalize(normalPrevious?.role??(own?contract.role:"rotation"))),bonus=normalPrevious?.bonus??0,clause=normalPrevious?.clause??0,precontract=normalPrevious?.precontract==true,upfront=normalPrevious?.terms?.upfrontPercent??100,instalments=normalPrevious?.terms?.instalments??0};
             var borrowed=new TransferFormDraft{fee=loanPrevious?.fee??loanRange.feeHigh,monthly=Core.Career.MonthlySalary(p.wage),years=loanPrevious?.years??3,role=Array.IndexOf(PlayingTimeRoles.All,PlayingTimeRoles.Normalize(loanPrevious?.role??"rotation")),bonus=loanPrevious?.bonus??0,clause=loanPrevious?.clause??0,share=loanPrevious?.terms?.loanWagePercent??100,days=loanPrevious?.terms!=null?loanPrevious.terms.loanEndDay-Career.life.day:LoanDefaultDays(contract),option=loanPrevious?.terms?.optionFee??0,obligation=loanPrevious?.terms?.obligationFee??0,appearances=loanPrevious?.terms?.obligationAppearances??0,recall=loanPrevious?.terms?.recall==true};
             var fee=new LongField("Indemnité proposée (€)");fee.name="negotiation-fee";s.Add(fee);fee.SetEnabled(!own&&p.team!="free");
             var wage=new LongField("Salaire mensuel proposé (€)");wage.name="negotiation-monthly-wage";s.Add(wage);var years=new IntegerField("Durée (années)");years.name="negotiation-years";s.Add(years);
-            var roleCard=Card(s,"negotiation-role-card");Text(roleCard,"VOTRE PROJET SPORTIF","eyebrow");
+            var roleCard=new VisualElement();roleCard.AddToClassList("negotiation-role-card");agent.Add(roleCard);
             var role=new DropdownField("Temps de jeu promis",PlayingTimeRoles.All.Select(PlayingTimeRoles.Label).ToList(),2);role.name="negotiation-role";roleCard.Add(role);
             var roleDescription=Text(roleCard,"","notice");roleDescription.name="negotiation-role-description";
-            Action refreshRole=()=>{string promised=PlayingTimeRoles.All[Mathf.Clamp(role.index,0,PlayingTimeRoles.All.Length-1)];roleDescription.text=PlayingTimeRoles.Description(promised)+(promised=="youth"&&p.age>=24?" Ce statut est réservé aux joueurs de moins de 24 ans. Choisissez un autre engagement.":"");};
+            var roleDetails=new Foldout{text="Avis détaillé de l’agent",value=false,name="negotiation-agent-details"};agent.Add(roleDetails);roleDetails.Add(agentMessage);roleDetails.Add(roleDescription);
+            Action refreshAgent=null;
+            Action refreshRole=()=>{string promised=PlayingTimeRoles.All[Mathf.Clamp(role.index,0,PlayingTimeRoles.All.Length-1)];roleDescription.text=PlayingTimeRoles.Description(promised)+(promised=="youth"&&p.age>=24?" Ce statut est réservé aux joueurs de moins de 24 ans. Choisissez un autre engagement.":"");if(promised=="youth"&&p.age>=24)roleDetails.value=true;refreshAgent?.Invoke();};
             role.RegisterValueChangedCallback(_=>refreshRole());
             if(own)Text(roleCard,"Engagement actuel : "+PlayingTimeRoles.Label(contract.role),"muted").name="negotiation-current-role";
-            Text(roleCard,"Le joueur et son agent évaluent le rôle proposé. Après la signature, votre utilisation du joueur compte dans sa satisfaction ; les indisponibilités médicales connues sont prises en compte.","footnote");
-            var bonus=new LongField("Prime de présence (€)");bonus.name="negotiation-bonus";s.Add(bonus);var clause=new LongField("Clause libératoire (€), 0 = aucune");clause.name="negotiation-clause";s.Add(clause);
+            Text(roleDetails,"Promesse suivie après signature : son utilisation et ses indisponibilités médicales comptent dans sa satisfaction.","footnote");
+            var clauses=new Foldout{text="Primes et clauses",value=false,name="negotiation-extra-clauses"};s.Add(clauses);
+            var bonus=new LongField("Prime de présence (€)");bonus.name="negotiation-bonus";clauses.Add(bonus);var clause=new LongField("Clause libératoire (€), 0 = aucune");clause.name="negotiation-clause";clauses.Add(clause);
             var pre=new Toggle("Précontrat : arrivée après le contrat actuel");pre.name="negotiation-precontract";s.Add(pre);pre.SetEnabled(Career.CanPrecontract(Database,id));
-            var loan=new Toggle("Négocier un prêt");loan.name="negotiation-loan";s.Add(loan);loan.SetEnabled(!own&&p.team!="free"&&contract.parent==null&&LoanMaximumDays(contract)>=28);if(!own&&p.team!="free"&&contract.parent==null&&LoanMaximumDays(contract)<28)Text(s,LoanDurationText(contract,0),"notice").name="negotiation-loan-unavailable";
+            var loan=new Toggle("Négocier un prêt");loan.name="negotiation-loan";s.Add(loan);loan.SetEnabled(!own&&p.team!="free"&&!contract.IsLoan&&LoanMaximumDays(contract)>=28);if(!own&&p.team!="free"&&!contract.IsLoan&&LoanMaximumDays(contract)<28)Text(s,LoanDurationText(contract,0),"notice").name="negotiation-loan-unavailable";
             var terms=new Foldout{text="Prêt : salaire, durée et achat",value=false};terms.name="negotiation-loan-terms";s.Add(terms);
             var share=new IntegerField("Salaire pris en charge (%)");share.name="negotiation-loan-share";terms.Add(share);var days=new IntegerField("Durée du prêt (jours)");days.name="negotiation-loan-days";terms.Add(days);
             var option=new LongField("Option d’achat (€), 0 = aucune");option.name="negotiation-loan-option";terms.Add(option);var obligation=new LongField("Obligation d’achat (€), 0 = aucune");obligation.name="negotiation-loan-obligation";terms.Add(obligation);var appearances=new IntegerField("Déclenchement après apparitions (0 = automatique)");appearances.name="negotiation-loan-appearances";terms.Add(appearances);var recall=new Toggle("Rappel possible pendant le mercato");recall.name="negotiation-loan-recall";terms.Add(recall);
@@ -82,19 +87,53 @@ namespace Touchline
                 if(!valid){contribution.text="Pourcentage invalide : indiquez une prise en charge entre 0 et 100 %. Aucun accord ne sera envoyé avec cette valeur.";return;}
                 long borrower=p.wage*share.value/100,owner=p.wage-borrower;contribution.text="Votre club : "+Money(Core.Career.MonthlySalary(borrower))+" / mois · "+ClubName(p.team)+" : "+Money(Core.Career.MonthlySalary(owner))+" / mois. Répartition du contrat parent, sans augmentation salariale.";
             };
+            refreshAgent=()=>{
+                string promised=PlayingTimeRoles.All[Mathf.Clamp(role.index,0,PlayingTimeRoles.All.Length-1)];
+                var estimate=loan.value?loanRange:Career.PlayerAgent(Database,id,role:promised);agentMessage.text=estimate.message;
+                agentConditions.text="Indemnité indicative : "+Money(pre.value?0:estimate.feeLow)+" à "+Money(pre.value?0:estimate.feeHigh)+(loan.value?" · Contrat parent : "+Money(estimate.monthlyLow)+" / mois. Votre part se règle en pourcentage.":" · Salaire : "+Money(estimate.monthlyLow)+" à "+Money(estimate.monthlyHigh)+" / mois");
+                if(agentInterest==null)return;
+                if(loan.value){agentInterest.text="Prêt : accord du club propriétaire et du joueur encore à obtenir. Salaire du contrat parent conservé.";return;}
+                var interest=Career.PlayerTransferInterest(Database,id,promised);agentInterest.text="Projet : "+PlayingTimeRoles.Label(promised)+" · "+interest.label+(interest.reasons.Count>0?" · "+string.Join(" ",interest.reasons):"");
+            };
             Action<TransferFormDraft> capture=d=>{d.fee=fee.value;d.monthly=wage.value;d.years=years.value;d.role=role.index;d.bonus=bonus.value;d.clause=clause.value;d.precontract=pre.value;d.share=share.value;d.days=days.value;d.option=option.value;d.obligation=obligation.value;d.appearances=appearances.value;d.recall=recall.value;d.upfront=upfront.value;d.instalments=instalments.value;};
             Action<bool> restore=isLoan=>{
                 loading=true;var d=isLoan?borrowed:permanent;loan.SetValueWithoutNotify(isLoan);pre.SetValueWithoutNotify(!isLoan&&d.precontract);fee.SetValueWithoutNotify(d.fee);wage.SetValueWithoutNotify(isLoan?Core.Career.MonthlySalary(p.wage):d.monthly);years.SetValueWithoutNotify(d.years);role.SetValueWithoutNotify(role.choices[Mathf.Clamp(d.role,0,role.choices.Count-1)]);bonus.SetValueWithoutNotify(d.bonus);clause.SetValueWithoutNotify(d.clause);share.SetValueWithoutNotify(d.share);days.SetValueWithoutNotify(d.days);option.SetValueWithoutNotify(d.option);obligation.SetValueWithoutNotify(d.obligation);appearances.SetValueWithoutNotify(d.appearances);recall.SetValueWithoutNotify(d.recall);upfront.SetValueWithoutNotify(d.upfront);instalments.SetValueWithoutNotify(d.instalments);
-                wage.SetEnabled(!isLoan);wage.label=isLoan?"Salaire mensuel du contrat parent (€)":"Salaire mensuel proposé (€)";terms.SetEnabled(isLoan);terms.value=isLoan;payments.SetEnabled(!isLoan&&!pre.value);years.SetEnabled(!isLoan);
-                var estimate=isLoan?loanRange:range;agentMessage.text=estimate.message;agentConditions.text="Indemnité indicative : "+Money(estimate.feeLow)+" à "+Money(estimate.feeHigh)+(isLoan?" · Contrat parent : "+Money(estimate.monthlyLow)+" / mois. Votre part se règle en pourcentage.":" · Salaire : "+Money(estimate.monthlyLow)+" à "+Money(estimate.monthlyHigh)+" / mois");loading=false;refreshContribution();refreshRole();
+                wage.SetEnabled(!isLoan);wage.label=isLoan?"Salaire mensuel du contrat parent (€)":"Salaire mensuel proposé (€)";terms.SetEnabled(isLoan);terms.value=isLoan;terms.style.display=isLoan?DisplayStyle.Flex:DisplayStyle.None;payments.SetEnabled(!isLoan&&!pre.value);payments.style.display=!isLoan&&!own&&p.team!="free"?DisplayStyle.Flex:DisplayStyle.None;years.SetEnabled(!isLoan);clauses.value=d.bonus>0||d.clause>0;
+                loading=false;refreshContribution();refreshRole();
             };
             loan.RegisterValueChangedCallback(e=>{if(loading)return;capture(e.previousValue?borrowed:permanent);restore(e.newValue);});
             long transferFeeBeforePre=permanent.precontract&&!own&&p.team!="free"?p.value:permanent.fee;
-            pre.RegisterValueChangedCallback(e=>{if(loading)return;if(e.newValue){if(loan.value){loan.value=false;pre.SetValueWithoutNotify(true);}transferFeeBeforePre=fee.value;fee.value=0;}else fee.value=transferFeeBeforePre;payments.SetEnabled(!loan.value&&!pre.value);});
+            pre.RegisterValueChangedCallback(e=>{if(loading)return;if(e.newValue){if(loan.value){loan.value=false;pre.SetValueWithoutNotify(true);}transferFeeBeforePre=fee.value;fee.value=0;}else fee.value=transferFeeBeforePre;payments.SetEnabled(!loan.value&&!pre.value);refreshAgent();});
             share.RegisterValueChangedCallback(e=>refreshContribution());days.RegisterValueChangedCallback(e=>refreshContribution());role.RegisterValueChangedCallback(e=>refreshContribution());
-            Text(s,"La prime d’agent représente deux semaines du salaire intégral. Le salaire mensuel est converti en coût annuel sur 12 mois. Le staff ne signera jamais à votre place.","footnote");
-            submit=Button(s,"Envoyer à l’agent",()=>RunDecision(()=>Career.ProposeTransfer(Database,id,fee.value,loan.value?p.wage:Core.Career.WeeklySalary(wage.value),years.value,PlayingTimeRoles.All[Mathf.Clamp(role.index,0,PlayingTimeRoles.All.Length-1)],loan.value,bonus.value,clause.value,new MarketTerms{loanWagePercent=loan.value?share.value:100,loanEndDay=Career.life.day+days.value,optionFee=loan.value?option.value:0,obligationFee=loan.value?obligation.value:0,obligationAppearances=loan.value?appearances.value:0,recall=loan.value&&recall.value,upfrontPercent=loan.value||pre.value?100:upfront.value,instalments=loan.value||pre.value?0:instalments.value},pre.value)));submit.name="negotiation-send";submit.AddToClassList("primary");
+            var error=Text(s,"","notice");error.name="negotiation-error";error.style.display=DisplayStyle.None;error.style.fontSize=14;error.style.whiteSpace=WhiteSpace.Normal;error.focusable=true;
+            var costCard=Card(s);costCard.name="negotiation-cost-preview";Text(costCard,"VOTRE ENGAGEMENT FINANCIER","eyebrow");
+            var costNow=Text(costCard,"","scout-status");costNow.name="negotiation-cost-now";
+            var costLater=Text(costCard,"","muted");var costSalary=Text(costCard,"","muted");costSalary.name="negotiation-cost-salary";
+            var costClauses=Text(costCard,"","footnote");var costWarning=Text(costCard,"","muted");
+            var footer=new VisualElement{name="negotiation-footer"};footer.AddToClassList("negotiation-footer");panel.Add(footer);var summary=Text(footer,"","muted");summary.name="negotiation-sticky-cost";
+            costCard.style.paddingTop=costCard.style.paddingBottom=12;
+            foreach(var label in new[]{costNow,costLater,costSalary,costClauses,costWarning}){label.style.marginTop=4;label.style.marginBottom=4;}
+            Action refreshCost=()=>{
+                if(loading)return;
+                try{
+                    var quote=Career.PreviewTransferCost(Database,id,fee.value,loan.value?p.wage:Core.Career.WeeklySalary(wage.value),loan.value,pre.value,
+                        new MarketTerms{loanWagePercent=loan.value?share.value:100,loanEndDay=Career.life.day+days.value,optionFee=loan.value?option.value:0,obligationFee=loan.value?obligation.value:0,obligationAppearances=loan.value?appearances.value:0,recall=loan.value&&recall.value,upfrontPercent=loan.value||pre.value?100:upfront.value,instalments=loan.value||pre.value?0:instalments.value});
+                    costNow.text="À la signature : "+Money(quote.cashAtSignature)+" · dont agent "+Money(quote.agentFee);
+                    summary.text=Money(quote.cashAtSignature)+" à signer · "+Money(quote.monthlyWage)+" / mois";
+                    costLater.text="Indemnité totale : "+Money(quote.fee)+(quote.deferredFee>0?" · reste "+Money(quote.deferredFee)+" en "+quote.instalments+" échéances trimestrielles.":" · aucun paiement différé.");
+                    costSalary.text="Salaire brut à votre charge : "+Money(quote.monthlyWage)+" / mois"+(quote.salaryOnArrival?", à partir de son arrivée.":".");
+                    costClauses.text=(quote.optionFee>0?"Option facultative : "+Money(quote.optionFee)+", exclue du montant à signer. ":quote.obligationFee>0?"Obligation d’achat : "+Money(quote.obligationFee)+", réservée au budget mais non payée à la signature. ":"")+"Hors charges employeur et primes de présence ("+Money(Math.Max(0,bonus.value))+" par apparition). Aucune dépense avant confirmation de l’accord.";
+                    costWarning.text=quote.cashAtSignature>Career.life.cash?"Trésorerie actuelle insuffisante pour signer ces conditions.":quote.fee>Career.TransferBudget-quote.obligationFee?"Indemnité et obligation dépassent le budget disponible.":"Agent : deux semaines du salaire intégral. Accord et budgets à confirmer avant signature.";
+                }catch(ArgumentException){summary.text=costNow.text="Aperçu indisponible : corrigez les montants et les clauses.";costLater.text=costSalary.text=costClauses.text=costWarning.text="";}
+                catch(OverflowException){summary.text=costNow.text="Montant trop élevé pour établir cet aperçu.";costLater.text=costSalary.text=costClauses.text=costWarning.text="";}
+            };
+            foreach(var field in new[]{fee,wage,bonus,option,obligation})field.RegisterValueChangedCallback(_=>refreshCost());
+            foreach(var field in new[]{share,days,appearances,upfront,instalments})field.RegisterValueChangedCallback(_=>refreshCost());
+            foreach(var field in new[]{loan,pre,recall})field.RegisterValueChangedCallback(_=>refreshCost());
+            void ShowError(string message){error.text=message+" Vos conditions sont conservées : corrigez-les puis renvoyez l’offre.";error.style.display=DisplayStyle.Flex;error.schedule.Execute(()=>{s.ScrollTo(error);error.Focus();});}
+            submit=Button(footer,"Envoyer à l’agent",()=>{error.style.display=DisplayStyle.None;RunDecision(()=>Career.ProposeTransfer(Database,id,fee.value,loan.value?p.wage:Core.Career.WeeklySalary(wage.value),years.value,PlayingTimeRoles.All[Mathf.Clamp(role.index,0,PlayingTimeRoles.All.Length-1)],loan.value,bonus.value,clause.value,new MarketTerms{loanWagePercent=loan.value?share.value:100,loanEndDay=Career.life.day+days.value,optionFee=loan.value?option.value:0,obligationFee=loan.value?obligation.value:0,obligationAppearances=loan.value?appearances.value:0,recall=loan.value&&recall.value,upfrontPercent=loan.value||pre.value?100:upfront.value,instalments=loan.value||pre.value?0:instalments.value},pre.value),ShowError);});submit.name="negotiation-send";submit.AddToClassList("primary");
             restore(loanPrevious!=null);
+            refreshCost();
         }
 
 
@@ -120,7 +159,7 @@ namespace Touchline
             Action updateAdvice=()=>{
                 var report=reports.FirstOrDefault(r=>r.club.id==selected);bool validShare=wage.value>=0&&wage.value<=100;
                 duration.text=LoanDurationText(parent,days.value);duration.EnableInClassList("notice",!LoanDurationValid(parent,days.value));shareError.style.display=validShare?DisplayStyle.None:DisplayStyle.Flex;shareError.text="Pourcentage invalide : indiquez une prise en charge entre 0 et 100 %.";
-                submit.SetEnabled(PlayerManagementAvailable&&parent.parent==null&&LoanDurationValid(parent,days.value)&&validShare&&report!=null);
+                submit.SetEnabled(PlayerManagementAvailable&&!parent.IsLoan&&LoanDurationValid(parent,days.value)&&validShare&&report!=null);
                 if(report==null){advice.text="Aucun club admissible avec au moins onze joueurs. Élargissez votre base de données.";return;}
                 advice.text="Poste envisagé : "+FrenchFootballPositions.Label(report.role)+" · "+report.competition+" joueur(s) déjà capables d’y évoluer. "+(report.levelCompatible?"Niveau compatible avec les critères du club.":"Écart de niveau : le club ou le joueur devrait refuser.")+"\n"+(report.affordable?"Coût proposé compatible avec l’enveloppe simulée.":"Coût ou obligation au-dessus des moyens estimés ; réduisez les conditions.")+"\n"+(report.calendarLoaded?"Temps de jeu projeté : environ "+report.estimatedMinutesPerMatch+" minutes par rencontre réellement jouée, sous réserve de disponibilité et de concurrence.":"Pas de rencontre programmée dans la durée proposée : aucune minute de match ne sera inventée pour la progression.");
             };
@@ -134,30 +173,63 @@ namespace Touchline
             opponent.RegisterValueChangedCallback(e=>{if(loading||opponent.index<0||opponent.index>=pickerIds.Count)return;selected=pickerIds[opponent.index];updatePicker();});
             mode.RegisterValueChangedCallback(e=>updatePicker());search.RegisterValueChangedCallback(e=>updatePicker());days.RegisterValueChangedCallback(e=>refresh());wage.RegisterValueChangedCallback(e=>refresh());fee.RegisterValueChangedCallback(e=>refresh());obligation.RegisterValueChangedCallback(e=>refresh());refresh();
         }
+        string financeTab="Budget";
         void FinancePage()
         {
-            var s=Scroll(content);Heading(s,"Les moyens de votre ambition");var w=Career.world;var metrics=Row(s,"metric-grid");Metric(metrics,"TRÉSORERIE",Money(Career.life.cash),"Disponible");Metric(metrics,"DETTE",Money(w.debt),"Avances du propriétaire");Metric(metrics,"SALAIRES",Money(Core.Career.MonthlySalary(Career.Payroll(Database))),"Chaque mois");Metric(metrics,"TRANSFERTS",Money(Career.TransferBudget),"Plafond de dépenses");
+            Heading(content,"Finances");var tabs=Row(content,"finance-tabs");
+            foreach(var tab in new[]{"Budget","Billetterie","Partenaires","Comptabilité"}){var button=Button(tabs,tab,()=>{financeTab=tab;Build();});button.name="finance-tab-"+tab;button.EnableInClassList("active",financeTab==tab);}
+            var s=Scroll(content);s.name="finance-workspace";var w=Career.world;
+            if(financeTab=="Billetterie"){FinanceTicketControls(s);return;}
+            if(financeTab=="Budget"){
+            var metrics=Row(s,"metric-grid");Metric(metrics,"TRÉSORERIE",Money(Career.life.cash),"Disponible");Metric(metrics,"DETTE",Money(w.debt),"Avances du propriétaire");Metric(metrics,"SALAIRES",Money(Core.Career.MonthlySalary(Career.Payroll(Database))),"Chaque mois");Metric(metrics,"TRANSFERTS",Money(Career.TransferBudget),"Plafond de dépenses");
+            var budget=Career.BudgetSummary(Database);var limits=Card(s);limits.name="finance-budget-explanation";
+            Text(limits,"Ce que vous pouvez engager","section-title");
+            Text(limits,"Trésorerie : "+Money(budget.cash)+" · réserve de fonctionnement : "+Money(budget.reserve)+" · achats déjà engagés : "+Money(budget.committedPurchases),"muted");
+            Text(limits,"Après ces engagements : "+Money(budget.cashRemaining)+". Enveloppe restante de la direction : "+Money(budget.policyRemaining)+".","muted");
+            Text(limits,"Disponible pour les transferts : "+Money(budget.transferAvailable)+" · limite actuelle : "+budget.limitingFactor+".","muted");
+            Text(limits,"Obligations d’achat de prêts : "+Money(budget.loanObligations)+", déjà incluses dans les limites ci-dessus ; ne pas les déduire à nouveau.","footnote");
+            Text(limits,"Marge salariale : "+Money(budget.monthlyWageRoom)+" / mois, après "+Money(budget.monthlyPayroll)+" de salaires actuels et "+Money(budget.monthlyReservedWages)+" réservés aux arrivées signées.","muted");
+            Text(limits,"La trésorerie n’est pas une autorisation de tout dépenser. Les deux plafonds s’appliquent ensemble ; ce bilan n’est pas une prévision complète de trésorerie.","footnote");
             var employment=Career.AnnualEmploymentCosts(Database);var payroll=Card(s);Text(payroll,"Le coût du personnel","section-title");
             Text(payroll,"Joueurs · brut : "+Money(employment.playersGross/12)+" / mois · cotisations projetées : "+Money(employment.playerContributions/12));
             Text(payroll,"Staff sous contrat · brut : "+Money(employment.staffGross/12)+" / mois · cotisations projetées : "+Money(employment.staffContributions/12));
             Text(payroll,"Autres personnels : "+Money(employment.otherPersonnel/12)+" / mois · total personnel : "+Money(employment.Total/12)+" / mois");
             Text(payroll,"Plafond des salaires bruts joueurs : "+Money(Core.Career.MonthlySalary(Career.WageBudget))+" / mois. Il tient compte des coûts employeur.","muted");
             Text(payroll,Career.OperatingCostSource(Database),"footnote");
-            var gate=Card(s);Text(gate,"Le stade et ses supporters","section-title");var price=new IntegerField("Prix moyen d’une place (€)"){value=w.ticket};gate.Add(price);Text(gate,"Affluence estimée : "+(Career.Occupancy*100).ToString("0")+" % · Recette nette estimée : "+Money(Career.GateIncome()),"muted");Button(gate,"Appliquer ce tarif",()=>RunDecision(()=>Career.SetTicketPrice(price.value)));Text(gate,"Une modification par semaine. Un prix trop élevé réduit l’affluence et peut détériorer la confiance des supporters.","footnote");
+            return;}
+            if(financeTab=="Partenaires"){
             Heading(s,"Vos partenaires");Text(s,"Entreprises fictives et montants simulés, dimensionnés aux recettes du club. Un engagement actif par emplacement.","muted");
-            for(int i=0;i<w.sponsors.Count;i++){int index=i;var d=w.sponsors[i];var card=Card(s);Text(card,d.name+" · "+d.status,"section-title");Text(card,Money(d.annual)+" / an · "+d.years+" ans");if(d.status=="signed")Text(card,"Échéance : "+Touchline.Core.Career.Epoch.AddDays(d.until).ToString("dd MMM yyyy",French));else if(d.status!="expired"){var amount=new LongField("Demande annuelle (€)"){value=d.asking>0?d.asking:d.annual};card.Add(amount);var years=new IntegerField("Durée (1 à 5 ans)"){value=d.years};card.Add(years);Button(card,"Négocier",()=>RunDecision(()=>Career.NegotiateSponsor(index,amount.value,years.value)));if(d.status=="accepted"||d.status=="counter")Button(card,"Signer à "+Money(d.asking)+" / an",()=>RunDecision(()=>Career.SignSponsor(index))).AddToClassList("primary");}}
+            for(int i=0;i<w.sponsors.Count;i++){int index=i;var d=w.sponsors[i];var card=Card(s);Text(card,d.name+" · "+(d.status=="offer"?"À négocier":OfferStatus(d.status)),"section-title");Text(card,Money(d.annual)+" / an · "+d.years+" ans");if(d.status=="signed")Text(card,"Échéance : "+Touchline.Core.Career.Epoch.AddDays(d.until).ToString("dd MMM yyyy",French));else if(d.status!="expired"){var amount=new LongField("Demande annuelle (€)"){value=d.asking>0?d.asking:d.annual};card.Add(amount);var years=new IntegerField("Durée (1 à 5 ans)"){value=d.years};card.Add(years);Button(card,"Négocier",()=>RunDecision(()=>Career.NegotiateSponsor(index,amount.value,years.value)));if(d.status=="accepted"||d.status=="counter")Button(card,"Signer à "+Money(d.asking)+" / an",()=>RunDecision(()=>Career.SignSponsor(index))).AddToClassList("primary");}}
+            return;}
             if(w.debt>0){var debt=new LongField("Rembourser (€)"){value=Math.Min(w.debt,Math.Max(0,Career.life.cash/10))};s.Add(debt);Button(s,"Rembourser la dette",()=>RunDecision(()=>Career.RepayDebt(debt.value)));}
-            Heading(s,"Mouvements comptables");foreach(var item in Career.life.ledger.TakeLast(35).Reverse())Text(s,Touchline.Core.Career.Epoch.AddDays(item.day).ToString("dd MMM",French)+" · "+item.label+" · "+Money(item.amount));Text(s,Career.life.financeSource,"footnote");
+            Heading(s,"Mouvements comptables");
+            var recent=Career.life.ledger.Where(i=>i.day>Career.life.day-30&&i.day<=Career.life.day).ToArray();var flow=Row(s,"metric-grid");
+            Metric(flow,"ENCAISSÉ",Money(recent.Where(i=>i.amount>0).Sum(i=>i.amount)),"30 derniers jours");Metric(flow,"DÉCAISSÉ",Money(-recent.Where(i=>i.amount<0).Sum(i=>i.amount)),"30 derniers jours");Metric(flow,"SOLDE DES FLUX",Money(recent.Sum(i=>i.amount)),"Hors solde de départ");
+            if(Career.life.ledger.Count==0)Text(s,"Aucun mouvement enregistré pour le moment. Les paiements et recettes apparaîtront ici au fil de la carrière.","empty-state");
+            foreach(var item in Career.life.ledger.TakeLast(35).Reverse())Text(s,Touchline.Core.Career.Epoch.AddDays(item.day).ToString("dd MMM",French)+" · "+item.label+" · "+Money(item.amount));Text(s,Career.life.financeSource,"footnote");
         }
-        void PressPage()
+        void FinanceTicketControls(VisualElement s)
         {
-            var s=Scroll(content);Heading(s,"La salle de presse");var f=Career.NextFixture();var stage=Card(s,"press-stage");Text(stage,"CONFÉRENCE DE PRESSE","eyebrow");Text(stage,f?.venue??"Centre d’entraînement · "+Own.name,"display-title");var wall=Row(stage,"sponsor-wall");foreach(var d in Career.world.sponsors.Where(d=>d.status=="signed"))Text(wall,d.name,"pill");Text(wall,Own.name,"pill");Text(s,"Votre message agit sur le moral et sur les attentes. Une prise de parole par conférence.","muted");
-            foreach(var phase in new[]{"before","after"}){var card=Card(s);Text(card,phase=="before"?"Avant-match : quel est votre objectif ?":"Après-match : quel message pour le groupe ?","section-title");foreach(var answer in new[]{"calm","ambition","protect"})Button(card,answer=="calm"?"Rester mesuré":answer=="ambition"?"Afficher notre ambition":"Protéger mes joueurs",()=>RunDecision(()=>Career.Press(phase,answer)));}
+            var card=Card(s);Text(card,"Le stade et ses supporters","section-title");
+            Text(card,"Tarif actuel : "+Career.world.ticket+" € · affluence estimée : "+(Career.Occupancy*100).ToString("0")+" % · recette nette : "+Money(Career.GateIncome()),"muted");
+            var price=new IntegerField("Nouveau prix moyen (€)"){value=Career.world.ticket,name="finance-ticket-price"};card.Add(price);
+            var preview=Text(card,"","section-title");preview.name="finance-ticket-preview";var effect=Text(card,"","muted");effect.name="finance-ticket-effect";
+            var timing=Text(card,"","muted");var apply=PlayerManagementButton(card,"Appliquer ce tarif",()=>RunDecision(()=>Career.SetTicketPrice(price.value)));apply.name="finance-ticket-apply";apply.AddToClassList("primary");
+            void Refresh(){
+                if(price.value<5||price.value>250){preview.text="Choisissez un prix de 5 à 250 €.";effect.text="";timing.text="";apply.SetEnabled(false);return;}
+                var f=Career.PreviewTicketPrice(price.value);preview.text="Aperçu : "+(f.occupancy*100).ToString("0")+" % de remplissage · "+Money(f.netIncome)+" nets / rencontre";
+                effect.text=f.supporterTrustChange<0?"Hausse supérieure à 25 % : confiance des supporters "+f.supporterTrustChange.ToString("0")+" points. Cet effet est inclus dans l’aperçu.":"Pas de baisse immédiate de confiance liée à ce changement.";
+                bool ready=f.availableDay<=Career.life.day;timing.text=ready?"Tarif modifiable aujourd’hui. Aucun changement avant confirmation.":"Prochain changement possible le "+Core.Career.Epoch.AddDays(f.availableDay).ToString("dd MMM yyyy",French)+".";
+                apply.SetEnabled(PlayerManagementAvailable&&ready&&price.value!=Career.world.ticket);
+            }
+            price.RegisterValueChangedCallback(_=>Refresh());Refresh();
+            Text(card,"Estimation de jeu pour une rencontre à domicile au tarif normal, hors multiplicateur de compétition. L’affluence future reste variable. Une modification par semaine.","footnote");
         }
+        void PressPage()=>ContextualPressPage();
         void ManagerPage()
         {
             var s=Scroll(content);Heading(s,"Votre parcours");Text(s,Career.manager+" · "+Career.world.managerStatus,"display-title");Text(s,"Réputation : "+Career.life.reputation.ToString("0")+" · Confiance du conseil : "+Career.life.boardTrust.ToString("0")+" %");Text(s,"Propriétaire : "+Career.world.owner,"muted");
-            ShowJobOffers(s);
+            ShowBoardObjective(s);ShowJobOffers(s);ShowClubNews(s);
             if(Career.world.managerStatus=="dismissed"){Text(s,"De nouveaux postes deviennent accessibles sept jours après votre départ.");foreach(var c in Database.clubs.Where(c=>c.id!=Career.club&&c.playable&&c.annualRevenue<=Career.life.revenue*1.5).Take(20))Button(s,"Postuler · "+c.name,()=>RunDecision(()=>Career.TakeJob(Database,c.id)));}
             Heading(s,"Archives des saisons");foreach(var h in Career.world.honours.Where(h=>h.club==Career.club).Reverse())Text(s,h.year+" · "+Career.CompetitionName(Database,h.competition));
         }

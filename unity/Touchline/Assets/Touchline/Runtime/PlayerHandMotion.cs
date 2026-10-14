@@ -7,6 +7,7 @@ namespace Touchline
     {
         readonly Transform[] fingerBones=new Transform[30];
         readonly Vector3[] fingerAxes=new Vector3[30];
+        readonly Vector3[] fingerTips=new Vector3[30];
         readonly float[] handCurl=new float[2];
         readonly Vector3[] handPalmAxes=new Vector3[2];
         Vector3 gripOffset;
@@ -22,6 +23,7 @@ namespace Touchline
                 if(!bones.TryGetValue(name,out var bone))continue;fingerBones[index]=bone;
                 foreach(var definition in source.bones)if(definition.name==name){
                     var direction=(Vector(definition.tail)-Vector(definition.head)).normalized;
+                    fingerTips[index]=Vector(definition.tail)-Vector(definition.head);
                     var palm=handPalmAxes[side];
                     fingerAxes[index]=Vector3.Cross(direction,palm).normalized;break;
                 }
@@ -35,6 +37,23 @@ namespace Touchline
             var fingers=Vector3.ProjectOnPlane(body.up,palm).normalized;
             if(fingers.sqrMagnitude<.01f)fingers=Vector3.ProjectOnPlane(transform.forward,palm).normalized;
             wrist.rotation=Quaternion.LookRotation(fingers,palm)*Quaternion.Inverse(Quaternion.LookRotation(handAxes[side],handPalmAxes[side]));
+        }
+        void MecanimFallHandClearance(Actor actor)
+        {
+            if(actor.action!="fall")return;
+            const float FingerRadius=.014f,PalmRadius=.045f,Floor=.005f; // metres at standard stature, plus turf clearance
+            for(int side=0;side<2;side++){
+                var arm=Limb(Sides[side]);var wrist=arm.wrist;
+                float lowest=wrist.position.y-PalmRadius*transform.localScale.y;
+                for(int i=side*15;i<(side+1)*15;i++){
+                    var bone=fingerBones[i];if(bone==null)continue;
+                    lowest=Mathf.Min(lowest,Mathf.Min(bone.position.y,bone.TransformPoint(fingerTips[i]).y)-FingerRadius*transform.localScale.y);
+                }
+                if(lowest>=Floor)continue;
+                var rotation=wrist.rotation;
+                SolveArm(Sides[side],wrist.position+Vector3.up*(Floor-lowest),Vector3.up);
+                wrist.rotation=rotation;
+            }
         }
         void HandPose(Actor actor,float remaining,float dt,bool reset,PlayerMotionContext context)
         {

@@ -63,7 +63,7 @@ namespace Touchline.Editor
                 // Editor frame. Bake these exact measured bones for the proof;
                 // this diagnostic snapshot does not alter production rendering.
                 foreach(var skin in view.GetComponentsInChildren<SkinnedMeshRenderer>()){
-                    if(!skin.enabled)continue;var mesh=new Mesh();skin.BakeMesh(mesh);meshes.Add(mesh);
+                    if(!skin.enabled)continue;var mesh=new Mesh();skin.BakeMesh(mesh,true);meshes.Add(mesh);
                     var proxy=new GameObject("Current diagnostic locomotion skin");proxy.layer=skin.gameObject.layer;
                     proxy.transform.SetParent(skin.transform,false);proxy.AddComponent<MeshFilter>().sharedMesh=mesh;proxy.AddComponent<MeshRenderer>().sharedMaterials=skin.sharedMaterials;
                     proxies.Add(proxy);skins.Add(skin);skin.enabled=false;

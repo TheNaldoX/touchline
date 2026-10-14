@@ -72,7 +72,13 @@ namespace Touchline.Tests
         }
         [Test] public void LegacyKeeperMigrationPreservesSignedClubAndAddsRecognizedKeeperKeys()
         {
-            c.freeAgentsImported=true;var p=db.Find("p24");p.id="unfp-free-2";p.team=c.club;p.attributes=new[]{new AttributeValue{key="goalkeeperReflexes",value=57}};c.EnsureWorld(db);Assert.AreEqual(c.club,p.team);Assert.IsTrue(p.attributes.Any(a=>a.key=="gkReflexes"&&a.value==57));Assert.IsTrue(p.attributes.Any(a=>a.key=="gkHandling"));
+            c.freeAgentsImported=true;var p=db.Find("p24");p.id="unfp-free-2";p.team=c.club;p.attributes=new[]{new AttributeValue{key="goalkeeperReflexes",value=57}};
+            // Migration runs once per loaded career. Setup has already initialized
+            // its live cache: reproduce loading the legacy save, not a mid-session edit.
+            c=JsonUtility.FromJson<Career>(JsonUtility.ToJson(c));c.EnsureWorld(db);
+            Assert.AreEqual(c.club,p.team);Assert.IsTrue(p.attributes.Any(a=>a.key=="gkReflexes"&&a.value==57));Assert.IsTrue(p.attributes.Any(a=>a.key=="gkHandling"));
+            var keys=p.attributes.Select(a=>a.key).ToArray();c.EnsureWorld(db);
+            CollectionAssert.AreEqual(keys,p.attributes.Select(a=>a.key).ToArray(),"Repeating initialization must not duplicate migrated attributes");
         }
     }
 }

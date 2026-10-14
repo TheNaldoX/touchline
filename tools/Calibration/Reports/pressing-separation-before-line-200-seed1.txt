@@ -1,0 +1,17 @@
+Audit apparié : 200 affiches × 2 variantes par consigne, graine 1. Mesures du club dirigé (domicile).
+IA adverse active, aucun résultat de victoire garanti. IC 95 % indicatifs, sans correction des comparaisons multiples.
+
+### Ligne : basse → haute
+| Mesure | Bas | Haut | Différence ± IC95 | Sens observé |
+|---|---:|---:|---:|---|
+| Largeur (m) | 49.16 | 49.38 | 0.23 ± 0.05 | hausse |
+| Ligne (m depuis centre) | -33.61 | -19.39 | 14.22 ± 0.24 | hausse |
+| Pressing (joueur·s) | 659.01 | 666.09 | 7.08 ± 19.29 | non concluant |
+| Passe moyenne (m) | 20.38 | 20.53 | 0.16 ± 0.09 | hausse |
+| Passes tentées | 405.37 | 415.66 | 10.29 ± 6.90 | hausse |
+| Passes réussies (%) | 76.48 | 75.84 | -0.63 ± 0.47 | baisse |
+| Tirs | 10.43 | 21.02 | 10.59 ± 0.97 | hausse |
+| xG | 0.79 | 1.60 | 0.81 ± 0.11 | hausse |
+| Condition finale (%) | 92.12 | 92.63 | 0.51 ± 0.11 | hausse |
+| Buts pour | 1.31 | 2.22 | 0.91 ± 0.26 | hausse |
+| Buts contre | 1.90 | 0.99 | -0.91 ± 0.21 | baisse |

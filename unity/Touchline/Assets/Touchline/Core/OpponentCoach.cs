@@ -5,6 +5,25 @@ namespace Touchline.Core
 {
     public sealed partial class MatchSimulation
     {
+        // Ligne défensive moyenne du club dirigé (m depuis le centre, son propre camp négatif)
+        // au-delà de laquelle l'adversaire cherche la profondeur : ligne haute ≈ −19,5 m,
+        // ligne médiane ≈ −27 m. Hystérésis de 2 m pour ne pas osciller.
+        public const float ExploitLineMetres=-23f,ExploitLineHysteresis=2f;
+        // Jeu plus direct (0–1) adopté pour attaquer l'espace dans le dos.
+        public const float ExploitDirectness=.75f;
+        void ExploitHighLine(MatchState m,Tactic tactic)
+        {
+            var ours=m.metrics[0];if(ours.defensiveSamples<=0||m.clock<10*m.SecondsPerMinute)return;
+            float line=ours.AverageLine;
+            if(!m.awayExploitingLine&&line>ExploitLineMetres){
+                m.awayExploitingLine=true;m.awayBaseDirectness=tactic.directness;m.awayBaseCounter=tactic.counterAttack;
+                tactic.directness=Math.Max(tactic.directness,ExploitDirectness);tactic.counterAttack=true;
+                Emit("opponent-adjustment",1,null,"L’adversaire allonge le jeu pour attaquer l’espace dans le dos de votre ligne haute.");
+            }else if(m.awayExploitingLine&&line<ExploitLineMetres-ExploitLineHysteresis){
+                m.awayExploitingLine=false;if(m.awayBaseDirectness>=0)tactic.directness=m.awayBaseDirectness;tactic.counterAttack=m.awayBaseCounter;
+                Emit("opponent-adjustment",1,null,"Votre ligne a reculé : l’adversaire revient à son jeu habituel.");
+            }
+        }
         // Tactical reviews are persisted; substitutions wait for a stoppage and
         // share one window when several players enter together.
         void ReviewOpponent()
@@ -26,6 +45,7 @@ namespace Touchline.Core
             tactic.pressing=Mathx.Clamp(m.awayBasePress-(countFit>0&&fitness/countFit<65?.12f:0)+(margin<0?.1f*urgency:0),.2f,.85f);
             if(crosses>=4)Emit("opponent-adjustment",1,null,"L’adversaire élargit sa couverture pour limiter les centres.");
             else if(through>=3)Emit("opponent-adjustment",1,null,"L’adversaire protège davantage la profondeur.");
+            ExploitHighLine(m,tactic);
             m.awayObservedCrosses=m.metrics[0].crosses;m.awayObservedThrough=m.metrics[0].throughBalls;
             m.awayTacticalReviewAt=m.clock+10*m.SecondsPerMinute;
             if(plan!=m.awayPlan){m.awayPlan=plan;Emit("opponent-plan",1,null,plan=="chase"?"L’adversaire remonte son bloc et accélère pour revenir au score.":plan=="protect"?"L’adversaire abaisse son bloc et temporise pour protéger son avance.":"L’adversaire retrouve une approche équilibrée.");}

@@ -7,6 +7,56 @@ namespace Touchline.Tests
 {
     public class BroadcastFramingTests
     {
+        [TestCase(-1)] [TestCase(1)]
+        public void PortraitAttackingFrameKeepsBallAndGoalWithoutExcessiveRetreat(int end)
+        {
+            var go=new GameObject("Readable portrait attack");try{
+                var c=go.AddComponent<Camera>();c.aspect=.43f;c.fieldOfView=46;
+                var ball=new Vector3(end*47,.11f,end*18);var focus=BroadcastFraming.LiveTarget(ball,true,false);
+                BroadcastFraming.Apply(c,focus,ball,false,true,end,1);Check(c,ball);
+                foreach(float z in new[]{-3.66f,3.66f})Check(c,new Vector3(end*52.5f,0,z));
+                Assert.Less(Vector3.Distance(c.transform.position,focus),90f,"Keep attack readable instead of the previous >100m frame");
+            }finally{Object.DestroyImmediate(go);}
+        }
+        [TestCase(30)] [TestCase(60)] [TestCase(120)]
+        public void CameraPullbackAndReturnAreBothBounded(int fps)
+        {
+            float distance=50,velocity=0,dt=1f/fps;
+            foreach(float target in new[]{95f,45f})for(int i=0;i<fps*3;i++){
+                float next=BroadcastFraming.SmoothDistance(distance,target,ref velocity,dt);
+                Assert.LessOrEqual(Mathf.Abs(next-distance),8f*dt+.001f,"No instantaneous zoom on a changed action frame");distance=next;
+            }
+            float savedVelocity=velocity;Assert.AreEqual(distance,BroadcastFraming.SmoothDistance(distance,100,ref velocity,0));Assert.AreEqual(savedVelocity,velocity);
+        }
+        [TestCase(.43f,-1,.1f)] [TestCase(.43f,1,.1f)] [TestCase(1.32f,-1,.1f)] [TestCase(1.32f,1,.1f)]
+        [TestCase(.43f,-1,.5f)] [TestCase(.43f,1,.5f)] [TestCase(1.32f,-1,.5f)] [TestCase(1.32f,1,.5f)]
+        public void EnteringTheLastThirdDoesNotCutToAWiderCamera(float aspect,int end,float step)
+        {
+            var go=new GameObject("Continuous goal framing");try{
+                var c=go.AddComponent<Camera>();c.aspect=aspect;c.fieldOfView=46;Vector3 previous=Vector3.zero;
+                int leg=Mathf.RoundToInt(10/step);
+                for(int i=0;i<=2*leg;i++){
+                    float x=23+(i<=leg?i:2*leg-i)*step;var ball=new Vector3(end*x,.11f,0);var focus=new Vector3(end*(x-4),.6f,0);
+                    BroadcastFraming.Apply(c,focus,ball,false,true,end,.85f);Check(c,ball);
+                    if(i>0)Assert.Less(Vector3.Distance(previous,c.transform.position),8*step,"Pas de coupe au seuil du dernier tiers : x="+x);
+                    previous=c.transform.position;
+                    if(x>=28&&Mathf.Abs(end*52.5f-focus.x)<=29){Check(c,new Vector3(end*52.5f,0,-3.66f));Check(c,new Vector3(end*52.5f,2.44f,3.66f));}
+                }
+            }finally{Object.DestroyImmediate(go);}
+        }
+        [TestCase(18f,10f,true)] [TestCase(17f,12f,false)]
+        public void PortraitDeliveryDoesNotJumpAtTheCentralFramingThreshold(float ballZ,float focusZ,bool moveBall)
+        {
+            var go=new GameObject("Continuous portrait delivery");try{
+                var c=go.AddComponent<Camera>();c.aspect=.43f;c.fieldOfView=46;Vector3 previous=Vector3.zero;
+                for(int i=0;i<=80;i++){
+                    float offset=2-(i<=40?i:80-i)*.1f;var ball=new Vector3(35,.11f,ballZ+(moveBall?offset:0));var focus=new Vector3(28,.6f,focusZ+(moveBall?0:offset));
+                    BroadcastFraming.Apply(c,focus,ball,false,true,1,.85f);Check(c,ball);
+                    if(i>0)Assert.Less(Vector3.Distance(previous,c.transform.position),1f,"La livraison ne doit pas déclencher un recul brutal");
+                    previous=c.transform.position;
+                }
+            }finally{Object.DestroyImmediate(go);}
+        }
         [TestCase(.43f,-1,-1)] [TestCase(.43f,1,1)] [TestCase(1.32f,1,-1)] [TestCase(3.62f,-1,1)] [TestCase(3.62f,1,1)]
         public void CornersKeepBallAndGoalInsideTheViewport(float aspect,int end,int side)
         {
@@ -19,7 +69,9 @@ namespace Touchline.Tests
         {
             var go=new GameObject("TV context test");try{var c=go.AddComponent<Camera>();c.aspect=aspect;c.fieldOfView=46;
                 BroadcastFraming.Apply(c,new Vector3(8,.6f,5),new Vector3(8,.11f,5),false,false,1,1);
-                for(int x=-1;x<=1;x+=2)for(int z=-1;z<=1;z+=2)Check(c,new Vector3(8+x*18,.6f,5+z*12));
+                // Portrait : la largeur gardée passe de ±12 à ±PortraitLaneHalfWidth m pour des joueurs lisibles ; la longueur (±18 m) reste exigée.
+                float width=aspect<.8f?BroadcastFraming.PortraitLaneHalfWidth:12;
+                for(int x=-1;x<=1;x+=2)for(int z=-1;z<=1;z+=2)Check(c,new Vector3(8+x*18,.6f,5+z*width));
                 if(aspect<.8f)Assert.Greater(Mathf.Abs((c.WorldToViewportPoint(new Vector3(26,0,5))-c.WorldToViewportPoint(new Vector3(-10,0,5))).y),.3f);
             }finally{Object.DestroyImmediate(go);}
         }
@@ -46,6 +98,20 @@ namespace Touchline.Tests
         [Test] public void PortraitTelevisionZoomChangesScaleWhileRetainingTheBall()
         {
             var go=new GameObject("Portrait zoom test");try{var c=go.AddComponent<Camera>();c.aspect=.43f;c.fieldOfView=46;BroadcastFraming.Apply(c,Vector3.zero,Vector3.zero,false,false,1,.8f);float close=c.transform.position.magnitude;Check(c,Vector3.zero);BroadcastFraming.Apply(c,Vector3.zero,Vector3.zero,false,false,1,1.3f);Assert.Greater(c.transform.position.magnitude,close*1.2f);Check(c,Vector3.zero);}finally{Object.DestroyImmediate(go);}
+        }
+        [TestCase(.43f,8f,5f)][TestCase(.43f,-40f,-20f)][TestCase(.43f,40f,25f)]
+        public void PortraitTelevisionShowsStandingPlayersInsteadOfATopDownMap(float aspect,float x,float z)
+        {
+            var go=new GameObject("Portrait player scale");try{var c=go.AddComponent<Camera>();c.aspect=aspect;c.fieldOfView=46;
+                var ball=new Vector3(x,.11f,z);var focus=BroadcastFraming.LiveTarget(ball,true,false);
+                BroadcastFraming.Apply(c,focus,ball,false,true,x>=0?1:-1,.85f);Check(c,ball);
+                Assert.Greater(c.transform.forward.y,-.9f,"Plus de vue presque verticale en portrait");
+                Assert.Greater(Vector3.Dot(c.transform.up,Vector3.right),.5f,"Le but +x reste en haut de l'écran plié");
+                var feet=c.WorldToViewportPoint(ball);var head=c.WorldToViewportPoint(ball+Vector3.up*1.8f);
+                // Ancienne vue du dessus : ~0,003 de la hauteur d'écran (≈ 6 px sur 2520) ; exigé : ≥ 0,015 (≈ 38 px).
+                Assert.Greater(head.y-feet.y,.015f,"Un joueur debout doit apparaître debout et lisible");
+                TestContext.WriteLine($"Joueur de 1,8 m : {(head.y-feet.y)*2520:0} px sur 2520 ; distance {Vector3.Distance(c.transform.position,focus):0.0} m");
+            }finally{Object.DestroyImmediate(go);}
         }
         [TestCase("Entraînement","entrainement")][TestCase("Prêts et agents","PRETS")]
         public void MenuSearchAcceptsUnaccentedQueries(string title,string query)=>Assert.IsTrue(TouchlineApp.DirectoryMatches(title,query));

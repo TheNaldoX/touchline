@@ -26,7 +26,8 @@ namespace Touchline
                 SolveLeg(Sides[i],target);foot.rotation=rotation;
             }
         }
-        void KeepBootsAbovePitch(Vector3 bendPole,bool preserveCurrentPlane=false)
+        void KeepBootsAbovePitch(Vector3 bendPole,bool preserveCurrentPlane=false)=>KeepBootSurfacesAbovePitch(bendPole,preserveCurrentPlane,false);
+        void KeepBootSurfacesAbovePitch(Vector3 bendPole,bool preserveCurrentPlane,bool measureStandingSole)
         {
             // Resolve the entire rotated boot after every pose and contact
             // layer, including launch/landing, rather than just locomotion.
@@ -35,6 +36,10 @@ namespace Touchline
                 var center=rotation*new Vector3(0,.02f,.075f);
                 float extent=Mathf.Abs((rotation*Vector3.right).y)*.057f+Mathf.Abs((rotation*Vector3.up).y)*.085f+Mathf.Abs((rotation*Vector3.forward).y)*.145f;
                 float low=foot.position.y+(center.y-extent)*transform.localScale.y;
+                if(measureStandingSole){
+                    if(receptionBootVertices==null)receptionBootVertices=FootballBootMesh.Shared.vertices;
+                    low=float.PositiveInfinity;foreach(var vertex in receptionBootVertices)low=Mathf.Min(low,foot.TransformPoint(vertex).y);
+                }
                 if(low<.01f){var target=foot.position;target.y+=.01f-low;var pole=preserveCurrentPlane?Limb(Sides[i]).lowerLeg.position-Limb(Sides[i]).upperLeg.position:bendPole;SolveLeg(Sides[i],target,pole);foot.rotation=rotation;}
             }
         }

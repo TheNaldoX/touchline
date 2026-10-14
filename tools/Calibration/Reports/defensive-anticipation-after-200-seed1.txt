@@ -1,0 +1,26 @@
+Matchs : 200 (erreurs : 0)
+
+| Stat par match | Moyenne | Écart-type | Fourchette |
+|---|---|---|---|
+| Buts | 3,25 | 1,90 | 2,5 – 3,0 |
+| xG | 2,15 | 0,92 | ~2,6 |
+| Tirs | 29,78 | 8,26 | 22 – 28 |
+| Tirs cadrés | 9,46 | 3,99 | 7 – 10 |
+| Corners | 8,24 | 3,82 | 8 – 11 |
+| Fautes | 21,35 | 4,35 | 20 – 26 |
+| Cartons jaunes | 4,10 | 1,79 | 3 – 5 |
+| Cartons rouges | 0,16 | 0,41 | ~0,1 |
+| Penalties | 0,23 | 0,46 | 0,20 – 0,35 |
+| Hors-jeu | 3,87 | 2,26 | 3 – 5 |
+| Touches | 36,80 | 7,21 | 35 – 50 |
+| Sorties de but | 13,48 | 4,00 | 14 – 20 |
+| Coups francs | 24,99 | 4,42 | 20 – 26 |
+| Passes | 920,10 | 88,85 | 800 – 1000 |
+| Réussite passes % | 81,74 | 1,88 | 75 – 87 |
+
+Favori net (écart ≥ 3 pts, 99 matchs) : victoires 74,75 %, nuls 14,14 %, possession 55,70 %
+  écart 3–6 (50 matchs) : victoires du favori 70,00 %, nuls 18,00 %
+  écart 6–+ (49 matchs) : victoires du favori 79,59 %, nuls 10,20 %
+Domicile : victoires 48,00 %, nuls 22,00 %
+
+Phases (entrées par match) : corner 8,24, free-kick 24,99, goal 3,25, goal-kick 13,48, kickoff 4,18, penalty 0,23, play 88,16, throw-in 36,80

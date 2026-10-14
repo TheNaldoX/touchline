@@ -12,6 +12,9 @@
   <ItemGroup>
     <Compile Include="$(CoreDir)/**/*.cs" />
     <Compile Include="*.cs" />
+    <Compile Include="../Calibration/PairedStatistics.cs" />
+    <Compile Include="../Calibration/BinomialInterval.cs" />
+    <Compile Include="../Calibration/ThroughPassObserver.cs" />
     <Compile Include="$(TestsDir)/*.cs" Exclude="@(ExcludedTest->'$(TestsDir)/%(Identity)')" />
   </ItemGroup>
 </Project>

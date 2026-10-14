@@ -14,7 +14,43 @@ namespace Touchline.Tests
             leagues=new[]{new LeagueData{id="fra.1"}},fixtures=new Fixture[0]
         };
         Career Initial()=>new Career{club="a",lineup=Enumerable.Range(0,11).Select(i=>"p"+i).ToArray()};
+        [TestCase(false)] [TestCase(true)]
+        public void AcademyCatalogueExtensionPreservesSavedDepartureAndNewBirthDate(bool compact)
+        {
+            var original=Original();var c=Initial();c.world=new CareerWorld();
+            c.world.rosterChanges.Add(new PlayerData{id="p1",name="P1",team="b",age=25});c.world.managerStatus="unemployed";
+            c.saveBaseline=SaveBaseline.From(original);if(compact)Assert.IsTrue(c.PrepareCompactSave());
+            string json=JsonUtility.ToJson(c);c.RestoreAfterSave();
+            var youth=new PlayerData{id="sourced-youth",name="Source fixture",team="academy-a",birthDate="2010-07-21",position="MIL",source="https://example.org/id",rosterSource="https://example.org/roster",assessment="Estimated attributes"};
+            Assert.AreEqual(1,RealAcademyCatalogue.Append(original,new Database{players=new[]{youth}}));
+            var saved=JsonUtility.FromJson<Career>(json);Assert.IsTrue(CareerSaveRestore.TryRestore(original,saved,out var restored));
+            Assert.AreEqual("b",restored.Find("p1").team);Assert.AreEqual("a",original.Find("p1").team);
+            Assert.AreEqual(15,restored.Find(youth.id).age);Assert.AreEqual("academy-a",restored.Find(youth.id).team);
+            Assert.AreEqual(12,restored.players.Length);
+        }
         Career BadPrimary(){var c=Initial();c.world=new CareerWorld();c.world.rosterChanges.Add(new PlayerData{id="p0",team="free",age=42,source="Rejected source"});c.world.divisions.Add(new Division{id="fra.2",clubs={"a"}});c.changedRevenues.Add(new RevenueChange{club="a",revenue=1});return c;}
+
+        [TestCase("retired",false)][TestCase("retired",true)]
+        [TestCase("free",false)][TestCase("free",true)]
+        [TestCase("b",false)][TestCase("b",true)]
+        public void UnemployedHistoricalLineupSurvivesDeparture(string destination,bool compact)
+        {
+            var original=Original();var c=Initial();c.world=new CareerWorld{managerStatus="unemployed"};
+            var departed=original.Find("p0").Copy();departed.team=destination;c.world.rosterChanges.Add(departed);
+            c.saveBaseline=SaveBaseline.From(original);if(compact)Assert.IsTrue(c.PrepareCompactSave());
+            string json=JsonUtility.ToJson(c);c.RestoreAfterSave();var saved=JsonUtility.FromJson<Career>(json);
+            Assert.IsTrue(CareerSaveRestore.TryRestore(original,saved,out var restored));
+            Assert.AreEqual(destination,restored.Find("p0").team);Assert.AreEqual("a",original.Find("p0").team);
+        }
+        [Test] public void UnemployedExceptionDoesNotAcceptMissingPlayersOrAnActiveMatch()
+        {
+            var original=Original();var c=BadPrimary();c.world.managerStatus="unemployed";
+            c.lineup[0]="unknown";Assert.IsFalse(CareerSaveRestore.TryRestore(original,c,out _));
+            c.lineup[0]="p0";c.match=new MatchState{home="a",away="b"};
+            Assert.IsFalse(CareerSaveRestore.TryRestore(original,c,out _));
+            c.match=null;c.world.activeFixture="active";
+            Assert.IsFalse(CareerSaveRestore.TryRestore(original,c,out _));
+        }
 
         [Test] public void RejectedPrimaryCannotContaminateBackupOrImportedCatalogue()
         {

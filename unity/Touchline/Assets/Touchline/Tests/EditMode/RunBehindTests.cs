@@ -30,6 +30,27 @@ namespace Touchline.Tests
             var args=new object[]{runner,owner,duty,q};bool r=(bool)typeof(MatchSimulation).GetMethod("RunBehind",Flags).Invoke(sim,args);q=(Point)args[3];return r;
         }
 
+        [TestCase(0,1)][TestCase(1,1)][TestCase(0,2)][TestCase(1,2)]
+        public void AlignedGroundReceptionKeepsMovingButTurningAndBodyControlsBrake(int side,int period)
+        {
+            foreach(string kind in new[]{"control-foot",MatchSimulation.ChestControl,MatchSimulation.ThighControl,"turn"}){
+                var sim=Setup(side,0,out var owner,out _,out _);sim.State.period=period;int dir=sim.Direction(side);
+                foreach(var actor in sim.State.actors)actor.sentOff=actor!=owner;
+                owner.position=new Point();owner.velocity=new Point(dir*4,0);owner.angle=dir*(float)Math.PI/2;
+                owner.action="control";owner.actionKind=kind=="turn"?"control-foot":kind;owner.actionTime=.3f;owner.controlTime=.2f;
+                owner.carryTarget=new Point((kind=="turn"?-dir:dir)*8,0);sim.State.ball.position=owner.position;
+                typeof(MatchSimulation).GetMethod("Move",Flags).Invoke(sim,null);
+                if(kind=="control-foot"){
+                    Assert.Greater(sim.MovementTarget(side*11+6).x*dir,4,"An aligned ground touch must not impose a stationary waypoint.");
+                    Assert.GreaterOrEqual(owner.velocity.x*dir,4,"The receiver keeps the running first touch.");
+                }else{
+                    Assert.Less(sim.MovementTarget(side*11+6).Length,.001f,"Turning and body cushioning still require braking.");
+                    Assert.Less(owner.velocity.x*dir,4,"Braking remains progressive rather than snapping velocity to zero.");
+                    Assert.Greater(owner.velocity.x*dir,0);
+                }
+            }
+        }
+
         [TestCase(0)][TestCase(1)]
         public void FreeOwnerTriggersRunBeyondTheLine(int side)
         {

@@ -29,6 +29,10 @@ namespace Touchline.Core
  return Mathx.Clamp(quality*(header?.65f:1),.01f,.75f);  
  }  
  float ShotPlacement(Actor player,float finishing)=>Mathx.Clamp((finishing-35)/55,0,1)*Mathx.Clamp(Space(player.position,1-player.side,true)/4,.4f,1);  
+ // Calibration of displayed pre-shot odds against 400 simulated matches (seeds 1/2).
+ // This is a simulation estimate, not real-world xG. Shot selection keeps its original utility.
+ public const float ReportedShotOddsScale=1.65f;
+ public static float CalibratedShotEstimate(float geometry){float q=Mathx.Clamp(geometry,0,1);return q*ReportedShotOddsScale/(1-q+q*ReportedShotOddsScale);}
  float AvailableShotWidth(Actor player)=>.2f+(1.4f+1.5f*ShotPlacement(player,Skill(player,"finishing")))*.85f;  
  bool ShootingLaneClear(Actor player,float goalZ)  
  {  
@@ -46,7 +50,7 @@ namespace Touchline.Core
  public string Decide(Actor p)  
  {  
  if(State.ball.owner==p.id&&(State.ball.held||p.action=="keeper-rise"))return "hold";  
- if(State.ball.owner==p.id&&PreparingFootDelivery(p)){State.decision=Step;return "prepare";}  
+ if(State.ball.owner==p.id&&PreparingFootDelivery(p)){ReconsiderPreparedBackpass(p);State.decision=Step;return "prepare";}  
  bool prepared=p.actionKind==PreparedFootDelivery;if(prepared)p.actionKind=null;  
  var m=State;int dir=Direction(p.side);var t=Tactic(p.side);float pressure=Space(p.position,1-p.side,true);float distance=Point.Distance(p.position,new Point(dir*52.5f,0));  
  float depth=Math.Max(.5f,52.5f-p.position.x*dir);float opening=(float)(Math.Atan2(3.66f-p.position.z,depth)-Math.Atan2(-3.66f-p.position.z,depth));  
@@ -92,7 +96,7 @@ Actor best=null;float bestScore=-100;string kind="pass";
  if(mate.slot==0&&p.position.x*dir>0)score-=7;  
  if(forward< -4&&pressure>4&&space<pressure)score-=5;  
  // A weak passer under pressure recognises fewer ambitious options.  
- score-=aerial?(100-Skill(p,"vision"))*.02f:0;score+=(Random()-.5f)*(1.8f-Skill(p,"vision")*.01f);  
+ score-=aerial?(100-Skill(p,"vision"))*.02f:0;score+=(Random()-.5f)*(1.8f-Skill(p,"vision")*.01f)*DecisionNoiseFactor(p);  
  // Servir un partenaire marqué de près hors de la zone de finition, quand
  // on pourrait jouer ailleurs, revient souvent à lui faire perdre le ballon.
  if((candidate=="pass"||candidate=="switch")&&mate.position.x*dir<MarkedReceiverZone)score-=MarkedReceiverCost(space);
@@ -187,7 +191,9 @@ Actor best=null;float bestScore=-100;string kind="pass";
  float skill=Skill(from,kind=="cross"?"crossing":d>27?"longPassing":"shortPassing");float pressure=Math.Max(0,3-Space(from.position,1-from.side));  
  // A long aerial ball is much harder to land on a team-mate than a pass
  // along the ground: its error is scaled by LongBallError.
- float error=(1-skill/105)*(Random()-.5f)*(Math.Min(14,d*.30f)+pressure*2+Tactic(from.side).tempo*2)*(kind=="switch"||d>30&&kind!="cross"?LongBallError:1);  
+ // Tempo already changes decision cadence and ball speed (hence reception
+ // difficulty). Do not also worsen an otherwise identical prepared pass.
+ float error=(1-skill/105)*(Random()-.5f)*(Math.Min(14,d*.30f)+pressure*2+BasePassExecutionUncertainty)*(kind=="switch"||d>30&&kind!="cross"?LongBallError:1)*PassErrorFactor(from);
  var end=PassTarget(from,to,kind)+new Point(error,error*(Random()<.5f?-1:1));
  // A lofted long ball is judged on its length: weight it wrongly and it
  // sails long (more often than short) and can carry over the touchline.
@@ -239,6 +245,8 @@ Actor best=null;float bestScore=-100;string kind="pass";
  // A clearance stays in play only through a clearly open long channel.
  public const float OpenClearanceSafety=.75f;
  public const float LongBallError=2.2f;
+ // Metres before skill/random scaling; preserves execution noise at default tempo.
+ public const float BasePassExecutionUncertainty=1f;
  // Points de score retirés à la conduite d'un joueur qui vient d'orienter
  // son corps pour une passe encore jouable.
  public const float PreparedDeliveryCommitment=4f;
@@ -258,9 +266,9 @@ Actor best=null;float bestScore=-100;string kind="pass";
  void Shoot(Actor p,bool header=false,bool penalty=false,bool freeKick=false)  
  {  
  float approachFacing=p.angle;  
- int dir=Direction(p.side);float d=Point.Distance(p.position,new Point(dir*52.5f,0));float quality=penalty?.76f:ShotQuality(p,header);State.shotXg=quality;State.metrics[p.side].xg+=quality;  
+ int dir=Direction(p.side);float d=Point.Distance(p.position,new Point(dir*52.5f,0));float quality=penalty?.76f:CalibratedShotEstimate(ShotQuality(p,header));State.shotXg=quality;State.metrics[p.side].xg+=quality;
  float finishing=penalty?Skill(p,"penalties"):freeKick?FreeKickSkill(p):header?Skill(p,"headingAccuracy"):OpenPlayShotSkill(p,d);  
- float accuracy=penalty?.83f+finishing*.0012f:Mathx.Clamp(.30f+finishing/240-d/110,.15f,.74f);bool onTarget=Random()<accuracy;  
+ float accuracy=penalty?.83f+finishing*.0012f:Mathx.Clamp(.30f+finishing/240-d/110,.15f,.74f);accuracy+=Composure(p)*ComposureShotAccuracy;bool onTarget=Random()<accuracy;  
  var keeper=State.actors[(1-p.side)*11];float side=keeper.position.z>0?-1:1;  
  // Finishing and room to set the body govern how precisely a player  
  // can place the shot away from the keeper, including headers.  

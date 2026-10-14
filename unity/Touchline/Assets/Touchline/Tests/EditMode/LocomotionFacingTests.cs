@@ -6,6 +6,106 @@ namespace Touchline.Tests
 {
     public class LocomotionFacingTests
     {
+        [TestCase("header", "", .64f, 9)]
+        [TestCase("slide", "", 1.7f, 9)]
+        [TestCase("tackle", MatchSimulation.StandingDuel, .75f, 9)]
+        [TestCase("control", MatchSimulation.ChestControl, .60f, 9)]
+        [TestCase("control", MatchSimulation.ThighControl, .48f, 9)]
+        [TestCase("keeper-throw", "", 1.08f, 0)]
+        [TestCase("dive", "", 1.2f, 0)]
+        public void CapturedContactResumesAtInterpolatedMatchTime(string action,string kind,float duration,int slot)
+        {
+            bool before=PlayerView.UseMecanim;var root=new GameObject("Contact clock");
+            try{
+                PlayerView.UseMecanim=true;var view=root.AddComponent<PlayerView>();view.Build(new PlayerData{id="contact-clock",heightCm=182},0,slot,Color.blue);
+                Assert.IsTrue(PlayerView.MecanimReady);
+                var actor=new Actor{id="contact-clock",slot=slot,action=action,actionKind=kind,actionSequence=1,actionTime=duration-.25f,actionTarget=new Point(0,.4f)};
+                view.Render(actor,.5f,1f/60,new Vector3(0,.11f,.4f));
+                var field=typeof(PlayerView).GetField("mecanimActionElapsed",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic);
+                Assert.AreEqual(.25f-.5f*MatchSimulation.Step,(float)field.GetValue(view),.0001f,"Contact must resume mid-action instead of restarting");
+            }finally{Object.DestroyImmediate(root);PlayerView.UseMecanim=before;}
+        }
+        [TestCase(30)][TestCase(60)][TestCase(120)]
+        public void CapturedKickFollowsMatchClockWhenHighlightStartsMidGesture(int fps)
+        {
+            bool before=PlayerView.UseMecanim;var root=new GameObject("Kick clock");
+            try{
+                PlayerView.UseMecanim=true;var view=root.AddComponent<PlayerView>();view.Build(new PlayerData{id="kick-clock",heightCm=182},0,9,Color.blue);
+                Assert.IsTrue(PlayerView.MecanimReady);
+                var actor=new Actor{id="kick-clock",slot=9,action="kick",actionKind="pass",actionSequence=1,actionTime=.40f};
+                var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+                float Elapsed()=>(float)typeof(PlayerView).GetField("mecanimActionElapsed",flags).GetValue(view);
+                view.Render(actor,.5f,1f/fps,new Vector3(0,.11f,.42f));
+                Assert.AreEqual(.64f-(.40f+.5f*MatchSimulation.Step),Elapsed(),.0001f,"Joining an existing action must not restart its clock");
+                view.Render(actor,.5f,1f/fps,new Vector3(0,.11f,.42f));
+                Assert.AreEqual(.19f,Elapsed(),.0001f,"A frozen match clock must not advance the strike");
+                view.Render(actor,1,1f/fps,new Vector3(0,.11f,.42f));
+                Assert.AreEqual(.24f,Elapsed(),.0001f,"Sub-step interpolation must advance the same action continuously");
+            }finally{Object.DestroyImmediate(root);PlayerView.UseMecanim=before;}
+        }
+        [TestCase(160,false,30)] [TestCase(160,true,120)]
+        [TestCase(182,false,60)] [TestCase(182,true,30)]
+        [TestCase(200,false,120)] [TestCase(200,true,60)]
+        public void CapturedPassReachesRecordedBallAtImpact(int height,bool left,int fps)
+        {
+            bool before=PlayerView.UseMecanim;var root=new GameObject("Captured pass contact");
+            try{
+                PlayerView.UseMecanim=true;
+                var view=root.AddComponent<PlayerView>();view.Build(new PlayerData{id="pass-contact",heightCm=height,preferredFoot=left?"Left":"Right"},0,9,Color.blue);
+                var ball=new Vector3(0,.11f,.42f);
+                var actor=new Actor{id="pass-contact",slot=9,action="kick",actionKind="pass",actionSequence=1,actionTarget=new Point(ball.x,ball.z),actionHeight=ball.y};
+                float last=0;
+                for(int frame=0;frame/(float)fps<.18f;frame++){float elapsed=frame/(float)fps;actor.actionTime=.64f-elapsed;view.Render(actor,1,1f/fps,ball);last=elapsed;}
+                actor.actionTime=.46f;view.Render(actor,1,.18f-last,ball);
+                Assert.Less(Vector3.Distance(view.InsideFootContactPosition(left),ball),.055f,"Medial boot surface must meet the recorded ball at impact");
+                Assert.Greater(view.FootPosition(!left).y,.03f,"Support foot must remain above the pitch");
+                Assert.AreEqual(Vector3.zero,root.transform.position);
+            }finally{Object.DestroyImmediate(root);PlayerView.UseMecanim=before;}
+        }
+        [TestCase(false,"pass")] [TestCase(true,"pass")]
+        [TestCase(false,"through")] [TestCase(true,"through")]
+        [TestCase(false,"cutback")] [TestCase(true,"cutback")]
+        public void CapturedShortPassUsesPreferredFoot(bool left,string kind)
+        {
+            bool before=PlayerView.UseMecanim;var root=new GameObject("Preferred passing foot");
+            try{
+                PlayerView.UseMecanim=true;
+                var view=root.AddComponent<PlayerView>();view.Build(new PlayerData{id="passing-foot",heightCm=182,preferredFoot=left?"Left":"Right"},0,9,Color.blue);
+                Assert.IsTrue(PlayerView.MecanimReady,"Imported football clips are required for this regression");
+                var actor=new Actor{id="passing-foot",slot=9,action="kick",actionKind=kind,actionSequence=1,actionTime=.64f};
+                for(int i=0;i<12;i++){actor.actionTime=.64f-i/60f;view.Render(actor,1,1f/60,new Vector3(0,.11f,.42f));}
+                Assert.AreEqual(left?"Soccer Pass (miroir)":"Soccer Pass",view.MecanimGestureClip);
+                Assert.Greater(view.FootPosition(left).z,view.FootPosition(!left).z,"The preferred foot must follow through in front of the support foot");
+                Assert.AreEqual(Vector3.zero,root.transform.position,"The presentation must not displace the simulated player");
+            }finally{Object.DestroyImmediate(root);PlayerView.UseMecanim=before;}
+        }
+        [TestCase(160)] [TestCase(182)] [TestCase(200)]
+        public void ReplacementStepStartsAtVisibleFootInsteadOfUnreachableAnchor(int height)
+        {
+            var root=new GameObject("Foot step origin");
+            try{
+                var view=root.AddComponent<PlayerView>();view.Build(new PlayerData{id="support-origin",heightCm=height},0,9,Color.blue);
+                var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+                T Field<T>(string name)=>(T)typeof(PlayerView).GetField(name,flags).GetValue(view);
+                Vector3 before=view.FootPosition(true);
+                Assert.Less(before.y,.12f*root.transform.localScale.y,"Fixture must exercise a grounded foot");
+                var previous=Field<Vector3[]>("previousFeet");previous[0]=before;previous[1]=view.FootPosition(false);
+                Field<bool[]>("footLocked")[0]=true;Field<float[]>("footLockWeight")[0]=1;
+                Field<Vector3[]>("footLockPoint")[0]=before+Vector3.back*.8f;
+                typeof(PlayerView).GetMethod("MecanimFootLock",flags).Invoke(view,new object[]{1f/60,false});
+                Assert.Greater(Field<float[]>("footStep")[0],0,"Stale support must initiate a recovery step");
+                Assert.Less(Vector3.Distance(before,view.FootPosition(true)),.015f,"The first step frame must not jump towards the stale anchor");
+            }finally{Object.DestroyImmediate(root);}
+        }
+        [TestCase(30)] [TestCase(60)] [TestCase(120)]
+        public void StrafeReversalBlendsContinuouslyAtDifferentFrameRates(int fps)
+        {
+            float right=1,first=PlayerView.StrafeBlend(1,0,1f/fps);
+            Assert.Greater(first,.7f,"No instant left/right pose swap");Assert.Less(first,1);
+            for(int i=0;i<fps;i++){float next=PlayerView.StrafeBlend(right,0,1f/fps);Assert.That(next,Is.InRange(0f,right));right=next;}
+            Assert.AreEqual(Mathf.Exp(-8),right,.00001f);
+            Assert.AreEqual(right,PlayerView.StrafeBlend(right,1,0),"Paused pose stays fixed");
+        }
         [TestCase(30)][TestCase(60)][TestCase(120)]
         public void ReversalBuildsMomentumAndSettlesWithoutOvershoot(int fps)
         {
@@ -74,14 +174,15 @@ namespace Touchline.Tests
                 Assert.Less(Vector3.Distance(new Vector3(20.4f,0,30.4f),view.transform.position),.0001f);
             }finally{Object.DestroyImmediate(go);}
         }
-        [Test] public void KickKeepsExistingContactOrientationRatherThanLocomotionTurnRate()
+        [TestCase(.1f)] [TestCase(1f)] public void KickKeepsContactOrientationWithinExistingTurnLimit(float angle)
         {
             var go=new GameObject("Contact facing preserved");try{
                 var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="contact",heightCm=182},0,9,Color.blue);
                 var actor=new Actor{id="contact",slot=9,action="run",angle=0};view.Render(actor,1,.016f);
-                actor.action="kick";actor.angle=1;actor.actionTime=.5f;
+                actor.action="kick";actor.angle=angle;actor.actionTime=.5f;
                 view.Render(actor,1,.016f);
-                float expected=Mathf.Rad2Deg*(1-Mathf.Exp(-.016f*16));
+                const float contactTurnDegreesPerSecond=600f; // Existing PlayerView gesture rotation cap.
+                float expected=Mathf.Min(angle*Mathf.Rad2Deg*(1-Mathf.Exp(-.016f*16)),contactTurnDegreesPerSecond*.016f);
                 Assert.AreEqual(expected,view.transform.eulerAngles.y,.02f);
             }finally{Object.DestroyImmediate(go);}
         }

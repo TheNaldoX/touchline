@@ -6,6 +6,13 @@ Il s'applique à tout agent qui modifie ce dépôt.
 Avant toute tâche, lire aussi `HANDOFF.md` (état du projet, CI, pièges, file de travail)
 et le mettre à jour en fin de session.
 
+## Sobriété du travail
+
+- Garder `HANDOFF.md` court : état courant, preuves, limites et prochaine étape ; historique dans Git/PR.
+- Lire les fichiers utiles avec des recherches ciblées ; enregistrer les longs logs et n’afficher que les résultats/erreurs.
+- Stabiliser un lot et passer les tests locaux avant Unity. Ne relancer des contrôles réussis que si le code concerné ou une incertitude le justifie.
+- Pour la CI, utiliser une attente scriptée ; éviter les interrogations répétées sans changement d’état. Les vérifications obligatoires ci-dessous restent applicables.
+
 ## Le projet
 
 **Touchline** : jeu de gestion de football type Football Manager, Unity, Android

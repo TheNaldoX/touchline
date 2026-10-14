@@ -8,6 +8,20 @@ namespace Touchline.Tests
 {
     public sealed class StadiumLightingTests
     {
+        [Test] public void NightFillKeepsVerticalFacesReadableWithoutAnExtraLight()
+        {
+            var root=new GameObject("Night fill regression");
+            var mode=RenderSettings.ambientMode;var sky=RenderSettings.ambientSkyColor;var equator=RenderSettings.ambientEquatorColor;var ground=RenderSettings.ambientGroundColor;
+            bool fog=RenderSettings.fog;var fogColor=RenderSettings.fogColor;var fogMode=RenderSettings.fogMode;
+            try{
+                StadiumLighting.Apply(root.transform,true);
+                Assert.AreEqual(1,root.GetComponentsInChildren<Light>().Length,"No additional realtime lighting pass");
+                Assert.AreEqual(StadiumLighting.NightAmbient,RenderSettings.ambientSkyColor,"Pitch top/sky are not globally brightened");
+                Assert.Greater(RenderSettings.ambientEquatorColor.linear.grayscale,.16f,"Dark sides of kits need floodlight spill");
+                Assert.Less(RenderSettings.ambientEquatorColor.linear.grayscale,StadiumLighting.DayEquator.linear.grayscale,"Night remains distinct from daylight");
+                Assert.AreEqual(StadiumLighting.NightSky,RenderSettings.fogColor);
+            }finally{Object.DestroyImmediate(root);RenderSettings.ambientMode=mode;RenderSettings.ambientSkyColor=sky;RenderSettings.ambientEquatorColor=equator;RenderSettings.ambientGroundColor=ground;RenderSettings.fog=fog;RenderSettings.fogColor=fogColor;RenderSettings.fogMode=fogMode;}
+        }
         static int FirstDay(System.DayOfWeek wanted){for(int day=0;day<7;day++)if(Career.Epoch.AddDays(day).DayOfWeek==wanted)return day;throw new InvalidOperationException();}
         static float Area(Mesh mesh){var v=mesh.vertices;var t=mesh.triangles;float area=0;for(int i=0;i<t.Length;i+=3)area+=Vector3.Cross(v[t[i+1]]-v[t[i]],v[t[i+2]]-v[t[i]]).magnitude*.5f;return area;}
 

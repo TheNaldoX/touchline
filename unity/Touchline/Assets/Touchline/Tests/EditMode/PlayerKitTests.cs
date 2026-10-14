@@ -7,6 +7,35 @@ namespace Touchline.Tests
 {
     public class PlayerKitTests
     {
+        [Test] public void DestroyingEditorPreviewReleasesGraphMaterialAndShirtCell()
+        {
+            bool mode=PlayerView.UseMecanim;PlayerView.UseMecanim=true;
+            var go=new GameObject("Preview resource lifetime");
+            try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="preview-lifetime",surname="FIXTURE",number=97,heightCm=180},0,9,Color.white);
+                view.Render(new Actor{slot=9,action="idle"},1,1f/60);
+                int cell=view.PrintCell;Assert.GreaterOrEqual(cell,0);
+                var material=go.GetComponentInChildren<SkinnedMeshRenderer>().sharedMaterial;
+                var graph=(UnityEngine.Playables.PlayableGraph)typeof(PlayerView).GetField("mecanimGraph",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).GetValue(view);
+                Assert.IsTrue(graph.IsValid());Assert.AreEqual(1,ShirtPrint.Users(cell));
+                Object.DestroyImmediate(go);
+                TestContext.WriteLine($"After destruction: graph={graph.IsValid()}, atlas users={ShirtPrint.Users(cell)}, material alive={material!=null}");
+                Assert.IsFalse(graph.IsValid(),"Destroyed preview must release its animation graph");
+                Assert.AreEqual(0,ShirtPrint.Users(cell),"Destroyed preview must release its atlas reservation");
+                Assert.IsTrue(material==null,"Owned materials must be destroyed with the preview");
+            }finally{if(go!=null)Object.DestroyImmediate(go);PlayerView.UseMecanim=mode;}
+        }
+
+        [Test] public void FabricDetailPreservesKitColoursAndIsSpatiallyStable()
+        {
+            float min=1,max=0;
+            for(int i=0;i<100;i++){
+                var p=new Vector3(-.2f+i*.004f,1.31f,.08f);float v=KitTexture.FabricShade(p);
+                Assert.That(v,Is.InRange(.88f,1f));Assert.AreEqual(v,KitTexture.FabricShade(p));min=Mathf.Min(min,v);max=Mathf.Max(max,v);
+            }
+            Assert.Greater(max-min,.02f,"Fabric variation preserves team colours");
+        }
+
         [Test] public void ClubKitsAreDeterministicAndKeepersStandApart()
         {
             var home=new Color(.80f,.08f,.10f);var away=new Color(.05f,.09f,.22f);
@@ -57,17 +86,29 @@ namespace Touchline.Tests
             Assert.GreaterOrEqual(hair.Count,6);Assert.GreaterOrEqual(boots.Count,6);Assert.AreEqual(3,styles.Count,"Trois coupes");
             Assert.AreEqual(PlayerView.HairColour(12345u),PlayerView.HairColour(12345u));
         }
-        [Test] public void GoalNetBulgesUnderTheBallThenSettles()
+        [TestCase(-1)] [TestCase(1)] public void GoalNetBulgesUnderTheBallThenSettles(int side)
         {
-            var mesh=StadiumGeometry.GoalNet(1);try{
-                var rest=mesh.vertices;var ripple=new GoalNetRipple(mesh,1);
-                ripple.Advance(new Vector3(52.9f,1,0),true,1f/30);ripple.Advance(new Vector3(53.6f,1,0),true,1f/30); // 21 m/s dans le filet
-                for(int i=0;i<4;i++)ripple.Advance(new Vector3(54f,1,0),true,1f/30);
+            var mesh=StadiumGeometry.GoalNet(side);try{
+                var rest=mesh.vertices;var ripple=new GoalNetRipple(mesh,side);var contact=new Vector3(side*54f,1,0);
+                ripple.Advance(new Vector3(side*52.9f,1,0),true,1f/30);ripple.Advance(new Vector3(side*53.6f,1,0),true,1f/30); // 21 m/s dans le filet
+                for(int i=0;i<4;i++)ripple.Advance(contact,true,1f/30);
                 float near=0,far=0;var moved=mesh.vertices;
-                for(int i=0;i<rest.Length;i++){float d=(moved[i]-rest[i]).magnitude;if((rest[i]-new Vector3(54f,1,0)).magnitude<.5f)near=Mathf.Max(near,d);if(Mathf.Abs(rest[i].z)>3f)far=Mathf.Max(far,d);}
+                for(int i=0;i<rest.Length;i++){float d=(moved[i]-rest[i]).magnitude;if((rest[i]-contact).magnitude<.5f)near=Mathf.Max(near,d);if(Mathf.Abs(rest[i].z)>3f)far=Mathf.Max(far,d);}
                 Assert.Greater(near,.02f,"Le filet se creuse sous le ballon");Assert.AreEqual(0,far,1e-5f,"Le reste du filet ne bouge pas");
-                for(int i=0;i<150;i++)ripple.Advance(new Vector3(54f,1,0),false,1f/30);
+                TestContext.WriteLine($"But {side} : déplacement central {near:0.0000} m, distant {far:0.0000} m");
+                for(int i=0;i<150;i++)ripple.Advance(contact,false,1f/30);
                 moved=mesh.vertices;for(int i=0;i<rest.Length;i++)Assert.AreEqual(0,(moved[i]-rest[i]).magnitude,1e-4f);
+            }finally{Object.DestroyImmediate(mesh);}
+        }
+        [TestCase(-1)] [TestCase(1)] public void NetThreadsHaveLocalDeformationVerticesWithinMobileBudget(int side)
+        {
+            var mesh=StadiumGeometry.GoalNet(side);try{
+                // Per goal budget: shared rings, one renderer/material; no capped mini-beams.
+                Assert.LessOrEqual(mesh.vertexCount,4500);Assert.LessOrEqual(mesh.triangles.Length/3,7500);
+                TestContext.WriteLine($"But {side} : {mesh.vertexCount} sommets, {mesh.triangles.Length/3} triangles");
+                var vertices=mesh.vertices;var triangles=mesh.triangles;
+                for(int i=0;i<triangles.Length;i+=3)for(int edge=0;edge<3;edge++)
+                    Assert.Less(Vector3.Distance(vertices[triangles[i+edge]],vertices[triangles[i+(edge+1)%3]]),.35f,"Pas de fil long sans sommet intermédiaire près du contact");
             }finally{Object.DestroyImmediate(mesh);}
         }
         [Test] public void PitchWearSitsBetweenTurfAndLinesAndFadesOut()

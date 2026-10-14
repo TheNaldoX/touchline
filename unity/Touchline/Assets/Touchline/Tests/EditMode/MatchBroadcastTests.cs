@@ -9,6 +9,14 @@ namespace Touchline.Tests
     {
         Database db;Career career;string opponent;
         [OneTimeSetUp] public void Setup(){db=JsonUtility.FromJson<Database>(Resources.Load<TextAsset>("Data/database").text);var clubs=db.clubs.Where(c=>c.playable).Take(2).ToArray();career=new Career{club=clubs[0].id};career.lineup=Career.Select(db,career.club,career.tactic);opponent=clubs[1].id;}
+        [TestCase("corner",48,30)] [TestCase("free-kick",20,0)] [TestCase("kickoff",0,0)]
+        public void KeyMomentsDoNotShowRoutineRestarts(string phase,float x,float z)
+        {
+            var sim=Create();var m=sim.State;var view=new MatchBroadcast(sim);view.SetMode(MatchViewingMode.KeyMoments);
+            m.clock=100;m.phase=phase;m.restart=2;m.restartSide=0;m.ball=new BallState{position=new Point(x,z)};
+            view.Refresh();Assert.IsTrue(view.Quiet,"Wait for a clear chance rather than every routine restart");
+            m.events.Add(new MatchEvent{kind="goal",side=0,time=m.clock});view.Refresh();Assert.IsFalse(view.Quiet,"Goals remain mandatory");
+        }
         MatchSimulation Create(uint seed=751){var independent=new Career{club=career.club,lineup=(string[])career.lineup.Clone(),tactic=JsonUtility.FromJson<Tactic>(JsonUtility.ToJson(career.tactic))};return MatchSimulation.Create(db,independent,opponent,seed);}
         static MatchBroadcast Calm(MatchSimulation sim)
         {
@@ -37,12 +45,21 @@ namespace Touchline.Tests
         public void EverySelectionShowsMajorEventsAndInterruptsForManagerDecisions(MatchViewingMode mode)
         {
             var sim=Create();var m=sim.State;var view=new MatchBroadcast(sim);view.SetMode(mode);m.phase="throw-in";m.restart=30;m.ball=new BallState{position=new Point(0,34)};
-            foreach(var kind in new[]{"shot","save","woodwork","goal","penalty","injury","red"}){
-                m.clock+=100;view.Advance(.001f,1);m.events.Add(new MatchEvent{kind=kind,side=0,time=m.clock});float clock=m.clock;view.Advance(.001f,1);
+            foreach(var kind in new[]{"shot","woodwork","goal","penalty","injury","red"}){
+                m.clock+=100;view.Advance(.001f,1);m.events.Add(new MatchEvent{kind=kind,side=0,time=m.clock,xg=.25f});float clock=m.clock;view.Advance(.001f,1);
                 Assert.IsFalse(view.Quiet,kind+" was hidden");if(kind=="injury"||kind=="red"){Assert.IsTrue(view.PauseRequested);Assert.AreEqual(clock,m.clock);}
             }
         }
-        [Test] public void ChangingModeKeepsStateAndStopsTheQuietViewImmediately()
+        [TestCase(.03f,true)][TestCase(.12f,true)][TestCase(.25f,false)]
+        public void KeyMomentsFilterWeakShotsWithoutMutatingSimulation(float quality,bool quiet)
+        {
+            var sim=Create();var view=new MatchBroadcast(sim);view.SetMode(MatchViewingMode.KeyMoments);var m=sim.State;
+            m.clock=100;m.restart=0;m.phase="play";m.shotXg=quality;m.ball=new BallState{kind="shot",goalAttempt=true,side=0};
+            m.events.Add(new MatchEvent{kind="shot",time=100,side=0,xg=quality});string before=JsonUtility.ToJson(m);
+            view.Refresh();Assert.AreEqual(quiet,view.Quiet);Assert.AreEqual(before,JsonUtility.ToJson(m));
+            m.clock=101;m.ball.goalAttempt=false;m.ball.kind="save";m.events.Add(new MatchEvent{kind="save",time=101,side=1});view.Refresh();Assert.AreEqual(quiet,view.Quiet);
+            m.clock=110;m.events.Add(new MatchEvent{kind="goal",time=110,side=0});view.Refresh();Assert.IsFalse(view.Quiet,"A low-probability goal must always be shown");
+        }        [Test] public void ChangingModeKeepsStateAndStopsTheQuietViewImmediately()
         {
             var sim=Create();var view=Calm(sim);string before=JsonUtility.ToJson(sim.State);
             foreach(var mode in new[]{MatchViewingMode.Full,MatchViewingMode.Extended,MatchViewingMode.KeyMoments,MatchViewingMode.Highlights}){
@@ -75,6 +92,17 @@ namespace Touchline.Tests
             sim.State.restart=0;sim.State.ball.elapsed=-1;sim.State.ball.position=new Point(0,0);sim.State.turnoverAt=0;
             Assert.That(view.QuietSituation,Does.Contain("Construction").And.Contain("axe central"));
             sim.State.ball.held=true;Assert.That(view.QuietSituation,Does.Contain("Gardien"));
+        }
+        [TestCase(MatchViewingMode.KeyMoments)][TestCase(MatchViewingMode.Highlights)][TestCase(MatchViewingMode.Extended)]
+        public void FreeKickHighlightWaitsForTakerAndWallRatherThanExpiredCountdown(MatchViewingMode mode)
+        {
+            var sim=Create();var m=sim.State;m.periodSeconds=2700;var view=new MatchBroadcast(sim);view.SetMode(mode);
+            m.clock=100;m.phase="free-kick";m.restart=.2f;m.restartSide=0;m.ball=new BallState{position=new Point(30,0)};
+            var taker=m.actors[9];m.restartTaker=taker.id;taker.position=new Point(0,0);m.restartWall.Clear();
+            string before=JsonUtility.ToJson(m);view.Refresh();Assert.IsTrue(view.Quiet,"A low timer does not mean the taker has arrived");Assert.AreEqual(before,JsonUtility.ToJson(m));
+            Assert.That(view.QuietSituation,Does.Contain("mise en place"));
+            taker.position=new Point(29.58f,0);var wall=m.actors[17];m.restartWall.Add(wall.id);wall.position=new Point(10,0);view.Refresh();Assert.IsTrue(view.Quiet,"Wall still approaching");
+            wall.position=new Point(39.6f,0);view.Refresh();Assert.IsFalse(view.Quiet,"Return for the kick once taker and wall approach their marks");
         }
         [TestCase("shot","FRAPPE")][TestCase("goal","BUT !")][TestCase("save","ARRÊT DU GARDIEN")]
         public void ImportantActionsHaveDistinctUnambiguousHeadlines(string kind,string expected)=>Assert.AreEqual(expected,MatchBroadcast.EventHeadline(kind));

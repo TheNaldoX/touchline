@@ -7,6 +7,40 @@ namespace Touchline.Tests
 {
     public class RequestBallAnimationTests
     {
+        [TestCase(30)][TestCase(60)][TestCase(120)]
+        public void ClappingPalmsFaceEachOtherRatherThanBothFacingForward(int fps)
+        {
+            var go=new GameObject("Clapping palm orientation");try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="palms",heightCm=182},0,9,Color.white);var actor=new Actor{slot=9,action="idle"};
+                for(int i=0;i<=fps;i++)view.Render(actor,1,1f/fps,default,new PlayerMotionContext{reaction=1,reactionTime=i/(float)fps});
+                var bones=go.GetComponentsInChildren<Transform>();
+                foreach(string side in new[]{"L","R"}){
+                    var wrist=bones.Single(t=>t.name=="wrist."+side);var middle=bones.Single(t=>t.name=="finger3-1."+side);var index=bones.Single(t=>t.name=="finger2-1."+side);var little=bones.Single(t=>t.name=="finger5-1."+side);
+                    var other=bones.Single(t=>t.name=="wrist."+(side=="L"?"R":"L"));
+                    var palm=Vector3.Cross(little.position-index.position,middle.position-wrist.position).normalized*(side=="L"?1:-1);
+                    Assert.Greater(Vector3.Dot(palm,(other.position-wrist.position).normalized),.9f);
+                }
+            }finally{Object.DestroyImmediate(go);}
+        }
+        [TestCase(30,false)][TestCase(60,false)][TestCase(120,false)]
+        [TestCase(30,true)][TestCase(60,true)][TestCase(120,true)]
+        public void CapturedSignalsBlendPauseAndReleaseWithoutMovingFeetOrMatchState(int fps,bool applause)
+        {
+            var go=new GameObject("Captured signal");var reference=new GameObject("Unchanged locomotion");try{
+                var view=go.AddComponent<PlayerView>();var idle=reference.AddComponent<PlayerView>();var data=new PlayerData{id="signal-continuity",heightCm=182};view.Build(data,0,9,Color.white);idle.Build(data,0,9,Color.white);
+                var actor=new Actor{slot=9,action="idle"};var hands=go.GetComponentsInChildren<Transform>().Where(t=>t.name.StartsWith("wrist.")).ToArray();
+                for(int i=0;i<fps;i++){view.Render(actor,1,1f/fps);idle.Render(actor,1,1f/fps);}
+                var previous=hands.Select(h=>h.position).ToArray();string state=JsonUtility.ToJson(actor);
+                for(int i=0;i<fps*2;i++){
+                    var context=i<fps?(applause?new PlayerMotionContext{reaction=1,reactionTime=i/(float)fps}:new PlayerMotionContext{requestSide=1,requestWeight=1}):default;
+                    view.Render(actor,1,1f/fps,default,context);idle.Render(actor,1,1f/fps);
+                    for(int j=0;j<hands.Length;j++){Assert.Less(Vector3.Distance(hands[j].position,previous[j])*fps,8,"No hand snap when starting/releasing the signal.");previous[j]=hands[j].position;}
+                    foreach(bool left in new[]{true,false})Assert.Less(Vector3.Distance(view.FootPosition(left),idle.FootPosition(left)),.001f);
+                    if(i==fps/2){var paused=hands.Select(h=>h.position).ToArray();for(int k=0;k<20;k++){view.Render(actor,1,0,default,context);for(int j=0;j<hands.Length;j++)Assert.Less(Vector3.Distance(hands[j].position,paused[j]),.001f);}}
+                }
+                Assert.AreEqual(state,JsonUtility.ToJson(actor));
+            }finally{Object.DestroyImmediate(go);Object.DestroyImmediate(reference);}
+        }
         [Test] public void RequestComesFromPossessionAndSurvivesSaveReload()
         {
             var actor=new Actor{id="runner",side=0,slot=9,intent="near-post",position=new Point(42,2)};

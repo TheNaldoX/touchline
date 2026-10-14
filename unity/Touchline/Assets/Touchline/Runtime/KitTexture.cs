@@ -47,7 +47,7 @@ namespace Touchline
                 colour=Color.Lerp(colour,kit.pattern==KitPattern.Sleeves?kit.shirt:kit.trim,cuff);
                 if(!sleeve&&p.z>.02f){float r=new Vector2(p.x-CrestCentre.x,p.y-CrestCentre.y).magnitude;
                     colour=Color.Lerp(colour,kit.trim,Mathf.Clamp01(.5f+(CrestRadius-r)/EdgeSoftness)*(1-Mathf.Clamp01(.5f+(CrestInner-r)/EdgeSoftness)));}
-                colour.a=1;pixels[i]=colour;
+                colour*=FabricShade(p);colour.a=1;pixels[i]=colour;
             }
             var texture=new Texture2D(Width,Height,TextureFormat.RGB24,true,false){name="Kit "+kit.key,wrapMode=TextureWrapMode.Clamp,filterMode=FilterMode.Trilinear,anisoLevel=2};
             texture.SetPixels32(pixels);texture.Apply(true,true);
@@ -56,6 +56,16 @@ namespace Touchline
             return texture;
         }
 
+        // Rest-space fabric: continuous across UV islands, baked once per kit.
+        // Fine knit is mip-filtered; broad seams remain readable in close replays.
+        public static float FabricShade(Vector3 p)
+        {
+            const float knitMetres=.008f,panelMetres=.055f;
+            float knit=.5f+.5f*Mathf.Sin(p.x/knitMetres*Mathf.PI*2)*Mathf.Sin(p.y/knitMetres*Mathf.PI*2);
+            float panel=.5f+.5f*Mathf.Sin(p.x/panelMetres*Mathf.PI*2+p.y*3);
+            float side=Mathf.SmoothStep(0,1,Mathf.InverseLerp(.10f,.21f,Mathf.Abs(p.x)));
+            return (.96f+.04f*knit)*(.97f+.03f*panel)*(1-.045f*side);
+        }
         // Part de couleur secondaire (0–1) au point p du maillot (pose de repos, m).
         public static float Secondary(KitPattern pattern,Vector3 p,bool sleeve)
         {

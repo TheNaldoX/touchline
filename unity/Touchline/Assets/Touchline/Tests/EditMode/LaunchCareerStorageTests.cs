@@ -12,6 +12,83 @@ namespace Touchline.Tests
         string directory,path;Database db;
         [SetUp] public void Setup(){directory=Path.GetFullPath(Path.Combine(Application.dataPath,"../../../artifacts/unity/launch-menu-unit",Guid.NewGuid().ToString("N")));Directory.CreateDirectory(directory);path=Path.Combine(directory,"career.json");db=new Database{clubs=new[]{new ClubData{id="a",name="A",league="test"},new ClubData{id="b",name="B",league="test"}},players=Enumerable.Range(0,22).Select(i=>new PlayerData{id="p"+i,name="P"+i,team=i<11?"a":"b",position=i%11==0?"GB":"MIL",rating=75}).ToArray(),leagues=new LeagueData[0],fixtures=new Fixture[0]};}
         Career State()=>new Career{club="a",manager="Validation",lineup=Enumerable.Range(0,11).Select(i=>"p"+i).ToArray(),life=new ClubLife{day=12}};
+        [Test] public void NewCatalogueContainsImportedPlayersWithoutFictionalExtension()
+        {
+            var fresh=TouchlineCatalogue.Load();
+            Assert.AreEqual(21837,fresh.players.Length);
+            Assert.IsFalse(fresh.players.Any(p=>GeneratedWorld.IsGenerated(p.id)));
+            Assert.IsFalse(fresh.clubs.Any(c=>GeneratedWorld.IsGenerated(c.id)));
+            var academy=fresh.players.Where(p=>p.id.StartsWith("real-academy-",StringComparison.Ordinal)).ToArray();
+            Assert.AreEqual(22,academy.Length);
+            Assert.AreEqual(12,academy.Count(p=>p.team=="academy-176"));
+            Assert.AreEqual(10,academy.Count(p=>p.team=="academy-165"));
+            Assert.IsTrue(fresh.players.Except(academy).All(p=>p.source.StartsWith("https://www.espn.com/",StringComparison.Ordinal)));
+            Assert.IsTrue(academy.All(p=>(p.team=="academy-176"&&new Uri(p.rosterSource).Host=="www.om.fr"||p.team=="academy-165"&&new Uri(p.rosterSource).Host=="www.fcnantes.com")&&
+                (new Uri(p.source).Host=="www.fff.fr"||new Uri(p.source).Host=="media.fff.fr"||new Uri(p.source).Host=="mediterranee.fff.fr"||new Uri(p.source).Host=="provence.fff.fr"||new Uri(p.source).Host=="www.mondial-football-montaigu.fr")&&
+                PlayerChronology.TryAge(p,new DateTime(2026,6,15),out var age)&&age==p.age));
+        }
+        [TestCase("Quentin Forget","2008-05-02")][TestCase("Amed Aiki","2008-08-02")]
+        [TestCase("Jalen Foucan","2008-12-16")][TestCase("Joshua Dago","2009-05-10")]
+        [TestCase("Loan Merrifield","2009-03-29")][TestCase("Nayad Khenissi","2008-04-07")]
+        public void MontaiguIdentityIsUniqueAndKeepsUnknownSalaryExplicit(string name,string birth)
+        {
+            var fresh=TouchlineCatalogue.Load();var p=fresh.players.Single(x=>x.name==name);
+            Assert.AreEqual(birth,p.birthDate);Assert.AreEqual("academy-165",p.team);
+            Assert.AreEqual(0,p.wage);StringAssert.Contains("inconnue",p.salarySource);
+            StringAssert.Contains("provisoires",p.assessment);StringAssert.Contains("page 4",p.assessment);
+            Assert.AreEqual("www.mondial-football-montaigu.fr",new Uri(p.source).Host);
+            var loanTeam="loan-validation";p.team=loanTeam;
+            var supplement=JsonUtility.FromJson<Database>(Resources.Load<TextAsset>("Data/real-academy").text);
+            Assert.AreEqual(0,RealAcademyCatalogue.Append(fresh,supplement));
+            Assert.AreEqual(loanTeam,p.team,"Adding source records cannot revoke an existing loan.");
+        }
+        [TestCase("176",12)][TestCase("165",10)]
+        public void SourcedAcademiesExposeOwnedPathsAndAgeAppropriateGroups(string club,int expected)
+        {
+            var fresh=TouchlineCatalogue.Load();var career=new Career{club=club,youthGenerationFromYear=2027};
+            career.lineup=Career.Select(fresh,club,career.tactic);career.EnsureWorld(fresh);
+            var academy=fresh.players.Where(p=>p.team=="academy-"+club).ToArray();
+            Assert.AreEqual(expected,academy.Length);
+            foreach(var player in academy){
+                var path=career.AcademyPaths(fresh).Single(y=>y.player==player.id);
+                Assert.AreEqual(player.age<19?"U19":"Réserve",Career.AcademyGroup(player,path));
+                StringAssert.Contains("provisoire",player.assessment.ToLowerInvariant());
+            }
+            Assert.AreEqual(1,fresh.players.Count(p=>p.id=="3122300"),"Existing Yanel Zézé is not duplicated.");
+            Assert.AreEqual(1,fresh.players.Count(p=>p.id=="3131702"),"Existing Klaus Camara is not duplicated.");
+        }
+        [Test] public void RealCareerDoesNotLoadLegacyExtension()
+        {
+            var c=State();File.WriteAllText(path,JsonUtility.ToJson(c));
+            var loaded=LaunchCareerStorage.Read(path,"Principal",db);
+            Assert.IsTrue(loaded.Valid,loaded.Error);Assert.AreEqual(db.players.Length,loaded.Restored.players.Length);
+            Assert.IsNotNull(loaded.State.saveBaseline);
+        }
+        [TestCase(false,false)][TestCase(true,false)][TestCase(false,true)][TestCase(true,true)]
+        public void LegacyFictionalTransferRestoresWithoutChangingNewCatalogue(bool compact,bool recruited)
+        {
+            db.leagues=new[]{new LeagueData{id="test",name="Test",country="France"}};
+            foreach(var team in db.clubs){team.playable=true;team.annualRevenue=20000000;}
+            var original=JsonUtility.FromJson<Database>(JsonUtility.ToJson(db));
+            var expanded=JsonUtility.FromJson<Database>(JsonUtility.ToJson(db));
+            GeneratedWorld.AppendFrozen(expanded,JsonUtility.FromJson<Database>(Resources.Load<TextAsset>("Data/generated-world-v1").text));
+            var c=new Career{club="a",saveBaseline=SaveBaseline.From(expanded)};
+            c.lineup=Career.Select(expanded,c.club,c.tactic);c.EnsureWorld(expanded);
+            var bought=expanded.players.First(p=>GeneratedWorld.IsGenerated(p.id)).Copy();
+            if(recruited){bought.team=c.club;bought.wage=789;
+                c.world.rosterChanges.RemoveAll(p=>p.id==bought.id);c.world.rosterChanges.Add(bought);}
+            if(compact)Assert.IsTrue(c.PrepareCompactSave());
+            string raw=JsonUtility.ToJson(c);c.RestoreAfterSave();File.WriteAllText(path,raw);
+            var loaded=LaunchCareerStorage.Read(path,"Principal",original);
+            Assert.IsTrue(loaded.Valid,loaded.Error);Assert.AreEqual(bought.team,loaded.Restored.Find(bought.id).team);
+            Assert.AreEqual(bought.wage,loaded.Restored.Find(bought.id).wage);
+            Assert.IsFalse(original.players.Any(p=>GeneratedWorld.IsGenerated(p.id)));
+            Assert.AreEqual(raw,File.ReadAllText(path),"Reading must not rewrite a personal save.");
+            Assert.IsTrue(loaded.State.PrepareCompactSave());
+            File.WriteAllText(path,JsonUtility.ToJson(loaded.State));loaded.State.RestoreAfterSave();
+            var again=LaunchCareerStorage.Read(path,"Principal",original);
+            Assert.IsTrue(again.Valid,again.Error);Assert.AreEqual(bought.wage,again.Restored.Find(bought.id).wage);
+        }
         [TestCase(false)][TestCase(true)] public void AttributeVisibilityChoiceSurvivesCareerLoad(bool reveal)
         {
             db.Find("p12").attributes=new[]{new AttributeValue{key="shortPassing",value=75}};
@@ -41,3 +118,4 @@ namespace Touchline.Tests
         [Test] public void MissingLegacyCountersAreRepairedButWrongLengthsRejected(){var c=State();c.match=MatchSimulation.Create(db,c,"b").State;c.match.metrics=null;c.match.completedPasses=null;File.WriteAllText(path,JsonUtility.ToJson(c));var restored=LaunchCareerStorage.Read(path,"Principal",db);Assert.IsTrue(restored.Valid,restored.Error);Assert.AreEqual(2,restored.State.match.metrics.Length);Assert.IsNotNull(restored.State.match.metrics[0]);Assert.AreEqual(2,restored.State.match.completedPasses.Length);c.match.passes=new[]{1};File.WriteAllText(path,JsonUtility.ToJson(c));Assert.IsFalse(LaunchCareerStorage.Read(path,"Principal",db).Valid);}
     }
 }
+

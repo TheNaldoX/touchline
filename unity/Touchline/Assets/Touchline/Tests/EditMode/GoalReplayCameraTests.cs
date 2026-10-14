@@ -19,6 +19,9 @@ namespace Touchline.Tests
                 Assert.IsTrue(arena.GoalReplayActive);
                 string live=JsonUtility.ToJson(sim.State);var livePlayer=arena.PlayerVisual(0).transform.position;var liveCamera=arena.MatchCamera.transform.position;var liveRotation=arena.MatchCamera.transform.rotation;
                 arena.RenderFrame(.1f);var sampledCamera=arena.MatchCamera.transform.position;var sampledRotation=arena.MatchCamera.transform.rotation;var sampledPlayer=arena.PlayerVisual(0).transform.position;
+                float pausedProgress=arena.GoalReplayProgress;
+                arena.ReframeCamera();Assert.AreEqual(sampledCamera,arena.MatchCamera.transform.position,"Paused replay must already use its replay camera before a resize");
+                arena.RenderFrame(.1f);Assert.AreEqual(pausedProgress,arena.GoalReplayProgress);Assert.AreEqual(sampledCamera,arena.MatchCamera.transform.position);
                 // Ball is a private presentation transform, deliberately distinct from frozen Core.
                 var ball=(Transform)typeof(MatchArena).GetField("ball",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).GetValue(arena);var sampledBall=ball.position;
                 arena.MatchCamera.aspect=changedAspect;arena.ReframeCamera();

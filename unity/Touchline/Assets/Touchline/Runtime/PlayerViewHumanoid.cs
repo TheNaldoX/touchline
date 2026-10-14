@@ -54,7 +54,8 @@ namespace Touchline
                     human.Add(new UnityEngine.HumanBone{boneName=bone,humanName=name,limit=new HumanLimit{useDefaultValues=true}});
                 }
                 HumanSidesSwapped=swap;
-                var description=new HumanDescription{human=human.ToArray(),skeleton=skeleton.ToArray(),upperArmTwist=.5f,lowerArmTwist=.5f,upperLegTwist=.5f,lowerLegTwist=.5f,armStretch=.05f,legStretch=.05f,feetSpacing=0,hasTranslationDoF=false};
+                // Preserve anatomical leg length while adapting ground contacts.
+                var description=new HumanDescription{human=human.ToArray(),skeleton=skeleton.ToArray(),upperArmTwist=.5f,lowerArmTwist=.5f,upperLegTwist=.5f,lowerLegTwist=.5f,armStretch=.05f,legStretch=0,feetSpacing=0,hasTranslationDoF=false};
                 sharedAvatar=AvatarBuilder.BuildHumanAvatar(body.gameObject,description);sharedAvatar.name="Touchline footballer";
                 return sharedAvatar;
             }finally{foreach(var pair in restRotations)pair.Key.localRotation=pair.Value;}

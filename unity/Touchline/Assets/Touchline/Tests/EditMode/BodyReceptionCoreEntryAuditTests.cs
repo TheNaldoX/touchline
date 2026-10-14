@@ -20,6 +20,11 @@ namespace Touchline.Tests {
     var actor=new Actor{id=player.id,slot=9,action="run",velocity=new Point(0,3.5f)};
     for(int frame=0;frame<fps;frame++){actor.previous=actor.position;actor.position+=actor.velocity/fps;view.Render(actor,1,1f/fps);}
     var forearm=go.GetComponentsInChildren<Transform>().Single(t=>t.name=="lowerarm01.L");
+    // Find a genuinely bent phase in the captured stride instead of assuming
+    // every clip has the same elbow angle exactly one second after launch.
+    for(int frame=0;frame<fps&&Quaternion.Angle(forearm.localRotation,Quaternion.identity)<=20;frame++){
+     actor.previous=actor.position;actor.position+=actor.velocity/fps;view.Render(actor,1,1f/fps);
+    }
     var outgoing=forearm.localRotation;
     float bendBefore=Quaternion.Angle(outgoing,Quaternion.identity);
     Assert.Greater(bendBefore,15,"Fixture must actually contain a bent running elbow; otherwise no jump can be assessed");

@@ -10,6 +10,12 @@ namespace Touchline.Core
             float reaction=.14f+(100-Skill(keeper,"gkReflexes"))*.002f;
             float dx=ball.end.x-ball.start.x;
             if(ball.kind!="shot"||ball.side==keeper.side||ball.elapsed<=reaction||Math.Abs(dx)<.0001f)return formationTarget;
+            // Do not dive towards a clamped imaginary intercept when the
+            // undisturbed flight clearly misses the goal. Keep a full metre
+            // beyond the post as a reading margin; near-post shots stay live.
+            const float ClearMissPostMargin=1f; // metres beyond the 3.66m half-width.
+            float goalFraction=(-Direction(keeper.side)*52.5f-ball.start.x)/dx;
+            if(goalFraction>=0&&goalFraction<=1&&Math.Abs(ball.start.z+(ball.end.z-ball.start.z)*goalFraction)>3.66f+ClearMissPostMargin)return formationTarget;
             // Intercept where the keeper physically stands. Using the shape
             // target (which retreats with the ball) delayed launch until after
             // the shot had already crossed the keeper's real depth.

@@ -6,6 +6,39 @@ namespace Touchline.Tests
 {
     public class KeeperDistributionPreparationTests
     {
+        [TestCase(30,"keeper-roll")] [TestCase(60,"keeper-roll")] [TestCase(120,"keeper-roll")]
+        [TestCase(30,"keeper-throw")] [TestCase(60,"keeper-throw")] [TestCase(120,"keeper-throw")]
+        public void ReleaseReturnsToCaptureWithoutHandJump(int fps,string kind)
+        {
+            var go=new GameObject("Keeper release continuity");try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="release-continuity",heightCm=182},0,0,Color.yellow);
+                var actor=new Actor{slot=0,action="keeper-hold",actionTime=1};var ball=new Vector3(0,1.1f,.36f);
+                for(int i=0;i<fps;i++)view.Render(actor,1,1f/fps,ball);
+                actor.action=actor.actionKind=kind;actor.actionSequence=1;actor.actionContactTime=.48f;actor.actionTarget=new Point(-.20f,.52f);actor.actionHeight=kind=="keeper-roll"?.24f:1.78f;
+                var state=new BallState{kind=kind,start=actor.actionTarget,startHeight=actor.actionHeight,setupStart=new Point(0,.36f),setupHeight=1.1f,end=new Point(0,20)};
+                var previous=view.DistributionHandPosition;
+                for(int frame=0;frame<=fps*2;frame++){
+                    float elapsed=frame/(float)fps;actor.action=elapsed<MatchSimulation.KeeperDistributionDuration?kind:"idle";actor.actionTime=Mathf.Max(0,MatchSimulation.KeeperDistributionDuration-elapsed);
+                    if(elapsed<=.48f){var p=MatchSimulation.KeeperDistributionPreparation(state,elapsed/.48f,out var height);ball=new Vector3(p.x,height,p.z);}
+                    else ball=new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z+12*(elapsed-.48f));
+                    view.Render(actor,1,1f/fps,ball);
+                    if(elapsed>.3f)Assert.Less(Vector3.Distance(previous,view.DistributionHandPosition)*fps,12,"Release and recovery must not snap the hand");
+                    previous=view.DistributionHandPosition;
+                }
+            }finally{UnityEngine.Object.DestroyImmediate(go);}
+        }
+        [TestCase(30,"keeper-roll","Goalkeeper Pass")] [TestCase(60,"keeper-roll","Goalkeeper Pass")] [TestCase(120,"keeper-roll","Goalkeeper Pass")]
+        [TestCase(30,"keeper-throw","Goalkeeper Overhand Throw")] [TestCase(60,"keeper-throw","Goalkeeper Overhand Throw")] [TestCase(120,"keeper-throw","Goalkeeper Overhand Throw")]
+        public void HandDistributionUsesTheRecordedGesture(int fps,string kind,string clip)
+        {
+            var go=new GameObject("Keeper distribution clip");try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="distribution-clip",heightCm=182},0,0,Color.yellow);
+                var actor=new Actor{slot=0,action="keeper-hold",actionTime=1};var ball=new Vector3(0,1.1f,.36f);
+                for(int i=0;i<fps;i++)view.Render(actor,1,1f/fps,ball);
+                actor.action=actor.actionKind=kind;actor.actionSequence=1;actor.actionTime=MatchSimulation.KeeperDistributionDuration;actor.actionContactTime=MatchSimulation.KeeperDistributionContact;
+                view.Render(actor,1,1f/fps,ball);Assert.AreEqual(clip,view.MecanimGestureClip,"A hand distribution must not remain in the idle animation");
+            }finally{UnityEngine.Object.DestroyImmediate(go);}
+        }
         [TestCase(30,166,"keeper-roll")]
         [TestCase(30,166,"keeper-throw")]
         [TestCase(30,182,"keeper-roll")]

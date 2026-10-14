@@ -90,7 +90,7 @@ namespace Touchline.Core
             if(world==null||world.divisions==null||world.divisions.Count==0)return;
             world.seasonEnd+=shift;world.reviewDay+=shift;if(world.jobDay>=0)world.jobDay+=shift;world.lastTicketDay+=shift;
             foreach(var f in world.fixtures.Concat(world.history))f.day+=shift;
-            foreach(var c in world.contracts){c.until+=shift;if(c.parent!=null)c.loanUntil+=shift;if(c.retirement>=0)c.retirement+=shift;c.joined+=shift;}
+            foreach(var c in world.contracts){c.until+=shift;if(c.IsLoan)c.loanUntil+=shift;if(c.retirement>=0)c.retirement+=shift;c.joined+=shift;}
             foreach(var r in world.reports){r.started+=shift;r.due+=shift;if(r.lastObserved>0)r.lastObserved+=shift;}foreach(var m in world.scoutMissions??new List<ScoutMission>()){m.started+=shift;m.until+=shift;m.nextSearch+=shift;}if(integrityReviewUntil>=0)integrityReviewUntil+=shift;foreach(var o in world.offers)o.due+=shift;foreach(var s in world.sponsors){s.until+=shift;s.counterDay+=shift;}foreach(var p in world.press)p.day+=shift;
             foreach(var y in world.youth)if(y.loanReviewedThrough>=0)y.loanReviewedThrough+=shift;
             foreach(var a in approaches??new List<JobApproach>()){a.offered+=shift;a.until+=shift;}

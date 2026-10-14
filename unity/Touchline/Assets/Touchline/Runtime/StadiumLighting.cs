@@ -32,7 +32,8 @@ namespace Touchline
         // les côtés des joueurs reçoivent la lumière renvoyée par les tribunes (le soir : les
         // projecteurs tout autour du stade), le dessous un rebond vert de la pelouse.
         public static readonly Color DayEquator=new Color(.5f,.54f,.58f),DayGround=new Color(.2f,.29f,.17f);
-        public static readonly Color NightEquator=new Color(.3f,.31f,.34f),NightGround=new Color(.1f,.16f,.1f);
+        // Floodlight spill fills vertical faces without raising the sky or adding a light pass.
+        public static readonly Color NightEquator=new Color(.46f,.48f,.53f),NightGround=new Color(.14f,.20f,.14f);
 
         // Projecteurs allumés si le milieu du match tombe après le coucher du soleil.
         const float FloodlightLead=1f;         // h après le coup d'envoi (≈ mi-temps)

@@ -26,13 +26,30 @@ namespace Touchline
         public static Mesh Stand(int side,bool seats)
         {
             var mesh=new Builder();
-            for(int row=0;row<9;row++){
-                if(!seats){mesh.Box(new Vector3(0,row*.65f,side*(39+row*1.1f)),new Vector3(119,.6f,1.2f));continue;}
+            for(int row=0;row<StandRows;row++){
+                if(!seats){mesh.Box(new Vector3(0,row*StandRowRise,side*(StandFront+row*StandRowDepth)),new Vector3(119,.6f,1.2f));
+                    // Escalier des allées : une demi-marche par rang entre deux blocs de sièges.
+                    for(int aisle=1;aisle<StandBlocks;aisle++)mesh.Box(new Vector3(AisleX(aisle),row*StandRowRise+TreadTop+StandRowRise*.25f,side*(StandFront+row*StandRowDepth+StairDepth*.5f)),new Vector3(StairWidth,StandRowRise*.5f,StairDepth));
+                    continue;}
                 // Clear aisles break the continuous colour bars into believable seating blocks.
-                for(int block=0;block<6;block++)mesh.Box(new Vector3(-47+block*18.8f,row*.65f+.45f,side*(39+row*1.1f)),new Vector3(17.1f,.35f,.68f));
+                for(int block=0;block<StandBlocks;block++)mesh.Box(new Vector3(-47+block*18.8f,row*StandRowRise+.45f,side*(StandFront+row*StandRowDepth)),new Vector3(17.1f,.35f,.68f));
+            }
+            if(!seats){
+                // Main courante au bord de la tribune (poteaux tous les RailPostSpacing m) et rampes des allées.
+                float front=side*(StandFront-.62f);mesh.Beam(new Vector3(-59.5f,RailHeight,front),new Vector3(59.5f,RailHeight,front),RailWidth);
+                for(float x=-59.5f;x<=59.6f;x+=RailPostSpacing)mesh.Beam(new Vector3(x,0,front),new Vector3(x,RailHeight,front),RailWidth);
+                for(int aisle=1;aisle<StandBlocks;aisle++){float x=AisleX(aisle)+StairWidth*.5f;mesh.Beam(new Vector3(x,TreadTop+RailHeight,side*(StandFront-.3f)),new Vector3(x,(StandRows-1)*StandRowRise+TreadTop+RailHeight,side*(StandFront+(StandRows-1)*StandRowDepth+.3f)),RailWidth);}
             }
             return mesh.Build(seats?"Combined seats":"Combined terraces");
         }
+        const int StandRows=9,StandBlocks=6;                       // rangs et blocs de sièges des tribunes latérales
+        const float StandFront=39f,StandRowDepth=1.1f,StandRowRise=.65f,TreadTop=.3f; // m : premier rang, profondeur, hauteur, dessus de la marche
+        const float StairWidth=1.1f,StairDepth=.55f;               // m : demi-marche dans l'allée de 1,7 m
+        public const float RailHeight=1f,RailWidth=.045f,RailPostSpacing=8.5f; // m : main courante
+        static float AisleX(int aisle)=>-47+aisle*18.8f-9.4f;      // m : milieu de l'allée entre deux blocs
+        // Bancs (TechnicalArea) : centre en x, profondeur du siège, dessus du siège, pas entre places.
+        public const float BenchX=11f,BenchSeatZ=37.7f,BenchSeatTop=.35f,BenchSeatPitch=1.05f;
+        public const int BenchSeats=6; // places entre les accoudoirs de chaque banc
         // Tribune d'en face (côté -Z, face à la caméra télé) : second anneau, toit et
         // mur du fond masquent le vide au-dessus des gradins. Côté caméra (+Z), rien
         // de haut : la caméra regarde par-dessus.
@@ -72,7 +89,7 @@ namespace Touchline
             else{Slab(-SurroundHalfX,SurroundHalfX,shadeEdge,SurroundHalfZ);Slab(shadeEndX,SurroundHalfX,-SurroundHalfZ,shadeEdge);}
             return mesh.Build(shaded?"Grass surround in roof shadow":"Grass stadium surround");
         }
-        public static Mesh EndStand(int side){var mesh=new Builder();for(int row=0;row<10;row++)mesh.Box(new Vector3(side*(60+row*1.15f),row*.7f,0),new Vector3(1.2f,.65f,88));return mesh.Build("Goal end terrace");}
+        public static Mesh EndStand(int side){var mesh=new Builder();for(int row=0;row<10;row++)mesh.Box(new Vector3(side*(60+row*1.15f),row*.7f,0),new Vector3(1.2f,.65f,88));float front=side*59.3f;mesh.Beam(new Vector3(front,RailHeight,-44),new Vector3(front,RailHeight,44),RailWidth);for(float z=-44;z<=44.1f;z+=RailPostSpacing*1.1f)mesh.Beam(new Vector3(front,0,z),new Vector3(front,RailHeight,z),RailWidth);return mesh.Build("Goal end terrace");} // main courante devant le virage
         // Panneaux publicitaires : un seul maillage, une seule matière. La face côté
         // terrain porte des panneaux qui alternent les couleurs des deux clubs ; leurs
         // motifs viennent de l'atlas généré (StadiumAtmosphere.BoardAtlas).
@@ -107,7 +124,7 @@ namespace Touchline
             var mesh=new Builder();
             // Low benches on the broadcast side never obstruct the pitch or touchline.
             for(int side=-1;side<=1;side+=2){
-                float x=side*11;mesh.Box(new Vector3(x,.26f,37.7f),new Vector3(8.2f,.18f,.55f));mesh.Box(new Vector3(x,.65f,38.05f),new Vector3(8.2f,.7f,.12f));
+                float x=side*BenchX;mesh.Box(new Vector3(x,.26f,BenchSeatZ),new Vector3(8.2f,.18f,.55f));mesh.Box(new Vector3(x,.65f,38.05f),new Vector3(8.2f,.7f,.12f));
                 for(int seat=-3;seat<=3;seat++)mesh.Box(new Vector3(x+seat*1.05f,.65f,37.65f),new Vector3(.07f,.6f,.55f));
                 mesh.Box(new Vector3(side*3,.48f,37.5f),new Vector3(1.8f,.8f,.85f));
             }
@@ -169,20 +186,23 @@ namespace Touchline
         }
         public static Mesh GoalNet(int side)
         {
+            // Rings follow the existing mesh intersections: ~0.30 m apart, so a
+            // local ball impact can bend the middle of each continuous thread.
+            const int columns=25,rows=8,depths=6;
             var mesh=new Builder();float front=side*52.5f,back=front+side*1.8f;
-            for(int column=0;column<=25;column++){
-                float z=Mathf.Lerp(-3.66f,3.66f,column/25f);
-                mesh.Beam(new Vector3(front,2.44f,z),new Vector3(back,2.2f,z),.018f);
-                mesh.Beam(new Vector3(back,2.2f,z),new Vector3(back,.1f,z),.018f);
+            for(int column=0;column<=columns;column++){
+                float z=Mathf.Lerp(-3.66f,3.66f,column/(float)columns);
+                mesh.NetThread(new Vector3(front,2.44f,z),new Vector3(back,2.2f,z),.018f,depths);
+                mesh.NetThread(new Vector3(back,2.2f,z),new Vector3(back,.1f,z),.018f,rows);
             }
-            for(int row=0;row<=8;row++){
-                float t=row/8f;mesh.Beam(new Vector3(back,Mathf.Lerp(.1f,2.2f,t),-3.66f),new Vector3(back,Mathf.Lerp(.1f,2.2f,t),3.66f),.018f);
-                for(int edge=-1;edge<=1;edge+=2)mesh.Beam(new Vector3(front,Mathf.Lerp(.1f,2.44f,t),edge*3.66f),new Vector3(back,Mathf.Lerp(.1f,2.2f,t),edge*3.66f),.018f);
+            for(int row=0;row<=rows;row++){
+                float t=row/(float)rows;mesh.NetThread(new Vector3(back,Mathf.Lerp(.1f,2.2f,t),-3.66f),new Vector3(back,Mathf.Lerp(.1f,2.2f,t),3.66f),.018f,columns);
+                for(int edge=-1;edge<=1;edge+=2)mesh.NetThread(new Vector3(front,Mathf.Lerp(.1f,2.44f,t),edge*3.66f),new Vector3(back,Mathf.Lerp(.1f,2.2f,t),edge*3.66f),.018f,depths);
             }
-            for(int depth=1;depth<6;depth++){
-                float t=depth/6f,x=Mathf.Lerp(front,back,t),top=Mathf.Lerp(2.44f,2.2f,t);
-                mesh.Beam(new Vector3(x,top,-3.66f),new Vector3(x,top,3.66f),.018f);
-                for(int edge=-1;edge<=1;edge+=2)mesh.Beam(new Vector3(x,.1f,edge*3.66f),new Vector3(x,top,edge*3.66f),.018f);
+            for(int depth=1;depth<depths;depth++){
+                float t=depth/(float)depths,x=Mathf.Lerp(front,back,t),top=Mathf.Lerp(2.44f,2.2f,t);
+                mesh.NetThread(new Vector3(x,top,-3.66f),new Vector3(x,top,3.66f),.018f,columns);
+                for(int edge=-1;edge<=1;edge+=2)mesh.NetThread(new Vector3(x,.1f,edge*3.66f),new Vector3(x,top,edge*3.66f),.018f,rows);
             }
             return mesh.Build("Woven goal net");
         }
@@ -231,6 +251,23 @@ namespace Touchline
                 var direction=(end-start).normalized;var u=Vector3.Cross(direction,Vector3.up);if(u.sqrMagnitude<.001f)u=Vector3.right;u=u.normalized*(width*.5f);var v=Vector3.Cross(direction,u);
                 Quad(start-u-v,start+u-v,end+u-v,end-u-v);Quad(start+u-v,start+u+v,end+u+v,end+u-v);Quad(start+u+v,start-u+v,end-u+v,end+u+v);Quad(start-u+v,start-u-v,end-u-v,end-u+v);
                 Quad(start-u+v,start+u+v,start+u-v,start-u-v);Quad(end-u-v,end+u-v,end+u+v,end-u+v);
+            }
+            // Continuous square thread: four shared vertices per ring, no caps
+            // between segments. Beam's endpoint-only topology cannot bend locally.
+            public void NetThread(Vector3 start,Vector3 end,float width,int segments)
+            {
+                var direction=(end-start).normalized;var u=Vector3.Cross(direction,Vector3.up);if(u.sqrMagnitude<.001f)u=Vector3.right;u=u.normalized*(width*.5f);var v=Vector3.Cross(direction,u);
+                int first=vertices.Count;
+                for(int ring=0;ring<=segments;ring++){
+                    var centre=Vector3.Lerp(start,end,ring/(float)segments);
+                    vertices.Add(centre-u-v);vertices.Add(centre+u-v);vertices.Add(centre+u+v);vertices.Add(centre-u+v);
+                    for(int corner=0;corner<4;corner++)uvs.Add(default);
+                    if(ring==0)continue;
+                    for(int corner=0;corner<4;corner++){
+                        int a=first+(ring-1)*4+corner,b=first+(ring-1)*4+(corner+1)%4,c=a+4,d=b+4;
+                        triangles.AddRange(new[]{a,b,d,a,d,c});
+                    }
+                }
             }
             // Tube sans bouchons : les anneaux partagent leurs sommets (normales lissées, aspect rond).
             public void Tube(Vector3 start,Vector3 end,float radius,int sides)

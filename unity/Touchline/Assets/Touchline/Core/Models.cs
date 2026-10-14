@@ -42,7 +42,7 @@ namespace Touchline.Core
             return position == group ? .86f : .65f;
         }
     }
-    [Serializable] public class ClubData { public string id, name, league, color, logo, financeSource,stadium,stadiumSource,capacitySource,sourceSeason,rosterSource,rosterAsOf,referenceSeason,referenceFinanceSource; public long annualRevenue,referenceRevenue;public int stadiumCapacity; public bool playable,reserve; public ClubData Copy()=>(ClubData)MemberwiseClone(); }
+    [Serializable] public class ClubData { public string id, name, league, country,countrySource,countryAsOf, color, logo, financeSource,stadium,stadiumSource,capacitySource,sourceSeason,rosterSource,rosterAsOf,referenceSeason,referenceFinanceSource; public long annualRevenue,referenceRevenue;public int stadiumCapacity; public bool playable,reserve; public ClubData Copy()=>(ClubData)MemberwiseClone(); }
     [Serializable] public class LeagueData { public string id, name, country, format, calendarSource,rulesSource,rulesNote; public int tier=1; public bool scoutingOnly; }
     [Serializable] public class Database
     {
@@ -87,7 +87,10 @@ namespace Touchline.Core
         public static float Distance(Point a, Point b) => (a - b).Length;
         public static Point Lerp(Point a, Point b, float t) => a + (b - a) * t;
     }
-    [Serializable] public class Slot { public string role, duty="support"; public float x, y; public Slot(string r, float x, float y) { role = r; this.x = x; this.y = y; } }
+    [Serializable] public class Slot { public string role, duty="support"; public float x, y;
+        // Consigne individuelle (PlayerInstructions) : lue sur le poste sans ballon. Vide = aucune.
+        public string instruction="";
+        public Slot(string r, float x, float y) { role = r; this.x = x; this.y = y; } }
     [Serializable] public class Tactic
     {
         public string formation = "4-3-3";
@@ -110,7 +113,12 @@ namespace Touchline.Core
         {
             var p = (possession ? withBall : withoutBall)[slot];
             var baseX=-52.5f+p.y*1.05f;
-            var x=possession?baseX+ballX*.38f+(mentality-.5f)*12:baseX*.57f-10+(line-.45f)*27+ballX*.24f;
+            // Board depth is 0–100. Defenders follow the line fully; midfield
+            // follows progressively less, while forwards keep their engagement
+            // position. Raising the line must compress, not translate, the block.
+            const float DefensiveBandEnd=35,MidfieldBandEnd=55;
+            float lineShare=Mathx.Clamp((MidfieldBandEnd-p.y)/(MidfieldBandEnd-DefensiveBandEnd),0,1);
+            var x=possession?baseX+ballX*.38f+(mentality-.5f)*12:baseX*.57f-10+(line-.45f)*27*lineShare+ballX*.24f;
             if(possession&&slot>0)x=Math.Min(x,ballX+24);
             // Board left is the player's left while facing the opposing goal.
             // Local attack is +X, whose left-hand flank is world +Z. Rotate
@@ -121,6 +129,9 @@ namespace Touchline.Core
     public static class Mathx { public static float Clamp(float v,float a,float b) => Math.Max(a,Math.Min(b,v)); }
     [Serializable] public partial class Career
     {
+        public const int ImportedRosterYear=2026;
+        // Zero preserves legacy careers; new imported careers start intakes next season.
+        public int youthGenerationFromYear;
         public int schema = 1;
         public string manager = "Victor", club = "176";
         public Tactic tactic = new Tactic();
@@ -201,6 +212,8 @@ namespace Touchline.Core
         public float awayReviewAt=480, awayBaseLine=.45f, awayBaseTempo=.5f, awayBaseRisk=.5f;
         public float awayTacticalReviewAt=120,awayBaseDefensiveWidth=.45f,awayBasePress=.5f;
         public int awayObservedCrosses,awayObservedThrough;
+        // L'adversaire exploite une ligne haute observée (OpponentCoach) ; valeurs d'origine à restaurer.
+        public bool awayExploitingLine,awayBaseCounter;public float awayBaseDirectness=-1;
         public string awayPlan="balanced";
         public TeamMetrics[] metrics={new TeamMetrics(),new TeamMetrics()};
         public Actor[] actors;
@@ -211,6 +224,9 @@ namespace Touchline.Core
         public List<PendingSubstitution> pendingSubstitutions=new List<PendingSubstitution>();
         public List<float> homeWindows=new List<float>(), awayWindows=new List<float>();
         public List<MatchEvent> events=new List<MatchEvent>();
+        // État mental et automatismes des deux équipes (TeamMindset). Absent ou vide :
+        // moteur neutre, identique aux anciennes sauvegardes et à la calibration.
+        public TeamMindset[] mindset;
         public int Minute => MinuteAt(clock);
     }
 }

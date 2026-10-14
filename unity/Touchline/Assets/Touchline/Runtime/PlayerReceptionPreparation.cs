@@ -15,6 +15,34 @@ namespace Touchline
         Vector3 receptionPreparationPoint;
         bool receptionPreparationLeft,receptionPreparedHandoff;
         int receptionPreparedSequence=-1;
+        Vector3[] capturedReceptionPositions;
+        void PrepareCapturedReception(Actor actor,float dt,bool reset,PlayerMotionContext context)
+        {
+            bool entering=MatchSimulation.IsBodyControl(actor)&&(poseAction!="control"||poseSequence!=actor.actionSequence);
+            if(entering){
+                var point=new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z);
+                float lateral=transform.InverseTransformPoint(point).x;
+                receivingLeft=Mathf.Abs(lateral)<.06f?leftFooted:lateral>0;
+            }
+            UpdateBodyReceptionPreparation(actor,dt,reset,context.bodyReception);
+            if(!entering||reset||!receptionPreparedHandoff)return;
+            if(capturedReceptionPositions==null)capturedReceptionPositions=new Vector3[skeleton.Length];
+            transitionBodyPosition=body.localPosition;transitionBodyRotation=body.localRotation;
+            for(int i=0;i<skeleton.Length;i++){capturedReceptionPositions[i]=skeleton[i].localPosition;transitionPose[i]=skeleton[i].localRotation;}
+        }
+        void BlendCapturedReceptionEntry(Actor actor,float elapsed)
+        {
+            if(capturedReceptionPositions==null||!PreparedReceptionHandoff(actor,elapsed))return;
+            // Keep the observed readiness at physical entry, reaching the real
+            // contact pose exactly at Core's cushioning contact time.
+            float blend=Mathf.SmoothStep(0,1,elapsed/MatchSimulation.BodyControlContactTime);
+            body.localPosition=Vector3.Lerp(transitionBodyPosition,body.localPosition,blend);
+            body.localRotation=Quaternion.Slerp(transitionBodyRotation,body.localRotation,blend);
+            for(int i=0;i<skeleton.Length;i++){
+                skeleton[i].localPosition=Vector3.Lerp(capturedReceptionPositions[i],skeleton[i].localPosition,blend);
+                skeleton[i].localRotation=Quaternion.Slerp(transitionPose[i],skeleton[i].localRotation,blend);
+            }
+        }
         void ClearReceptionPreparation(){receptionPreparationWeight=0;receptionPreparationKind=null;receptionPreparedHandoff=false;receptionPreparedSequence=-1;receptionCancellationRemaining=0;}
         bool PreparedReceptionHandoff(Actor actor,float elapsed)=>receptionPreparedHandoff&&actor.actionSequence==receptionPreparedSequence&&elapsed<MatchSimulation.BodyControlContactTime;
         void UpdateBodyReceptionPreparation(Actor actor,float dt,bool reset,BodyReceptionAnticipationSample sample)

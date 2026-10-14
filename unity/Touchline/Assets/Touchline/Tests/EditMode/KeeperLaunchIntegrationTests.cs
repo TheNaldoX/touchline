@@ -33,7 +33,7 @@ namespace Touchline.Tests
                 var point=new Vector3(keeper.actionTarget.x,keeper.actionHeight,keeper.actionTarget.z);view.Render(keeper,alpha,1f/60,point);
                 float nearest=100;
                 foreach(var skin in go.GetComponentsInChildren<SkinnedMeshRenderer>())if(skin.name.Contains("glove")||skin.name.Contains("Glove")){
-                    skin.BakeMesh(baked);foreach(var vertex in baked.vertices)nearest=Mathf.Min(nearest,Vector3.Distance(skin.transform.TransformPoint(vertex),point));
+                    skin.BakeMesh(baked,true);foreach(var vertex in baked.vertices)nearest=Mathf.Min(nearest,Vector3.Distance(skin.transform.TransformPoint(vertex),point));
                 }
                 TestContext.WriteLine("Actual glove-to-ball centre distance "+nearest+"m at "+keeper.actionContactTime+"s");
                 Assert.Less(nearest,.17f,"Do not count a save beyond the rendered glove's physical reach");

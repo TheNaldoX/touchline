@@ -8,6 +8,7 @@ namespace Touchline
     // contacts still run through the same fixed-step simulation and RNG.
     public sealed class MatchBroadcast
     {
+        const float KeyMomentShotQuality=.18f; // Internal xG threshold for selecting a clear chance, not changing its outcome.
         readonly MatchSimulation simulation;
         readonly ExitBroadcastWindow exitWindow=new ExitBroadcastWindow();
         int observedEvents;
@@ -23,7 +24,7 @@ namespace Touchline
         public static string ModeName(MatchViewingMode mode)=>mode switch{MatchViewingMode.Full=>"Match complet",MatchViewingMode.KeyMoments=>"Moments clés",MatchViewingMode.Extended=>"Temps forts étendus",_=>"Temps forts"};
         public static string ModeDescription(MatchViewingMode mode)=>mode switch{
             MatchViewingMode.Full=>"Toute la rencontre en 3D, à la vitesse choisie.",
-            MatchViewingMode.KeyMoments=>"Occasions franches, frappes, buts et incidents majeurs. Moins de construction montrée.",
+            MatchViewingMode.KeyMoments=>"Occasions dangereuses, buts, montants et incidents majeurs. Les tentatives faibles peuvent rester dans les statistiques.",
             MatchViewingMode.Extended=>"Davantage de construction, de transitions et d’actions sur les ailes pour analyser votre tactique.",
             _=>"Actions dangereuses et approches de la surface, avec un suivi statistique entre les séquences."};
         public void SetMode(MatchViewingMode mode)
@@ -41,6 +42,7 @@ namespace Touchline
                 var m=simulation.State;
                 if(m.halfTime)return "Mi-temps · préparez vos ajustements";
                 if(m.finished)return "Match terminé";
+                if(m.phase=="free-kick"&&m.restart>0&&!simulation.FreeKickDeliveryApproaching)return "Coup franc · mise en place du tireur et du mur";
                 if(m.restart>0){string phase=m.phase switch{"throw-in"=>"Touche","goal-kick"=>"Six mètres","corner"=>"Corner","free-kick"=>"Coup franc","penalty"=>"Penalty","goal"=>"Après le but","kickoff"=>"Engagement",_=>"Arrêt de jeu"};return phase+" · préparation, reprise dans "+Math.Max(1,(int)Math.Ceiling(m.restart))+" s";}
                 if(m.ball.held)return "Gardien en possession · préparation de la relance";
                 int side=MatchSimulation.PossessionSide(m);if(side<0)side=m.ball.side;
@@ -49,7 +51,7 @@ namespace Touchline
                 float flank=m.ball.position.z*simulation.Direction(side);return action+" · "+(flank>9?"côté gauche":flank< -9?"côté droit":"axe central");
             }
         }
-        public static string EventHeadline(string kind)=>kind switch{"goal"=>"BUT !","shot"=>"FRAPPE","save"=>"ARRÊT DU GARDIEN","woodwork"=>"SUR LE MONTANT","penalty"=>"PENALTY","offside"=>"HORS-JEU","red"=>"EXCLUSION",_=>null};
+        public static string EventHeadline(string kind)=>kind switch{"goal"=>"BUT !","shot"=>"FRAPPE","save"=>"ARRÊT DU GARDIEN","woodwork"=>"SUR LE MONTANT","penalty"=>"PENALTY","offside"=>"HORS-JEU","red"=>"EXCLUSION","assistant"=>"L’ADJOINT","shout"=>"DEPUIS LA TOUCHE",_=>null};
         public int LastFrameSteps {get;private set;}
         public bool BudgetLimited {get;private set;}
         public float EffectiveSpeed {get;private set;}
@@ -76,8 +78,8 @@ namespace Touchline
             if(observedEvents>m.events.Count)observedEvents=m.events.Count;
             while(observedEvents<m.events.Count){
                 var e=m.events[observedEvents++];
-                string reason=e.kind switch{"goal"=>"But !","shot"=>"Occasion de but","save"=>"Intervention du gardien","woodwork"=>"Sur le montant","penalty"=>"Penalty","red"=>"Exclusion","yellow"=>"Avertissement","injury"=>"Intervention médicale","substitution"=>"Changement de joueur",_=>null};
-                bool major=e.kind=="goal"||e.kind=="shot"||e.kind=="save"||e.kind=="woodwork"||e.kind=="penalty"||e.kind=="red"||e.kind=="injury";
+                string reason=e.kind switch{"goal"=>"But !","shot"=>"Frappe","save"=>"Intervention du gardien","woodwork"=>"Sur le montant","penalty"=>"Penalty","red"=>"Exclusion","yellow"=>"Avertissement","injury"=>"Intervention médicale","substitution"=>"Changement de joueur",_=>null};
+                bool major=e.kind=="goal"||(e.kind=="shot"&&e.xg>=KeyMomentShotQuality)||(e.kind=="save"&&m.clock<visibleUntil)||e.kind=="woodwork"||e.kind=="penalty"||e.kind=="red"||e.kind=="injury";
                 if(reason!=null&&(Mode!=MatchViewingMode.KeyMoments||major))ShowEvent(e.kind,reason);
                 if(Mode==MatchViewingMode.Extended&&(e.kind=="offside"||e.kind=="foul"))ShowEvent(e.kind,e.kind=="offside"?"Hors-jeu":"Faute sifflée");
                 if(Enabled&&e.side==0&&(e.kind=="injury"||e.kind=="red"))PauseRequested=true;
@@ -92,18 +94,20 @@ namespace Touchline
         {
             var b=m.ball;
             if(m.restart>0){
+                if(m.HalfDuration==2700&&m.phase=="free-kick"&&(!simulation.FreeKickDeliveryApproaching||m.restart>(Mode==MatchViewingMode.Extended?6:3)))return null;
                 // Full-duration stoppages include retrieval and preparation.
                 // Show the award through the event window, then return for
                 // the actual delivery instead of filming 30 seconds of waiting.
                 if(m.HalfDuration==2700&&(m.phase=="goal"||m.restart>(Mode==MatchViewingMode.Extended?12:6))&&m.phase!="kickoff")return null;
                 if(m.phase=="goal")return "Célébration";
                 if(m.phase=="penalty")return "Penalty";
+                if(Mode==MatchViewingMode.KeyMoments)return m.phase=="free-kick"&&b.position.x*simulation.Direction(m.restartSide)>28.5f&&Math.Abs(b.position.z)<14?"Coup franc dangereux":null;
                 if(m.phase=="corner")return "Corner";
                 if(m.phase=="free-kick"&&b.position.x*simulation.Direction(m.restartSide)>16)return "Coup franc dangereux";
                 if(m.phase=="kickoff")return "Engagement";
                 return null;
             }
-            if(b.kind=="shot"||b.goalAttempt)return "Occasion de but";
+            if(b.kind=="shot"||b.goalAttempt)return Mode!=MatchViewingMode.KeyMoments||m.shotXg>=KeyMomentShotQuality?"Frappe en cours":null;
             if(b.held)return null;
             int side=MatchSimulation.PossessionSide(m);if(side<0)side=b.side;
             int direction=simulation.Direction(side);
@@ -117,7 +121,7 @@ namespace Touchline
             bool committed=(b.kind=="cross"||b.kind=="cutback"||b.kind=="through")&&b.end.x*direction>27&&Math.Abs(b.end.z)<24;
             bool penetrating=b.kind=="pass"&&b.end.x*direction>36&&Math.Abs(b.end.z)<18&&
                 (b.end.x-b.start.x)*direction>6&&receiver!=null&&simulation.ShotQuality(receiver)>.08f;
-            if(Mode==MatchViewingMode.KeyMoments){committed=committed&&b.end.x*direction>38&&Math.Abs(b.end.z)<14;penetrating=penetrating&&receiver!=null&&simulation.ShotQuality(receiver)>.18f;}
+            if(Mode==MatchViewingMode.KeyMoments){committed=committed&&b.end.x*direction>38&&Math.Abs(b.end.z)<14&&receiver!=null&&simulation.ShotQuality(receiver)>.18f;penetrating=penetrating&&receiver!=null&&simulation.ShotQuality(receiver)>.18f;}
             bool buildup=Mode==MatchViewingMode.Extended&&(b.kind=="pass"||b.kind=="through"||b.kind=="cross")&&b.end.x*direction>18&&((b.end.x-b.start.x)*direction>8||Math.Abs(b.end.z-b.start.z)>25);
             if(committed||penetrating||buildup){
                 int sequence=source?.actionSequence??0;

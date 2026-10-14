@@ -45,7 +45,7 @@ namespace Touchline.Editor
                         var center=(views[0].transform.position+views[1].transform.position)*.5f;camera.transform.position=center+new Vector3(5,5.5f,9);camera.transform.LookAt(center+new Vector3(0,.4f,2));
                         Layer(root);target=new RenderTexture(1120,840,24);target.Create();camera.targetTexture=target;camera.aspect=4f/3;
                         foreach(var view in views)foreach(var skin in view.GetComponentsInChildren<SkinnedMeshRenderer>()){
-                            var mesh=new Mesh();skin.BakeMesh(mesh);meshes.Add(mesh);var proxy=new GameObject("Exact measured pose");proxy.layer=29;proxy.transform.SetParent(skin.transform,false);proxy.AddComponent<MeshFilter>().sharedMesh=mesh;proxy.AddComponent<MeshRenderer>().sharedMaterials=skin.sharedMaterials;proxies.Add(proxy);skin.enabled=false;
+                            var mesh=new Mesh();skin.BakeMesh(mesh,true);meshes.Add(mesh);var proxy=new GameObject("Exact measured pose");proxy.layer=29;proxy.transform.SetParent(skin.transform,false);proxy.AddComponent<MeshFilter>().sharedMesh=mesh;proxy.AddComponent<MeshRenderer>().sharedMaterials=skin.sharedMaterials;proxies.Add(proxy);skin.enabled=false;
                         }
                         var previous=RenderTexture.active;Texture2D image=null;try{camera.Render();RenderTexture.active=target;image=new Texture2D(1120,840,TextureFormat.RGB24,false);image.ReadPixels(new Rect(0,0,1120,840),0,0);image.Apply();row.file=scenario+"-60fps.png";File.WriteAllBytes(Path.Combine(output,row.file),image.EncodeToPNG());}finally{RenderTexture.active=previous;if(image!=null)UnityEngine.Object.DestroyImmediate(image);}
                     }

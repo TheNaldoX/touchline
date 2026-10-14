@@ -19,7 +19,7 @@ namespace Touchline.Editor
             try{
                 foreach(var skin in root.GetComponentsInChildren<SkinnedMeshRenderer>()){
                     if(!skin.enabled||!skin.gameObject.activeInHierarchy)continue;
-                    var mesh=new Mesh();skin.BakeMesh(mesh);meshes.Add(mesh);var proxy=new GameObject("Native current skin");proxy.layer=skin.gameObject.layer;proxy.transform.SetParent(skin.transform,false);proxy.AddComponent<MeshFilter>().sharedMesh=mesh;proxy.AddComponent<MeshRenderer>().sharedMaterials=skin.sharedMaterials;proxies.Add(proxy);skins.Add(skin);skin.enabled=false;
+                    var mesh=new Mesh();skin.BakeMesh(mesh,true);meshes.Add(mesh);var proxy=new GameObject("Native current skin");proxy.layer=skin.gameObject.layer;proxy.transform.SetParent(skin.transform,false);proxy.AddComponent<MeshFilter>().sharedMesh=mesh;proxy.AddComponent<MeshRenderer>().sharedMaterials=skin.sharedMaterials;proxies.Add(proxy);skins.Add(skin);skin.enabled=false;
                 }
                 camera.Render();RenderTexture.active=target;image=new Texture2D(target.width,target.height,TextureFormat.RGB24,false);image.ReadPixels(new Rect(0,0,target.width,target.height),0,0);image.Apply();File.WriteAllBytes(path,image.EncodeToPNG());
             }finally{foreach(var skin in skins)skin.enabled=true;foreach(var proxy in proxies)UnityEngine.Object.DestroyImmediate(proxy);foreach(var mesh in meshes)UnityEngine.Object.DestroyImmediate(mesh);if(image!=null)UnityEngine.Object.DestroyImmediate(image);RenderTexture.active=previous;}
@@ -44,7 +44,7 @@ namespace Touchline.Editor
                     var target=new RenderTexture(size.x,size.y,24){antiAliasing=2};target.Create();var camera=arena.MatchCamera;camera.targetTexture=target;camera.aspect=(float)size.x/size.y;
                     arena.RenderFrame(1f/60);var first=camera.transform.position;var viewport=camera.WorldToViewportPoint(arena.BallDisplayPosition);string file=$"resume-{size.x}x{size.y}-{end}.png";Capture(camera,target,root,Path.Combine(output,file));
                     for(int i=0;i<240;i++)arena.RenderFrame(1f/60);float drift=Vector3.Distance(first,camera.transform.position);
-                    if(drift>.25f||viewport.x<.1f||viewport.x>.9f||viewport.y<.1f||viewport.y>.9f||state.clock!=1800)throw new Exception("Resume framing failed");
+                    if(drift>.25f||viewport.x<.1f||viewport.x>.9f||viewport.y<.1f||viewport.y>.9f||state.clock!=1800)throw new Exception($"Resume framing failed: {size}, end={end}, drift={drift}, ball={viewport}, clock={state.clock}");
                     shots.Add(new Shot{file=file,width=size.x,height=size.y,end=end,cameraDrift=drift,ballViewport=viewport});camera.targetTexture=null;target.Release();UnityEngine.Object.DestroyImmediate(target);UnityEngine.Object.DestroyImmediate(root);
                 }
                 File.WriteAllText(Path.Combine(output,"report.json"),JsonUtility.ToJson(new Report{passed=true,scenes=shots.ToArray()},true));Debug.Log("TOUCHLINE_CAMERA_RESUME_OK");passed=true;

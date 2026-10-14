@@ -64,6 +64,11 @@ namespace Touchline.Core
                     add("lowCrosses","Chercher les partenaires dans les pieds",observed.aerialCrosses+" centres aériens tentés. Notre finition au pied dépasse notre jeu de tête.","Les passes rasantes sont plus rapides, mais peuvent être coupées par le premier défenseur.",0);
                 if(tactic.workIntoBox&&match.shots[0]<=2&&observed.possessionSeconds>300)
                     add("workIntoBox","Autoriser davantage de tentatives","Après "+match.Minute+" minutes, nous n’avons tenté que "+match.shots[0]+" tirs malgré "+(int)observed.possessionSeconds+" secondes de possession.","Plus de tentatives, mais davantage de frappes à faible probabilité de but.",0);
+                // Require a meaningful sample; a late deficit can justify accepting lower-quality attempts.
+                const int MinimumShotsForQualityAdvice=8,LateChaseMinute=75;
+                const float LowShotQuality=.07f; // Mean displayed pre-shot probability, not observed conversion.
+                if(!tactic.workIntoBox&&match.shots[0]>=MinimumShotsForQualityAdvice&&observed.xg/match.shots[0]<LowShotQuality&&!(match.Minute>=LateChaseMinute&&match.score[0]<match.score[1]))
+                    add("patientShots","Préparer de meilleures positions de frappe",match.shots[0]+" tirs pour "+observed.xg.ToString("0.00")+" xG estimés : beaucoup de tentatives, mais des positions peu favorables. Essayons de construire davantage dans la surface.","Moins de tirs immédiats ; nous risquons de laisser la défense se replacer. Les xG décrivent les positions, pas une garantie de but.",1);
             }
             return result.Take(staff.tactics<10?2:staff.tactics<15?4:6).ToList();
         }
@@ -74,6 +79,7 @@ namespace Touchline.Core
             switch(key){case "pressing":tactic.pressing=a.value;break;case "line":tactic.line=a.value;break;case "tempo":tactic.tempo=a.value;break;case "width":tactic.width=a.value;break;case "counterPress":tactic.counterPress=false;break;case "cover":var slot=tactic.withBall.Skip(1).Where(s=>s.role=="DM"||s.role=="CM").OrderBy(s=>s.y).FirstOrDefault()??tactic.withBall.Skip(1).OrderBy(s=>s.y).First();slot.duty="defend";slot.y=Math.Min(slot.y,55);break;}
             if(key=="lowCrosses")tactic.crossing="low";
             if(key=="workIntoBox")tactic.workIntoBox=false;
+            if(key=="patientShots")tactic.workIntoBox=true;
             BindMatchTactic();Mail(Staff("assistant").name,"Consigne ajustée",a.title+". "+a.tradeoff,null,"staff");
         }
         void StaffDay(Database db)
