@@ -187,8 +187,8 @@ namespace Touchline
             MatchCamera.farClipPlane=Mathf.Max(270,cameraDistance+150);RenderSettings.fogStartDistance=Mathf.Max(110,cameraDistance+60);RenderSettings.fogEndDistance=Mathf.Max(240,cameraDistance+180);
         }
         public void ToggleTacticalOverlay(){showTactics=!showTactics;foreach(var line in tacticalLines)line.enabled=showTactics;}
-        public void Zoom(float delta){zoom=Mathf.Clamp(zoom+delta,.8f,1.35f);cameraReset=true;PlayerPrefs.SetFloat("match-camera-zoom",zoom);}
-        public void ScaleZoom(float factor){if(float.IsNaN(factor)||float.IsInfinity(factor)||factor<=0)return;zoom=Mathf.Clamp(zoom*factor,.8f,1.35f);cameraReset=true;PlayerPrefs.SetFloat("match-camera-zoom",zoom);}
+        public void Zoom(float delta){zoom=Mathf.Clamp(zoom+delta,.8f,1.35f);PlayerPrefs.SetFloat("match-camera-zoom",zoom);}
+        public void ScaleZoom(float factor){if(float.IsNaN(factor)||float.IsInfinity(factor)||factor<=0)return;zoom=Mathf.Clamp(zoom*factor,.8f,1.35f);PlayerPrefs.SetFloat("match-camera-zoom",zoom);}
         // shaded : partie à l'ombre simulée du toit, matières sans éclairage (StadiumLighting.ShadedMaterial).
         void CreatePitchSurface(bool shaded,float shadeEdge,float shadeEndX)
         {

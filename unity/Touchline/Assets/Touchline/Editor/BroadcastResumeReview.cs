@@ -45,7 +45,14 @@ namespace Touchline.Editor
                     arena.RenderFrame(1f/60);var first=camera.transform.position;var viewport=camera.WorldToViewportPoint(arena.BallDisplayPosition);string file=$"resume-{size.x}x{size.y}-{end}.png";Capture(camera,target,root,Path.Combine(output,file));
                     for(int i=0;i<240;i++)arena.RenderFrame(1f/60);float drift=Vector3.Distance(first,camera.transform.position);
                     if(drift>.25f||viewport.x<.1f||viewport.x>.9f||viewport.y<.1f||viewport.y>.9f||state.clock!=1800)throw new Exception($"Resume framing failed: {size}, end={end}, drift={drift}, ball={viewport}, clock={state.clock}");
-                    shots.Add(new Shot{file=file,width=size.x,height=size.y,end=end,cameraDrift=drift,ballViewport=viewport});camera.targetTexture=null;target.Release();UnityEngine.Object.DestroyImmediate(target);UnityEngine.Object.DestroyImmediate(root);
+                    shots.Add(new Shot{file=file,width=size.x,height=size.y,end=end,cameraDrift=drift,ballViewport=viewport});
+                    arena.Zoom(-.15f);
+                    for(int frame=0;frame<=120;frame++){
+                        var before=camera.transform.position;arena.ReframeCamera(frame==0?0:1f/60);
+                        if(Vector3.Distance(before,camera.transform.position)>8f/60+.002f)throw new Exception("Manual zoom moved too quickly");
+                        if(frame==0||frame==30||frame==120)Capture(camera,target,root,Path.Combine(output,$"zoom-{size.x}x{size.y}-{end}-{frame}.png"));
+                    }
+                    camera.targetTexture=null;target.Release();UnityEngine.Object.DestroyImmediate(target);UnityEngine.Object.DestroyImmediate(root);
                 }
                 File.WriteAllText(Path.Combine(output,"report.json"),JsonUtility.ToJson(new Report{passed=true,scenes=shots.ToArray()},true));Debug.Log("TOUCHLINE_CAMERA_RESUME_OK");passed=true;
             }catch(Exception error){Debug.LogException(error);}

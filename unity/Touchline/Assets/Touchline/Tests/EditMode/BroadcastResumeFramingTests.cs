@@ -33,6 +33,17 @@ namespace Touchline.Tests
                 Assert.That(firstViewport.x,Is.InRange(.1f,.9f));Assert.That(firstViewport.y,Is.InRange(.1f,.9f));Assert.Greater(firstViewport.z,0);
                 Assert.Less(drift,.25f,"Loading a motionless paused scene must not pan from midfield for several seconds");
                 Assert.Less(viewportDrift,.01f,"The first frame must already show the loaded action at its stable screen position");
+                // Controls must use the same wall-clock smoothing as automatic framing.
+                foreach(bool pinch in new[]{false,true}){
+                    var before=camera.transform.position;
+                    if(pinch)arena.ScaleZoom(1.15f);else arena.Zoom(-.15f);
+                    arena.ReframeCamera();
+                    Assert.Less(Vector3.Distance(before,camera.transform.position),.001f,"A layout-only pass must not apply a zoom instantly");
+                    for(int frame=0;frame<240;frame++){
+                        before=camera.transform.position;arena.ReframeCamera(1f/60);
+                        Assert.LessOrEqual(Vector3.Distance(before,camera.transform.position),8f/60+.002f,"Manual zoom must respect the camera speed bound");
+                    }
+                }
             }finally{
                 if(go!=null)Object.DestroyImmediate(go);
                 if(present[0])PlayerPrefs.SetInt(keys[0],mode);else PlayerPrefs.DeleteKey(keys[0]);
