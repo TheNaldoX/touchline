@@ -5,7 +5,7 @@ namespace Touchline.Core
 {
     public sealed partial class MatchSimulation
     {
-        float FreeKickSkill(Actor p)=>Skill(p,Data(p).attributes?.Any(a=>a.key=="freeKickAccuracy")==true?"freeKickAccuracy":"fkAccuracy");
+        float FreeKickSkill(Actor p)=>Skill(p,Data(p).attributes?.Any(a=>a.key=="freeKickAccuracy")==true?"freeKickAccuracy":"fkAccuracy")+SetPieceSkillBonus(p.side);
         Actor RestartTaker()
         {
             var existing=Find(State.restartTaker);
@@ -20,7 +20,7 @@ namespace Touchline.Core
                 if(State.phase=="corner")score=Skill(p,"crossing")-distance*.25f-(p.slot==0?1000:0);
                 if(score>highest){highest=score;best=p;}
             }
-            State.restartTaker=best?.id;
+            best=DesignatedTaker(best);State.restartTaker=best?.id;
             State.restartWall??=new System.Collections.Generic.List<string>();State.restartWall.Clear();
             var goal=new Point(Direction(State.restartSide)*52.5f,0);
             float range=Point.Distance(State.ball.position,goal);
@@ -40,7 +40,8 @@ namespace Touchline.Core
             var m=State;int attack=Direction(m.restartSide);var ball=m.ball.position;
             var q=p==taker?ball:Tactic(p.side).Position(p.slot,p.side==m.restartSide,ball.x*Direction(p.side))*Direction(p.side);
             if(p==taker&&m.phase!="throw-in")q-=new Point(attack*.42f,0);
-            if(m.phase=="corner"&&p!=taker&&p.slot>4)q=new Point(attack*(p.side==m.restartSide?41:44),((p.slot%5)-2)*4);
+            if(CornerPosition(p,taker,ref q)){}
+            else if(m.phase=="corner"&&p!=taker&&p.slot>4)q=new Point(attack*(p.side==m.restartSide?41:44),((p.slot%5)-2)*4);
             if(m.phase=="penalty"&&p!=taker){
                 return p.side!=m.restartSide&&p.slot==0?new Point(attack*52.5f,0):new Point(attack*Math.Min(q.x*attack,32),q.z);
             }
@@ -77,20 +78,22 @@ namespace Touchline.Core
         }
         void RestartKick()
         {
-            var m=State;var phase=m.phase;var p=RestartTaker();var spot=m.ball.position;Control(p);m.phase="play";m.decision=.6f;
+            var m=State;var phase=m.phase;var p=RestartTaker();var spot=m.ball.position;Control(p);m.phase="play";m.decision=.6f;deliveringSetPiece=phase=="corner"||phase=="free-kick";
             m.ball.restartExemption=phase=="goal-kick"||phase=="corner"||phase=="throw-in";
             if(phase=="penalty")Shoot(p,false,true);
-            else if(phase=="free-kick"&&!m.indirectRestart&&Point.Distance(p.position,new Point(Direction(p.side)*52.5f,0))<27&&Math.Abs(p.position.z)<18)Shoot(p,false,false,true);
+            else if(phase=="free-kick"&&!m.indirectRestart&&DirectFreeKick(p))Shoot(p,false,false,true);
+            else if(PlayShort(p,phase)||phase=="free-kick"&&CrossFreeKick(p)){}
             else{
                 Actor target=null;float best=float.MinValue;
                 foreach(var a in m.actors){if(a.sentOff||GroundedAction(a)||a.side!=p.side||a==p)continue;float distance=Point.Distance(a.position,p.position);if(distance<2)continue;
-                    float score=phase=="corner"?Skill(a,"headingAccuracy")-Point.Distance(a.position,new Point(Direction(p.side)*43,0))-(a.slot==0?1000:0):Space(a.position,1-p.side)*.6f-distance;
+                    float score=phase=="corner"?Skill(a,"headingAccuracy")-Point.Distance(a.position,CornerAim(p))-(a.slot==0?1000:0):Space(a.position,1-p.side)*.6f-distance;
                     if(phase=="free-kick"&&a.position.x*Direction(p.side)>OffsideLine(p.side)+.1f)continue;
                     if(score>best){best=score;target=a;}
                 }
                 if(target!=null)Pass(p,target,phase=="corner"?"cross":phase=="throw-in"?"throw":"pass");
                 else Flight(p,null,"clearance",new Point(Direction(p.side)*8,Math.Sign(p.position.z+.01f)*27),.11f,2.6f,8);
             }
+            deliveringSetPiece=false;
             if(phase!="throw-in"){m.ball.start=spot;m.ball.fixedStart=true;p.actionTarget=spot;}
         }
     }

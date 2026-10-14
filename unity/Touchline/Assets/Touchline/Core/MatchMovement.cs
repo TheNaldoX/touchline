@@ -24,7 +24,7 @@ namespace Touchline.Core
                 if(p.runBehind>0)p.runBehind=Math.Max(0,p.runBehind-Step);
                 if(PreparingFootDelivery(p)&&(b.owner!=p.id||p.sentOff)){p.action=p.velocity.Length>.4f?"run":"idle";p.actionTime=0;}
                 if(p.sentOff){targets[i]=p.position;continue;}var dir=Direction(p.side);var has=possession==p.side;var t=Tactic(p.side);var slot=(has?t.withBall:t.withoutBall)[p.slot];var bx=b.position.x*dir;
-                var q=t.Position(p.slot,has,bx);p.intent=has?"support":"shape";
+                var q=RoleShape(p,t.Position(p.slot,has,bx),has);p.intent=has?"support":"shape";
                 q.z+=b.position.z*dir*(has?.12f:.34f);
                 if(!has&&p.slot>0&&slot.y<60){float danger=Mathx.Clamp((-bx-20)/22,0,1)*(1-Mathx.Clamp(Math.Abs(b.position.z)/24,0,1));q.z*=1-.45f*danger;}
                 if(has&&p.slot>0){q.x+=slot.duty=="attack"?5:slot.duty=="defend"?-5:0;
@@ -50,14 +50,14 @@ namespace Touchline.Core
                     bool closeDelay=recovering&&Point.Distance(p.position,focus)<7;
                     // Ballon perdu haut : le plus proche presse aussitôt au lieu de se replier.
                     bool press=trigger&&(!recovering||closeDelay||highPress)||transition&&t.counterPress;
-                    float radius=5+t.pressing*18+(transition&&t.counterPress?7:0);
+                    float radius=5+t.pressing*18+(transition&&t.counterPress?7:0)+RolePress(p);
                     if(firstPress[p.side]==i&&press&&Point.Distance(p.position,focus)<radius){q=focus-new Point(dir*(closeDelay?1.4f:.65f),0);p.intent=closeDelay?"delay":"press";}
                     else if(coverPress[p.side]==i&&press&&t.pressing>.35f&&Point.Distance(p.position,focus)<radius+3){q=focus+(new Point(-dir*52.5f,0)-focus).Normalized*(4.8f-t.pressing*2);p.intent="cover";}
                     else{
                         // Track a runner only inside this player's zone; retain cover.
                         Actor threat=null;float best=12;foreach(var o in m.actors)if(!o.sentOff&&o.side!=p.side&&o.slot>0){float d=Point.Distance(o.position,q);if(d<best&&o.position.x*dir<p.position.x*dir+12){best=d;threat=o;}}
                         if(slot.y<60)threat=CloseGoalSideMark(p,threat,m.actors,dir);
-                        if(threat!=null&&slot.y<60){q=Point.Lerp(q,threat.position-new Point(dir*2,0),.30f+Skill(p,"defensiveAwareness")*.003f);p.intent=threat==owner?"mark-carrier":"mark";}
+                        if(threat!=null&&slot.y<60){q=Point.Lerp(q,threat.position-new Point(dir*2,0),.30f+Skill(p,"defensiveAwareness")*.003f+RoleMark(p));p.intent=threat==owner?"mark-carrier":"mark";}
                         if(focusX< -24&&slot.y<60){float behind=slot.y<38?4.2f:1.2f;q.x=dir*Math.Max(-49,Math.Min(q.x*dir,focusX-behind));}
                         if(recovering){q.x-=dir*5;p.intent="recover";}
                     }
@@ -88,7 +88,7 @@ namespace Touchline.Core
                 if(p.injured)maxSpeed*=.65f;if(p==owner)maxSpeed*=.80f;if(p.intent=="shape"||p.intent=="support")maxSpeed*=.76f;
                 if(p.intent=="press")maxSpeed*=.83f+Tactic(p.side).pressing*.17f;
                 MoveActor(p,targets[i],maxSpeed);
-                p.fitness=Mathx.Clamp(p.fitness-(Step*State.LegacyTimeScale)*(.012f+p.velocity.Length*p.velocity.Length*.0006f)*(1.2f-Skill(p,"stamina")*.004f),15,100);
+                p.fitness=Mathx.Clamp(p.fitness-(Step*State.LegacyTimeScale)*(.012f+p.velocity.Length*p.velocity.Length*.0006f)*(1.2f-Skill(p,"stamina")*.004f)*PreparationFatigue(p.side),15,100);
             }
             ResolvePlayerContacts();
         }
@@ -117,7 +117,7 @@ namespace Touchline.Core
         }
         Point KeeperTarget(Actor p)
         {
-            var b=State.ball;var dir=Direction(p.side);var depth=Math.Max(1,b.position.x*dir+52.5f);var offset=Mathx.Clamp(depth*.11f,1,4.5f+Tactic(p.side).line*1.5f);
+            var b=State.ball;var dir=Direction(p.side);var depth=Math.Max(1,b.position.x*dir+52.5f);var offset=Mathx.Clamp(depth*.11f,1,4.5f+Tactic(p.side).line*1.5f)*RoleKeeperDepth(p);
             var q=new Point(dir*(-52.5f+offset),Mathx.Clamp(b.position.z*offset/depth,-3.2f,3.2f));
             if(b.penalty&&b.kind=="shot"&&b.elapsed<0)return new Point(-dir*52.5f,0);
             if(b.to==p.id&&b.side==p.side)return ReceptionTarget(p);
@@ -139,7 +139,7 @@ namespace Touchline.Core
             if(owner==null&&(b.kind=="loose"||b.kind=="none"||b.kind=="through")&&InOwnArea(p,b.position)&&b.height<1.6f){
                 var intercept=b.position+b.velocity*.3f;float keeperTime=Point.Distance(p.position,intercept)/6;
                 float attackerTime=Space(intercept,1-p.side)/7.5f;
-                if(InOwnArea(p,intercept)&&keeperTime+.15f<attackerTime){q=intercept;p.intent="sweep";}
+                if(InOwnArea(p,intercept)&&keeperTime+.15f<attackerTime+RoleSweep(p)){q=intercept;p.intent="sweep";}
             }
             return AnticipateKeeperShot(p,q);
         }

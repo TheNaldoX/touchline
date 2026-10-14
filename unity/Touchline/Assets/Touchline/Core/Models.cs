@@ -87,7 +87,15 @@ namespace Touchline.Core
         public static float Distance(Point a, Point b) => (a - b).Length;
         public static Point Lerp(Point a, Point b, float t) => a + (b - a) * t;
     }
-    [Serializable] public class Slot { public string role, duty="support"; public float x, y; public Slot(string r, float x, float y) { role = r; this.x = x; this.y = y; } }
+    [Serializable] public class Slot
+    {
+        public string role, duty="support"; public float x, y;
+        // Rôle du joueur à ce poste ("" = rôle standard du poste, sans effet) et
+        // consignes individuelles (-1, 0, +1), voir TacticalRoles.
+        public string playerRole=""; public int wide, forward, marking, shooting, risk;
+        public Slot(string r, float x, float y) { role = r; this.x = x; this.y = y; }
+        public Slot Copy()=>(Slot)MemberwiseClone();
+    }
     [Serializable] public class Tactic
     {
         public string formation = "4-3-3";
@@ -96,7 +104,9 @@ namespace Touchline.Core
         public bool counterPress, counterAttack, workIntoBox;
         public string attackFocus="balanced",crossing="mixed";
         public Slot[] withBall, withoutBall;
+        public SetPieceRoutine setPieces=new SetPieceRoutine();
         public Tactic() { SetFormation("4-3-3"); }
+        public Tactic Copy(){var copy=(Tactic)MemberwiseClone();copy.withBall=withBall?.Select(s=>s?.Copy()).ToArray();copy.withoutBall=withoutBall?.Select(s=>s?.Copy()).ToArray();copy.setPieces=(setPieces??new SetPieceRoutine()).Copy();return copy;}
         public void SetFormation(string shape)
         {
             formation = shape;
@@ -211,6 +221,7 @@ namespace Touchline.Core
         public List<PendingSubstitution> pendingSubstitutions=new List<PendingSubstitution>();
         public List<float> homeWindows=new List<float>(), awayWindows=new List<float>();
         public List<MatchEvent> events=new List<MatchEvent>();
+        public MatchPreparation[] preparation; // entraînement et causeries (null = sans effet)
         public int Minute => MinuteAt(clock);
     }
 }

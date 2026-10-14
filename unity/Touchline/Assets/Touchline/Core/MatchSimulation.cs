@@ -73,7 +73,7 @@ namespace Touchline.Core
         float Skill(Actor p,string key)
         {
             var data=Data(p);var role=Tactic(p.side).withoutBall[p.slot].role;
-            return Mathx.Clamp(MatchAttribute(p,data,key)*(1+data.performanceModifier)*(1+(p.side==0?State.homeForm:State.awayForm)+(p.side==State.venueSide?HomeAdvantage:0))*(.86f+data.Fit(role)*.14f)*(.93f+data.morale*.0007f)*(.87f+p.fitness*.0013f),5,99);
+            return Mathx.Clamp(MatchAttribute(p,data,key)*(1+data.performanceModifier)*(1+(p.side==0?State.homeForm:State.awayForm)+(p.side==State.venueSide?HomeAdvantage:0))*(.86f+data.Fit(role)*.14f)*(.93f+data.morale*.0007f)*(.87f+p.fitness*.0013f)*(1+PreparationSkill(p.side)),5,99);
         }
         float Random(){State.seed=unchecked(State.seed*1664525+1013904223);return (State.seed>>8)/16777216f;}
         Actor Owner=>Find(State.ball.owner);

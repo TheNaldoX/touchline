@@ -74,7 +74,11 @@ namespace Touchline.Editor
                 list.Add(()=>{Capture(screen.tag+"-bureau");Call("Navigate","Effectif");});
                 list.Add(()=>{Capture(screen.tag+"-effectif");SetField("tacticalTab","Composition");Call("Navigate","Tactique");});
                 list.Add(()=>{Capture(screen.tag+"-tactique");Click("Avec ballon");});
-                list.Add(()=>{Capture(screen.tag+"-tactique-avec-ballon");SetField("tacticalTab","Composition");Call("Navigate","Calendrier");});
+                list.Add(()=>{Capture(screen.tag+"-tactique-avec-ballon");Click("Rôles");});
+                list.Add(()=>{Capture(screen.tag+"-tactique-roles");Click("Coups arrêtés");});
+                list.Add(()=>{Capture(screen.tag+"-tactique-cpa");Click("Plans");});
+                list.Add(()=>{Capture(screen.tag+"-tactique-plans");Call("TrainingSheet");});
+                list.Add(()=>{Capture(screen.tag+"-entrainement");Call("CloseModal");SetField("tacticalTab","Composition");Call("Navigate","Calendrier");});
                 list.Add(()=>{Capture(screen.tag+"-calendrier");Call("Navigate","Messages");});
                 list.Add(()=>{Capture(screen.tag+"-messages");Call("ClubDirectory");});
                 list.Add(()=>{Capture(screen.tag+"-plus");Call("CloseModal");Call("ReturnToLaunchMenu");});
@@ -87,7 +91,8 @@ namespace Touchline.Editor
             list.Add(()=>{if(Root.Q<Button>("manager-advance-to-match")!=null){audit.AppendLine("Jusqu’au match : "+(App.Career.life.nextFixture-App.Career.life.day)+" jour(s) en une touche");Click("manager-advance-to-match");}else{App.Career.life.day=App.Career.life.nextFixture;Call("Navigate","Club");}});
             list.Add(()=>{Capture(first.tag+"-jour-de-match");if(App.Career.life.day<App.Career.life.nextFixture){audit.AppendLine("Arrêt avant le match (décision à prendre) au jour "+App.Career.life.day);App.Career.life.day=App.Career.life.nextFixture;}Call("Navigate","Match");});
             list.Add(()=>{Capture(first.tag+"-avant-match");Click("Entrer sur le terrain");});
-            list.Add(()=>{Capture(first.tag+"-presentation");if(Root.Q<Button>("prematch-kickoff")!=null)Click("prematch-kickoff");});
+            list.Add(()=>{Capture(first.tag+"-presentation");if(Root.Q<Button>("prematch-kickoff")!=null)Click("prematch-kickoff");App.Career.SaveTacticPlan(1,"Tout pour l'attaque");Call("TeamTalkSheet");});
+            list.Add(()=>{Capture(first.tag+"-causerie");if(Root.Q<Button>("talk-encourage")!=null)Click("talk-encourage");audit.AppendLine("Causerie d'avant-match : "+(App.Career.match?.preparation?.Length>0?App.Career.match.preparation[0].talks:"aucune"));Call("CloseModal");});
             foreach(var s in Screens){
                 var screen=s;
                 list.Add(()=>{Resize(screen.width,screen.height);Call("Navigate","Match");});

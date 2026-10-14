@@ -45,7 +45,7 @@ namespace Touchline
             plan.SetEnabled(employed&&!delegated&&!(Career.match!=null&&!Career.match.finished)&&life.managerBanUntil<=life.day);
             plan.RegisterValueChangedCallback(_=>RunDecision(()=>{if(Career.match!=null&&!Career.match.finished)throw new InvalidOperationException("Terminez la rencontre.");if(life.managerBanUntil>life.day)throw new InvalidOperationException("L’adjoint gère la charge pendant votre suspension.");life.training=plan.index==0?"rest":plan.index==2?"heavy":"balanced";}));
             Text(training,delegated?"Le staff ajuste la charge selon la condition et le prochain match. Reprenez cette responsabilité dans la délégation.":delegationRequested?"Aucun préparateur ne peut appliquer cette délégation. Vous pouvez régler la charge ici en attendant de recruter un préparateur.":"Récupération : retrouver de la fraîcheur. Intensif : davantage de travail, avec un risque de blessure accru.","muted");
-            var trainingActions=Row(training,"manager-card-actions");Button(trainingActions,"Staff et délégation",()=>Navigate("Staff et délégation"));Button(trainingActions,"Santé",()=>Navigate("Santé"));
+            var trainingActions=Row(training,"manager-card-actions");Button(trainingActions,"Programme · "+TrainingFocus.Label(Career.Training().focus),TrainingSheet).name="manager-training-plan";Button(trainingActions,"Staff et délégation",()=>Navigate("Staff et délégation"));Button(trainingActions,"Santé",()=>Navigate("Santé"));
 
             var staff=Card(work,"manager-work-card");Text(staff,"DANS LE BUREAU DE L’ADJOINT","eyebrow");Text(staff,"Le point sportif","section-title");
             Text(staff,Career.StaffAdvice(Database),"manager-advice");

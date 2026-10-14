@@ -70,7 +70,7 @@ Actor best=null;float bestScore=-100;string kind="pass";
  bool cutback=wing&&p.position.x*dir>42&&forward< -2;  
  bool runsBehind=mate.velocity.x*dir>1.5f&&(mate.position.x+mate.velocity.x*d/20)*dir>line+1;  
  string candidate=cutback?"cutback":wing&&forward>=-2?"cross":Math.Abs(mate.position.z-p.position.z)>29?"switch":forward>8&&mate.slot>0&&runsBehind&&(space>4||Space(mate.position+new Point(dir*ThroughSpaceAhead,0),1-p.side)>4)?"through":"pass";  
- bool aerial=candidate=="cross"?!LowCross(p,mate):candidate=="switch"||d>30;var projected=PassTarget(p,mate,candidate);if(prepared&&FootDeliveryTurn(p,projected)>Math.PI/3)continue;float safety=candidate=="cross"?CrossOutlook(p,mate,!aerial):Math.Min(Safety(p,mate.position,aerial),Safety(p,projected,aerial));if(safety<(candidate=="cross"?.12f:candidate=="through"?ThroughMinSafety:.24f+(1-t.directness)*.16f))continue;  
+ bool aerial=candidate=="cross"?!LowCross(p,mate):candidate=="switch"||d>30;var projected=PassTarget(p,mate,candidate);if(prepared&&FootDeliveryTurn(p,projected)>Math.PI/3)continue;float safety=candidate=="cross"?CrossOutlook(p,mate,!aerial):Math.Min(Safety(p,mate.position,aerial),Safety(p,projected,aerial));if(safety<(candidate=="cross"?.12f:candidate=="through"?ThroughMinSafety:.24f+(1-t.directness)*.16f)-RoleSafetyShift(p))continue;  
  float score=10*safety+forward*(.10f+t.directness*.28f+(counter?.22f:0))+Math.Min(space,9)*.4f-Math.Abs(d-preferred)*.30f+(pressure<4?4:0)+Math.Min(m.carryTime,5)*.85f;  
  score+=Math.Max(0,ShotQuality(mate)-quality)*28*safety;  
  if(ProtectingLead(p.side)){score+=safety*2;if(forward>12&&safety<.7f)score-=4;}  
@@ -96,7 +96,7 @@ Actor best=null;float bestScore=-100;string kind="pass";
  // Servir un partenaire marqué de près hors de la zone de finition, quand
  // on pourrait jouer ailleurs, revient souvent à lui faire perdre le ballon.
  if((candidate=="pass"||candidate=="switch")&&mate.position.x*dir<MarkedReceiverZone)score-=MarkedReceiverCost(space);
- score+=PassPreference(p,candidate,d);if(score>bestScore){bestScore=score;best=mate;kind=candidate;}  
+ score+=PassPreference(p,candidate,d)+RolePassScore(p,mate,candidate,forward,d);if(score>bestScore){bestScore=score;best=mate;kind=candidate;}  
  }  
  float passChance=best==null?0:ShotQuality(best,kind=="cross"&&!LowCross(p,best))*Safety(p,PassTarget(p,best,kind),kind=="cross"?!LowCross(p,best):kind=="switch");  
  // Chance (xG) a distant shot must beat to be preferred to keeping the ball.
@@ -106,8 +106,8 @@ Actor best=null;float bestScore=-100;string kind="pass";
  // passing chance is available. Patient play still allows this shot.  
  bool closeChance=distance<20&&opening>.26f&&(clear||pressure>2.3f||distance<8)&&(!t.workIntoBox||quality>.10f||clear&&distance<18&&opening>.4f||distance<10);  
  bool closeFinish=distance<8&&opening>.6f&&pressure>.65f;  
- if((!prepared||FootDeliveryTurn(p,new Point(dir*52.5f,0))<=Math.PI/3)&&p.slot>0&&closeChance&&quality>passChance*(closeFinish?.72f:.82f)&&(clear||pressure>3.1f||closeFinish)){if(BeginFootDeliveryPreparation(p,new Point(dir*52.5f,0),"shot"))return "prepare";Shoot(p);return "shot";}  
- if((!prepared||FootDeliveryTurn(p,new Point(dir*52.5f,0))<=Math.PI/3)&&p.slot>0&&opening>.19f&&distance<27&&!t.workIntoBox&&(clear||pressure>LongShotClearSpace)&&pressure>LongShotMinSpace&&m.carryTime>LongShotSetTime&&quality*DistantShotPreference(p,distance)>Math.Max(patientValue,passChance*.95f)){if(BeginFootDeliveryPreparation(p,new Point(dir*52.5f,0),"shot"))return "prepare";Shoot(p);return "shot";}  
+ if((!prepared||FootDeliveryTurn(p,new Point(dir*52.5f,0))<=Math.PI/3)&&p.slot>0&&closeChance&&quality*RoleShot(p)>passChance*(closeFinish?.72f:.82f)&&(clear||pressure>3.1f||closeFinish)){if(BeginFootDeliveryPreparation(p,new Point(dir*52.5f,0),"shot"))return "prepare";Shoot(p);return "shot";}  
+ if((!prepared||FootDeliveryTurn(p,new Point(dir*52.5f,0))<=Math.PI/3)&&p.slot>0&&opening>.19f&&distance<27&&!t.workIntoBox&&(clear||pressure>LongShotClearSpace)&&pressure>LongShotMinSpace&&m.carryTime>LongShotSetTime&&quality*DistantShotPreference(p,distance)*RoleShot(p)>Math.Max(patientValue,passChance*.95f)){if(BeginFootDeliveryPreparation(p,new Point(dir*52.5f,0),"shot"))return "prepare";Shoot(p);return "shot";}  
  // Engagement : un joueur qui a orienté son corps pour frapper (préparation
  // vers le centre du but, voir ci-dessus) frappe tant que l'angle reste
  // ouvert, au lieu de repartir en conduite ; le contre fait partie du jeu.
@@ -116,7 +116,7 @@ Actor best=null;float bestScore=-100;string kind="pass";
  var carry=ChooseCarry(p);p.carryTarget=carry;float progress=(carry.x-p.position.x)*dir;  
  float carryScore=(p.position.x*dir>12?18:7)+Math.Min(Space(carry,1-p.side),8)*.5f+progress*.35f+(Skill(p,"dribbling")-65)*.055f-(pressure<3?5:0)-Math.Min(m.carryTime,6)*1.2f;  
   
- carryScore+=CarryPreference(p);  
+ carryScore+=CarryPreference(p)+RoleCarry(p);  
  // Conduire dans plusieurs adversaires coûte le ballon.
  carryScore-=CarryCrowdCost(p,carry);
  // Engagement : un joueur qui vient d'orienter son corps pour donner le
@@ -149,7 +149,7 @@ Actor best=null;float bestScore=-100;string kind="pass";
  {  
  var dir=Direction(p.side);var tactic=Tactic(p.side);var slot=tactic.withBall[p.slot];Point best=p.position;float bestScore=-100;  
  bool wideRole=slot.role=="LW"||slot.role=="RW"||slot.role=="LM"||slot.role=="RM"||slot.role=="LB"||slot.role=="RB";  
- float assignedFlank=tactic.Position(p.slot,true,p.position.x*dir).z*dir;  
+ float assignedFlank=tactic.Position(p.slot,true,p.position.x*dir).z*dir*RoleWidth(p);  
  // A winger or overlapping fullback carries in his assigned lane.  
  // He may still cut inside around a closing defender, but should not  
  // abandon width solely because every dribbler prefers field centre.  
@@ -187,7 +187,7 @@ Actor best=null;float bestScore=-100;string kind="pass";
  float skill=Skill(from,kind=="cross"?"crossing":d>27?"longPassing":"shortPassing");float pressure=Math.Max(0,3-Space(from.position,1-from.side));  
  // A long aerial ball is much harder to land on a team-mate than a pass
  // along the ground: its error is scaled by LongBallError.
- float error=(1-skill/105)*(Random()-.5f)*(Math.Min(14,d*.30f)+pressure*2+Tactic(from.side).tempo*2)*(kind=="switch"||d>30&&kind!="cross"?LongBallError:1);  
+ float error=SetPieceErrorScale(from)*(1-skill/105)*(Random()-.5f)*(Math.Min(14,d*.30f)+pressure*2+Tactic(from.side).tempo*2)*(kind=="switch"||d>30&&kind!="cross"?LongBallError:1);  
  var end=PassTarget(from,to,kind)+new Point(error,error*(Random()<.5f?-1:1));
  // A lofted long ball is judged on its length: weight it wrongly and it
  // sails long (more often than short) and can carry over the touchline.
