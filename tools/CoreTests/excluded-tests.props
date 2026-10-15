@@ -120,6 +120,7 @@
   <ExcludedTest Include="SlidingRecoveryContinuityTests.cs" />
   <ExcludedTest Include="SlidingRunHandoffTests.cs" />
   <ExcludedTest Include="StadiumAtmosphereTests.cs" />
+  <ExcludedTest Include="StadiumBenchTests.cs" />
   <ExcludedTest Include="StadiumCrowdGeometryTests.cs" />
   <ExcludedTest Include="StadiumGeometryTests.cs" />
   <ExcludedTest Include="StadiumLightingTests.cs" />
@@ -135,4 +136,8 @@
   <ExcludedTest Include="SupportReleaseAuditTests.cs" />
   <ExcludedTest Include="TacticalLineupTests.cs" />
   <ExcludedTest Include="WithdrawnDuelTests.cs" />
+  <ExcludedTest Include="SoccerMocapTests.cs" />
+  <ExcludedTest Include="CapturedBodyReceptionContactTests.cs" />
+  <ExcludedTest Include="CapturedIdleGroundingTests.cs" />
+  <ExcludedTest Include="CapturedSlideContactTests.cs" />
 </ItemGroup></Project>

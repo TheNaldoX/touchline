@@ -19,7 +19,8 @@ namespace Touchline.Tests
         [Test] public void SupportersRemainInStandsAndLeavePlayingAreaClear()
         {
             var mesh=StadiumAtmosphere.Crowd("176","160",1);
-            try{foreach(var v in mesh.vertices){Assert.IsTrue(Mathf.Abs(v.x)>59||Mathf.Abs(v.z)>38.5f);Assert.Greater(v.y,.3f);Assert.Less(v.y,8);Assert.Less(Mathf.Abs(v.x),72);Assert.Less(Mathf.Abs(v.z),49);}}
+            // Standing supporters have hips 0.49 m above seated spectators.
+            try{foreach(var v in mesh.vertices){Assert.IsTrue(Mathf.Abs(v.x)>59||Mathf.Abs(v.z)>38.5f);Assert.Greater(v.y,.3f);Assert.Less(v.y,8.5f);Assert.Less(Mathf.Abs(v.x),72);Assert.Less(Mathf.Abs(v.z),49);}}
             finally{Object.DestroyImmediate(mesh);}
         }
         [Test] public void CrowdIsDeterministicWithoutConsumingGlobalRandomState()

@@ -59,26 +59,25 @@ namespace Touchline.Core
         public static string Label(string code)=>Find(code).label;
         public static bool Allowed(string position,string code)=>For(position).Any(r=>r.code==(code??""));
 
-        // Consignes individuelles : (clé, libellé -1, libellé +1, compromis).
+        // Consignes de frappe et de risque (-1, 0, +1), en plus de PlayerInstructions
+        // (rester large, se projeter, marquage serré) : (clé, libellé -1, libellé +1, compromis).
         public static readonly (string key,string less,string more,string tradeOff)[] Instructions=
         {
-            ("wide","Rentrer dans l'axe","Rester large","Large : étire la défense et centre plus. Axe : se rapproche du but mais encombre le centre."),
-            ("forward","Rester en position","Se projeter","Se projeter : plus de présence offensive, moins de couverture à la perte."),
-            ("marking","Marquage normal","Marquer serré","Serré : gêne son adversaire direct, mais peut être éliminé et commettre des fautes."),
             ("shooting","Tirer moins","Tirer plus","Plus : davantage de tentatives, souvent de moins bonne qualité."),
             ("risk","Jouer simple","Prendre des risques","Risques : plus de passes vers l'avant et en profondeur, plus de pertes."),
         };
-        public static int Get(Slot s,string key)=>s==null?0:key=="wide"?s.wide:key=="forward"?s.forward:key=="marking"?s.marking:key=="shooting"?s.shooting:key=="risk"?s.risk:0;
+        public static int Get(Slot s,string key)=>s==null?0:key=="shooting"?s.shooting:key=="risk"?s.risk:0;
         public static void Set(Slot s,string key,int value)
         {
-            value=Math.Max(key=="marking"?0:-1,Math.Min(1,value));
-            if(key=="wide")s.wide=value;else if(key=="forward")s.forward=value;else if(key=="marking")s.marking=value;else if(key=="shooting")s.shooting=value;else if(key=="risk")s.risk=value;else throw new ArgumentException("Consigne inconnue.");
+            value=Math.Max(-1,Math.Min(1,value));
+            if(key=="shooting")s.shooting=value;else if(key=="risk")s.risk=value;else throw new ArgumentException("Consigne inconnue.");
         }
+        // Rôle et consignes sont portés par le poste sans ballon, comme PlayerInstructions.
         public static void SetRole(Tactic tactic,int slot,string code)
         {
             var position=tactic.withoutBall[slot].role;
             if(!Allowed(position,code))throw new ArgumentException("Ce rôle n'existe pas pour ce poste.");
-            tactic.withBall[slot].playerRole=code??"";
+            tactic.withoutBall[slot].playerRole=code??"";
         }
 
         // Valeurs de chaque rôle. Les ordres de grandeur restent ceux des
@@ -104,10 +103,8 @@ namespace Touchline.Core
                 case "poacher":e.advance=2;e.runBehind=1.6f;e.shot=1.35f;e.carry=-1.2f;e.pass=-.8f;e.press=-2;break;
                 case "false9":e.advance=-9;e.runBehind=.3f;e.pass=1.2f;e.target=1.2f;e.shot=.75f;e.carry=.4f;break;
             }
-            if(instructions.wide<0){e.width*=.72f;e.cross-=.8f;}else if(instructions.wide>0){e.width*=1.18f;e.cross+=.8f;}
-            if(instructions.forward<0){e.advance-=6;e.runBehind*=.35f;}else if(instructions.forward>0){e.advance+=6;e.runBehind*=1.7f;}
-            if(instructions.marking>0){e.mark+=.25f;e.press+=3;}
-            if(instructions.shooting<0)e.shot*=.6f;else if(instructions.shooting>0)e.shot*=1.5f;
+            // Frappes : seuil de décision ×0,5 (moins) ou ×1,8 (plus) face à la meilleure passe.
+            if(instructions.shooting<0)e.shot*=.5f;else if(instructions.shooting>0)e.shot*=1.8f;
             e.risk+=instructions.risk;
             return e;
         }

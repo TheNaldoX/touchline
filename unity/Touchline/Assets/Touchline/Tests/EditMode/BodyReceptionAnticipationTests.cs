@@ -33,6 +33,22 @@ namespace Touchline.Tests
    }finally{Object.DestroyImmediate(go);}
   }
   [TestCase(30)][TestCase(60)][TestCase(120)]
+  public void PausedCapturedPreparationDoesNotRaiseTheLegFurther(int fps){
+   var go=new GameObject("Captured reception preparation pause");try{
+    var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="r",heightCm=182},0,9,Color.white);
+    var m=Fixture();var actor=m.actors[0];m.ball.start=new Point(.23f,2.8f);m.ball.end=new Point(.23f,.3f);view.Render(actor,1,0);
+    PlayerMotionContext context=default;
+    for(int frame=1;frame<=Mathf.CeilToInt(.36f*fps);frame++){
+     m.ball.elapsed=.6f+Mathf.Min(.36f,(float)frame/fps);m.ball.position=Point.Lerp(m.ball.start,m.ball.end,m.ball.elapsed);
+     context=new PlayerMotionContext{bodyReception=BodyReceptionAnticipationSample.From(m,actor,1,1.82f)};
+     view.Render(actor,1,1f/fps,new Vector3(.23f,.95f,.3f),context);
+    }
+    var foot=view.FootPosition(true);Assert.Greater(foot.y,.25f);string state=JsonUtility.ToJson(m);
+    for(int frame=0;frame<30;frame++){view.Render(actor,1,0,new Vector3(.23f,.95f,.3f),context);Assert.Less(Vector3.Distance(foot,view.FootPosition(true)),.005f);}
+    Assert.AreEqual(state,JsonUtility.ToJson(m));
+   }finally{Object.DestroyImmediate(go);}
+  }
+  [TestCase(30)][TestCase(60)][TestCase(120)]
   public void PreparatoryThighLiftIsGradualAndPreservesAuthoritativeContact(int fps){
    var go=new GameObject("Reception anticipation full pipeline audit");try{
     var data=new PlayerData{id="r",heightCm=182,rating=75};var view=go.AddComponent<PlayerView>();view.Build(data,0,9,Color.white);var actor=new Actor{id="r",slot=9,action="idle",angle=0};var m=Fixture();m.actors=new[]{actor};

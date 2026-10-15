@@ -10,6 +10,7 @@ namespace Touchline
         VisualElement quietPanel;Image broadcastImage;Label broadcastStatus,quietSituation,matchSignalTitle,matchSignalDetail;VisualElement matchSignal;
         Button broadcastMode,broadcastSpeed,goalReplaySkip,goalReplaySpeed,goalReplayOptions;bool? quietShown;int feedbackSeen;float feedbackUntil;bool feedbackGoal;
         Button[] goalReplayControls;
+        const float TouchTarget=48; // unités UI (≈ dp) : cible tactile minimale des commandes du direct
         readonly Label[] quietHome=new Label[6],quietAway=new Label[6],quietShapes=new Label[2],quietInsights=new Label[3],quietMoments=new Label[3];
         readonly Button[] quietPlayers=new Button[22];
         public static string BroadcastClock(float seconds,float secondsPerMinute=8){int total=Mathf.Clamp(Mathf.FloorToInt(seconds*60/Mathf.Max(.001f,secondsPerMinute)+.001f),0,5400);return (total/60).ToString("00")+":"+(total%60).ToString("00");}
@@ -20,10 +21,10 @@ namespace Touchline
             broadcastStatus=Text(strip,"","broadcast-status");
             broadcastMode=Button(strip,"",MatchViewingOptions);broadcastMode.name="match-broadcast-mode";broadcastMode.tooltip="Choisir les moments clés, temps forts, temps forts étendus ou le match complet";
             broadcastSpeed=Button(strip,"×"+arena.Speed,()=>{int index=Array.IndexOf(MatchArena.LiveSpeeds,arena.Speed);arena.SetLiveSpeed(MatchArena.LiveSpeeds[(index+1)%MatchArena.LiveSpeeds.Length]);});broadcastSpeed.name="match-speed-cycle";broadcastSpeed.tooltip="Vitesse des temps forts : ×1, ×2, ×3, ×5, ×10";
-            goalReplaySkip=Button(strip,"Passer le replay",()=>{arena.SkipGoalReplay();RefreshBroadcastVisibility();});goalReplaySkip.name="match-replay-skip";goalReplaySkip.tooltip="Revenir au direct sans modifier le score ni avancer la rencontre";goalReplaySkip.style.minHeight=45;goalReplaySkip.style.display=DisplayStyle.None;goalReplaySkip.SetEnabled(false);
+            goalReplaySkip=Button(strip,"Passer le replay",()=>{arena.SkipGoalReplay();RefreshBroadcastVisibility();});goalReplaySkip.name="match-replay-skip";goalReplaySkip.tooltip="Revenir au direct sans modifier le score ni avancer la rencontre";goalReplaySkip.style.minHeight=TouchTarget;goalReplaySkip.style.display=DisplayStyle.None;goalReplaySkip.SetEnabled(false);
             goalReplaySpeed=Button(strip,"Replay ×1",()=>{arena.SetGoalReplaySpeed(arena.GoalReplaySpeed<1?1:.5f);RefreshBroadcastVisibility();});goalReplaySpeed.name="match-replay-speed";goalReplaySpeed.tooltip="Vitesse du replay uniquement : ×0,5 ou ×1";
             goalReplayOptions=Button(strip,"Options",MatchViewingOptions);goalReplayOptions.name="match-replay-options";goalReplayOptions.tooltip="Activer ou désactiver les replays automatiques";
-            goalReplayControls=new[]{goalReplaySkip,goalReplaySpeed,goalReplayOptions};foreach(var replayControl in goalReplayControls){replayControl.style.minHeight=45;replayControl.style.minWidth=44;replayControl.style.flexShrink=0;replayControl.style.display=DisplayStyle.None;replayControl.SetEnabled(false);}
+            goalReplayControls=new[]{goalReplaySkip,goalReplaySpeed,goalReplayOptions};foreach(var replayControl in goalReplayControls){replayControl.style.minHeight=TouchTarget;replayControl.style.minWidth=TouchTarget;replayControl.style.flexShrink=0;replayControl.style.display=DisplayStyle.None;replayControl.SetEnabled(false);}
             matchSignal=new VisualElement{name="match-action-signal",pickingMode=PickingMode.Ignore};matchSignal.AddToClassList("match-action-signal");surface.Add(matchSignal);
             matchSignalTitle=Text(matchSignal,"","match-signal-title");matchSignalTitle.pickingMode=PickingMode.Ignore;matchSignalDetail=Text(matchSignal,"","match-signal-detail");matchSignalDetail.pickingMode=PickingMode.Ignore;
             matchSignal.style.display=DisplayStyle.None;feedbackSeen=arena.Simulation.State.events.Count;feedbackUntil=0;feedbackGoal=false;
@@ -61,7 +62,7 @@ namespace Touchline
             var replayCard=Card(body);
             Button replayToggle=null;
             replayToggle=Button(replayCard,"",()=>{arena.SetAutomaticGoalReplays(!arena.AutomaticGoalReplays);replayToggle.text=arena.AutomaticGoalReplays?"Replays automatiques : activés":"Replays automatiques : désactivés";replayToggle.EnableInClassList("primary",arena.AutomaticGoalReplays);RefreshBroadcastVisibility();});
-            replayToggle.name="match-auto-goal-replays";replayToggle.style.minHeight=45;replayToggle.style.whiteSpace=WhiteSpace.Normal;
+            replayToggle.name="match-auto-goal-replays";replayToggle.style.minHeight=TouchTarget;replayToggle.style.whiteSpace=WhiteSpace.Normal;
             replayToggle.text=arena.AutomaticGoalReplays?"Replays automatiques : activés":"Replays automatiques : désactivés";replayToggle.EnableInClassList("primary",arena.AutomaticGoalReplays);
             replayToggle.tooltip="Mémorisé pour les prochains matchs. Désactiver pendant un replay revient immédiatement au direct.";
             Text(replayCard,"Un replay après chaque but. Désactiver revient au direct si un replay est en cours.","muted");
@@ -86,7 +87,7 @@ namespace Touchline
             if(goalReplaySpeed!=null)goalReplaySpeed.text=arena.GoalReplaySpeed<1?"Replay ×0,5":"Replay ×1";
             broadcastMode.style.display=replaying?DisplayStyle.None:DisplayStyle.Flex;broadcastSpeed.style.display=replaying?DisplayStyle.None:DisplayStyle.Flex;
             var state=arena.Simulation.State;
-            string text=replaying?"REPLAY DU BUT · Séquence enregistrée":state.finished?"RENCONTRE TERMINÉE":state.halfTime?"MI-TEMPS · Ajustez vos consignes":quiet?(arena.Paused?"EN PAUSE · TABLEAU DE BORD":"SUIVI DU MATCH · CHRONO ×"+arena.Broadcast.QuietSpeed+(arena.Broadcast.BudgetLimited?" · charge adaptée":"")):arena.Paused?"EN PAUSE · "+arena.Broadcast.Reason:arena.Broadcast.Enabled?"EN DIRECT · "+arena.Broadcast.Reason+" · ×"+arena.Speed:"MATCH INTÉGRAL · ×"+arena.Speed;
+            string text=replaying?"REPLAY DU BUT":state.finished?"RENCONTRE TERMINÉE":state.halfTime?"MI-TEMPS · Ajustez vos consignes":quiet?(arena.Paused?"EN PAUSE · TABLEAU DE BORD":"SUIVI DU MATCH · CHRONO ×"+arena.Broadcast.QuietSpeed+(arena.Broadcast.BudgetLimited?" · charge adaptée":"")):arena.Paused?"EN PAUSE · "+arena.Broadcast.Reason:arena.Broadcast.Enabled?"EN DIRECT · "+arena.Broadcast.Reason+" · ×"+arena.Speed:"MATCH INTÉGRAL · ×"+arena.Speed;
             if(broadcastStatus.text!=text)broadcastStatus.text=text;
             if(broadcastSpeed!=null)broadcastSpeed.text="×"+arena.Speed;
             if(quietSituation!=null)quietSituation.text=QuietSituationText();
@@ -100,7 +101,7 @@ namespace Touchline
             if(feedbackSeen>m.events.Count)feedbackSeen=m.events.Count;
             while(feedbackSeen<m.events.Count){var e=m.events[feedbackSeen++];string title=MatchBroadcast.EventHeadline(e.kind);if(title==null)continue;
                 bool goal=e.kind=="goal";if(feedbackGoal&&now<feedbackUntil&&!goal)continue;
-                feedbackGoal=goal;feedbackUntil=now+(goal?5:2.1f);matchSignalTitle.text=title+(goal?"  "+FixtureDisplayOrder(m).Score(m):"");
+                feedbackGoal=goal;feedbackUntil=now+(goal||e.kind=="assistant"?5:2.1f);matchSignalTitle.text=title+(goal?"  "+FixtureDisplayOrder(m).Score(m):"");
                 var player=string.IsNullOrEmpty(e.player)?null:Database.Find(e.player);string name=player==null?"":arena.PlayerSurname(player.id);
                 matchSignalDetail.text=BroadcastClock(e.time,m.SecondsPerMinute)+" · "+(string.IsNullOrEmpty(name)?e.text:name+" · "+ClubName(e.side==0?m.home:m.away));matchSignal.EnableInClassList("match-signal-goal",goal);
             }
@@ -127,7 +128,7 @@ namespace Touchline
             }
             Actor tired=null;foreach(var actor in m.actors)if(actor.side==0&&!actor.sentOff&&(tired==null||actor.fitness<tired.fitness))tired=actor;
             quietInsights[0].text=tired==null?"":arena.PlayerSurname(tired.id)+" · condition la plus basse : "+Mathf.RoundToInt(tired.fitness)+" %.";
-            quietInsights[1].text=m.clock<10*m.SecondsPerMinute?"Premières minutes : encore peu de recul pour juger les tendances.":"Notre largeur : "+a.AverageWidth.ToString("0.0",French)+" m · passes moyennes : "+a.AveragePassLength(m.passes[0]).ToString("0.0",French)+" m.";
+            quietInsights[1].text=LatestAssistantLine(m)??(m.clock<10*m.SecondsPerMinute?"Premières minutes : encore peu de recul pour juger les tendances.":"Notre largeur : "+a.AverageWidth.ToString("0.0",French)+" m · passes moyennes : "+a.AveragePassLength(m.passes[0]).ToString("0.0",French)+" m.");
             quietInsights[2].text=m.pendingSubstitutions.Count>0?m.pendingSubstitutions.Count+" changement(s) en attente du prochain arrêt.":"Adversaire : "+m.awayTactic.formation+" · "+(m.awayPlan=="chase"?"prend davantage de risques.":m.awayPlan=="protect"?"protège son avance.":"organisation observée en direct.");
             int at=0;for(int i=m.events.Count-1;i>=0&&at<3;i--){var e=m.events[i];if(!SignificantMoment(e.kind))continue;quietMoments[at++].text=BroadcastClock(e.time,m.SecondsPerMinute)+" · "+e.text;}
             while(at<3)quietMoments[at++].text="";

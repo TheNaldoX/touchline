@@ -5,7 +5,18 @@ namespace Touchline.Core
 {
     public sealed partial class MatchSimulation
     {
-        float FreeKickSkill(Actor p)=>Skill(p,Data(p).attributes?.Any(a=>a.key=="freeKickAccuracy")==true?"freeKickAccuracy":"fkAccuracy")+SetPieceSkillBonus(p.side);
+        // Read-only broadcast cue: show the approach only once the taker and wall
+        // are within two metres of their assigned marks. This does not authorize a kick.
+        public bool FreeKickDeliveryApproaching
+        {
+            get{
+                var m=State;if(m.phase!="free-kick"||m.restart<=0)return false;
+                var taker=Find(m.restartTaker);if(taker==null||taker.sentOff||Point.Distance(taker.position,RestartPosition(taker,taker))>2)return false;
+                for(int i=0;i<m.restartWall.Count;i++){var p=Find(m.restartWall[i]);if(p==null||p.sentOff||Point.Distance(p.position,WallPosition(i))>2)return false;}
+                return true;
+            }
+        }
+        float FreeKickSkill(Actor p)=>Skill(p,Data(p).attributes?.Any(a=>a.key=="freeKickAccuracy")==true?"freeKickAccuracy":"fkAccuracy");
         Actor RestartTaker()
         {
             var existing=Find(State.restartTaker);
@@ -78,23 +89,52 @@ namespace Touchline.Core
         }
         void RestartKick()
         {
-            var m=State;var phase=m.phase;var p=RestartTaker();var spot=m.ball.position;Control(p);m.phase="play";m.decision=.6f;deliveringSetPiece=phase=="corner"||phase=="free-kick";
+            var m=State;var phase=m.phase;var p=RestartTaker();var spot=m.ball.position;Control(p);m.phase="play";m.decision=.6f;
             m.ball.restartExemption=phase=="goal-kick"||phase=="corner"||phase=="throw-in";
             if(phase=="penalty")Shoot(p,false,true);
-            else if(phase=="free-kick"&&!m.indirectRestart&&DirectFreeKick(p))Shoot(p,false,false,true);
+            else if(phase=="free-kick"&&!m.indirectRestart&&DirectFreeKick(p)){
+                var receiver=Routine(p.side).freeKick=="shoot"?null:FreeKickCombination(p);
+                if(receiver==null)Shoot(p,false,false,true);else Pass(p,receiver,"pass");
+            }
             else if(PlayShort(p,phase)||phase=="free-kick"&&CrossFreeKick(p)){}
             else{
-                Actor target=null;float best=float.MinValue;
+                Actor target=null;float best=float.MinValue;string delivery=phase=="corner"?"cross":phase=="throw-in"?"throw":"pass";
+                int direction=Direction(p.side);bool wideFreeKick=phase=="free-kick"&&p.position.x*direction>16&&Math.Abs(p.position.z)>=18;
                 foreach(var a in m.actors){if(a.sentOff||GroundedAction(a)||a.side!=p.side||a==p)continue;float distance=Point.Distance(a.position,p.position);if(distance<2)continue;
                     float score=phase=="corner"?Skill(a,"headingAccuracy")-Point.Distance(a.position,CornerAim(p))-(a.slot==0?1000:0):Space(a.position,1-p.side)*.6f-distance;
                     if(phase=="free-kick"&&a.position.x*Direction(p.side)>OffsideLine(p.side)+.1f)continue;
-                    if(score>best){best=score;target=a;}
+                    string candidate=phase=="corner"?"cross":phase=="throw-in"?"throw":"pass";
+                    // From the flank, compare a credible box delivery with the short pass.
+                    // Reuse the live crossing assessment (receiver, marker, keeper and tactic).
+                    if(wideFreeKick&&a.slot>0&&a.position.x*direction>32&&Math.Abs(a.position.z)<20&&(a.position.x-p.position.x)*direction>3){
+                        float outlook=CrossOutlook(p,a,LowCross(p,a));
+                        const float MinimumRestartCrossOutlook=.5f; // Estimated contest share, 0–1.
+                        float crossScore=outlook*24-distance*.25f; // Utility points, distance in metres.
+                        if(outlook>=MinimumRestartCrossOutlook&&crossScore>score){score=crossScore;candidate="cross";}
+                    }
+                    if(score>best){best=score;target=a;delivery=candidate;}
                 }
-                if(target!=null)Pass(p,target,phase=="corner"?"cross":phase=="throw-in"?"throw":"pass");
+                if(target!=null)Pass(p,target,delivery);
                 else Flight(p,null,"clearance",new Point(Direction(p.side)*8,Math.Sign(p.position.z+.01f)*27),.11f,2.6f,8);
             }
-            deliveringSetPiece=false;
             if(phase!="throw-in"){m.ball.start=spot;m.ball.fixedStart=true;p.actionTarget=spot;}
+        }
+        Actor FreeKickCombination(Actor taker)
+        {
+            // A set-piece specialist retains the shot unless a legal, open pass
+            // offers at least twice its geometric chance. No random variety for its own sake.
+            const float ChanceAdvantage=2f,MinimumLaneSafety=.65f,MaximumCombinationDistance=24f;
+            float best=ShotQuality(taker)*(.75f+FreeKickSkill(taker)/100)*ChanceAdvantage;
+            Actor receiver=null;int dir=Direction(taker.side);float line=OffsideLine(taker.side);
+            foreach(var mate in State.actors){
+                if(mate.side!=taker.side||mate==taker||mate.slot==0||mate.sentOff||GroundedAction(mate)||mate.position.x*dir>line+.1f)continue;
+                float distance=Point.Distance(taker.position,mate.position);
+                if(distance<2||distance>MaximumCombinationDistance||(mate.position.x-taker.position.x)*dir<3)continue;
+                float safety=Safety(taker,mate.position);if(safety<MinimumLaneSafety)continue;
+                float chance=ShotQuality(mate)*safety;
+                if(chance>best){best=chance;receiver=mate;}
+            }
+            return receiver;
         }
     }
 }

@@ -28,7 +28,8 @@ namespace Touchline
             content=new VisualElement();content.AddToClassList("content");shell.Add(content);
         }
         void MoreMenu()=>ClubDirectory();
-        void RunDecision(Action action){try{action();Career.ApplyLife(Database);Save();if(!delegatingMatch)Build();}catch(Exception e){Message(e.Message);}}
+        void RunDecision(Action action)=>RunDecision(action,Message);
+        void RunDecision(Action action,Action<string> onError){try{action();Career.ApplyLife(Database);Save();if(!delegatingMatch)Build();}catch(Exception e){onError(e.Message);}}
         void CloseFinishedMatch(){if(Career.match?.finished!=true)return;Career.RecordMatch(Database);Career.lineup=Career.match.actors.Where(p=>p.side==0).OrderBy(p=>p.slot).Select(p=>p.id).ToArray();Career.match=null;if(arena!=null)Destroy(arena.gameObject);arena=null;}
         void ContinueDay()
         {

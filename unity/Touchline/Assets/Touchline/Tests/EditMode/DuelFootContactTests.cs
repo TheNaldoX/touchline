@@ -6,6 +6,28 @@ namespace Touchline.Tests
 {
     public class DuelFootContactTests
     {
+        [TestCase(30)][TestCase(60)][TestCase(120)]
+        public void CapturedDuelRetargetsTheEngagedFootForEachNewContact(int fps)
+        {
+            bool previousMode=PlayerView.UseMecanim;PlayerView.UseMecanim=true;
+            var go=new GameObject("Alternating captured duels");
+            try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="alternating-duels",heightCm=180},0,2,Color.white);
+                var actor=new Actor{slot=2,action="idle"};for(int i=0;i<fps;i++)view.Render(actor,1,1f/fps);
+                foreach(int sign in new[]{1,-1}){
+                    actor.action="tackle";actor.actionKind=MatchSimulation.StandingDuel;actor.actionSequence++;
+                    actor.actionContactTime=MatchSimulation.TacklePreparation;actor.actionTarget=new Point(sign*.65f,.45f);actor.actionHeight=.11f;
+                    var ball=new Vector3(actor.actionTarget.x,.11f,actor.actionTarget.z);
+                    for(int i=0;i<=fps/5;i++){
+                        actor.actionTime=MatchSimulation.TacklePreparation+MatchSimulation.TackleRecovery-i/(float)fps;
+                        view.Render(actor,1,1f/fps,ball);
+                    }
+                    Assert.Less(Vector3.Distance(view.BootContactPosition(sign>0),ball),.13f,"The newly engaged foot reaches this contact, not the previous side.");
+                    Assert.AreEqual(Vector3.zero,go.transform.position,"Retargeting must not move the simulation root.");
+                    actor.action="idle";actor.actionTime=0;for(int i=0;i<fps;i++)view.Render(actor,1,1f/fps);
+                }
+            }finally{Object.DestroyImmediate(go);PlayerView.UseMecanim=previousMode;}
+        }
         [TestCase(.9f,.2f,180)] [TestCase(-.9f,.2f,180)]
         [TestCase(.2f,.95f,180)] [TestCase(-.2f,.95f,180)]
         [TestCase(.65f,-.65f,180)] [TestCase(-.65f,-.65f,180)]

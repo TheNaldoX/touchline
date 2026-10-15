@@ -5,6 +5,24 @@ namespace Touchline.Tests
 {
     public sealed class StadiumLookTests
     {
+        [Test] public void ConcreteUsesSharedScaleWithoutAddingGeometryOrKeepingCpuPixels()
+        {
+            var texture=StadiumSurfaceTexture.Concrete();var mesh=StadiumGeometry.Stand(1,false);
+            try{
+                Assert.AreEqual(256,texture.width);Assert.AreEqual(256,texture.height);
+                Assert.Greater(texture.mipmapCount,1);Assert.IsFalse(texture.isReadable);
+                Assert.AreEqual(TextureWrapMode.Repeat,texture.wrapMode);
+                var vertices=mesh.vertices;var triangles=mesh.triangles;var bounds=mesh.bounds;
+                StadiumSurfaceTexture.MapConcrete(mesh);
+                CollectionAssert.AreEqual(vertices,mesh.vertices);CollectionAssert.AreEqual(triangles,mesh.triangles);Assert.AreEqual(bounds,mesh.bounds);
+                var uv=mesh.uv;Assert.AreEqual(vertices.Length,uv.Length);
+                for(int i=0;i<triangles.Length;i+=3){
+                    int a=triangles[i],b=triangles[i+1];
+                    Assert.AreEqual(Vector3.Distance(vertices[a],vertices[b])/StadiumSurfaceTexture.TileMetres,Vector2.Distance(uv[a],uv[b]),.001f,"Constant detail scale on each concrete face");
+                    Assert.IsFalse(float.IsNaN(uv[a].x));
+                }
+            }finally{Object.DestroyImmediate(texture);Object.DestroyImmediate(mesh);}
+        }
         [Test] public void TurfGrainTilesWithoutSeamAndStaysInRange()
         {
             for(int i=0;i<PitchTurf.Size;i+=7){
@@ -13,6 +31,30 @@ namespace Touchline.Tests
                 float v=PitchTurf.Brightness(i,(i*13)%PitchTurf.Size);Assert.That(v,Is.InRange(PitchTurf.GrainMin,PitchTurf.GrainMax));
             }
             var texture=PitchTurf.Grain();try{Assert.AreEqual(PitchTurf.Size,texture.width);Assert.AreEqual(TextureWrapMode.Repeat,texture.wrapMode);}finally{Object.DestroyImmediate(texture);}
+        }
+        [Test] public void CachedMicrograinMatchesDirectTurfSampling()
+        {
+            var texture=PitchTurf.FieldTexture(true);try{
+                foreach(int x in new[]{0,137,1000,2047})foreach(int y in new[]{0,333,1023}){
+                    float px=((x+.5f)/PitchTurf.FieldWidth*2-1)*PitchTurf.HalfLength,pz=((y+.5f)/PitchTurf.FieldHeight*2-1)*PitchTurf.HalfWidth;
+                    Color expected=(Color32)PitchTurf.FieldPixel(px,pz),actual=texture.GetPixel(x,y);
+                    Assert.AreEqual(expected.r,actual.r,.004f);Assert.AreEqual(expected.g,actual.g,.004f);Assert.AreEqual(expected.b,actual.b,.004f);
+                }
+            }finally{Object.DestroyImmediate(texture);}
+        }
+        [Test] public void FullPitchDetailIsNonRepeatingAndAlignedAcrossShadeBoundary()
+        {
+            Assert.AreNotEqual(PitchTurf.FieldPixel(4,7),PitchTurf.FieldPixel(4+PitchTurf.GrainTile,7));
+            foreach(bool shaded in new[]{false,true}){
+                var mesh=PitchTurf.Surface(shaded,3,20);
+                try{var vertices=mesh.vertices;var uv=mesh.uv;for(int i=0;i<vertices.Length;i++)Assert.AreEqual(PitchTurf.FieldUv(vertices[i]),uv[i]);}
+                finally{Object.DestroyImmediate(mesh);}
+            }
+            var texture=PitchTurf.FieldTexture();try{
+                Assert.AreEqual(2048,texture.width);Assert.AreEqual(1024,texture.height);
+                Assert.Greater(texture.mipmapCount,1);Assert.AreEqual(TextureWrapMode.Clamp,texture.wrapMode);
+                Assert.IsFalse(texture.isReadable,"CPU pixel buffer released after upload");
+            }finally{Object.DestroyImmediate(texture);}
         }
         [Test] public void UpperTierSupportersSitInTheFarStandUnderTheRoof()
         {

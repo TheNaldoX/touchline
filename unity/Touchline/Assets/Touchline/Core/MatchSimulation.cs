@@ -73,7 +73,7 @@ namespace Touchline.Core
         float Skill(Actor p,string key)
         {
             var data=Data(p);var role=Tactic(p.side).withoutBall[p.slot].role;
-            return Mathx.Clamp(MatchAttribute(p,data,key)*(1+data.performanceModifier)*(1+(p.side==0?State.homeForm:State.awayForm)+(p.side==State.venueSide?HomeAdvantage:0))*(.86f+data.Fit(role)*.14f)*(.93f+data.morale*.0007f)*(.87f+p.fitness*.0013f)*(1+PreparationSkill(p.side)),5,99);
+            return Mathx.Clamp(MatchAttribute(p,data,key)*(1+data.performanceModifier)*(1+(p.side==0?State.homeForm:State.awayForm)+(p.side==State.venueSide?HomeAdvantage:0))*(.86f+data.Fit(role)*.14f)*(.93f+data.morale*.0007f)*(.87f+p.fitness*.0013f),5,99);
         }
         float Random(){State.seed=unchecked(State.seed*1664525+1013904223);return (State.seed>>8)/16777216f;}
         Actor Owner=>Find(State.ball.owner);
@@ -97,9 +97,9 @@ namespace Touchline.Core
             if(m.restart>0)ApplyPendingSubstitutions();
             if(m.restart>0){m.restart=Math.Max(0,m.restart-Step);MoveRestart();if(m.restart<=0){if(m.phase=="goal")Restart("kickoff",m.restartSide,new Point(),.3f);else if(m.phase=="kickoff")Kickoff(m.restartSide);else RestartKick();}}
             else{Move();CancelInvalidStandingDuels();if(m.restart<=0)UpdateBall();RecordMetrics();var owner=Owner;if(m.restart<=0&&owner!=null){m.decision-=Step;m.carryTime+=Step;if(m.decision<=0&&owner.controlTime<=0&&owner.action!="dive"&&owner.action!="claim"){m.decision=DecisionInterval(owner);Decide(owner);}}}
-            if(m.period==1&&m.clock>=m.HalfDuration){m.clock=m.HalfDuration;m.halfTime=true;Emit("interval",0,null,"Mi-temps. Ajustez vos consignes.");ApplyPendingSubstitutions();}
+            if(m.period==1&&m.clock>=m.HalfDuration){m.clock=m.HalfDuration;m.halfTime=true;Emit("interval",0,null,"Mi-temps. Ajustez vos consignes.");MindsetHalfTime();ApplyPendingSubstitutions();}
             if(m.clock>=m.HalfDuration*2){m.clock=m.HalfDuration*2;m.finished=true;m.pendingSubstitutions.Clear();Emit("fulltime",0,null,"Fin de la rencontre.");}
-            if(!m.finished&&!m.halfTime){ReviewOpponent();MedicalDuringMatch();}
+            if(!m.finished&&!m.halfTime){ReviewOpponent();MedicalDuringMatch();MindsetObservations();}
             MaintainGoalContact();
             MaintainExitContact();
         }
@@ -146,7 +146,7 @@ namespace Touchline.Core
             // The incoming player does not inherit the outgoing player's
             // pending turn or one-decision orientation preference.
             if(actor.action==FootDeliveryPreparation||actor.actionKind==PreparedFootDelivery){actor.action=actor.velocity.Length>.4f?"run":"idle";actor.actionTime=0;actor.actionKind=null;actor.actionContactTime=0;}
-            var old=actor.id;float outgoingFitness=actor.fitness;if(!State.halfTime&&!windows.Contains(State.clock))windows.Add(State.clock);State.substitutions[side]++;State.used.Add(incoming);actor.id=incoming;actor.fitness=p.fitness;actor.injured=false;actor.yellows=0;
+            var old=actor.id;float outgoingFitness=actor.fitness;if(!State.halfTime&&!windows.Contains(State.clock))windows.Add(State.clock);State.substitutions[side]++;State.used.Add(incoming);actor.id=incoming;actor.fitness=p.fitness;actor.injured=false;actor.yellows=0;MindsetSubstitution(side,slot);
             foreach(var duel in State.actors)if(duel==actor||duel.tackleOpponent==old){duel.tackleOpponent=null;if(duel.action=="tackle"&&duel.actionKind==StandingDuel){duel.action="idle";duel.actionTime=0;}}
             if(State.ball.owner==old)State.ball.owner=incoming;if(State.ball.to==old)State.ball.to=incoming;Emit("substitution",side,incoming,p.name+" remplace "+roster[old].name+".",old);
             var substitution=State.events[State.events.Count-1];substitution.hasOutgoingFitness=outgoingFitness>=0&&outgoingFitness<=100;substitution.observedOutgoingFitness=substitution.hasOutgoingFitness?outgoingFitness:0;

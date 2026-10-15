@@ -50,6 +50,21 @@ namespace Touchline.Tests
         {
             var copy=new MatchSimulation(db,JsonUtility.FromJson<MatchState>(JsonUtility.ToJson(sim.State)));Assert.IsTrue(Resolve());Assert.IsTrue(Resolve(copy));Assert.AreEqual(JsonUtility.ToJson(sim.State),JsonUtility.ToJson(copy.State));
         }
+        [TestCase(30)] [TestCase(60)] [TestCase(120)]
+        public void CapturedHeaderContactIsContinuousAcrossRenderRates(int hz)
+        {
+            Assert.IsTrue(Resolve());var go=new GameObject("Captured header continuity");bool previous=PlayerView.UseMecanim;PlayerView.UseMecanim=true;
+            try{
+                var view=go.AddComponent<PlayerView>();view.Build(db.Find(player.id),0,9,Color.white);
+                var point=new Vector3(player.actionTarget.x,player.actionHeight,player.actionTarget.z);Vector3 last=Vector3.zero;
+                float contact=player.actionContactTime,dt=1f/hz;
+                for(int i=0;i<=Mathf.CeilToInt(contact*hz);i++){
+                    float elapsed=Mathf.Min(i*dt,contact);player.actionTime=MatchSimulation.AerialContestDuration-elapsed;view.Render(player,1,dt,point);
+                    if(i>0)Assert.Less(Vector3.Distance(last,view.HeaderContactPosition),10*dt+.02f,"Header must not snap at contact");last=view.HeaderContactPosition;
+                }
+                Assert.Less(Vector3.Distance(view.HeaderContactPosition,point),.08f);
+            }finally{Object.DestroyImmediate(go);PlayerView.UseMecanim=previous;}
+        }
         [TestCase(160,1.8f)] [TestCase(180,2.05f)] [TestCase(205,2.25f)]
         public void SelectedContactIsReachableByTheRenderedHead(int stature,float height)
         {

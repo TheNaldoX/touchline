@@ -18,7 +18,7 @@ namespace Touchline.Core
         public static readonly string[] CornerTradeOffs={"Centre vers le point de penalty, le meilleur jeu de tête est visé.","Ballon tendu au premier poteau : déviation rapide, le gardien a moins de temps, mais le défenseur du premier poteau intervient souvent.","Ballon long au second poteau : plus de duels gagnés loin du gardien, ballon plus lent.","Passe courte puis jeu placé : moins de duels aériens, garde le ballon."};
         public static readonly string[] FreeKickCodes={"auto","shoot","cross","short"};
         public static readonly string[] FreeKickLabels={"Au choix du tireur","Frapper au but","Centrer dans la surface","Jouer court"};
-        public static readonly string[] FreeKickTradeOffs={"Frappe directe à moins de 27 m dans l'axe, sinon passe.","Frappe jusqu'à 30 m et un peu plus excentré : plus de tirs, moins précis de loin.","Centre aérien vers les meilleurs joueurs de tête au lieu de frapper.","Passe courte : on garde le ballon mais on renonce à la frappe directe."};
+        public static readonly string[] FreeKickTradeOffs={"Frappe directe à moins de 27 m dans l'axe, sauf combinaison nettement meilleure.","Frappe toujours, jusqu'à 30 m et un peu plus excentré : plus de tirs, moins précis de loin.","Centre aérien vers les meilleurs joueurs de tête au lieu de frapper.","Passe courte : on garde le ballon mais on renonce à la frappe directe."};
     }
 
     public sealed partial class MatchSimulation
@@ -29,7 +29,6 @@ namespace Touchline.Core
         public const float NearPostDepth=5f,NearPostWidth=3f,FarPostDepth=7.5f,FarPostWidth=5f,PenaltySpotDepth=9.5f;
         // Corner court : distance (m) maximale du partenaire servi au tireur.
         public const float ShortCornerReach=14f;
-        bool deliveringSetPiece;
         SetPieceRoutine Routine(int side)=>Tactic(side)?.setPieces??new SetPieceRoutine();
 
         // Tireur désigné, s'il est sur le terrain et disponible.
@@ -96,7 +95,5 @@ namespace Touchline.Core
             foreach(var a in State.actors){if(a.sentOff||GroundedAction(a)||a.side!=taker.side||a==taker||a.slot==0)continue;if(a.position.x*Direction(taker.side)>OffsideLine(taker.side)+.1f)continue;float score=Skill(a,"headingAccuracy")-Point.Distance(a.position,aim);if(score>best){best=score;target=a;}}
             if(target==null)return false;Pass(taker,target,"cross");return true;
         }
-        // Précision des coups de pied arrêtés travaillés à l'entraînement.
-        float SetPieceErrorScale(Actor from)=>deliveringSetPiece?Math.Max(.5f,1-PreparationSetPiece(from.side)):1;
     }
 }

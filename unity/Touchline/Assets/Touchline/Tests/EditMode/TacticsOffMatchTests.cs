@@ -5,8 +5,8 @@ using Touchline.Core;
 
 namespace Touchline.Tests
 {
-    // Rôles et consignes individuelles, coups de pied arrêtés, entraînement,
-    // causeries et plans tactiques enregistrés.
+    // Rôles, consignes de frappe/risque, combinaisons de coups de pied arrêtés,
+    // plans tactiques enregistrés et travail individuel.
     public sealed class TacticsOffMatchTests
     {
         const BindingFlags Private=BindingFlags.Instance|BindingFlags.NonPublic;
@@ -27,7 +27,7 @@ namespace Touchline.Tests
             var t=new Tactic();
             Assert.IsTrue(TacticalRoles.Allowed("ST","false9"));Assert.IsFalse(TacticalRoles.Allowed("CB","false9"));
             Assert.Throws<System.ArgumentException>(()=>TacticalRoles.SetRole(t,2,"poacher"));
-            TacticalRoles.SetRole(t,9,"poacher");Assert.AreEqual("poacher",t.withBall[9].playerRole);
+            TacticalRoles.SetRole(t,9,"poacher");Assert.AreEqual("poacher",t.withoutBall[9].playerRole);
         }
 
         [Test]
@@ -35,8 +35,8 @@ namespace Touchline.Tests
         {
             var db=Db();var c=new Career{club="a"};var sim=Sim(db,c);var lb=sim.State.actors[1];var q=new Point(-10,20);
             var neutral=Call<Point>(sim,"RoleShape",lb,q,true);
-            c.tactic.withBall[1].playerRole="wing-back";var wing=Call<Point>(sim,"RoleShape",lb,q,true);
-            c.tactic.withBall[1].playerRole="inverted";var inverted=Call<Point>(sim,"RoleShape",lb,q,true);
+            c.tactic.withoutBall[1].playerRole="wing-back";var wing=Call<Point>(sim,"RoleShape",lb,q,true);
+            c.tactic.withoutBall[1].playerRole="inverted";var inverted=Call<Point>(sim,"RoleShape",lb,q,true);
             Assert.Greater(wing.x,neutral.x+5);Assert.Greater(System.Math.Abs(wing.z),System.Math.Abs(neutral.z));
             Assert.Less(System.Math.Abs(inverted.z),System.Math.Abs(neutral.z)*.5f);
         }
@@ -44,7 +44,7 @@ namespace Touchline.Tests
         [Test]
         public void ShootMoreInstructionProducesMoreShots()
         {
-            int Shots(int shooting){int total=0;foreach(uint seed in new uint[]{3,5}){var db=Db();var c=new Career{club="a"};for(int i=8;i<=10;i++)c.tactic.withBall[i].shooting=shooting;var sim=Sim(db,c,seed);sim.PlayToEnd();total+=sim.State.shots[0];}return total;}
+            int Shots(int shooting){int total=0;foreach(uint seed in new uint[]{3,5}){var db=Db();var c=new Career{club="a"};for(int i=8;i<=10;i++)c.tactic.withoutBall[i].shooting=shooting;var sim=Sim(db,c,seed);sim.PlayToEnd();total+=sim.State.shots[0];}return total;}
             Assert.Greater(Shots(1),Shots(-1));
         }
 
@@ -57,7 +57,7 @@ namespace Touchline.Tests
         }
 
         [Test]
-        public void NearPostRoutineSendsBestHeaderToTheNearPost()
+        public void NearPostRoutineSendsPlayersToTheNearPost()
         {
             var db=Db();var c=new Career{club="a"};c.tactic.setPieces.corner="near";var sim=Sim(db,c);
             sim.State.phase="corner";sim.State.restartSide=0;sim.State.ball=new BallState{position=new Point(sim.Direction(0)*52.5f,33.8f)};
@@ -69,47 +69,31 @@ namespace Touchline.Tests
         }
 
         [Test]
-        public void TacticalFocusBuildsFamiliarityAndFormationChangeCostsIt()
+        public void DefaultRoutineKeepsHistoricCornerPlacement()
         {
-            var c=new Career{club="a",life=new ClubLife()};var plan=c.Training();plan.focus="tactical";float start=plan.familiarity;
-            c.GetType().GetMethod("TrainingDay",Private).Invoke(c,null);Assert.Greater(plan.familiarity,start);
-            float before=plan.familiarity;c.tactic.SetFormation("4-4-2");c.GetType().GetMethod("TrainingDay",Private).Invoke(c,null);
-            Assert.Less(plan.familiarity,before-TrainingFocus.FormationChangeCost+3);
-        }
-
-        [Test]
-        public void FamiliarityAndConditioningReachTheMatch()
-        {
-            var db=Db();var c=new Career{club="a"};var sim=Sim(db,c);var p=sim.State.actors[5];
-            float neutral=Call<float>(sim,"Skill",p,"shortPassing");
-            Career.ApplyTraining(sim,new TrainingPlan{familiarity=100,conditioning=100});
-            Assert.Greater(Call<float>(sim,"Skill",p,"shortPassing"),neutral);Assert.Less(Call<float>(sim,"PreparationFatigue",0),1);
-        }
-
-        [Test]
-        public void DemandingTalkHelpsATrailingFavouriteButNotALeader()
-        {
-            Assert.Greater(TeamTalks.Evaluate("halftime","demand",-1,4).skill,0);
-            Assert.Less(TeamTalks.Evaluate("halftime","demand",1,4).skill,0);
-            Assert.Greater(TeamTalks.Evaluate("prematch","encourage",0,-4).skill,TeamTalks.Evaluate("prematch","encourage",0,4).skill);
-        }
-
-        [Test]
-        public void TeamTalkIsOncePerMomentAndChangesThePitch()
-        {
-            var db=Db();var c=new Career{club="a"};var sim=Sim(db,c);c.match=sim.State;
-            Assert.AreEqual("prematch",c.TalkMoment());c.TeamTalk(db,"fire");Assert.IsNull(c.TalkMoment());
-            Assert.Greater(sim.State.preparation[0].talk,0);
+            var db=Db();var c=new Career{club="a"};var sim=Sim(db,c);
+            sim.State.phase="corner";sim.State.restartSide=0;sim.State.ball=new BallState{position=new Point(52.5f,33.8f)};var taker=Call<Actor>(sim,"RestartTaker");
+            foreach(var p in sim.State.actors){var args=new object[]{p,taker,new Point()};Assert.IsFalse((bool)sim.GetType().GetMethod("CornerPosition",Private).Invoke(sim,args));}
         }
 
         [Test]
         public void SavedPlanRestoresInstructionsRolesAndShape()
         {
-            var db=Db();var c=new Career{club="a"};c.lineup=Career.Select(db,"a",c.tactic);c.tactic.mentality=.9f;c.tactic.withBall[9].playerRole="false9";c.SaveTacticPlan(1,"Attaque");
-            c.tactic.mentality=.2f;c.tactic.withBall[9].playerRole="";c.ChangeTacticalFormation(db,"4-4-2");
+            var db=Db();var c=new Career{club="a"};c.lineup=Career.Select(db,"a",c.tactic);c.tactic.mentality=.9f;c.tactic.withoutBall[9].playerRole="false9";c.tactic.withoutBall[8].instruction=PlayerInstructions.StayWide;c.SaveTacticPlan(1,"Attaque");
+            c.tactic.mentality=.2f;c.tactic.withoutBall[9].playerRole="";c.ChangeTacticalFormation(db,"4-4-2");
             c.ApplyTacticPlan(db,1);
-            Assert.AreEqual("4-3-3",c.tactic.formation);Assert.AreEqual(.9f,c.tactic.mentality,1e-5f);Assert.AreEqual("false9",c.tactic.withBall[9].playerRole);Assert.AreEqual("Attaque",c.TacticPlans()[1].name);
+            Assert.AreEqual("4-3-3",c.tactic.formation);Assert.AreEqual(.9f,c.tactic.mentality,1e-5f);Assert.AreEqual("false9",c.tactic.withoutBall[9].playerRole);Assert.AreEqual(PlayerInstructions.StayWide,c.tactic.withoutBall[8].instruction);Assert.AreEqual("Attaque",c.TacticPlans()[1].name);
             Assert.Throws<System.InvalidOperationException>(()=>c.ApplyTacticPlan(db,2));
+        }
+
+        [Test]
+        public void IndividualTrainingSpeedsUpGrowth()
+        {
+            var c=new Career{club="a",life=new ClubLife()};c.life.players.Add(new PlayerLife{id="young"});
+            Assert.AreEqual(1f,Call<float>(c,"IndividualGrowth","young"));
+            c.SetIndividualTraining("young","finishing");Assert.AreEqual("finishing",c.IndividualTrainingOf("young"));
+            Assert.AreEqual(IndividualTrainingFocus.Growth,Call<float>(c,"IndividualGrowth","young"));
+            Assert.Throws<System.ArgumentException>(()=>c.SetIndividualTraining("young","juggling"));
         }
     }
 }

@@ -8,6 +8,9 @@ namespace Touchline
     [Serializable] public class HumanPart { public int material; public float[] position,normal,uv,skinWeight; public int[] skinIndex,index; }
     [Serializable] public class HumanBone { public string name; public int parent; public float[] head,tail; }
     [Serializable] public class HumanSource { public float height; public HumanPart[] parts; public HumanBone[] bones; }
+    // Editor captures construct views outside play mode too; their OnDestroy
+    // must release animation graphs, owned materials and shirt-atlas reservations.
+    [ExecuteAlways]
     public sealed partial class PlayerView : MonoBehaviour
     {
         public string PlayerId { get; private set; }
@@ -121,7 +124,7 @@ namespace Touchline
             float run=Mathf.Clamp01(poseSpeed/7);
             var travelDirection=poseSpeed>.2f?new Vector3(poseVelocity.x,0,poseVelocity.z).normalized:transform.forward;
             // Animation par mouvements capturés (Mecanim) : remplace la pose procédurale.
-            if(UseMecanim&&MecanimRender(actor,dt,reset,poseSpeed,context.carrying)){poseAction=actor.action;poseSequence=actor.actionSequence;lastPosition=transform.position;lastRotation=transform.rotation;initialized=true;return;}
+            if(UseMecanim&&MecanimRender(actor,actionTime,dt,reset,poseSpeed,context)){MecanimLocomotionContext(actor,dt,reset,context);MecanimUprightContact(actor,dt,reset,context);MecanimBodyReceptionContact(actor,actionTime,reset);MecanimFootReceptionContact(actor,actionTime,reset,ballPosition);HandPose(actor,actionTime,dt,reset,context);MecanimFallHandClearance(actor);MecanimSignals(actor,dt,reset,context);MecanimClaimReadiness(actor,context.keeperClaim,actionTime,dt,reset,ballPosition);MecanimKeeperPlacement(actor,actionTime,ballPosition,dt,reset);MecanimKeeperDistributionContact(actor,actionTime,ballPosition,dt,reset);MecanimThrowContact(actor,actionTime,ballPosition);MecanimKeeperDiveContact(actor,actionTime);MecanimKeeperGaze(actor,actionTime,dt,reset);MecanimHeaderContact(actor,actionTime);MecanimSlideContact(actor,actionTime,ballPosition);poseAction=actor.action;poseSequence=actor.actionSequence;lastPosition=transform.position;lastRotation=transform.rotation;initialized=true;return;}
             var localTravel=transform.InverseTransformDirection(travelDirection);
             var previousBodyPosition=body.localPosition;var previousBodyRotation=body.localRotation;
             if(actor.action=="control"&&(reset||poseAction!="control"||poseSequence!=actor.actionSequence)){var contact=MatchSimulation.IsBodyControl(actor)?new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z):ballPosition;float lateral=transform.InverseTransformPoint(contact).x;receivingLeft=Mathf.Abs(lateral)<.06f?leftFooted:lateral>0;}

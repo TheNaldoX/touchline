@@ -1,0 +1,101 @@
+Audit apparié : 200 affiches × 2 variantes par consigne, graine 1. Mesures du club dirigé (domicile).
+IA adverse active, aucun résultat de victoire garanti. IC 95 % indicatifs, sans correction des comparaisons multiples.
+
+### Mentalité : prudente → offensive
+| Mesure | Bas | Haut | Différence ± IC95 | Sens observé |
+|---|---:|---:|---:|---|
+| Largeur (m) | 49.65 | 49.31 | -0.33 ± 0.05 | baisse |
+| Ligne (m depuis centre) | -28.71 | -27.33 | 1.38 ± 0.17 | hausse |
+| Pressing (joueur·s) | 875.53 | 895.97 | 20.44 ± 20.00 | hausse |
+| Passe moyenne (m) | 19.51 | 20.37 | 0.86 ± 0.19 | hausse |
+| Passes tentées | 542.76 | 444.10 | -98.66 ± 15.57 | baisse |
+| Passes réussies (%) | 83.53 | 81.20 | -2.33 ± 0.45 | baisse |
+| Tirs | 10.64 | 19.05 | 8.40 ± 0.77 | hausse |
+| xG | 0.92 | 1.28 | 0.35 ± 0.09 | hausse |
+| Condition finale (%) | 91.61 | 91.88 | 0.27 ± 0.10 | hausse |
+| Buts pour | 1.41 | 1.83 | 0.43 ± 0.24 | hausse |
+| Buts contre | 1.31 | 1.29 | -0.02 ± 0.21 | non concluant |
+### Pressing : mesuré → intense
+| Mesure | Bas | Haut | Différence ± IC95 | Sens observé |
+|---|---:|---:|---:|---|
+| Largeur (m) | 49.55 | 49.42 | -0.14 ± 0.04 | baisse |
+| Ligne (m depuis centre) | -27.88 | -27.61 | 0.26 ± 0.17 | hausse |
+| Pressing (joueur·s) | 787.40 | 924.35 | 136.95 ± 20.23 | hausse |
+| Passe moyenne (m) | 20.15 | 20.23 | 0.08 ± 0.07 | hausse |
+| Passes tentées | 486.90 | 478.19 | -8.72 ± 7.87 | baisse |
+| Passes réussies (%) | 82.46 | 81.91 | -0.55 ± 0.35 | baisse |
+| Tirs | 13.46 | 15.24 | 1.78 ± 0.77 | hausse |
+| xG | 1.00 | 1.19 | 0.19 ± 0.10 | hausse |
+| Condition finale (%) | 91.65 | 91.72 | 0.07 ± 0.10 | non concluant |
+| Buts pour | 1.50 | 1.59 | 0.10 ± 0.22 | non concluant |
+| Buts contre | 1.25 | 1.23 | -0.02 ± 0.18 | non concluant |
+### Ligne : basse → haute
+| Mesure | Bas | Haut | Différence ± IC95 | Sens observé |
+|---|---:|---:|---:|---|
+| Largeur (m) | 49.28 | 49.50 | 0.22 ± 0.05 | hausse |
+| Ligne (m depuis centre) | -33.89 | -19.62 | 14.27 ± 0.24 | hausse |
+| Pressing (joueur·s) | 725.24 | 797.98 | 72.75 ± 20.85 | hausse |
+| Passe moyenne (m) | 20.18 | 20.22 | 0.04 ± 0.08 | non concluant |
+| Passes tentées | 491.40 | 485.07 | -6.33 ± 7.74 | non concluant |
+| Passes réussies (%) | 82.33 | 81.22 | -1.10 ± 0.37 | baisse |
+| Tirs | 12.54 | 22.13 | 9.58 ± 0.97 | hausse |
+| xG | 0.99 | 1.78 | 0.78 ± 0.11 | hausse |
+| Condition finale (%) | 91.68 | 92.13 | 0.45 ± 0.10 | hausse |
+| Buts pour | 1.68 | 2.42 | 0.74 ± 0.26 | hausse |
+| Buts contre | 2.19 | 1.05 | -1.13 ± 0.24 | baisse |
+### Largeur : étroite → large
+| Mesure | Bas | Haut | Différence ± IC95 | Sens observé |
+|---|---:|---:|---:|---|
+| Largeur (m) | 34.30 | 54.31 | 20.01 ± 0.07 | hausse |
+| Ligne (m depuis centre) | -27.99 | -27.73 | 0.26 ± 0.16 | hausse |
+| Pressing (joueur·s) | 916.99 | 903.57 | -13.42 ± 20.50 | non concluant |
+| Passe moyenne (m) | 19.83 | 20.22 | 0.39 ± 0.14 | hausse |
+| Passes tentées | 438.87 | 462.52 | 23.65 ± 8.79 | hausse |
+| Passes réussies (%) | 82.62 | 81.40 | -1.22 ± 0.42 | baisse |
+| Tirs | 24.29 | 14.71 | -9.57 ± 1.14 | baisse |
+| xG | 1.27 | 1.12 | -0.15 ± 0.10 | baisse |
+| Condition finale (%) | 91.91 | 91.68 | -0.23 ± 0.13 | baisse |
+| Buts pour | 1.36 | 1.48 | 0.12 ± 0.22 | non concluant |
+| Buts contre | 1.28 | 1.09 | -0.19 ± 0.19 | non concluant |
+### Rythme : patient → rapide
+| Mesure | Bas | Haut | Différence ± IC95 | Sens observé |
+|---|---:|---:|---:|---|
+| Largeur (m) | 49.52 | 49.37 | -0.14 ± 0.05 | baisse |
+| Ligne (m depuis centre) | -27.81 | -28.08 | -0.27 ± 0.15 | baisse |
+| Pressing (joueur·s) | 886.90 | 914.45 | 27.55 ± 19.66 | hausse |
+| Passe moyenne (m) | 20.14 | 20.21 | 0.07 ± 0.08 | non concluant |
+| Passes tentées | 477.57 | 482.48 | 4.91 ± 8.27 | non concluant |
+| Passes réussies (%) | 82.75 | 81.49 | -1.26 ± 0.34 | baisse |
+| Tirs | 15.48 | 14.30 | -1.18 ± 0.73 | baisse |
+| xG | 1.19 | 1.09 | -0.11 ± 0.09 | baisse |
+| Condition finale (%) | 91.61 | 91.83 | 0.22 ± 0.11 | hausse |
+| Buts pour | 1.71 | 1.66 | -0.05 ± 0.23 | non concluant |
+| Buts contre | 1.15 | 1.17 | 0.02 ± 0.19 | non concluant |
+### Passes : courtes → directes
+| Mesure | Bas | Haut | Différence ± IC95 | Sens observé |
+|---|---:|---:|---:|---|
+| Largeur (m) | 49.74 | 49.12 | -0.62 ± 0.05 | baisse |
+| Ligne (m depuis centre) | -27.92 | -27.95 | -0.04 ± 0.18 | non concluant |
+| Pressing (joueur·s) | 837.65 | 927.92 | 90.27 ± 23.56 | hausse |
+| Passe moyenne (m) | 15.79 | 25.18 | 9.39 ± 0.15 | hausse |
+| Passes tentées | 663.65 | 323.18 | -340.47 ± 25.14 | baisse |
+| Passes réussies (%) | 86.31 | 75.44 | -10.87 ± 0.47 | baisse |
+| Tirs | 13.07 | 16.53 | 3.46 ± 0.87 | hausse |
+| xG | 1.06 | 1.34 | 0.29 ± 0.11 | hausse |
+| Condition finale (%) | 91.34 | 92.20 | 0.86 ± 0.11 | hausse |
+| Buts pour | 1.35 | 2.04 | 0.68 ± 0.24 | hausse |
+| Buts contre | 1.02 | 1.34 | 0.32 ± 0.19 | hausse |
+### Mission des milieux : défense → attaque
+| Mesure | Bas | Haut | Différence ± IC95 | Sens observé |
+|---|---:|---:|---:|---|
+| Largeur (m) | 49.43 | 49.25 | -0.19 ± 0.05 | baisse |
+| Ligne (m depuis centre) | -27.91 | -27.78 | 0.13 ± 0.16 | non concluant |
+| Pressing (joueur·s) | 837.49 | 937.97 | 100.48 ± 23.93 | hausse |
+| Passe moyenne (m) | 20.46 | 20.64 | 0.17 ± 0.09 | hausse |
+| Passes tentées | 529.35 | 422.76 | -106.58 ± 17.77 | baisse |
+| Passes réussies (%) | 82.36 | 79.16 | -3.20 ± 0.46 | baisse |
+| Tirs | 9.93 | 17.55 | 7.62 ± 0.82 | hausse |
+| xG | 0.89 | 1.71 | 0.82 ± 0.12 | hausse |
+| Condition finale (%) | 91.69 | 91.79 | 0.11 ± 0.10 | hausse |
+| Buts pour | 1.60 | 2.47 | 0.87 ± 0.28 | hausse |
+| Buts contre | 1.20 | 1.24 | 0.04 ± 0.19 | non concluant |

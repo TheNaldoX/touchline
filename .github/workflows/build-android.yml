@@ -6,8 +6,14 @@ name: Build Android APK
 
 on:
   push:
+    branches: ['release/**']
     tags: ['apk-*']
   workflow_dispatch:
+    inputs:
+      soccer_pack_id:
+        description: 'Google Drive ID du pack personnel vérifié (sources non publiées)'
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -39,6 +45,18 @@ jobs:
         with:
           lfs: false
 
+      - name: Télécharger le pack personnel
+        env:
+          SOCCER_PACK_ID: ${{ inputs.soccer_pack_id || vars.SOCCER_MOCAP_DRIVE_ID }}
+        run: |
+          test -n "$SOCCER_PACK_ID" || { echo '::error::Pack personnel requis : lancer le workflow avec soccer_pack_id.'; exit 1; }
+          python -m pip install gdown==5.2.0
+          python -m gdown "$SOCCER_PACK_ID" -O "$RUNNER_TEMP/soccer-mocap.zip"
+
+      - name: Vérifier et extraire les 21 captures
+        shell: pwsh
+        run: ./tools/import-soccer-mocap.ps1 -Archive "$env:RUNNER_TEMP/soccer-mocap.zip"
+
       - name: Cache Library Unity
         uses: actions/cache@v4
         with:
@@ -68,7 +86,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Touchline-APK
-          path: unity/Touchline/build/Android/*.apk
+          path: |
+            unity/Touchline/build/Android/*.apk
+            unity/Touchline/build/Android/mocap-content.txt
           if-no-files-found: error
 
       - name: Publier l'APK (release)

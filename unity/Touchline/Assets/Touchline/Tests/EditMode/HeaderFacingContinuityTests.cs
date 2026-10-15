@@ -19,8 +19,8 @@ namespace Touchline.Tests
     var sim=new MatchSimulation(new Database{players=new[]{data}},state);float fraction=(float)typeof(MatchSimulation).GetMethod("HeaderContactFraction",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(sim,new object[]{actor});Assert.LessOrEqual(fraction,1,"The fallback fixture must place the ball inside the actual Core heading envelope.");typeof(MatchSimulation).GetMethod("DistributeHeader",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(sim,new object[]{actor,null});var expected=view.transform.rotation;
     for(int frame=0;frame<=Mathf.CeilToInt(.22f*fps);frame++){
      float elapsed=Mathf.Min(.22f,(float)frame/fps),step=Mathf.Floor(elapsed/MatchSimulation.Step),alpha=(elapsed-step*MatchSimulation.Step)/MatchSimulation.Step;actor.actionTime=.64f-step*MatchSimulation.Step;
-     expected=Quaternion.Slerp(expected,Quaternion.Euler(0,-10,0),1-Mathf.Exp(-16f/fps));view.Render(actor,alpha,1f/fps,target);
-     Assert.Less(Quaternion.Angle(expected,view.transform.rotation),.05f,"An unreachable preparatory turn must keep the existing contact-facing fallback.");
+     view.Render(actor,alpha,1f/fps,target);
+     Assert.LessOrEqual(Quaternion.Angle(expected,view.transform.rotation),600f/fps+.1f,"An unreachable preparatory turn must respect the action-facing angular speed limit.");expected=view.transform.rotation;
     }
     float error=Vector3.Distance(view.HeaderContactPosition,target);TestContext.WriteLine($"{fps}fps extremeContactError={error:F6}");Assert.Less(error,.12f);
    }finally{Object.DestroyImmediate(go);}

@@ -19,9 +19,10 @@ namespace Touchline.Core
     public partial class Career
     {
         public long ObservationCost=>Math.Max(500,life.revenue/100000);
-        public int ActiveObservations=>world?.reports.Count(r=>(string.IsNullOrEmpty(r.club)||r.club==club)&&r.confidence<90)??0;
+        // Department assignments have their own capacity per scout (ScoutingDepartment.cs).
+        public int ActiveObservations=>world?.reports.Count(r=>(string.IsNullOrEmpty(r.club)||r.club==club)&&r.confidence<90&&!IsAssignmentReport(r))??0;
         public ScoutReport ReportFor(string id)=>world?.reports?.Where(r=>r.player==id&&(string.IsNullOrEmpty(r.club)||r.club==club)).OrderByDescending(r=>r.started).FirstOrDefault();
-        int ReportKnowledge(ScoutReport r){int age=Math.Max(0,life.day-(r.lastObserved>0?r.lastObserved:r.due));return r.confidence<40?r.confidence:Math.Max(40,r.confidence-Math.Max(0,age-120)/7);}
+        int ReportKnowledge(ScoutReport r){int age=Math.Max(0,life.day-(r.lastObserved>0?r.lastObserved:r.due));int knowledge=r.confidence<40?r.confidence:Math.Max(40,r.confidence-Math.Max(0,age-120)/7);return !r.attributesObserved?Math.Min(89,knowledge):knowledge;}
         void EnsureScouting()
         {
             if(world==null)throw new InvalidOperationException("Une carrière est nécessaire.");
@@ -30,13 +31,19 @@ namespace Touchline.Core
         }
         bool Scoutable(PlayerData p)=>p!=null&&p.team!=club&&p.team!="retired"&&!string.IsNullOrEmpty(p.team)&&!p.team.StartsWith("academy-",StringComparison.Ordinal);
         void RequireScout(){if(Staff("scout").wage<=0)throw new InvalidOperationException("Le poste de recruteur est vacant. Embauchez un responsable dans Staff et délégation.");}
+        const float PotentialUncertaintyOffset=3; // rating points (1–99) always added to the potential error
         static float AssessmentBias(string id,string key,int day)=>((StableIdentity(id+"/"+key+"/"+day)%2001)/1000f-1);
-        void StartObservation(Database db,PlayerData p,ScoutMission mission)
+        void StartObservation(Database db,PlayerData p,ScoutMission mission,StaffMember observer=null,string assignment=null)
         {
-            var scout=Staff("scout");int judging=Math.Max(1,Math.Min(20,scout.judging));
+            var scout=observer??Staff("scout");int judging=Math.Max(1,Math.Min(20,scout.judging));int potentialJudging=Math.Max(1,Math.Min(20,ScoutPotentialJudging(scout)));
+            // A renewed report keeps the count of completed observations: each one narrows the ranges.
+            int depth=world.reports.Where(r=>r.player==p.id&&(string.IsNullOrEmpty(r.club)||r.club==club)&&r.confidence>=90).Select(r=>r.depth+1).DefaultIfEmpty(0).Max();
             world.reports.RemoveAll(r=>r.player==p.id&&(string.IsNullOrEmpty(r.club)||r.club==club));
-            float uncertainty=1.5f+(20-judging)*.22f;
-            world.reports.Add(new ScoutReport{player=p.id,club=club,scout=scout.name,mission=mission?.id,judging=judging,started=life.day,due=life.day+Math.Max(5,19-judging/2)+(int)(Roll()*3),estimate=Mathx.Clamp(p.rating+p.development+AssessmentBias(p.id,"ability",life.day)*uncertainty,1,99),potential=Mathx.Clamp(p.potential+AssessmentBias(p.id,"potential",life.day)*(uncertainty+3),1,99),uncertainty=uncertainty,potentialUncertainty=uncertainty+3});
+            // Potential is read with its own judging; the +3 keeps potential harder to read than ability.
+            float uncertainty=1.5f+(20-judging)*.22f,potentialUncertainty=1.5f+(20-potentialJudging)*.22f+PotentialUncertaintyOffset;
+            world.reports.Add(new ScoutReport{player=p.id,club=club,scout=scout.name,mission=assignment??mission?.id,judging=judging,depth=depth,started=life.day,due=life.day+Math.Max(5,19-judging/2)+(int)(Roll()*3),estimate=Mathx.Clamp(p.rating+p.development+AssessmentBias(p.id,"ability",life.day)*uncertainty,1,99),potential=Mathx.Clamp(p.potential+AssessmentBias(p.id,"potential",life.day)*potentialUncertainty,1,99),uncertainty=uncertainty,potentialUncertainty=potentialUncertainty});
+            world.reports[world.reports.Count-1].attributesObserved=true;
+            world.reports[world.reports.Count-1].observedAttributes=p.attributes?.Where(a=>a!=null).Select(a=>new AttributeValue{key=a.key,value=p.Attribute(a.key)}).ToArray();
         }
         public ScoutMission CreateScoutMission(Database db,string role,string nationality,int minAge,int maxAge,long maxFee,long maxMonthlyWage,string priority,long budget,string country="Tous")
         {
@@ -45,7 +52,7 @@ namespace Touchline.Core
             if(world.scoutMissions.Count(m=>m.club==club&&(m.status=="active"||m.status=="finishing"))>=2)throw new InvalidOperationException("Deux recherches sont déjà en cours. Terminez ou arrêtez une mission.");
             if(string.IsNullOrWhiteSpace(nationality))nationality="Tous";
             if(string.IsNullOrWhiteSpace(country))country="Tous";
-            if(country!="Tous"&&!(db.leagues?.Any(l=>l.country==country)??false))throw new ArgumentException("Ce territoire n’est pas couvert par la base des championnats.");
+            if(country!="Tous"&&!ScoutingGeography.Countries(db).Contains(country))throw new ArgumentException("Ce territoire n’est pas couvert par la base de recrutement.");
             var mission=new ScoutMission{id="scout-"+club+"-"+(++world.serial),club=club,role=role,nationality=nationality,country=country,minAge=minAge,maxAge=maxAge,maxFee=maxFee,maxMonthlyWage=maxMonthlyWage,priority=priority,budget=budget,remaining=budget,observationCost=ObservationCost,started=life.day,until=life.day+28,nextSearch=life.day+1};
             Charge(budget,"Enveloppe d’observation • "+FootballPositions.Label(role)+" / "+nationality);world.scoutMissions.Add(mission);
             ScoutMail(Staff("scout").name,"Mission de recrutement ouverte","Recherche : "+FootballPositions.Label(role)+" · territoire "+country+" · nationalité "+nationality+" · "+minAge+"–"+maxAge+" ans. L’enveloppe de "+budget.ToString("N0")+" € est réservée. Le reliquat sera rendu à la clôture ; trois observations simultanées au maximum.");
@@ -64,11 +71,14 @@ namespace Touchline.Core
             if(world==null)return;EnsureScouting();
             foreach(var m in world.scoutMissions.Where(m=>m.club==club&&(m.status=="active"||m.status=="finishing")).ToArray()){m.status="stopped";RefundScoutMission(m);}
             world.reports.RemoveAll(r=>r.club==club&&r.confidence<90);
+            scoutAssignments?.Clear();scoutRecommendations?.Clear();
+            // Bind old saves before changing club, without deleting the recruitment history.
+            if(signings!=null)foreach(var signing in signings)if(string.IsNullOrEmpty(signing.club))signing.club=club;
         }
         public IEnumerable<PlayerData> ScoutCandidates(Database db,ScoutMission m)
         {
             var reports=world.reports.Where(r=>r.club==club||string.IsNullOrEmpty(r.club)).GroupBy(r=>r.player).ToDictionary(g=>g.Key,g=>g.OrderByDescending(r=>r.started).First());var selected=new HashSet<string>(m.players??new List<string>());var followed=new HashSet<string>(shortlist);
-            var territoryLeagues=new HashSet<string>((db.leagues??Array.Empty<LeagueData>()).Where(l=>l.country==m.country).Select(l=>l.id));var territoryClubs=new HashSet<string>(db.clubs.Where(c=>territoryLeagues.Contains(c.league)).Select(c=>c.id));bool allTerritories=string.IsNullOrEmpty(m.country)||m.country=="Tous";
+            var territoryClubs=new HashSet<string>(ScoutingGeography.ClubIds(db,m.country));bool allTerritories=string.IsNullOrEmpty(m.country)||m.country=="Tous";
             bool NeedsReport(string id)=>!reports.TryGetValue(id,out var r)||r.confidence>=90&&ReportKnowledge(r)<90;
             float Priority(PlayerData p)
             {
@@ -84,12 +94,18 @@ namespace Touchline.Core
             foreach(var r in world.reports.Where(r=>r.club==club&&r.confidence<90).ToArray())
             {
                 var p=db.Find(r.player);if(!Scoutable(p)){world.reports.Remove(r);continue;}
-                if(vacant){r.started++;r.due++;continue;}
+                // A department report keeps progressing with its own scout, even without a chief scout.
+                if(vacant&&ReportScout(r)==null){r.started++;r.due++;continue;}
                 r.confidence=Math.Min(90,Math.Max(0,(life.day-r.started)*90/Math.Max(1,r.due-r.started)));
                 if(r.confidence<90)continue;
                 if(r.judging<=0){r.judging=Math.Max(1,scout.judging);r.scout=scout.name;r.uncertainty=1.5f+(20-r.judging)*.22f;r.potentialUncertainty=r.uncertainty+3;r.estimate=Mathx.Clamp(p.rating+p.development+AssessmentBias(p.id,"ability",r.started)*r.uncertainty,1,99);r.potential=Mathx.Clamp(p.potential+AssessmentBias(p.id,"potential",r.started)*r.potentialUncertainty,1,99);}
-                r.lastObserved=life.day;r.advice=ScoutingAdvice(db,p,r);
+                // Completion is the last real observation; subsequent reads must not learn hidden changes.
+                r.estimate=Mathx.Clamp(p.rating+p.development+AssessmentBias(p.id,"ability",r.started)*r.uncertainty,1,99);
+                r.potential=Mathx.Clamp(p.potential+AssessmentBias(p.id,"potential",r.started)*r.potentialUncertainty,1,99);
+                r.observedAttributes=p.attributes?.Where(a=>a!=null).Select(a=>new AttributeValue{key=a.key,value=p.Attribute(a.key)}).ToArray();
+                r.attributesObserved=true;r.lastObserved=life.day;r.advice=ScoutingAdvice(db,p,r);
                 Mail(r.scout??scout.name,"Rapport disponible",p.name+" : "+r.advice+" Les étoiles sont relatives à votre effectif ; le potentiel reste incertain.",p.id,"scout");
+                OnScoutReportCompleted(db,p,r);
             }
             foreach(var m in world.scoutMissions.Where(m=>m.club==club&&(m.status=="active"||m.status=="finishing")).ToArray())
             {
@@ -103,13 +119,18 @@ namespace Touchline.Core
                 }
                 if(m.status=="finishing"&&!world.reports.Any(r=>r.club==club&&r.mission==m.id&&r.confidence<90)){m.status="complete";ScoutMail(scout.name,"Mission de recrutement terminée",m.found+" profil(s) observé(s) dans cette recherche. Consultez Rapports, comparez les profils puis vérifiez les attentes avec leurs agents.");}
             }
+            RecruitmentRivalsDay(db);
+            ScoutingDepartmentDay(db);
+            // Must run before ManagementDay resolves the pending offers of the day.
+            TransferWillingnessDay(db);
+            SigningsDay(db);
         }
         string ScoutingAdvice(Database db,PlayerData p,ScoutReport r)
         {
             float baseline=db.Squad(club).OrderByDescending(x=>x.rating+x.development).Take(11).Select(x=>x.rating+x.development).DefaultIfEmpty(65).Average();
             string level=r.estimate>baseline+5?"Peut renforcer immédiatement votre onze.":r.estimate>=baseline-5?"Peut entrer dans la rotation actuelle.":"Niveau estimé en retrait du onze actuel.";
             string development=p.age<23?" Prévoir du temps de jeu régulier et un plan individuel.":p.age>31?" Contrat court conseillé ; surveiller la charge physique.":" Vérifier l’adaptation au rôle et au collectif.";
-            string finance=MonthlySalary(p.wage)>MonthlySalary(Math.Max(1,WageBudget-Payroll(db)))?" Le salaire actuel dépasse votre marge salariale.":" Vérifier indemnité, salaire mensuel et primes avec l’agent.";
+            string finance=MonthlySalary(p.wage)>RecruitmentWageRoom(db)?" Le salaire actuel dépasse votre marge salariale après engagements.":" Vérifier indemnité, salaire mensuel et primes avec l’agent.";
             return level+development+finance;
         }
         public float AssessedLevel(Database db,string id,bool potential=false)
@@ -125,7 +146,12 @@ namespace Touchline.Core
             int knowledge=Knowledge(id);if(knowledge<40)return default;int raw=(int)Mathx.Clamp((float)Math.Round(p.Attribute(key)/5),1,20);
             if(revealAttributes||p.team==club)return new AttributeAssessment{known=true,low=raw,high=raw};
             var report=ReportFor(id);int judging=report?.judging>0?report.judging:10;
+            var observed=report?.observedAttributes?.FirstOrDefault(a=>a!=null&&a.key==key);
+            if(observed!=null)raw=(int)Mathx.Clamp((float)Math.Round(observed.value/5),1,20);
+            else return default; // Old saves have no historical attributes: require a new observation.
             int uncertainty=knowledge>=90?(judging>=16?1:2):knowledge>=65?2:3;
+            // An unknown territory widens the range; repeated observations narrow it (1–20 scale).
+            if(ScoutingFamiliarity(db,p)<.5f)uncertainty++;if((report?.depth??0)>=2)uncertainty=Math.Max(1,uncertainty-1);
             int offset=(int)Math.Round(AssessmentBias(id,key,report?.started??0)*Math.Max(.4f,(20-judging)*.12f));
             int center=(int)Mathx.Clamp(raw+offset,1,20);return new AttributeAssessment{known=true,low=Math.Max(1,center-uncertainty),high=Math.Min(20,center+uncertainty)};
         }

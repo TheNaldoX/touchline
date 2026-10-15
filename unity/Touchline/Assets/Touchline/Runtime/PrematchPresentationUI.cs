@@ -93,6 +93,7 @@ namespace Touchline
                 var bill=Row(introBody,"prematch-bill");IntroClub(bill,f.home,f.neutral?"Terrain neutre":"Domicile");Text(bill,"VS","prematch-versus");IntroClub(bill,f.away,f.neutral?"Terrain neutre":"Extérieur");
                 Text(introBody,introBriefing.venue,"prematch-venue");Text(introBody,FixtureDay(f),"muted");
                 Text(introBody,introChapter==0?"L’affiche, l’enjeu et les compositions avant d’entrer dans le match.":"Le chronomètre est arrêté. Lancez le coup d’envoi quand vous êtes prêt.","prematch-description");
+                if(introChapter==4)TeamTalkCard(introBody,()=>{introAutomatic=false;RenderIntroChapter();});
             }else if(introChapter==1)RenderIntroStakes();
             else RenderIntroLineup(introChapter==2?f.home:f.away);
             AnimateEntry(introBody,true);introPanel.Q<ScrollView>("prematch-scroll").scrollOffset=Vector2.zero;
@@ -120,6 +121,7 @@ namespace Touchline
             var meeting=PrematchProgramme.LastMeeting(Career,f);
             if(meeting!=null){var history=Card(introBody,"prematch-meeting");history.name="prematch-last-meeting";Text(history,"Dernière confrontation dans cette carrière","section-title");IntroResult(history,meeting);}
             Text(introBody,"Détail des trois derniers matchs enregistrés dans cette carrière, du plus récent au plus ancien.","muted");
+            OpponentBriefingCard(introBody);PreparationCard(introBody);
         }
         void IntroResult(VisualElement parent,Fixture result)
         {

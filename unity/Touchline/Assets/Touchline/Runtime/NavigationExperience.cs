@@ -11,7 +11,7 @@ namespace Touchline
         readonly List<string> backPages=new List<string>(),forwardPages=new List<string>(),recentPages=new List<string>();
         readonly Dictionary<string,Vector2[]> pageScroll=new Dictionary<string,Vector2[]>();
         string builtPage,builtScrollKey,historyClub;bool historyTravel;
-        string ScrollPageKey=>page=="Tactique"?page+"/"+tacticalTab+"/"+(root.ClassListContains("short-wide")?"short-wide":root.ClassListContains("narrow")?"narrow":"wide"):page;
+        string ScrollPageKey=>page+"/"+(page switch{"Tactique"=>tacticalTab,"Recrutement"=>recruitmentTab,"Calendrier"=>calendarTab,"Finances"=>financeTab,_=>""})+"/"+(root.ClassListContains("short-wide")?"short-wide":root.ClassListContains("narrow")?"narrow":"wide");
         static string PageLabel(string id)=>id=="Club"?"Bureau":id=="Coulisses"?"Zone grise":id;
         public static bool DirectoryMatches(string label,string query)=>French.CompareInfo.IndexOf(label??"",query??"",System.Globalization.CompareOptions.IgnoreCase|System.Globalization.CompareOptions.IgnoreNonSpace)>=0;
         bool MotionEnabled=>PlayerPrefs.GetInt("reduce-motion",0)==0;
@@ -56,10 +56,12 @@ namespace Touchline
         }
         void AnimateEntry(VisualElement element,bool drawer=false)
         {
-            if(!MotionEnabled)return;InterfaceAnimationCount++;float started=Time.realtimeSinceStartup;float distance=drawer?22:7;var duration=drawer?.2f:.15f;
-            element.style.opacity=.35f;element.style.translate=new Translate(0,distance);
+            if(!MotionEnabled)return;InterfaceAnimationCount++;float started=Time.realtimeSinceStartup;var duration=drawer?.2f:.15f;
+            // Keep hit targets stationary between pointer down and up. Entry is a fade,
+            // not a translation that can move an edge away from a resting finger.
+            element.style.opacity=.35f;
             IVisualElementScheduledItem animation=null;
-            animation=element.schedule.Execute(()=>{float t=Mathf.Clamp01((Time.realtimeSinceStartup-started)/duration),ease=1-Mathf.Pow(1-t,3);element.style.opacity=Mathf.Lerp(.35f,1,ease);element.style.translate=new Translate(0,distance*(1-ease));if(t>=1)animation?.Pause();}).Every(16);
+            animation=element.schedule.Execute(()=>{float t=Mathf.Clamp01((Time.realtimeSinceStartup-started)/duration),ease=1-Mathf.Pow(1-t,3);element.style.opacity=Mathf.Lerp(.35f,1,ease);if(t>=1)animation?.Pause();}).Every(16);
         }
         void NavigationButtons(VisualElement brand)
         {

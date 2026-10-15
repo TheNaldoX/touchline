@@ -51,7 +51,8 @@ namespace Touchline
                 var state=JsonUtility.FromJson<Career>(raw);
                 if(state==null||!TacticValid(state.tactic))throw new InvalidDataException();
                 if(state.world!=null&&(state.world.divisions==null||state.world.divisions.Count==0))state.world=null;
-                if(!CareerSaveRestore.TryRestore(original,state,out var restored))throw new InvalidDataException();
+                var compatible=TouchlineCatalogue.ForSavedCareer(original,state);
+                if(!CareerSaveRestore.TryRestore(compatible,state,out var restored))throw new InvalidDataException();
                 if(state.life!=null&&(state.life.day<0||state.life.day>365000))throw new InvalidDataException();
                 // Unity can instantiate an empty object for a serialized null class.
                 // Normalize that compatible placeholder before checking a real match.
@@ -78,6 +79,7 @@ namespace Touchline
                 }
                 entry.CalendarMigrated=!raw.Contains("\"calendarEpoch\"");
                 if(entry.CalendarMigrated){state.MigrateSummerEpoch();state.SynchronizePlayerAges(restored);}
+                state.saveBaseline=SaveBaseline.From(compatible);
                 entry.State=state;entry.Restored=restored;entry.Valid=true;entry.CanAttempt=true;
             }catch(Exception error){entry.Error="Ce fichier ne peut pas être repris. Il est conservé.";Debug.LogWarning("Lecture de carrière refusée : "+error.GetType().Name);}
             return entry;

@@ -33,13 +33,13 @@ namespace Touchline.Editor
         static void Suspend(bool value)=>typeof(TouchlineApp).GetMethod("OnApplicationPause",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(TouchlineApp.Instance,new object[]{value});
         static void Resize(int w,int h){var old=target;target=new RenderTexture(w,h,24);target.Create();TouchlineApp.Instance.GetComponent<UIDocument>().panelSettings.targetTexture=target;if(old!=null){old.Release();UnityEngine.Object.DestroyImmediate(old);}}
         static void Capture(string name){var old=RenderTexture.active;RenderTexture.active=target;var t=new Texture2D(target.width,target.height,TextureFormat.RGB24,false);t.ReadPixels(new Rect(0,0,target.width,target.height),0,0);t.Apply();File.WriteAllBytes(Path.Combine(output,name+".png"),t.EncodeToPNG());UnityEngine.Object.DestroyImmediate(t);RenderTexture.active=old;}
-        static void CheckPanel(){var panel=Root.Q("match-delegation");var cancel=panel?.Query<Button>().ToList().FirstOrDefault(b=>b.text=="Revenir au match");if(panel==null||cancel==null||cancel.resolvedStyle.display==DisplayStyle.None||cancel.worldBound.height<43||cancel.worldBound.xMin<0||cancel.worldBound.xMax>Root.worldBound.xMax+1||cancel.worldBound.yMax>Root.worldBound.yMax+1)throw new Exception("Delegation/cancel panel vanished or overflowed");}
+        static void CheckPanel(){var panel=Root.Q("match-delegation");var cancel=panel?.Query<Button>().ToList().FirstOrDefault(b=>b.text=="Revenir au match");if(panel==null||cancel==null||cancel.resolvedStyle.display==DisplayStyle.None||cancel.worldBound.height<43||cancel.worldBound.xMin<0||cancel.worldBound.xMax>Root.worldBound.xMax+1||cancel.worldBound.yMax>Root.worldBound.yMax+1)throw new Exception("Delegation/cancel panel vanished or overflowed: panel="+(panel!=null)+" button="+(cancel!=null)+" bounds="+cancel?.worldBound+" root="+Root.worldBound+" display="+cancel?.resolvedStyle.display);}
         static void Tick()
         {
             if(!SessionState.GetBool("MatchDelegationSmoke",false)||!EditorApplication.isPlaying||TouchlineApp.Instance==null||last==Time.frameCount)return;last=Time.frameCount;if(++frames<20)return;frames=0;
             try{var app=TouchlineApp.Instance;output=SessionState.GetString("MatchDelegationOutput","");if(string.IsNullOrEmpty(output)||!Directory.Exists(output))throw new IOException("Delegation output not initialized by Run.");
                 switch(stage++){
-                    case 0:Resize(1280,966);app.Career.life.day=app.Career.life.nextFixture;matches=app.Career.life.matches;Suspend(true);Click("Match");Click("Déléguer à l’adjoint");match=app.Career.match;stopped=match.clock;break;
+                    case 0:Resize(1280,966);app.Career.life.day=app.Career.life.nextFixture;matches=app.Career.life.matches;Suspend(true);typeof(TouchlineApp).GetMethod("Navigate",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(app,new object[]{"Match"});Click("Déléguer à l’adjoint");match=app.Career.match;stopped=match.clock;break;
                     case 1:CheckPanel();if(match.clock!=stopped)throw new Exception("Background delegation advanced");Capture("delegation-fold");Resize(1080,2520);break;
                     case 2:CheckPanel();if(match.clock!=stopped)throw new Exception("Rotation resumed suspended delegation");Capture("delegation-portrait");Suspend(false);break;
                     case 3:CheckPanel();if(match.clock<=stopped||Root.Q<ProgressBar>().value!=match.Minute)throw new Exception("Delegation made no progress");Suspend(true);stopped=match.clock;Click("Revenir au match");break;
@@ -66,7 +66,11 @@ namespace Touchline.Editor
                         if(match.clock!=5400||!app.Career.life.recordedMatch||app.Career.life.matches!=matches+1||app.Career.match!=null)throw new Exception("Delegated full match must be recorded once, then return to club");
                         if(JsonUtility.ToJson(match)!=expected)throw new Exception("Incremental delegation differs from the same delegated-step oracle");
                         if(!match.events.Any(e=>e.kind=="substitution"&&e.side==0&&e.receiver==injuredPlayer))throw new Exception("Delegated assistant did not replace the injured fixture player" );
-                        app.Career.RecordMatch(app.Database);if(app.Career.life.matches!=matches+1)throw new Exception("Repeated recording duplicated the match" );Capture("delegation-complete" );
+                        app.Career.RecordMatch(app.Database);if(app.Career.life.matches!=matches+1)throw new Exception("Repeated recording duplicated the match" );
+                        var recap=Root.Q("delegated-match-recap");if(recap==null)throw new Exception("Missing completed delegation recap");
+                        if(recap.Query<VisualElement>("delegated-goal").ToList().Count!=match.events.Count(e=>e.kind=="goal"))throw new Exception("Scorer list differs from simulated goals");
+                        var score=recap.Q<Label>("delegated-match-score");if(score==null||!score.text.Contains(" – "))throw new Exception("Missing recap score");
+                        Capture("delegation-complete" );Click("Revenir au bureau");if(Root.Q("delegated-match-recap")!=null)throw new Exception("Recap cannot close");
                         File.WriteAllText(Path.Combine(output,"report.json"),"{\"passed\":true,\"startFromLobby\":true,\"cancelAndResume\":true,\"suspendedClockStops\":true,\"rotationPreservesControls\":true,\"full5400Seconds\":true,\"sameStateAsDirectDelegatedSimulation\":true,\"injectedInjuryReplaced\":true,\"recordedOnce\":true,\"physicalAndroid\":false}");
                         SessionState.SetBool("MatchDelegationSmoke",false);Debug.Log("TOUCHLINE_DELEGATION_OK");EditorApplication.Exit(0);break;
                 }

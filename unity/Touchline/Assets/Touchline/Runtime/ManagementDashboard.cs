@@ -24,6 +24,7 @@ namespace Touchline
             ManagerFixtureCard(top,fixture,employed);
             ManagerDecisionCard(top,employed);
             if(!employed){ManagerInbox(s);return;}
+            ManagerSportingSummary(s);
 
             var metrics=Row(s,"manager-metrics");
             ManagerMetric(metrics,"TRÉSORERIE",Money(life.cash),"Finances et budgets","Finances",life.cash<0);
@@ -44,8 +45,12 @@ namespace Touchline
             var plan=new DropdownField("Charge",choices,life.training=="rest"?0:life.training=="heavy"?2:1){name="manager-training-load"};training.Add(plan);
             plan.SetEnabled(employed&&!delegated&&!(Career.match!=null&&!Career.match.finished)&&life.managerBanUntil<=life.day);
             plan.RegisterValueChangedCallback(_=>RunDecision(()=>{if(Career.match!=null&&!Career.match.finished)throw new InvalidOperationException("Terminez la rencontre.");if(life.managerBanUntil>life.day)throw new InvalidOperationException("L’adjoint gère la charge pendant votre suspension.");life.training=plan.index==0?"rest":plan.index==2?"heavy":"balanced";}));
+            var focuses=Core.Career.TrainingFocuses.Select(Core.Career.TrainingFocusLabel).ToList();var focus=new DropdownField("Thème",focuses,Mathf.Max(0,Array.IndexOf(Core.Career.TrainingFocuses,Career.TrainingFocus))){name="manager-training-focus"};training.Add(focus);
+            focus.SetEnabled(employed&&!delegated&&!(Career.match!=null&&!Career.match.finished)&&life.managerBanUntil<=life.day);
+            focus.RegisterValueChangedCallback(_=>RunDecision(()=>Career.SetTrainingFocus(Core.Career.TrainingFocuses[focus.index])));
+            Career.TrackPreparation();Text(training,"Familiarité "+Career.tactic.formation+" : "+Mathf.RoundToInt(Career.TacticalFamiliarity())+" % · cohésion du onze : "+Mathf.RoundToInt(Career.Cohesion(Career.lineup))+" % · "+Core.Career.TrainingFocusHint(Career.TrainingFocus),"muted").name="manager-preparation";
             Text(training,delegated?"Le staff ajuste la charge selon la condition et le prochain match. Reprenez cette responsabilité dans la délégation.":delegationRequested?"Aucun préparateur ne peut appliquer cette délégation. Vous pouvez régler la charge ici en attendant de recruter un préparateur.":"Récupération : retrouver de la fraîcheur. Intensif : davantage de travail, avec un risque de blessure accru.","muted");
-            var trainingActions=Row(training,"manager-card-actions");Button(trainingActions,"Programme · "+TrainingFocus.Label(Career.Training().focus),TrainingSheet).name="manager-training-plan";Button(trainingActions,"Staff et délégation",()=>Navigate("Staff et délégation"));Button(trainingActions,"Santé",()=>Navigate("Santé"));
+            var trainingActions=Row(training,"manager-card-actions");Button(trainingActions,"Travail individuel",TrainingSheet).name="manager-individual-training";Button(trainingActions,"Staff et délégation",()=>Navigate("Staff et délégation"));Button(trainingActions,"Santé",()=>Navigate("Santé"));
 
             var staff=Card(work,"manager-work-card");Text(staff,"DANS LE BUREAU DE L’ADJOINT","eyebrow");Text(staff,"Le point sportif","section-title");
             Text(staff,Career.StaffAdvice(Database),"manager-advice");
@@ -54,6 +59,25 @@ namespace Touchline
             ManagerInbox(s);
         }
 
+        void ManagerSportingSummary(VisualElement parent)
+        {
+            if(Career.world==null)return;
+            var grid=Row(parent,"manager-work-grid");grid.name="manager-sporting-summary";
+            var results=Card(grid,"manager-work-card");results.name="manager-recent-results";Text(results,"DERNIERS RÉSULTATS","eyebrow");
+            var recent=Career.world.history.Concat(Career.world.fixtures).Where(f=>f.played&&f.day<=Career.life.day&&(f.home==Career.club||f.away==Career.club)).GroupBy(f=>f.id).Select(g=>g.First()).OrderByDescending(f=>f.day).ThenByDescending(f=>f.id,StringComparer.Ordinal).Take(5).ToArray();
+            foreach(var f in recent){var row=Card(results,"manager-result");Text(row,ClubName(f.home)+"  "+f.hg+" – "+f.ag+"  "+ClubName(f.away),"section-title");Text(row,FixtureDay(f)+" · "+Career.CompetitionName(Database,f.league),"muted");}
+            if(recent.Length==0)Text(results,"Aucun match disputé pour le moment.","muted");
+            Button(results,"Calendrier et résultats",()=>Navigate("Calendrier"));
+            var standings=Card(grid,"manager-work-card");standings.name="manager-league-standing";Text(standings,"LE CHAMPIONNAT","eyebrow");
+            var division=Career.world.divisions.FirstOrDefault(d=>d.clubs.Contains(Career.club));
+            if(division==null){Text(standings,"Aucun championnat associé au club.","muted");return;}
+            Text(standings,Career.CompetitionName(Database,division.id),"section-title");var table=Career.Table(division.id);int rank=table.FindIndex(t=>t.club==Career.club);
+            Text(standings,table.All(t=>t.played==0)?"La saison n’a pas encore commencé.":"Votre position : "+(rank+1)+" / "+table.Count,"muted");
+            Text(standings,"PLACE · CLUB / MJ / DIFF / PTS","eyebrow");
+            int first=Math.Max(0,Math.Min(rank-2,table.Count-5));
+            for(int i=first;i<Math.Min(table.Count,first+5);i++){var t=table[i];var row=Row(standings,"calendar-table-row");row.name="manager-standing-"+t.club;Text(row,(i+1)+". "+ClubName(t.club)+(t.club==Career.club?" · vous":""),"calendar-team");Text(row,t.played+" / "+(t.gf-t.ga)+" / "+t.points);}
+            Button(standings,"Classement complet",()=>{calendarCompetition=division.id;Navigate("Calendrier");});
+        }
         void ManagerInbox(VisualElement parent)
         {
             var life=Career.life;var inbox=Card(parent,"manager-inbox");var heading=Row(inbox);Text(heading,"DERNIERS MESSAGES","eyebrow");
@@ -119,7 +143,7 @@ namespace Touchline
             int medical=life.medical.Count(c=>c.closed<0&&string.IsNullOrEmpty(c.responsibilityEndedReason)&&c.treatment=="pending"&&Career.PlayerMedicalResponsibility(c.player)&&Database.Find(c.player)?.team==Career.club);
             if(medical>0)Decision("Avis médical attendu",medical+" dossier(s) sans protocole choisi","Santé","medical",true);
             if(life.managerBanUntil>life.day)Decision("Suspension du manager","Décisions confiées au staff jusqu’au "+Touchline.Core.Career.Epoch.AddDays(life.managerBanUntil).ToString("dd MMM",French),"Staff et délégation","suspension",true);
-            long payroll=Career.Payroll(Database);if(payroll>Career.WageBudget)Decision("Plafond salarial dépassé",Money(Core.Career.MonthlySalary(payroll))+" / mois · plafond "+Money(Core.Career.MonthlySalary(Career.WageBudget))+" / mois. Réduisez les charges ou demandez une révision du budget avant de recruter.","Finances","payroll",true);
+            long payroll=Career.Payroll(Database);if(payroll>Career.WageBudget)Decision("Plafond salarial dépassé",Money(Core.Career.MonthlySalary(payroll))+" / mois · plafond "+Money(Core.Career.MonthlySalary(Career.WageBudget))+" / mois. Réduisez les charges ou demandez une révision du budget avant de recruter.","Finances","payroll",true,()=>{financeTab="Budget";Navigate("Finances");});
             if(life.cash<0)Decision("Trésorerie négative",Money(life.cash)+" · examiner les charges et recettes","Finances","cash",true);
             int approved=life.projects.Count(p=>p.status=="approved");
             if(approved>0)Decision("Financement accordé",approved+" projet(s) attendent votre engagement","Infrastructures","facilities");

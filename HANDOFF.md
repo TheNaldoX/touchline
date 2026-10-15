@@ -1,191 +1,33 @@
-# HANDOFF.md — Passation entre agents (Claude ↔ Codex)
+# HANDOFF — Touchline
+Lire AGENTS.md. Une tâche/branche/PR ; une Unity locale OU CI, aucun Assets modifié pendant compilation/test/capture/build. Aucun nouvel agent. Préserver sauvegardes/APK/pack privé. Ne jamais imprimer database.json (132Mo).
 
-Fichier de relais entre les agents IA qui travaillent sur Touchline (Claude Code, ChatGPT Codex…).
-**Lire d'abord `AGENTS.md`** (règles obligatoires), puis ce fichier. Le mettre à jour à chaque fin de
-session (section « État » et « À faire »), dans la même PR que le travail. Rien d'autre que ce fichier
-ne sert de journal (pas de journal dans `docs/`).
+## Demande / état
+Six chantiers : caméra, IA/tactique, équilibre multi-graines, contacts/clips adaptés, U19 réels, 196échecs puis consolidation main. Aucun joueur fictif initial. Automation PAUSED. Quota69% utilisé ; réserver livraison à95%. Main non fusionnée, PR146–178 empilées draft. APK0.71 préservée ; APK0.72 publiée.
+PR178/11c6867 publiée, branche fix/captured-locomotion-context. Branche de diagnostic fix/distant-keeper-contact sans correction retenue.
 
-## 1. Comment les deux agents partagent le contexte
+## Dernier lot validé
+Mecanim court-circuitait ContextBody : port des effets accélération/freinage vers torse anatomique et vigilance gardien vers bassin/bras, appuis capturés conservés. Contexte gardien requis, poses spécialisées inchangées. Trois nouveaux tests30/60/120Hz : torse réactif, pieds<3mm du témoin, pause stable, acteur inchangé. Ciblés44/44 ; globale2628/2661,33anciens/0nouveau (.validation/captured-locomotion-context-global.xml). 163/196 initiaux résolus, dont corrections de fixtures, pas163bugs de jeu. Core1052/1052 inchangé PR177. Compilation sans nouveau diagnosticC#. Démarrage Unity initial annulé avant compilation, relance réussie.
+Native captured-locomotion-context-native84images : far-own/shot-preparation f60 et context-switch f90 revues, appuis~1cm. captured-locomotion-balance-native422images, control-chest f45/f111 revues. Pas mesure Fold ni perfection des mouvements ; bras gardien encore génériques. Unity arrêtée/imports nettoyés.
+PR175/2b03623 tacle debout préparation/retrait .363/.275→.287/.157m à30Hz ; PR176/d6dd212 tests réception tête mesurent semelles/bassin anatomique et récupération, 12/12 ; PR177 IA ci-dessous. Historique dans PR/Git, preuves .validation et artifacts/unity.
 
-- **Source de vérité unique : le dépôt GitHub `TheNaldoX/touchline`.** Aucun agent ne voit la
-  conversation de l'autre. Tout ce qui doit être su doit être dans le dépôt :
-  - `AGENTS.md` : règles (lu automatiquement par Codex ; Claude Code le lit aussi).
-  - `HANDOFF.md` (ce fichier) : état, décisions, pièges, file de travail.
-  - `CHANGELOG.md` : une ligne par PR.
-  - Descriptions de PR : détail, mesures avant/après, incertitudes.
-  - Branche `films` : rendus Unity des films/captures CI (voir §4), consultables par les deux.
-- **Travailler par PR** sur des branches courtes partant de `main` (une fois la PR #34 fusionnée),
-  jamais de force-push, jamais de copies de fichiers.
-- **Victor** (propriétaire) n'a pas Unity sur son PC et ne lance pas de scripts : il teste les APK
-  sur son Galaxy Z Fold 8 et valide les PR sur GitHub (téléphone/web). Répondre en français, simple.
-- Pour reprendre un travail : `git fetch origin`, lire les PR ouvertes
-  (`gh api repos/TheNaldoX/touchline/pulls`), lire ce fichier, puis la PR la plus récente.
+## Moteur retenu / réserves
+PR177/1927459 : gardien ne plonge pas sur trajectoire passant>1m hors poteau, marge près cadre préservée. Core1052/1052. Baseline actuelle keeper-wide-reading-after-200-seed1..4.txt.
+800matchs graines1–4 vsPR154 : buts2.680→2.568,tirs24.948→24.818,cadrés7.800→7.688,corners9.468→9.795,fautes20.432→20.755,jaunes3.950→3.905,penalties.1975→.215,touches50.115→49.858,sorties13.720→13.768,favoris247/413(59.81%)→242/413(58.60%). Rapports arrondis, keeper-wide-four-seed-summary.csv.
+Ligne seed2/200paires : surplus tirs1.75→1.77,buts pour+.20→+.22,buts contre−.81±.20→−.53±.20. Avantage défensif persiste ; sorties/favoris hors objectifs.
+Stashes rejetés à préserver : OpponentCoach fenêtre récente, open-space-carrying, through-pass-run-lead80/target-reading ; claims retarget direct corrige7contacts mais crée saut main.784m. Ne pas réappliquer.
 
-## 2. Le projet en bref
+## Prochain travail
+33échecs exacts dans dernièreXML : claims7, dribble2, distant-high gardien2, transitions pivot/redémarrage/tacle, boot160cm, entre autres. Ne pas desserrer contacts pour verdir. Claims : anticipation corporelle nécessaire, cible préparation limitée35cm vs impact1.05m. Distant-high : contrôler éventuel post-traitement KeeperElbowClearance après Reach, pas encore diagnostiqué. Goal celebration fixture impose largeur bras ancienne au lieu du geste capturé.
+Caméra PR14637tests/6vues, portrait rapproché mais confort rapide/Fold non validé. 8/21clips actifs, autres nécessitent raccords adaptés. Ne pas fusionner main avec dette restante.
 
-Jeu de gestion de football type Football Manager, Unity **6000.3.24f1**, URP, Android (Fold 8 plié
-1080×2520 et déplié 2184×1968), usage personnel hors ligne.
-- `unity/Touchline/Assets/Touchline/Core/` : logique pure (moteur de match, IA, carrière). Testable
-  hors Unity avec `tools/CoreTests`.
-- `Runtime/` : affichage, UI Toolkit, animation (Mecanim), caméra, stade.
-- `Editor/` : build, films CI, captures UI.
-- `Tests/EditMode/` : tests Unity (ceux qui dépendent de Runtime sont listés dans
-  `tools/CoreTests/excluded-tests.props`).
-- Outils .NET (sans Unity) : `tools/CoreTests` (`dotnet run -c Release`, 689 tests),
-  `tools/Calibration` (`dotnet run -c Release -- 200 1` = 200 matchs, graine 1),
-  `tools/SeasonSim` (plusieurs saisons, `--report`, `--dump`).
+## Données
+22jeunes réels12OM/10Nantes, catalogue21837/715clubs. Sources FCN2025–26 et Montaigu2024, pas roster2026–27. Notes45/potentiel65/valeur50k provisoires, salaire0inconnu. U19 incomplets.
+Recherche non intégrée : départs Forget/Khenissi/Oissa annoncés TribuneNantaise22mai2026. Oissa contrat30juin2026 confirmé Transfermarkt ; Forget libre1juillet2026 mais fin contrat inconnue ; Khenissi date effective INCONNUE (ne pas attribuer30juin depuis ligne voisine). Initial15juin cohérent mais droits après été à traiter avec mécanisme FreeAgentReference existant, protéger contrats/promotions/prêts utilisateur. Ne pas inventer dates. Source article https://tribunenantaise.fr/actus-fcnantes/formations-feminines/formation-16-jeunes-non-conserves-par-le-fc-nantes-a-lissue-de-la-saison/ ; Forget https://www.transfermarkt.com/quentin-forget/profil/spieler/1449424 ; Oissa https://www.transfermarkt.co.in/fc-nantes-u19/vertragsende/verein/10851 . Zeze/Camara déjàbase, ne pas dupliquer.
 
-## 3. État au 8 octobre 2026 (dernière session Claude)
+## Outils / livraison
+.validation/run-local-unity.ps1 -Mode Test -Name unique -Filter Touchline.Tests. Après arrêt CIM escaladé : cleanup-unity-imports.ps1 puis restaurer scène/ProjectSettings générés. API .validation/github-api.ps1 avec corpsJSONfichier. AttachePRlimite100, ne pas supprimer anciennes.
+APK https://github.com/TheNaldoX/touchline/releases/download/v0.71.0-preview.1/Touchline-Unity-0.71-preview.apk ; source0cf0a80a61609df4be7d4e16e44766a6fc547ed1, CI38334925329, preuves .validation/apk071. Packagefr.personal.touchline.unity ARM64 signature habituelle. Prochaine>=0.72/code65, pack privé seulement compilé. Aucun tous-tests-verts/Fold/paritéFM revendiqué.
+Diagnostic distant-high : .validation/distant-keeper-contact-stages.log prouve gant déjà éloigné après Reach, aucune dérive due au sol/coude. Résidu avant warp1.68m, limite translation1.1m, contact final.533/.472m. Essai rotation autour bassin45 puis70deg réduit à~.27m mais reste hors17cm : retiré, pas intégré. Traces/candidats XML préservés (distant-keeper-high-direction-targeted/expanded). Pas relancer suite complète car runtime revenu exactement PR178. Prochaine piste : clip de plongeon haut réellement adapté ou validation de portée physique, sans desserrer les tests ni augmenter arbitrairement le warp.
 
-### Branches et PR
-- **PR #34 `integ/0.56` → `main`** : fusion de toute la pile (PR #21 à #33). **À fusionner en premier**,
-  puis fermer #21–#33 et #20 (release/0.47, déjà couvert).
-- **PR #35 `feat/player-look` → `integ/0.56`** : tenues de club, flocage nom/numéro, cheveux,
-  chaussures, étalonnage télé (post-process), usure du gazon, filet réactif. À fusionner après #34
-  (rebaser la base sur `main`).
-- **PR #36 `feat/atmosphere` → `feat/player-look`** : tribunes qui réagissent (vague, sauts, bras et
-  écharpes sur un but, demi-levée sur une frappe ; `Runtime/CrowdReaction.cs`), virage populaire
-  (x < 0) aux couleurs du club avec écharpes et drapeaux, drapeaux de coin qui flottent
-  (`Runtime/StadiumFlags.cs`), ombres de contact (`Runtime/ContactShadows.cs`), ralenti des buts en
-  plan bas à côté du but (`Runtime/GoalReplayCamera.cs`), filet rejoué au ralenti. **À fusionner après
-  #35.** Contient aussi `main` (HANDOFF.md) fusionné.
-- **PR `feat/visual-polish` → `main`** : ciel en dégradé (`Runtime/StadiumSky.cs`, dôme qui suit la
-  caméra, coupé en qualité basse), ambiance trois tons, ralenti du soir éclairé de face (projecteurs
-  réorientés pendant le ralenti), montants de but ronds (`StadiumGeometry.GoalFrames`), filet gris
-  clair, second anneau qui réagit aux buts du club. Films `vis-*`.
-- Branches `release/0.xx` : uniquement pour construire un APK (voir §4). Ne pas fusionner.
-- APK le plus récent : **0.57** (= `feat/player-look` + numéro de version), code 50.
-
-### Ce qui a été fait (0.47 → 0.57)
-- **Moteur / IA de match** : appels en profondeur, frappes de loin, retard de lecture, interceptions,
-  fautes tactiques, forme du jour, avantage du terrain ; engagement après préparation d'une passe/frappe
-  (#26) ; pression rapprochée qui coûte le ballon + IA qui l'évite, pressing dans son tiers (#28,
-  `Core/MatchCarrierPressure.cs`).
-- **Gestion** : IA des clubs (effectifs 22–30, joueurs libres, vendeurs, dette, vétérans, rotation en
-  coupe ; `SeasonSim --report`) (#29) ; économie, retraites, jeunes.
-- **Animation** : passage à **Mecanim** avec 67 clips Mixamo (`Resources/Animations/Mixamo/`, import
-  `Editor/MixamoImportSettings.cs`), lecture par graphe Playables (`Runtime/PlayerMecanimMotion.cs`),
-  calage des gestes sur l'instant de contact du moteur (table `ClipContact`), allures trot/course/sprint/
-  arrière/pas chassés, verrouillage des pieds par IK + pas de replacement, amortis poitrine/cuisse, tacle
-  debout, Sprint Turn, plongeons miroir, chute/relevé (#24, #27, #33). Squelette MakeHuman mappé en
-  Humanoid (`Runtime/PlayerViewHumanoid.cs`, côtés inversés détectés). Réglage `match-mecanim`.
-- **Stade / visuel** : gazon texturé procédural (`PitchTurf`), second anneau + toit + ombre du toit,
-  panneaux LED aux couleurs des clubs, éclairage de soirée (`StadiumLighting`, réglage `match-lighting`),
-  caméra télé 30° zoom 0,85 (#25, #32), puis joueurs (#35).
-- **Fluidité** : sauvegarde en match seulement aux arrêts (+ toutes les 300 s), résolution dynamique
-  sans oscillation (#31). Victor signalait de petits gels : **à confirmer sur le téléphone**.
-- **Interface** : échelle réelle sur le Fold (1 unité ≈ 1 dp, cibles 48 dp, textes ≥ 11), mentalité en
-  une touche en match, « Jusqu'au match », outil de captures UI en CI (#30).
-
-### Calibration actuelle (200 matchs, graine 1, contenu de #34)
-Buts 2,83 · tirs 26,8 · cadrés 8,4 · corners 8,9 · fautes 22,5 · jaunes 4,0 · hors-jeu 3,7 ·
-touches 36,9 · passes 81,8 % · possession favori 56 %. **Hors fourchette** : penalties 0,17
-(cible 0,20–0,35), sorties de but 13,1 (cible 14–20), victoires du favori 68 % (cible ~45–55 %).
-
-### Non vérifié
-- Rien de 0.55–0.57 n'a été testé sur le Fold (fluidité, gels, rendu). Tests EditMode jamais lancés
-  dans Unity (seulement compilation via les films CI).
-
-## 4. Infrastructure CI (GitHub Actions) — indispensable sans Unity local
-
-- **APK** : `.github/workflows/build-android.yml` (game-ci). Se déclenche sur une branche `release/**`
-  ou un tag `apk-*`. Pour une version : créer `release/0.NN` depuis la branche voulue, y appliquer le
-  commit `ci: build de l'APK aussi sur les branches release/` (0569762) s'il n'y est pas déjà, et
-  modifier dans `Editor/ProjectBuilder.cs` `bundleVersion` / `bundleVersionCode` / nom de l'APK
-  (3 occurrences). L'APK est l'artefact « Touchline-APK » de la page Actions (90 jours). Secrets
-  requis déjà configurés : UNITY_LICENSE/EMAIL/PASSWORD, ANDROID_KEYSTORE_BASE64/PASS.
-- **Films / captures** : `.github/workflows/match-film.yml`, déclenché en poussant une branche
-  `film/<nom>` (≈ 15–40 min). Unity tourne en batch avec Mesa (rendu logiciel). Selon le nom :
-  - `proto*` → `Editor/MecanimPrototypeFilm.Run` : rend des clips + `clip-timing.csv` (vitesses
-    naturelles, instants de contact, lacet…) ;
-  - `ui*` → `Editor/CiUiScreens` : captures des écrans aux deux résolutions du Fold ;
-  - autres → `Editor/CiMatchFilm.Run` : 15 s de match, `broadcast.mp4`, `follow.mp4`, planches
-    `*-sheet.jpg`, `metrics.txt` (glissement des pieds par action, rotations), `editor-errors.txt`
-    (chercher `error CS` = la compilation a échoué). Noms finissant par `-night` : éclairage du soir.
-    Nom contenant `goal` : le film commence 6 s avant le premier but du club recevant (graine 731,
-    puis suivantes) et dure 24 s (but, ralenti, tribunes) ; graine et instant du but dans `info.txt`.
-  - Résultats publiés dans la branche `films`, dossier `films/<nom>/` :
-    `git fetch origin films:refs/remotes/origin/films && git show origin/films:films/<nom>/metrics.txt`.
-  - Statut : `gh api repos/TheNaldoX/touchline/commits/film/<nom>/check-runs`.
-  - Un film réussi = le projet compile dans Unity. C'est la seule vérification de compilation possible.
-
-## 5. Pièges connus
-
-- **Fins de ligne** : certains fichiers `Runtime/` étaient en CRLF alors que `.gitattributes` impose LF.
-  Éditer en préservant les fins de ligne ; vérifier `git diff --stat` avant chaque commit ; ne jamais
-  committer une réécriture complète de fichier due aux fins de ligne.
-- `HumanBone` existe dans Touchline et dans UnityEngine : écrire `UnityEngine.HumanBone`.
-- Le post-traitement exige `postProcessData` dans `MatchRenderer.asset` ; les shaders créés à
-  l'exécution doivent être référencés par une matière dans `Resources/` sinon ils sont retirés du build.
-- MSAA : le pipeline indique 2× ; les films forcent 4×.
-- Toute modification des réglages d'import Mixamo : incrémenter `GetVersion()` de
-  `MixamoImportSettings` pour forcer la réimportation.
-- Aléatoire dans `Core/` : uniquement le générateur à graine du moteur.
-- Les API GraphQL de GitHub ne passaient pas depuis l'environnement Claude : PR via REST
-  (`gh api repos/TheNaldoX/touchline/pulls -f title=… -f head=… -f base=… -F body=@fichier`).
-
-## 6. À faire (par priorité)
-
-1. **Fusionner #35 puis #36** (#34 est fusionnée), construire un APK depuis `main`, faire tester Victor (gels, fluidité,
-   rendu). Si ça rame : réduire post-process, flocage, ombres (`RenderBudget`). Ambiance (#36) : vérifier
-   sur le Fold qu'un but ne provoque pas d'à-coup (maillage des tribunes réécrit à 20 Hz pendant ~10 s).
-   Ralenti de nuit : contre-jour corrigé (PR feat/visual-polish), à confirmer sur le Fold.
-2. **Tactique** (demande de Victor) : vérifier que chaque consigne (mentalité, pressing, hauteur de
-   ligne, largeur, tempo/jeu direct, rôles) a un effet mesurable dans le bon sens avec
-   `tools/Calibration` (tableau consigne → effet), compléter les consignes manquantes avec des
-   compromis réalistes, IA adverse qui adapte sa tactique (score, minute, rapport de force), écran
-   tactique lisible sur téléphone (terrain, glisser-déposer, consignes expliquées, changements en
-   match en ≤ 2 touches).
-3. **Management / immersion** : attentes de la direction et confiance (renvoi, offres d'autres clubs),
-   moral des joueurs (temps de jeu vs statut, promesses, demandes de transfert), conférences de presse
-   à choix de ton, fil d'actualités, trophées et records de fin de saison, humeur des supporters. Équilibrer
-   avec `tools/SeasonSim` sur plusieurs saisons.
-4. **Interface** : identité visuelle cohérente (palette, typographie, cartes, couleurs du club), liste
-   d'effectif triable lisible plié, fiche joueur avec barres/radar, HUD de match (score, horloge,
-   élan/xG, fil d'événements), navigation en moins de touches, transitions légères. Vérifier avec les
-   captures `film/ui-…`.
-5. **Calibration** : remonter penalties et sorties de but dans leur fourchette, ramener la victoire du
-   favori vers 45–55 %.
-
-Idées d'ambiance restantes (priorité basse, animations gelées) : remplaçants et staff sur les bancs,
-léger zoom sur les grosses occasions, variété du public (supporters debout, couleurs), escaliers et
-rambardes des tribunes, nuances de tonte du gazon, vignettage léger pendant les ralentis.
-
-## 7. Modèle de fin de session (à recopier ici)
-
-```
-### Session <agent> du <date>
-- Fait : … (PR #…)
-- Mesures : …
-- Non vérifié : …
-- Prochaine étape : …
-```
-
-### Session Claude du 8 octobre 2026 (rendu, PR feat/visual-polish)
-- Fait : ciel en dégradé avec nuages/collines/ville (`StadiumSky`, dôme qui suit la caméra, dessiné
-  en premier sans profondeur, sous le brouillard), ambiance trois tons (`StadiumLighting`),
-  projecteurs réorientés pendant le ralenti du soir (fin du contre-jour), gradins plus clairs le
-  soir (×0,6 au lieu de ×0,5), montants ronds vernis (`StadiumGeometry.GoalFrames`, remplace les
-  LineRenderer), filet gris clair, second anneau qui se lève sur les buts du club.
-- Mesures : appels de rendu +1 (ciel) −1 (deux LineRenderer → un maillage) = 0 ; matières +3
-  (ciel, montants, filet) ; texture +1 (512×256 RGB24 sans mipmap, 384 Ko) ; ~3 k triangles (dôme)
-  + 0,5 k (montants). Qualité basse (mode 0) : ciel et réaction du second anneau coupés. CPU : second
-  anneau ≈ 6 k sommets à 20 Hz pendant ~10 s après un but du club seulement.
-- Films : vis-homegoal(-night), vis-a2(-night), vis-goal-night (premier essai), vis2-homegoal-night,
-  vis2-a2(-night) (horizon du soir corrigé). Avant : atm-*.
-- Non vérifié : téléphone ; tests EditMode Unity (StadiumLookTests) seulement compilés ; silhouette
-  de ville peu visible depuis la caméra télé (cachée par les tribunes, visible surtout en ralenti).
-- Prochaine étape : §6 ; idées de rendu restantes dans la liste d'ambiance ci-dessus.
-
-### Session Claude du 8 octobre 2026 (ambiance, PR #36)
-- Fait : réactions du public, virage aux couleurs du club, drapeaux, ombres de contact, ralenti en plan
-  bas, mode `film/…goal…` (PR #36, base `feat/player-look`).
-- Mesures : +3 appels de rendu (drapeaux 3 sous-maillages réutilisant les matières des tribunes,
-  ombres de contact 1, drapeaux de coin fixes supprimés −1), 0 matière nette (+1 ombres, −1 coins),
-  texture 64² ; ~+700 triangles. CPU : rien au repos dans les tribunes ; pendant une réaction,
-  sommets du camp concerné recalculés à 20 Hz (~36 k sommets envoyés par mise à jour) ; drapeaux
-  ~230 sommets à 15 Hz ; ombres 92 sommets par image. Films : atm-goal(-night) (but visiteur),
-  atm-homegoal(-night) (but du club), atm-shadow, atm-a2(-night) (comparables à kit-a1).
-- Non vérifié : téléphone ; tests EditMode Unity (CrowdLifeTests) jamais exécutés, seulement compilés
-  par les films ; ombres de contact peu visibles au premier essai (renforcées, voir atm-a2).
-- Prochaine étape : §6.
+## Livraison demandée et terminée
+PR179, branche feat/android-072-validated-fixes. APK0.72.0-preview.1/code65 source6fde23a92c8c7acc27e7a732b6277946186fe9d1, CI38414356508 réussie. Compilation versionnée + ciblés12/12 ; code de jeu identique à PR178 (globale2628/2661,33anciens,Core1052). Packagefr.personal.touchline.unity, signature stable, ARM64IL2CPP,21clips vérifiés. SHA256EDD3E691E5AF230DAAD52E25AB5DD74A539C830726459AC26BCC128242994E45,80990102octets. Tag source et hash distant contrôlés ; preuves .validation/apk072/{verified,source,published-asset}.json. Lien https://github.com/TheNaldoX/touchline/releases/download/v0.72.0-preview.1/Touchline-Unity-0.72-preview.apk . Fold non testé, main non fusionnée, sixchantiers non achevés. Aucun nouvel essai moteur intégré.

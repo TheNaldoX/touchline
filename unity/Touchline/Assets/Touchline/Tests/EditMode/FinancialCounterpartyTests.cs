@@ -36,7 +36,8 @@ public static class FinancialCounterpartyChecks
         }
         if(only==null||only=="salePrincipalConserved")
         {
-            var(c,db)=Setup();long total=Cash(c),other=Account(c,"c1").cash;c.world.offers.Add(new TransferOffer{player="p10",seller="c1",fee=100000,status="sale",due=7});c.AcceptSale(db,"p10");
+            var(c,db)=Setup();db.Find("p10").rating=70; // Buyer has a sporting reason; this scenario isolates principal conservation.
+            long total=Cash(c),other=Account(c,"c1").cash;c.world.offers.Add(new TransferOffer{player="p10",seller="c1",fee=100000,status="sale",due=7});c.AcceptSale(db,"p10");
             Require(Cash(c)==total&&Account(c,"c1").cash==other-100000,"Accepted sale created money without charging its buyer.");result["salePrincipalConserved"]=true;
         }
         if(only==null||only=="optionPrincipalConserved")

@@ -9,8 +9,8 @@ namespace Touchline.Core
     {
         public RoleEffect RoleOf(Actor p)
         {
-            var t=Tactic(p.side);if(t?.withBall==null||p.slot<0||p.slot>=t.withBall.Length)return RoleEffect.Neutral;
-            return TacticalRoles.Effect(t.withBall[p.slot]);
+            var t=Tactic(p.side);if(t?.withoutBall==null||p.slot<0||p.slot>=t.withoutBall.Length)return RoleEffect.Neutral;
+            return TacticalRoles.Effect(t.withoutBall[p.slot]);
         }
         // Position de base (repère local, x vers le but adverse) corrigée
         // par le rôle : hauteur en possession, largeur, profondeur sans ballon.

@@ -9,6 +9,38 @@ namespace Touchline.Tests
 {
     public partial class ProfessionalTests
     {
+        [Test] public void ImportedAcademyYouthsGainPathsWithoutBackfilledMinutesOrDuplicateIntakes()
+        {
+            var p=new PlayerData{id="verified-academy",name="Verified fixture",team="academy-c0",age=15,rating=45,potential=65};
+            db.players=db.players.Concat(new[]{p}).ToArray();c.life.day=40;c.EnsureWorld(db);
+            var path=c.AcademyPaths(db).Single(y=>y.player==p.id);Assert.AreEqual("academy",path.group);Assert.AreEqual(40,path.lastAcademyDay);
+            Assert.AreEqual(0,path.minutes);Assert.AreEqual(0,path.trainingSessions);path.focus="technical";
+            var saved=JsonUtility.FromJson<Career>(JsonUtility.ToJson(c));saved.EnsureWorld(db);
+            Assert.AreEqual(1,saved.AcademyPaths(db).Count(y=>y.player==p.id));Assert.AreEqual("technical",saved.AcademyPaths(db).Single(y=>y.player==p.id).focus);
+            Assert.AreEqual("academy-c0",p.team);Assert.AreEqual(0,p.wage);
+        }
+        [Test] public void ExistingYoungProfessionalsGainPersistentPathsWithoutInventingPlayersOrMinutes()
+        {
+            db.players=db.players.Where(p=>!p.team.StartsWith("academy-")).ToArray();
+            db.Find("p1").age=18;db.Find("p2").age=21;db.Find("p3").age=22;
+            c=new Career{club="c0",youthGenerationFromYear=2027};c.lineup=Career.Select(db,c.club,c.tactic);
+            int count=db.players.Length;long wage=db.Find("p1").wage;c.EnsureWorld(db);
+            CollectionAssert.AreEquivalent(new[]{"p1","p2"},c.AcademyPaths(db).Select(y=>y.player));
+            var path=c.world.youth.First(y=>y.player=="p1");Assert.AreEqual("senior",path.group);path.focus="technical";
+            c.EnsureWorld(db);Assert.AreEqual(2,c.world.youth.Count);Assert.AreEqual(count,db.players.Length);Assert.AreEqual("c0",db.Find("p1").team);Assert.AreEqual(wage,db.Find("p1").wage);
+            var restored=JsonUtility.FromJson<Career>(JsonUtility.ToJson(c));restored.EnsureWorld(db);
+            Assert.AreEqual(2,restored.world.youth.Count);Assert.AreEqual("technical",restored.world.youth.First(y=>y.player=="p1").focus);
+            AcademyTick(3);Assert.AreEqual(0,path.trainingSessions);Assert.AreEqual(0,path.minutes);Assert.AreEqual(0,path.seniorMinutes);
+        }
+        [Test] public void ExistingYouthMigrationRespectsLoanOwnershipAndDoesNotBackfillMinutes()
+        {
+            c.world.youth.Clear();c.life.day=30;
+            var borrowed=db.Find("p1");borrowed.age=19;var inLoan=c.Contract(db,borrowed.id);inLoan.parent="c1";inLoan.club=c.club;inLoan.loanUntil=100;
+            var outgoing=db.Find("p2");outgoing.age=20;var outLoan=c.Contract(db,outgoing.id);outLoan.parent=c.club;outLoan.club="c1";outLoan.loanUntil=100;outLoan.appearancesAtSigning=5;outgoing.team="c1";
+            c.EnsureWorld(db);Assert.IsFalse(c.world.youth.Any(y=>y.player==borrowed.id));
+            var path=c.AcademyPaths(db).Single(y=>y.player==outgoing.id);Assert.AreEqual("loan",path.group);Assert.AreEqual(30,path.loanReviewedThrough);Assert.AreEqual(5,path.loanAppearances);Assert.AreEqual(0,path.trackedLoanMinutes);Assert.AreEqual("c1",outgoing.team);
+            path.focus="physical";c.EnsureWorld(db);Assert.AreEqual("physical",c.world.youth.Single(y=>y.player==outgoing.id).focus);
+        }
         void AcademyTick(int day){c.life.day=day;typeof(Career).GetMethod("AcademyDevelopmentDay",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(c,new object[]{db});}
         [Test] public void AcademySessionsDoNotInventMatchMinutesAndDailyProcessingIsIdempotent()
         {

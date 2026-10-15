@@ -6,6 +6,49 @@ namespace Touchline.Tests
 {
     public class KeeperRecoverySupportTests
     {
+        [TestCase(-1,30)][TestCase(1,30)][TestCase(-1,60)][TestCase(1,60)][TestCase(-1,120)][TestCase(1,120)]
+        public void PausedLandingSupportDoesNotAccumulateRetargetingOrMoveTheSimulatedKeeper(int side,int fps)
+        {
+            var go=new GameObject("Paused keeper ground support");try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="paused-brace",heightCm=185},0,0,Color.yellow);
+                var actor=new Actor{slot=0,action="idle"};view.Render(actor,1,0);
+                actor.action="dive";actor.actionKind="save-parry";actor.actionSequence=1;actor.actionContactTime=.18f;
+                actor.actionTarget=new Point(side*1.1f,.3f);actor.actionHeight=1.1f;actor.diveSide=side;
+                var ball=new Vector3(side*1.1f,1.1f,.3f);float elapsed=0;
+                while(elapsed<.65f){float next=Mathf.Min(.65f,elapsed+1f/fps);actor.actionTime=1.2f-next;view.Render(actor,1,next-elapsed,ball);elapsed=next;}
+                var animator=go.GetComponentInChildren<Animator>();
+                var hips=animator.GetBoneTransform(HumanBodyBones.Hips);var hip=hips.position;
+                var left=view.FootPosition(true);var right=view.FootPosition(false);var hands=view.HeldBallPosition;string state=JsonUtility.ToJson(actor);
+                for(int i=0;i<20;i++){
+                    view.Render(actor,1,0,ball);
+                    Assert.Less(Vector3.Distance(hip,hips.position),.002f);
+                    Assert.Less(Vector3.Distance(left,view.FootPosition(true)),.002f);
+                    Assert.Less(Vector3.Distance(right,view.FootPosition(false)),.002f);
+                    Assert.Less(Vector3.Distance(hands,view.HeldBallPosition),.002f);
+                }
+                Assert.AreEqual(state,JsonUtility.ToJson(actor));Assert.Less(go.transform.position.sqrMagnitude,.000001f);
+            }finally{Object.DestroyImmediate(go);}
+        }
+        [TestCase(-1,30)] [TestCase(1,30)] [TestCase(-1,60)] [TestCase(1,60)] [TestCase(-1,120)] [TestCase(1,120)]
+        public void CapturedDiveReturnsToStandingBeforePhysicalRecoveryEnds(int side,int hz)
+        {
+            bool old=PlayerView.UseMecanim;PlayerView.UseMecanim=true;var go=new GameObject("Captured recovery clock");
+            try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="recovery-clock",heightCm=185},0,0,Color.yellow);
+                var actor=new Actor{slot=0,action="idle"};float dt=1f/hz;for(int i=0;i<hz;i++)view.Render(actor,1,dt);
+                actor.action="dive";actor.actionKind="save-catch";actor.actionSequence=1;actor.actionContactTime=.2f;
+                actor.actionTarget=new Point(side*1.1f,.3f);actor.actionHeight=.6f;actor.diveSide=side;
+                var ball=new Vector3(side*1.1f,.6f,.3f);var animator=go.GetComponentInChildren<Animator>();
+                for(int i=0;i<=Mathf.CeilToInt(1.2f*hz);i++){
+                    float elapsed=Mathf.Min(1.2f,i*dt);actor.actionTime=1.2f-elapsed;view.Render(actor,1,dt,ball);
+                    if(Mathf.Abs(elapsed-.2f)<.0001f)Assert.Less(Vector3.Distance(view.HeldBallPosition,ball),.15f,"Impact timing must remain intact");
+                    Assert.Less(go.transform.position.sqrMagnitude,.000001f);
+                }
+                var hips=animator.GetBoneTransform(HumanBodyBones.Hips);var chest=animator.GetBoneTransform(HumanBodyBones.Chest);
+                Assert.Less(Vector3.Angle(chest.position-hips.position,Vector3.up),35,"Recovery must not end in the lateral landing pose");
+                Assert.Greater(hips.position.y,.7f,"Keeper must regain standing height before the next action");
+            }finally{Object.DestroyImmediate(go);PlayerView.UseMecanim=old;}
+        }
         [TestCase(-1,.22f)] [TestCase(1,.22f)] [TestCase(-1,1.1f)] [TestCase(1,1.1f)] [TestCase(-1,2.2f)] [TestCase(1,2.2f)]
         [TestCase(-1,.22f,160)] [TestCase(1,2.2f,205)]
         public void AfterAParryTheFreePalmBracesTheGroundDuringLanding(int side,float height,int stature=185)

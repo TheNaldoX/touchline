@@ -17,6 +17,14 @@ namespace Touchline.Tests
             Assert.That(48*dpPerUnit,Is.GreaterThanOrEqualTo(43.5f));
         }
 
+        [TestCase(1080,2520)][TestCase(2184,1968)]
+        public void StyleSheetMinimumsAreRealSizesOnBothFoldScreens(int width,int height)
+        {
+            // 48 unités = 48 dp (cible tactile) et 12 unités = 12 sp (plus petit texte), plié comme déplié.
+            float dpPerUnit=InterfaceViewport.Scale(width,height)/FoldPixelsPerDp;
+            Assert.That(48*dpPerUnit,Is.GreaterThanOrEqualTo(47.9f));Assert.That(12*dpPerUnit,Is.GreaterThanOrEqualTo(11.95f));
+        }
+
         [Test] public void UnfoldedKeepsSideMenuAndFoldedUsesCompactLayout()
         {
             float unfolded=InterfaceViewport.Scale(2184,1968),folded=InterfaceViewport.Scale(1080,2520);

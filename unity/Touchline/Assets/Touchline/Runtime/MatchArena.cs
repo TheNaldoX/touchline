@@ -45,7 +45,7 @@ namespace Touchline
         public static bool AutosaveDue(bool paused,bool savedAtStop,float sinceLastSave)=>paused?!savedAtStop:sinceLastSave>LiveSaveInterval;
         bool wasQuiet;Database database;
         public Action SaveRequested;
-        Material turf,white;Mesh pitchMesh;Texture2D turfGrain,boardAtlas,skyTexture;readonly System.Collections.Generic.List<Mesh> stadiumMeshes=new System.Collections.Generic.List<Mesh>();
+        Material turf,white;Mesh pitchMesh;Texture2D turfGrain,boardAtlas,skyTexture,concreteTexture;readonly System.Collections.Generic.List<Mesh> stadiumMeshes=new System.Collections.Generic.List<Mesh>();
         LineRenderer[] tacticalLines;bool showTactics;Material tacticalMaterial;
         public void Initialize(Database database,MatchSimulation simulation)
         {
@@ -60,7 +60,7 @@ namespace Touchline
             renderBudget=TouchlineApp.Instance==null?null:TouchlineApp.Instance.GetComponent<RenderBudget>();renderBudget?.ResetMatchSample();
             var root=new GameObject("Stadium · metres");root.transform.SetParent(transform);world=root.transform;
             // Bandes de tonte claire/sombre ; la texture de grain les assombrit en moyenne (compensé).
-            turfGrain=PitchTurf.Grain();turf=TurfMaterial(DarkStripe);white=PlayerView.Material(MarkingWhite);
+            turfGrain=PitchTurf.FieldTexture();turf=TurfMaterial(DarkStripe);white=PlayerView.Material(MarkingWhite);
             // Après-midi : l'ombre du toit d'en face sur la pelouse est simulée (matières assombries,
             // sans ombre portée reçue) car elle dépasse la distance des ombres temps réel.
             var career=TouchlineApp.Instance!=null?TouchlineApp.Instance.Career:null;var fixture=career?.world?.fixtures?.Find(f=>f.id==career.world.activeFixture);
@@ -80,19 +80,19 @@ namespace Touchline
             for(int sign=-1;sign<=1;sign+=2){
                 var net=StadiumGeometry.GoalNet(sign);Surface(net,netMaterial,false);netRipples[(sign+1)/2]=new GoalNetRipple(net,sign);
             }
-            var stands=StadiumLighting.StandLight(floodlit);var concrete=PlayerView.Material(new Color(.18f,.23f,.28f)*stands);var seats=PlayerView.Material(new Color(.23f,.31f,.36f)*stands);
+            concreteTexture=StadiumSurfaceTexture.Concrete();var stands=StadiumLighting.StandLight(floodlit);var concrete=ConcreteMaterial(stands);var seats=PlayerView.Material(new Color(.23f,.31f,.36f)*stands);
             // Tribune d'en face : à l'ombre du toit l'après-midi (couleurs assombries).
-            var far=stands*StadiumLighting.FarStandShade(floodlit);var farConcrete=PlayerView.Material(new Color(.18f,.23f,.28f)*far);var farSeats=PlayerView.Material(new Color(.23f,.31f,.36f)*far);
+            var far=stands*StadiumLighting.FarStandShade(floodlit);var farConcrete=ConcreteMaterial(far);var farSeats=PlayerView.Material(new Color(.23f,.31f,.36f)*far);
             for(int side=-1;side<=1;side+=2){Surface(StadiumGeometry.Stand(side,false),side<0?farConcrete:concrete,true);Surface(StadiumGeometry.Stand(side,true),side<0?farSeats:seats,true);Surface(StadiumGeometry.EndStand(side),seats,true);}
             // Le toit, le second anneau et le mur du fond projettent aussi une ombre réelle (joueurs proches de la caméra).
-            Surface(StadiumGeometry.UpperStand(),farSeats,true);Surface(StadiumGeometry.StadiumShell(),PlayerView.Material(new Color(.26f,.29f,.33f)*far),true);
+            Surface(StadiumGeometry.UpperStand(),farSeats,true);Surface(StadiumGeometry.StadiumShell(),ConcreteMaterial(far),true);
             Surface(StadiumGeometry.FloodlightMasts(),concrete,false);Surface(StadiumGeometry.FloodlightLamps(),StadiumLighting.LampMaterial(floodlit),false);
             var homeClub=Array.Find(database.clubs,c=>c.id==simulation.State.home);var awayClub=Array.Find(database.clubs,c=>c.id==simulation.State.away);
             if(!ColorUtility.TryParseHtmlString(homeClub?.color,out var homeColor))homeColor=new Color(.2f,.42f,.57f);
             if(!ColorUtility.TryParseHtmlString(awayClub?.color,out var awayColor))awayColor=new Color(.65f,.3f,.2f);
             boardAtlas=StadiumAtmosphere.BoardAtlas(homeColor,awayColor);var boards=StadiumLighting.BoardMaterial(floodlit,boardAtlas);Surface(StadiumGeometry.PerimeterBoards(),boards,false);
             Surface(StadiumGeometry.TechnicalArea(),concrete,false); // drapeaux de coin : StadiumFlags (BuildAtmosphere)
-            var crowdMesh=StadiumAtmosphere.Crowd(simulation.State.home,simulation.State.away,StadiumAtmosphere.DefaultOccupancy,out var crowdRig);stadiumMeshes.Add(crowdMesh);
+            var crowdMesh=StadiumAtmosphere.CrowdWithBenches(simulation.State.home,simulation.State.away,StadiumAtmosphere.DefaultOccupancy,out var crowdRig);stadiumMeshes.Add(crowdMesh);
             var crowd=new GameObject(crowdMesh.name);crowd.transform.SetParent(world,false);crowd.AddComponent<MeshFilter>().sharedMesh=crowdMesh;
             var crowdRenderer=crowd.AddComponent<MeshRenderer>();crowdRenderer.sharedMaterials=Array.ConvertAll(StadiumAtmosphere.Palette(homeColor,awayColor),c=>PlayerView.Material(c*stands));
             crowdRenderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;crowdRenderer.receiveShadows=false;BuildAtmosphere(crowdMesh,crowdRig,crowdRenderer.sharedMaterials);
@@ -118,7 +118,7 @@ namespace Touchline
             if(Simulation==null)return;
             if(float.IsNaN(frameDelta)||float.IsInfinity(frameDelta)||frameDelta<=0)return;
             AdvanceAtmosphere(Mathf.Min(.1f,frameDelta));
-            if(GoalReplayActive){if(!Paused)AdvanceGoalReplay(frameDelta);return;}
+            if(GoalReplayActive){if(!Paused)AdvanceGoalReplay(frameDelta);else ReframeGoalReplayCamera();return;}
             if(!Paused&&!QuietPresentation)renderBudget?.RecordMatchFrame(frameDelta,MatchCamera.targetTexture,Speed);
             frameDelta=Mathf.Min(.1f,frameDelta);
             if(!Paused){Broadcast.Advance(frameDelta,Speed);if(Broadcast.PauseRequested)Paused=true;}else Broadcast.Refresh();
@@ -156,7 +156,7 @@ namespace Touchline
             // visual attachment that could hide a missed control or a rebound.
             bool setPiece=m.restart>0&&(m.phase=="penalty"||m.phase=="corner"||m.phase=="free-kick"&&ball.position.x*Simulation.Direction(m.restartSide)>20);
             bool portrait=MatchCamera.aspect<.8f;
-            var target=tactical?new Vector3(0,.6f,0):new Vector3(Mathf.Clamp(ball.position.x*.90f,-46,46),.6f,Mathf.Clamp(ball.position.z*(portrait?.72f:setPiece?.46f:.58f),portrait?-25:-19,portrait?25:19));
+            var target=tactical?new Vector3(0,.6f,0):BroadcastFraming.LiveTarget(ball.position,portrait,setPiece);
             // A loaded match already has an action location. Establish it on
             // the first visible frame instead of panning in from midfield.
             if(!cameraHasFocus||returning||cutCamera){focus=target;velocity=Vector3.zero;cameraReset=true;cameraHasFocus=true;}
@@ -176,13 +176,13 @@ namespace Touchline
         {
             if(Simulation==null||ball==null||QuietPresentation)return; if(GoalReplayActive){ReframeGoalReplayCamera();return;}
             int direction=ball.position.x>=0?1:-1;var center=tactical?new Vector3(0,.6f,0):focus;
-            BroadcastFraming.Apply(MatchCamera,center,ball.position,tactical,Mathf.Abs(ball.position.x)>28,direction,zoom);
+            BroadcastFraming.Apply(MatchCamera,center,ball.position,tactical,true,direction,zoom);
             float required=Vector3.Distance(MatchCamera.transform.position,center);
-            // Expanding the safe frame is immediate; contracting it is gradual.
+            // Both directions are gradual: an approaching goal must not cause a sudden pullback.
             // The second viewport pass must not advance smoothing twice per frame.
             if(cameraReset||Mathf.Abs(cameraAspect-MatchCamera.aspect)>.02f){cameraDistance=required;cameraDistanceVelocity=0;cameraReset=false;}
-            else if(required>cameraDistance){cameraDistance=required;cameraDistanceVelocity=0;}
-            else if(delta>0)cameraDistance=Mathf.SmoothDamp(cameraDistance,required,ref cameraDistanceVelocity,.8f,20,delta);
+            else cameraDistance=BroadcastFraming.SmoothDistance(cameraDistance,required,ref cameraDistanceVelocity,delta);
+            if(!tactical){center=BroadcastFraming.ConfineActionFocus(MatchCamera,center,ball.position,cameraDistance);focus=center;}
             cameraAspect=MatchCamera.aspect;MatchCamera.transform.position=center-MatchCamera.transform.forward*cameraDistance;
             MatchCamera.farClipPlane=Mathf.Max(270,cameraDistance+150);RenderSettings.fogStartDistance=Mathf.Max(110,cameraDistance+60);RenderSettings.fogEndDistance=Mathf.Max(240,cameraDistance+180);
         }
@@ -199,11 +199,12 @@ namespace Touchline
         static readonly Color MarkingWhite=new Color(.88f,.89f,.81f),SurroundGreen=new Color(.075f,.18f,.09f);
         static readonly Color GoalFrameWhite=new Color(.93f,.93f,.91f),NetGrey=new Color(.72f,.74f,.73f);
         const float GoalFrameSmoothness=.6f; // peinture laquée des montants (reflet net)
-        static readonly Color LightStripe=new Color(.118f,.325f,.136f),DarkStripe=new Color(.088f,.252f,.100f); // tonte (avant grain)
+        static readonly Color LightStripe=new Color(.128f,.322f,.142f),DarkStripe=new Color(.102f,.277f,.116f); // tonte (avant grain)
         const float DefaultZoom=.85f; // cadrage télé par défaut, plus serré (joueurs plus lisibles) ; réglable au pincement
-        Material TurfMaterial(Color stripe){var m=PlayerView.Material(stripe/PitchTurf.MeanBrightness);m.color=new Color(m.color.r,m.color.g,m.color.b,1);m.mainTexture=turfGrain;return m;}
-        void Surface(Mesh mesh,Material material,bool shadows,bool receiveShadows=true){stadiumMeshes.Add(mesh);var go=new GameObject(mesh.name);go.transform.SetParent(world,false);go.AddComponent<MeshFilter>().sharedMesh=mesh;var renderer=go.AddComponent<MeshRenderer>();renderer.sharedMaterial=material;renderer.shadowCastingMode=shadows?UnityEngine.Rendering.ShadowCastingMode.On:UnityEngine.Rendering.ShadowCastingMode.Off;renderer.receiveShadows=receiveShadows;}
+        Material TurfMaterial(Color stripe){var m=PlayerView.Material(stripe/PitchTurf.MeanBrightness);m.color=new Color(m.color.r,m.color.g,m.color.b,1);m.mainTexture=turfGrain;m.SetFloat("_Smoothness",.04f);return m;}
+        Material ConcreteMaterial(Color light){var m=PlayerView.Material(new Color(.29f,.31f,.32f)*light);m.mainTexture=concreteTexture;m.SetFloat("_Smoothness",.02f);return m;}
+        void Surface(Mesh mesh,Material material,bool shadows,bool receiveShadows=true){if(concreteTexture!=null&&material.mainTexture==concreteTexture)StadiumSurfaceTexture.MapConcrete(mesh);stadiumMeshes.Add(mesh);var go=new GameObject(mesh.name);go.transform.SetParent(world,false);go.AddComponent<MeshFilter>().sharedMesh=mesh;var renderer=go.AddComponent<MeshRenderer>();renderer.sharedMaterial=material;renderer.shadowCastingMode=shadows?UnityEngine.Rendering.ShadowCastingMode.On:UnityEngine.Rendering.ShadowCastingMode.Off;renderer.receiveShadows=receiveShadows;}
         static void DisposeArenaObject(UnityEngine.Object item){if(item==null)return;if(Application.isPlaying)Destroy(item);else DestroyImmediate(item);}
-        void OnDestroy(){var materials=new System.Collections.Generic.HashSet<Material>();foreach(var r in GetComponentsInChildren<Renderer>())if(r.GetComponentInParent<PlayerView>()==null)foreach(var material in r.sharedMaterials)if(material!=null)materials.Add(material);foreach(var material in materials)DisposeArenaObject(material);foreach(var mesh in stadiumMeshes)DisposeArenaObject(mesh);DisposeArenaObject(pitchMesh);DisposeArenaObject(turfGrain);DisposeArenaObject(boardAtlas);DisposeArenaObject(contactTexture);DisposeArenaObject(skyTexture);if(world!=null)DisposeArenaObject(world.gameObject);}
+        void OnDestroy(){var materials=new System.Collections.Generic.HashSet<Material>();foreach(var r in GetComponentsInChildren<Renderer>())if(r.GetComponentInParent<PlayerView>()==null)foreach(var material in r.sharedMaterials)if(material!=null)materials.Add(material);foreach(var material in materials)DisposeArenaObject(material);foreach(var mesh in stadiumMeshes)DisposeArenaObject(mesh);DisposeArenaObject(pitchMesh);DisposeArenaObject(turfGrain);DisposeArenaObject(concreteTexture);DisposeArenaObject(boardAtlas);DisposeArenaObject(contactTexture);DisposeArenaObject(skyTexture);if(world!=null)DisposeArenaObject(world.gameObject);}
     }
 }

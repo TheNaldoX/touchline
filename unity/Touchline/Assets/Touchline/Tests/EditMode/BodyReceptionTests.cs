@@ -8,6 +8,18 @@ namespace Touchline.Tests
 {
     public class BodyReceptionTests
     {
+        [TestCase(MatchSimulation.ChestControl)] [TestCase(MatchSimulation.ThighControl)]
+        public void CapturedBodyEntryKeepsSupportAtZeroPhysicalProgress(string kind)
+        {
+            var go=new GameObject("Captured reception entry");bool old=PlayerView.UseMecanim;PlayerView.UseMecanim=true;
+            try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="entry",heightCm=180},0,9,Color.white);
+                var actor=new Actor{slot=9,action="idle"};for(int i=0;i<30;i++)view.Render(actor,1,1f/60);
+                var foot=view.FootPosition(false);actor.action="control";actor.actionKind=kind;actor.actionSequence=1;actor.actionHeight=kind==MatchSimulation.ChestControl?1.4f:.94f;actor.actionTarget=new Point(.12f,.3f);actor.actionTime=MatchSimulation.BodyControlDuration(kind);
+                view.Render(actor,1,1f/60,new Vector3(.12f,actor.actionHeight,.3f));
+                Assert.Less(Vector3.Distance(foot,view.FootPosition(false)),.025f,"No support jump before the reception begins");
+            }finally{Object.DestroyImmediate(go);PlayerView.UseMecanim=old;}
+        }
         [TestCase(MatchSimulation.ChestControl,160,true)] [TestCase(MatchSimulation.ChestControl,205,false)]
         [TestCase(MatchSimulation.ThighControl,160,false)] [TestCase(MatchSimulation.ThighControl,205,true)]
         [TestCase(MatchSimulation.ChestControl,180,false)] [TestCase(MatchSimulation.ThighControl,180,true)]
@@ -18,6 +30,9 @@ namespace Touchline.Tests
                 float height=stature*.01f*(kind==MatchSimulation.ChestControl?.78f:.52f),duration=MatchSimulation.BodyControlDuration(kind);
                 var actor=new Actor{slot=9,action="control",actionKind=kind,actionSequence=1,actionHeight=height,actionTarget=new Point(left?.12f:-.12f,.30f)};
                 var point=new Vector3(actor.actionTarget.x,height,.30f);float maxStep=0;Vector3 last=default;
+                var supportBoot=go.GetComponentsInChildren<MeshFilter>().Single(b=>b.name=="Football boot"&&b.transform.parent.name==(left?"foot.R":"foot.L"));
+                var receivingBoot=go.GetComponentsInChildren<MeshFilter>().Single(b=>b.name=="Football boot"&&b.transform.parent.name==(left?"foot.L":"foot.R"));
+                var vertices=supportBoot.sharedMesh.vertices;
                 for(int frame=0;frame<=80;frame++){
                     float time=frame*.01f;actor.actionTime=Mathf.Max(0,duration-time);if(time>duration)actor.action="idle";
                     var ball=new BallState{setupHeight=height,controlDuration=duration,controlElapsed=time};
@@ -26,7 +41,11 @@ namespace Touchline.Tests
                     var touch=kind==MatchSimulation.ChestControl?view.ChestContactPosition:view.ThighContactPosition(left);
                     if(frame>0)maxStep=Mathf.Max(maxStep,Vector3.Distance(touch,last));last=touch;
                     if(frame==8)Assert.Less(Vector3.Distance(touch,point),.10f,"Contact must meet the incoming ball, not follow an arbitrary control pose");
-                    if(time<=duration){Assert.That(view.FootPosition(!left).y,Is.InRange(.035f,.14f),"Support foot at "+time+" seconds");Assert.GreaterOrEqual(view.FootPosition(left).y,.025f);}
+                    if(time<=duration){
+                        // A tilted boot can have a high ankle while its toe is planted.
+                        Assert.That(vertices.Min(v=>supportBoot.transform.TransformPoint(v).y),Is.InRange(-.005f,.06f),"Visible supporting sole at "+time+" seconds");
+                        Assert.GreaterOrEqual(vertices.Min(v=>receivingBoot.transform.TransformPoint(v).y),-.005f);
+                    }
                     Assert.AreEqual(Vector3.zero,go.transform.position,"Presentation must not move the simulation actor");
                 }
                 Assert.Less(maxStep,.18f,"No teleport between cushioning and locomotion");

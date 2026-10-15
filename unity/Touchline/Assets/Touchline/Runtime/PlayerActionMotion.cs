@@ -62,6 +62,78 @@ namespace Touchline
         {
             for(int i=0;i<2;i++){SolveLeg(Sides[i],transform.TransformPoint(new Vector3(i==0?width:-width,.08f,0)));Limb(Sides[i]).foot.rotation=transform.rotation;}
         }
+        readonly float[] signalWeights=new float[2];
+        readonly Vector3[] signalTargets=new Vector3[2];
+        readonly bool[] signalClap=new bool[2];
+        Vector3 uprightContactPush;
+        bool mecanimHasReadinessContext;
+        void MecanimLocomotionContext(Actor actor,float dt,bool reset,PlayerMotionContext context)
+        {
+            float speed=actor.velocity.Length;
+            accelerationLean=accelerationPresentation.Sample(speed,dt,context.hasSimulationClock,context.simulationClock,reset);
+            float readiness=keeperReadinessPresentation.Sample(context.keeperReadiness,dt,context.hasSimulationClock,context.simulationClock,reset);
+            if(reset)mecanimHasReadinessContext=false;
+            mecanimHasReadinessContext|=context.keeperReadiness.active;
+            if(actor.action!="idle"&&actor.action!="run"||context.reaction!=0||context.keeperClaim.active)return;
+            // Preserve the captured lower body: acceleration tips the torso,
+            // not the physical root or the planted feet.
+            bones["spine02"].localRotation*=Quaternion.Euler(accelerationLean*.65f,0,0);
+            if(actor.slot!=0||!mecanimHasReadinessContext||speed>=2.5f)return;
+            readiness*=1-Mathf.InverseLerp(1,2.5f,speed);
+            var left=Limb("L");var right=Limb("R");
+            var lf=left.foot.position;var rf=right.foot.position;var lr=left.foot.rotation;var rr=right.foot.rotation;
+            body.localPosition+=Vector3.down*(.085f*readiness); // metres: same contextual crouch as the procedural presentation.
+            bones["spine02"].localRotation*=Quaternion.Euler(10*readiness,0,0);
+            SolveCapturedSupport("L",lf,left.lowerLeg.position-left.upperLeg.position);left.foot.rotation=lr;
+            SolveCapturedSupport("R",rf,right.lowerLeg.position-right.upperLeg.position);right.foot.rotation=rr;
+            SolveArm("L",Vector3.Lerp(left.wrist.position,transform.TransformPoint(new Vector3(.37f,.95f,.27f)),readiness));
+            SolveArm("R",Vector3.Lerp(right.wrist.position,transform.TransformPoint(new Vector3(-.37f,.95f,.27f)),readiness));
+        }
+        void MecanimUprightContact(Actor actor,float dt,bool reset,PlayerMotionContext context)
+        {
+            bool upright=actor.action=="idle"||actor.action=="run";
+            if(reset||!upright)uprightContactPush=Vector3.zero;
+            if(!upright)return;
+            const float ContactBlendRate=8; // normalized pressure/second: ease into and out of a shoulder contact
+            var target=new Vector3(context.contactDirection.x,0,context.contactDirection.z)*Mathf.Clamp01(context.contactWeight);
+            uprightContactPush=Vector3.MoveTowards(uprightContactPush,target,Mathf.Max(0,dt)*ContactBlendRate);
+            float weight=Mathf.Clamp01(uprightContactPush.magnitude);if(weight<=0)return;
+            var push=transform.InverseTransformDirection(uprightContactPush);
+            // Same balance response as ContextBody, layered over the captured
+            // torso only: lower-body supports and the physical root stay intact.
+            bones["spine02"].localRotation*=Quaternion.Euler(push.z*7,0,-push.x*8);
+            for(int i=0;i<2;i++){
+                Limb(Sides[i]).upperArm.localRotation*=Quaternion.Euler(-8*weight,0,(i==0?-1:1)*12*weight);
+                Limb(Sides[i]).lowerArm.localRotation*=Quaternion.Euler(12*weight,0,0);
+            }
+        }
+        void MecanimSignals(Actor actor,float dt,bool reset,PlayerMotionContext context)
+        {
+            bool free=actor.action=="idle"||actor.action=="run";
+            for(int i=0;i<2;i++){
+                if(reset||!free)signalWeights[i]=0;
+                if(!free)continue;
+                float desired=0;int sign=i==0?1:-1;
+                if(context.reaction==1){
+                    signalClap[i]=true;
+                    float t=context.reactionTime;
+                    desired=Mathf.SmoothStep(0,1,t/.22f)*(1-Mathf.SmoothStep(0,1,(t-2.45f)/.55f));
+                    float gap=Mathf.Lerp(.22f,.035f,(.5f+.5f*Mathf.Cos(t*15))*desired);
+                    signalTargets[i]=new Vector3(sign*gap,1.3f,.38f);
+                }else if(context.reaction==0&&context.requestSide==sign&&context.requestWeight>0){
+                    signalClap[i]=false;
+                    desired=context.requestWeight;signalTargets[i]=new Vector3(sign*.32f,1.67f,.14f);
+                }
+                const float SignalBlendRate=5; // weight/second: enter and release the upper-body gesture progressively.
+                signalWeights[i]=Mathf.MoveTowards(signalWeights[i],desired,SignalBlendRate*Mathf.Max(0,dt));
+                float weight=signalWeights[i];if(weight<=0)continue;
+                var wrist=Limb(Sides[i]).wrist;
+                SolveArm(Sides[i],Vector3.Lerp(wrist.position,transform.TransformPoint(signalTargets[i]),weight),-transform.up);
+                var upright=Quaternion.FromToRotation(wrist.TransformDirection(handAxes[i]),transform.up+transform.forward*.2f)*wrist.rotation;
+                if(signalClap[i])upright=Quaternion.LookRotation(transform.up,-sign*transform.right)*Quaternion.Inverse(Quaternion.LookRotation(handAxes[i],handPalmAxes[i]));
+                wrist.rotation=Quaternion.Slerp(wrist.rotation,upright,weight);
+            }
+        }
         void ContextBody(Actor actor,float dt,bool reset,Vector3 ball,PlayerMotionContext context)
         {
             float speed=actor.velocity.Length;
@@ -147,6 +219,59 @@ namespace Touchline
                 SolveArm(contactLeft?"R":"L",transform.TransformPoint(new Vector3(-sign*.35f,1.25f+.25f*w,.18f)));
                 if(actor.velocity.Length<.3f)PlantBothFeet();
             }
+        }
+        void MecanimThrowContact(Actor actor,float remaining,Vector3 ball)
+        {
+            if(actor.action!="throw"||actor.slot==0||actor.actionHeight<=0)return;
+            const float approachSeconds=.25f,recoverySeconds=.25f,gripHalfWidth=.095f; // seconds and metres
+            float elapsed=1.1f-remaining,contact=actor.actionContactTime>0?actor.actionContactTime:.5f;
+            float weight=1-Mathf.SmoothStep(0,1,Mathf.Abs(elapsed-contact)/(elapsed<=contact?approachSeconds:recoverySeconds));
+            if(weight<=0)return;
+            var leftFoot=Limb("L").foot.position;var rightFoot=Limb("R").foot.position;float lowering=0;
+            for(int i=0;i<2;i++){
+                var leg=Limb(i==0?"L":"R");var rotation=leg.foot.rotation;
+                var center=rotation*new Vector3(0,.02f,.075f);
+                float extent=Mathf.Abs((rotation*Vector3.right).y)*.057f+Mathf.Abs((rotation*Vector3.up).y)*.085f+Mathf.Abs((rotation*Vector3.forward).y)*.145f;
+                var target=i==0?leftFoot:rightFoot;target.y=.01f-(center.y-extent)*transform.localScale.y;
+                float reach=Vector3.Distance(leg.upperLeg.position,leg.lowerLeg.position)+Vector3.Distance(leg.lowerLeg.position,leg.foot.position)-.005f; // same IK reach margin, metres
+                var delta=leg.upperLeg.position-target;
+                lowering=Mathf.Max(lowering,delta.y-Mathf.Sqrt(Mathf.Max(0,reach*reach-delta.x*delta.x-delta.z*delta.z)));
+            }
+            body.position-=Vector3.up*(Mathf.Clamp(lowering,0,MotionStature*.18f)*weight); // cap knee flexion by stature
+            for(int i=0;i<2;i++){
+                string side=i==0?"L":"R";var leg=Limb(side);var foot=leg.foot;var rotation=foot.rotation;
+                // Use the whole rotated boot, as in the pitch penetration guard (metres).
+                var center=rotation*new Vector3(0,.02f,.075f);
+                float extent=Mathf.Abs((rotation*Vector3.right).y)*.057f+Mathf.Abs((rotation*Vector3.up).y)*.085f+Mathf.Abs((rotation*Vector3.forward).y)*.145f;
+                var target=i==0?leftFoot:rightFoot;
+                float sole=target.y+(center.y-extent)*transform.localScale.y;
+                target.y+=(.01f-sole)*weight;
+                SolveLeg(side,target,leg.lowerLeg.position-leg.upperLeg.position);foot.rotation=rotation;
+            }
+            var aim=elapsed<=contact?ball:new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z);
+            if(mecanimActionKey==CapturedThrow){
+                // The source performer crouches. At release, extend within this player's
+                // leg lengths instead of lifting their feet to reach the simulated release.
+                var l=Limb("L");var r=Limb("R");var left=l.foot.position;var right=r.foot.position;
+                float ReachLength(LimbRig leg)=>Vector3.Distance(leg.upperLeg.position,leg.lowerLeg.position)+Vector3.Distance(leg.lowerLeg.position,leg.foot.position);
+                var hip=(l.upperLeg.position+r.upperLeg.position)*.5f;
+                var target=(left+right)*.5f+Vector3.up*(Mathf.Min(ReachLength(l),ReachLength(r))*.97f);
+                body.position+=Vector3.ClampMagnitude(target-hip,.45f)*weight; // metres; retain a slightly bent support knee.
+                for(int i=0;i<2;i++){var side=Sides[i];var leg=Limb(side);var rotation=leg.foot.rotation;SolveCapturedSupport(side,i==0?left:right,leg.lowerLeg.position-leg.upperLeg.position);leg.foot.rotation=rotation;}
+                Aim("spine05","neck01",new Vector3(0,1,.2f),weight);
+            }
+            bool personalThrow=mecanimActionKey==CapturedThrow;
+            if(personalThrow)gripOffset=Vector3.up*.11f*weight; // metres from the wrist pair to the ball centre; fingers, not wrists, touch its surface.
+            void Reach(){for(int i=0;i<2;i++){
+                string side=i==0?"L":"R";
+                var hand=Limb(side).wrist;var rotation=hand.rotation;
+                bool left=personalThrow&&HumanSidesSwapped?side=="R":side=="L";
+                float halfWidth=personalThrow?.135f:gripHalfWidth; // metres: 11cm ball radius plus palm thickness; do not bury the hands in the ball.
+                var target=aim+transform.right*(left?-halfWidth:halfWidth)-(personalThrow?gripOffset+transform.forward*.06f:Vector3.zero);
+                SolveArm(side,Vector3.Lerp(hand.position,target,weight),-body.up);hand.rotation=rotation;
+                if(personalThrow){OrientKeeperHand(i,aim);hand.rotation=Quaternion.Slerp(rotation,hand.rotation,weight);}
+            }}
+            Reach();
         }
         void ThrowPose(Actor actor,float remaining,Vector3 ball)
         {

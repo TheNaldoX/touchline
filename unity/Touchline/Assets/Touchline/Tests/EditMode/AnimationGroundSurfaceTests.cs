@@ -6,6 +6,99 @@ namespace Touchline.Tests
 {
     public class AnimationGroundSurfaceTests
     {
+        [TestCase(30,160)] [TestCase(60,160)] [TestCase(120,160)]
+        [TestCase(30,205)] [TestCase(60,205)] [TestCase(120,205)]
+        public void FallingHandSupportRemainsAboveTurfAndStillWhenPaused(int fps,int stature)
+        {
+            var go=new GameObject("Falling fingers");var mesh=new Mesh();try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="falling-hands",heightCm=stature},0,6,Color.white);
+                var actor=new Actor{slot=6,action="idle"};for(int i=0;i<fps/2;i++)view.Render(actor,1,1f/fps);
+                var skin=go.GetComponentInChildren<SkinnedMeshRenderer>();var weights=skin.sharedMesh.boneWeights;
+                for(int i=0;i<=fps*2.4f;i++){
+                    float time=i/(float)fps;actor.action=time<MatchSimulation.ContactFallDuration?"fall":"idle";actor.actionKind="tackled-fall";actor.actionSequence=1;actor.actionTime=Mathf.Max(0,MatchSimulation.ContactFallDuration-time);
+                    string state=JsonUtility.ToJson(actor);view.Render(actor,1,1f/fps);
+                    skin.BakeMesh(mesh,true);var vertices=mesh.vertices;
+                    for(int v=0;v<vertices.Length;v++)if(skin.bones[weights[v].boneIndex0].name.StartsWith("finger"))
+                        Assert.GreaterOrEqual(skin.transform.TransformPoint(vertices[v]).y,-.025f,"Visible finger penetrates at "+time);
+                    var left=go.GetComponentsInChildren<Transform>();var positions=new Vector3[left.Length];for(int b=0;b<left.Length;b++)positions[b]=left[b].position;
+                    for(int pause=0;pause<5;pause++)view.Render(actor,1,0);
+                    for(int b=0;b<left.Length;b++)if(left[b].name.StartsWith("finger"))Assert.Less(Vector3.Distance(positions[b],left[b].position),.003f,"Paused finger moved at "+time);
+                    Assert.AreEqual(state,JsonUtility.ToJson(actor));Assert.AreEqual(Vector3.zero,go.transform.position);
+                }
+            }finally{Object.DestroyImmediate(mesh);Object.DestroyImmediate(go);}
+        }
+        [TestCase(-1,30,160)] [TestCase(1,30,205)]
+        [TestCase(-1,60,185)] [TestCase(1,60,185)]
+        [TestCase(-1,120,205)] [TestCase(1,120,160)]
+        public void CapturedDiveKeepsShoulderSleevesAboveTurfWithoutMovingActor(int side,int hz,int stature)
+        {
+            bool mode=PlayerView.UseMecanim;PlayerView.UseMecanim=true;
+            var go=new GameObject("Keeper shoulder contact");var baked=new Mesh();
+            try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="shoulder-clearance",heightCm=stature},0,0,Color.yellow);
+                var actor=new Actor{slot=0,action="idle"};float dt=1f/hz;
+                for(int i=0;i<hz;i++)view.Render(actor,1,dt);
+                actor.action="dive";actor.actionKind="save-catch";actor.actionSequence=1;
+                actor.actionContactTime=.18f;actor.actionTarget=new Point(side*1.1f,.42f);actor.actionHeight=.22f;actor.diveSide=side;
+                var skin=go.GetComponentInChildren<SkinnedMeshRenderer>();var weights=skin.sharedMesh.boneWeights;
+                float lowest=100;int samples=0;
+                for(int frame=0;frame<=hz;frame++){
+                    actor.actionTime=1.2f-frame*dt;view.Render(actor,1,dt,new Vector3(side*1.1f,.22f,.42f));
+                    Assert.Less(go.transform.position.sqrMagnitude,.000001f,"Visual ground contact must not displace the simulated actor");
+                    skin.BakeMesh(baked,true);var vertices=baked.vertices;
+                    for(int v=0;v<vertices.Length;v++)if(skin.bones[weights[v].boneIndex0].name.StartsWith("upperarm01")){
+                        lowest=Mathf.Min(lowest,skin.transform.TransformPoint(vertices[v]).y);samples++;
+                    }
+                }
+                Assert.Greater(samples,0);Assert.GreaterOrEqual(lowest,-.002f,"Sleeve surface below pitch");
+            }finally{Object.DestroyImmediate(baked);Object.DestroyImmediate(go);PlayerView.UseMecanim=mode;}
+        }
+        [TestCase(-1,30,160)] [TestCase(1,30,205)]
+        [TestCase(-1,60,185)] [TestCase(1,60,185)]
+        [TestCase(-1,120,205)] [TestCase(1,120,160)]
+        public void DiveRecoveryKeepsTheShinSurfaceAbovePitch(int side,int hz,int stature)
+        {
+            bool mode=PlayerView.UseMecanim;PlayerView.UseMecanim=true;
+            var go=new GameObject("Keeper shin clearance");var baked=new Mesh();
+            try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="surface-dive",heightCm=stature},0,0,Color.yellow);
+                var actor=new Actor{slot=0,action="idle"};float dt=1f/hz;
+                for(int i=0;i<20;i++)view.Render(actor,1,.02f);
+                actor.actionSequence=1;actor.actionKind="save-catch";actor.actionContactTime=.18f;
+                actor.actionTarget=new Point(side*1.1f,.42f);actor.actionHeight=.22f;actor.diveSide=side;
+                var skin=go.GetComponentInChildren<SkinnedMeshRenderer>();var weights=skin.sharedMesh.boneWeights;var bones=skin.bones;
+                float lowest=float.PositiveInfinity;int samples=0;
+                for(int frame=0;frame<=2*hz;frame++){
+                    float t=frame*dt;actor.action=t<=1.2f?"dive":"idle";actor.actionTime=Mathf.Max(0,1.2f-t);
+                    view.Render(actor,1,dt,new Vector3(side*1.1f,.22f,.42f));
+                    if(t<.6f)continue; // Recovery, after the ball contact; full-body coverage remains in the test below.
+                    skin.BakeMesh(baked,true);var vertices=baked.vertices;
+                    for(int v=0;v<vertices.Length;v++){
+                        if(!bones[weights[v].boneIndex0].name.StartsWith("lowerleg"))continue;
+                        lowest=Mathf.Min(lowest,skin.transform.TransformPoint(vertices[v]).y);samples++;
+                    }
+                }
+                Assert.Greater(samples,0);TestContext.WriteLine("Recovery shin surface minimum: "+lowest+" m");
+                Assert.GreaterOrEqual(lowest,-.025f,"The shin must not sink into the pitch during recovery");
+            }finally{Object.DestroyImmediate(baked);Object.DestroyImmediate(go);PlayerView.UseMecanim=mode;}
+        }
+        [TestCase(30)] [TestCase(60)] [TestCase(120)]
+        public void ThrowRecoveryKeepsBootsAbovePitch(int hz)
+        {
+            var go=new GameObject("Throw support regression");
+            try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="surface-throw",heightCm=180},0,9,Color.white);
+                var actor=new Actor{slot=9,action="idle"};float dt=1f/hz;
+                for(int i=0;i<hz;i++)view.Render(actor,1,dt);
+                actor.actionSequence=1;actor.actionKind="throw";actor.actionContactTime=.5f;actor.actionHeight=1.8f;actor.actionTarget=new Point(.1f,.42f);
+                var meshes=go.GetComponentsInChildren<MeshFilter>();float lowest=100;string part="";float when=0;
+                for(int i=0;i<2*hz;i++){
+                    float t=i*dt;actor.action=t<=1.1f?"throw":"idle";actor.actionTime=Mathf.Max(0,1.1f-t);view.Render(actor,1,dt,new Vector3(.1f,1.8f,.42f));
+                    foreach(var mesh in meshes)Measure(mesh.sharedMesh.vertices,mesh.transform.localToWorldMatrix,mesh.name,t,ref lowest,ref part,ref when);
+                }
+                Assert.GreaterOrEqual(lowest,-.025f,"Boot below pitch at "+when+"s: "+part);
+            }finally{Object.DestroyImmediate(go);}
+        }
         [TestCase("kick",1,.11f)] [TestCase("header",1,2.05f)] [TestCase("throw",1,1.8f)]
         [TestCase("tackle",1,.11f)] [TestCase("miscontrol",1,.11f)] [TestCase("hurt",1,.11f)]
         [TestCase("dive",1,.22f)] [TestCase("dive",-1,.22f)]
@@ -54,7 +147,16 @@ namespace Touchline.Tests
                     if(action=="place-ball")ball.y=Mathf.Lerp(1.1f,.11f,Mathf.SmoothStep(0,1,time/duration));
                     view.Render(actor,1,.02f,ball);
                     if(frame%5!=0)continue;
-                    foreach(var skin in skins){skin.BakeMesh(baked);Measure(baked.vertices,skin.transform.localToWorldMatrix,skin.name,time,ref lowest,ref lowestPart,ref lowestTime);}
+                    foreach(var skin in skins){
+                        skin.BakeMesh(baked,true);var vertices=baked.vertices;float before=lowest;
+                        Measure(vertices,skin.transform.localToWorldMatrix,skin.name,time,ref lowest,ref lowestPart,ref lowestTime);
+                        if(lowest<before){
+                            int index=0;float heightMin=float.PositiveInfinity;
+                            for(int v=0;v<vertices.Length;v++){float y=skin.transform.TransformPoint(vertices[v]).y;if(y<heightMin){heightMin=y;index=v;}}
+                            var weight=skin.sharedMesh.boneWeights[index];
+                            lowestPart+=" / "+skin.bones[weight.boneIndex0].name;
+                        }
+                    }
                     foreach(var boot in boots)Measure(boot.sharedMesh.vertices,boot.transform.localToWorldMatrix,boot.name,time,ref lowest,ref lowestPart,ref lowestTime);
                 }
                 TestContext.WriteLine(action+" minimum surface height "+lowest+" m at "+lowestTime+" s ("+lowestPart+")");

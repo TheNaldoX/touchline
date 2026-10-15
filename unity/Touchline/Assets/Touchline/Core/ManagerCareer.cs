@@ -36,6 +36,9 @@ namespace Touchline.Core
         }
         void MoveManager(Database db,string target)
         {
+            // Old saves did not name the proposing club. Bind unsigned discussions
+            // before changing manager context; signed commitments keep their destination.
+            foreach(var offer in world.offers.Where(o=>string.IsNullOrEmpty(o.destination)&&(o.status=="pending"||o.status=="accepted"||o.status=="counter")))offer.destination=club;
             CloseClubScouting();
             var leavingAccount=world.aiAccounts?.FirstOrDefault(a=>a.club==club);if(leavingAccount!=null){
                 leavingAccount.cash=life.cash;leavingAccount.operatingDebt=world.debt;leavingAccount.projectedFromDay=life.day;
@@ -48,7 +51,7 @@ namespace Touchline.Core
             club=target;var previous=previousClubs.FirstOrDefault(x=>x.club==club);life=previous?.life;if(life!=null)life.day=day;match=null;lineup=Select(db,club,tactic);EnsureLife(db);var arrivingAccount=world.aiAccounts?.FirstOrDefault(a=>a.club==club);if(arrivingAccount!=null){life.cash=arrivingAccount.cash;foreach(var f in life.facilities){if(f.kind=="training")f.level=Math.Max(f.level,arrivingAccount.training);if(f.kind=="academy")f.level=Math.Max(f.level,arrivingAccount.academy);}}life.revenue=db.clubs.First(c=>c.id==club).annualRevenue;life.day=day;life.reputation=reputation;life.boardTrust=65;
             if(life.staff!=null)life.staff.marketBound=false;EnsureStaffMarket(db);
             world.managerStatus="employed";world.reviewDay=day+30;world.activeFixture=null;world.sponsors=previous?.sponsors??new List<CommercialDeal>();world.capacity=previous?.capacity??(int)Mathx.Clamp((float)Math.Sqrt(life.revenue)*3,4000,85000);world.ticket=previous?.ticket??(int)Mathx.Clamp((float)Math.Sqrt(life.revenue)/400,8,90);world.debt=arrivingAccount?.operatingDebt??previous?.debt??0;world.transferSpent=previous?.spent??0;world.lastTicketDay=day-7;
-            foreach(var p in db.Squad(club))Contract(db,p.id);if(world.sponsors.Count==0)GenerateSponsors();if(!world.youth.Any(y=>db.Find(y.player)?.team=="academy-"+club)){world.lastIntake=-1;CreateIntake(db);}WorldDay(db);
+            foreach(var p in db.Squad(club))Contract(db,p.id);if(world.sponsors.Count==0)GenerateSponsors();if(!world.youth.Any(y=>db.Find(y.player)?.team=="academy-"+club)){world.lastIntake=-1;CreateIntake(db);}EnsureExistingYouthPaths(db);WorldDay(db);
             Mail("Présidence","Bienvenue dans votre nouveau club","Le calendrier et le monde poursuivent leur cours. Votre réputation vous accompagne ; les finances appartiennent au club.");
         }
     }

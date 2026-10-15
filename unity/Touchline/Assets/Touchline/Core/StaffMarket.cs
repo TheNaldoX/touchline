@@ -11,7 +11,17 @@ namespace Touchline.Core
         public List<StaffMember> staffMarket=new List<StaffMember>();
         public List<StaffOffer> staffOffers=new List<StaffOffer>();
         static uint StableIdentity(string id){uint hash=2166136261;foreach(char c in id)hash=unchecked((hash^c)*16777619);return hash;}
-        public static long MonthlySalary(long weekly)=>(long)Math.Round(weekly*52m/12m);
+        // Les salaires sont stockés par semaine (entier) ; un montant mensuel saisi est converti par
+        // WeeklySalary. Plusieurs mensuels (≈ 4,3 €) donnent la même semaine : l'affichage choisit le plus
+        // « rond » d'entre eux (10 000 plutôt que 10 001), donc tout mensuel multiple de 10 € revient à
+        // l'identique et WeeklySalary(MonthlySalary(w)) == w reste vrai pour toute semaine.
+        static readonly long[] SalaryDisplaySteps={100000,10000,1000,100,10}; // € : arrondis préférés, du plus rond au plus fin
+        public static long MonthlySalary(long weekly)
+        {
+            decimal exact=weekly*52m/12m;
+            foreach(long step in SalaryDisplaySteps){long round=(long)Math.Round(exact/step)*step;if(WeeklySalary(round)==weekly)return round;}
+            return (long)Math.Round(exact);
+        }
         public static long WeeklySalary(long monthly)=>(long)Math.Round(monthly*12m/52m);
         public void EnsureStaffMarket(Database db)
         {
@@ -47,10 +57,11 @@ namespace Touchline.Core
             staffMarket.Add(new StaffMember{id="real-"+id,name=name,club=team.id,role=role,tactics=rating,coaching=rating,judging=Math.Max(1,rating-2),people=rating,wage=Math.Max(1200,team.annualRevenue/70000),until=life.day+730,fictional=false,source=source,biography=bio+" Page vérifiée le 14/09/2026. Notes, salaire et échéance estimés pour la carrière."});
         }
         public long StaffReleaseCost(StaffMember s)=>s.club==null?0:s.wage*Math.Max(0,(s.until-life.day+6)/7);
-        public AgentEstimate PlayerAgent(Database db,string id,bool loan=false)
+        public AgentEstimate PlayerAgent(Database db,string id,bool loan=false,string role=null)
         {
-            var p=db.Find(id)??throw new ArgumentException("Joueur inconnu.");bool own=p.team==club;float uncertainty=Knowledge(id)>=90?.12f:.3f;long fee=own||p.team=="free"?0:(long)(p.value*(loan?.12:1.05));long monthly=MonthlySalary((long)(p.wage*(own?1.08:loan?1:1.12)));
-            return new AgentEstimate{feeLow=(long)(fee*(1-uncertainty)),feeHigh=(long)(fee*(1+uncertainty)),monthlyLow=loan?MonthlySalary(p.wage):(long)(monthly*.95),monthlyHigh=loan?MonthlySalary(p.wage):(long)(monthly*1.15),message=loan?"Son salaire intégral reste celui du contrat parent. Négocions votre pourcentage de prise en charge, l’indemnité et le temps de jeu.":own?"Discutons de son avenir et du temps de jeu promis.":p.rating>Strength(db,club)+8?"Le projet sportif est un obstacle : le salaire seul ne suffira pas.":"Mon joueur écoutera votre projet. Ces fourchettes sont indicatives ; l’accord du club reste distinct du contrat personnel."};
+            var p=db.Find(id)??throw new ArgumentException("Joueur inconnu.");bool own=p.team==club;var interest=own||loan?null:PlayerTransferInterest(db,id,role);
+            float uncertainty=Knowledge(id)>=90?.12f:.3f;long fee=own||p.team=="free"?0:(long)(p.value*(loan?.12:1.05));long monthly=MonthlySalary(own||loan?(long)(p.wage*(own?1.08:1)):Math.Max((long)(p.wage*1.12),interest.requiredWeeklyWage));
+            return new AgentEstimate{feeLow=(long)(fee*(1-uncertainty)),feeHigh=(long)(fee*(1+uncertainty)),monthlyLow=loan?MonthlySalary(p.wage):(long)(monthly*.95),monthlyHigh=loan?MonthlySalary(p.wage):(long)(monthly*1.15),message=loan?"Son salaire intégral reste celui du contrat parent. Négocions votre pourcentage de prise en charge, l’indemnité et le temps de jeu.":own?"Discutons de son avenir et du temps de jeu promis.":interest.refuses?"Mon joueur refuse ce projet pour le moment. La fourchette salariale n’est pas une promesse d’accord ; le salaire seul ne suffira pas.":"Mon joueur écoutera votre projet. Ces fourchettes tiennent compte du temps de jeu proposé ; l’accord du club reste distinct du contrat personnel."};
         }
         public AgentEstimate StaffAgent(string id)
         {
@@ -69,7 +80,7 @@ namespace Touchline.Core
         public void SignStaffContract(Database db,string id)
         {
             OffPitch();EnsureStaffMarket(db);var o=staffOffers.LastOrDefault(x=>x.staff==id&&x.club==club&&x.status=="accepted"&&x.due+7>=life.day);if(o==null)throw new InvalidOperationException("Aucun accord valable.");var s=staffMarket.First(x=>x.id==id);if(s.club!=o.employer)throw new InvalidOperationException("L’employeur a changé : reprenez les discussions.");
-            bool renewal=life.staff.members.Any(m=>m.id==id);if(!renewal&&life.staff.members.Any(m=>m.role==s.role))throw new InvalidOperationException("Libérez le poste avant d’embaucher son remplaçant.");
+            bool renewal=life.staff.members.Any(m=>m.id==id);if(!renewal&&life.staff.members.Count(m=>m.role==s.role)>=(s.role=="scout"?ScoutSlots:1))throw new InvalidOperationException(s.role=="scout"?"La cellule de recrutement est complète ("+ScoutSlots+" recruteurs pour votre budget). Libérez un poste avant d’embaucher.":"Libérez le poste avant d’embaucher son remplaçant.");
             long payroll=life.staff.members.Where(m=>m.id!=id).Sum(m=>m.wage)+o.wage;if(payroll>Math.Max(1500,life.revenue/52/40))throw new InvalidOperationException("Le budget salarial du staff est insuffisant.");
             Charge(o.compensation+o.wage*2,"Contrat staff • "+s.name);s.club=club;s.wage=o.wage;s.until=life.day+365*o.years;o.status="signed";if(!renewal)life.staff.members.Add(s);Mail("Secrétariat","Contrat du staff signé",s.name+" : "+MonthlySalary(s.wage).ToString("N0")+" € par mois.",null,"staff");
         }

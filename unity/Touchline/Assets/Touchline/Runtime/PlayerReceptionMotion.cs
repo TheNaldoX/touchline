@@ -14,10 +14,71 @@ namespace Touchline
         {
             if(bones.TryGetValue(name,out var bone))bone.localRotation=Quaternion.Slerp(bone.localRotation,Quaternion.Euler(x,y,z),weight);
         }
+        static Vector3[] receptionBootVertices;
+        void MecanimFootReceptionContact(Actor actor,float remaining,bool reset,Vector3 renderedBall)
+        {
+            if(actor.slot==0||actor.action!="control"||actor.actionKind!="control-foot")return;
+            const float Duration=.30f,Approach=.08f,ReleaseStart=.19f,MaximumCorrection=.85f; // seconds and metres; match the existing foot-cushioning envelope.
+            var local=transform.InverseTransformPoint(renderedBall);
+            if(local.y>=.65f||new Vector2(local.x,local.z).magnitude>=MaximumCorrection)return;
+            if(reset||poseAction!="control"||poseSequence!=actor.actionSequence){
+                float lateral=transform.InverseTransformPoint(renderedBall).x;
+                receivingLeft=Mathf.Abs(lateral)<.06f?leftFooted:lateral>0;
+            }
+            float elapsed=Mathf.Clamp(Duration-remaining,0,Duration);
+            float weight=Mathf.SmoothStep(0,1,elapsed/Approach)*(1-Mathf.SmoothStep(0,1,(elapsed-ReleaseStart)/(Duration-ReleaseStart)));
+            if(weight<=0)return;
+            var foot=Limb(receivingLeft?"L":"R").foot;
+            foot.rotation=Quaternion.Slerp(foot.rotation,Quaternion.LookRotation(transform.forward,Vector3.up),weight);
+            var rotation=foot.rotation;
+            var correction=Vector3.ClampMagnitude(renderedBall-BootContactPosition(receivingLeft),MaximumCorrection);
+            SolveLeg(receivingLeft?"L":"R",foot.position+correction*weight);
+            foot.rotation=rotation;
+            // The recording may lift the opposite leg. Retarget that leg as
+            // the support when the real ball arrives on the other side.
+            var support=Limb(receivingLeft?"R":"L").foot;
+            var supportRotation=Quaternion.Slerp(support.rotation,Quaternion.LookRotation(transform.forward,Vector3.up),weight);
+            var center=supportRotation*new Vector3(0,.02f,.075f);
+            float extent=Mathf.Abs((supportRotation*Vector3.right).y)*.057f+Mathf.Abs((supportRotation*Vector3.up).y)*.085f+Mathf.Abs((supportRotation*Vector3.forward).y)*.145f;
+            var plant=transform.TransformPoint(new Vector3(receivingLeft?-.17f:.17f,0,0));
+            plant.y=.01f-(center.y-extent)*transform.localScale.y;
+            SolveLeg(receivingLeft?"R":"L",Vector3.Lerp(support.position,plant,weight));
+            support.rotation=supportRotation;
+            KeepBootsAbovePitch(transform.forward,true);
+        }
+        void MecanimBodyReceptionContact(Actor actor,float remaining,bool reset)
+        {
+            if(!MatchSimulation.IsBodyControl(actor))return;
+            if(reset||poseAction!="control"||poseSequence!=actor.actionSequence){
+                var contact=new Vector3(actor.actionTarget.x,actor.actionHeight,actor.actionTarget.z);
+                float lateral=transform.InverseTransformPoint(contact).x;
+                receivingLeft=Mathf.Abs(lateral)<.06f?leftFooted:lateral>0;
+            }
+            // The captured clip supplies the motion; the saved physical contact supplies
+            // the small cushioning overlay, just as in the procedural fallback.
+            BodyReceptionPose(actor,remaining);
+            float duration=MatchSimulation.BodyControlDuration(actor.actionKind),elapsed=Mathf.Clamp(duration-remaining,0,duration);
+            float contactTime=MatchSimulation.BodyControlContactTime;
+            float weight=Mathf.SmoothStep(0,1,elapsed/contactTime)*(1-Mathf.SmoothStep(0,1,(elapsed-contactTime)/(duration-contactTime)));
+            // Cushion into the support leg when the chest adaptation has exhausted
+            // its reach. Measure the actual boot rather than its ankle pivot.
+            if(receptionBootVertices==null)receptionBootVertices=FootballBootMesh.Shared.vertices;
+            float lowest=float.PositiveInfinity;
+            for(int i=0;i<2;i++){
+                if(actor.actionKind==MatchSimulation.ThighControl&&((i==0)==receivingLeft))continue;
+                var foot=Limb(Sides[i]).foot;
+                foreach(var vertex in receptionBootVertices)lowest=Mathf.Min(lowest,foot.TransformPoint(vertex).y);
+            }
+            const float SoleClearance=.01f,MaximumSettle=.10f; // metres, bounded pelvis correction during cushioning
+            body.position-=Vector3.up*Mathf.Clamp(lowest-SoleClearance,0,MaximumSettle)*weight;
+            KeepBootsAbovePitch(transform.forward,true);
+            BlendCapturedReceptionEntry(actor,elapsed);
+        }
         void BodyReceptionPose(Actor actor,float remaining)
         {
             if(!MatchSimulation.IsBodyControl(actor))return;
             float duration=MatchSimulation.BodyControlDuration(actor.actionKind),elapsed=Mathf.Clamp(duration-remaining,0,duration);
+            if(elapsed<=0)return; // Preserve the exact outgoing joints before physical cushioning begins.
             float contact=MatchSimulation.BodyControlContactTime;
             float approach=Mathf.SmoothStep(0,1,elapsed/contact),release=Mathf.SmoothStep(0,1,(elapsed-contact)/(duration-contact));
             float weight=approach*(1-release),absorb=Mathf.Sin(release*Mathf.PI);

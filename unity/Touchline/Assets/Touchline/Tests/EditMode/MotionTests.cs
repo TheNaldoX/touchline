@@ -18,8 +18,8 @@ namespace Touchline.Tests
         [TestCase(160)] [TestCase(205)] public void DifferentHeightsKeepFeetGroundedAndKickContact(int height)
         {
             var go=new GameObject("Stature contact");var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="height-test",heightCm=height},0,9,Color.white);
-            try{var actor=new Actor{action="kick",actionTime=.46f,actionSequence=1,actionTarget=new Point(0,.42f),actionHeight=.11f};view.Render(actor,1,1f/60,new Vector3(0,.11f,.42f));
-                var feet=go.GetComponentsInChildren<Transform>().Where(t=>t.name.StartsWith("foot.")).ToArray();Assert.AreEqual(2,feet.Length);foreach(var foot in feet)Assert.GreaterOrEqual(foot.position.y,.045f);Assert.Less(Vector3.Distance(view.BootContactPosition(false),new Vector3(0,.11f,.42f)),.045f);}
+            try{var actor=new Actor{slot=9,action="kick",actionKind="pass",actionTime=.46f,actionSequence=1,actionTarget=new Point(0,.42f),actionHeight=.11f};view.Render(actor,1,1f/60,new Vector3(0,.11f,.42f));
+                var feet=go.GetComponentsInChildren<Transform>().Where(t=>t.name.StartsWith("foot.")).ToArray();Assert.AreEqual(2,feet.Length);foreach(var foot in feet)Assert.GreaterOrEqual(foot.position.y,.045f);Assert.Less(Vector3.Distance(view.InsideFootContactPosition(false),new Vector3(0,.11f,.42f)),.045f);}
             finally{Object.DestroyImmediate(go);}
         }
         [Test] public void SettledWallFacesBallAndProtectsBody()
@@ -33,8 +33,11 @@ namespace Touchline.Tests
         {
             var go=new GameObject("Merged anatomy");var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="merged"},0,9,Color.white);
             try{var renderers=go.GetComponentsInChildren<SkinnedMeshRenderer>();Assert.AreEqual(1,renderers.Length);var mesh=renderers[0].sharedMesh;var source=JsonUtility.FromJson<HumanSource>(Resources.Load<TextAsset>("Models/footballer").text);int expected=0;
-                Assert.AreEqual(source.parts.Length,mesh.subMeshCount);Assert.AreEqual(mesh.subMeshCount,renderers[0].sharedMaterials.Length);Assert.AreEqual(source.bones.Length,mesh.bindposes.Length);
-                for(int i=0;i<source.parts.Length;i++){expected+=source.parts[i].position.Length/3;Assert.AreEqual(source.parts[i].index.Length,mesh.GetIndexCount(i));}Assert.AreEqual(expected,mesh.vertexCount);
+                Assert.AreEqual(source.parts.Length+1,mesh.subMeshCount,"The shirt print is a separate skinned section.");Assert.AreEqual(mesh.subMeshCount,renderers[0].sharedMaterials.Length);Assert.AreEqual(source.bones.Length,mesh.bindposes.Length);
+                for(int i=0;i<source.parts.Length;i++){var indices=mesh.GetTriangles(i);Assert.AreEqual(source.parts[i].index.Length,indices.Length);for(int j=0;j<indices.Length;j++)Assert.AreEqual(source.parts[i].index[j]+expected,indices[j]);expected+=source.parts[i].position.Length/3;}
+                Assert.Greater(mesh.vertexCount,expected,"The back print must have its own vertices.");
+                var print=mesh.GetTriangles(source.parts.Length);Assert.Greater(print.Length,0);foreach(int index in print)Assert.That(index,Is.InRange(expected,mesh.vertexCount-1));
+                for(int i=expected;i<mesh.vertexCount;i++){Assert.Less(mesh.normals[i].z,0,"Print faces the back of the shirt.");Assert.That(mesh.uv[i].x,Is.InRange(0,1));Assert.That(mesh.uv[i].y,Is.InRange(0,1));}
                 foreach(var weight in mesh.boneWeights){Assert.That(weight.weight0+weight.weight1+weight.weight2+weight.weight3,Is.EqualTo(1).Within(.001));Assert.That(weight.boneIndex0,Is.InRange(0,source.bones.Length-1));}
             }finally{Object.DestroyImmediate(go);}
         }
@@ -44,15 +47,26 @@ namespace Touchline.Tests
             try{actor.actionHeight=.3f;view.Render(actor,1,1f/60);var low=view.HeldBallPosition;actor.actionHeight=1.25f;view.Render(actor,1,1f/60);Assert.Greater(view.HeldBallPosition.y-low.y,.25f);}
             finally{Object.DestroyImmediate(go);}
         }
-        [TestCase("dive",.98f,"Rig")]
-        [TestCase("claim",.55f,"spine02")]
+        [Test] public void ShirtPrintDeformsWithTheTorsoInsteadOfFloatingOverTheAnimatedKit()
+        {
+            var go=new GameObject("Skinned print motion");var before=new Mesh();var after=new Mesh();
+            try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="print-motion"},0,9,Color.white);
+                var renderer=go.GetComponentInChildren<SkinnedMeshRenderer>();var print=renderer.sharedMesh.GetTriangles(renderer.sharedMesh.subMeshCount-1).Distinct().ToArray();
+                renderer.BakeMesh(before);var spine=go.GetComponentsInChildren<Transform>().First(t=>t.name=="spine05");spine.localRotation=Quaternion.Euler(20,0,0);renderer.BakeMesh(after);
+                float movement=0;foreach(int index in print){var delta=after.vertices[index]-before.vertices[index];Assert.IsFalse(float.IsNaN(delta.sqrMagnitude));movement=Mathf.Max(movement,delta.magnitude);}
+                Assert.Greater(movement,.02f,"The print must be skinned to the rotating torso, not a rigid badge.");
+            }finally{Object.DestroyImmediate(go);Object.DestroyImmediate(before);Object.DestroyImmediate(after);}
+        }
+        [TestCase("dive",.98f,"wrist.R")]
+        [TestCase("claim",.55f,"wrist.R")]
         [TestCase("throw",.9f,"upperarm01.L")]
         public void ContactPosesMoveBetweenSimulationSteps(string action,float remaining,string boneName)
         {
             var go=new GameObject("Interpolated contact");var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="keeper"},0,0,Color.yellow);
             var actor=new Actor{action=action,actionTime=remaining,diveSide=1};Transform bone=null;foreach(var t in go.GetComponentsInChildren<Transform>())if(t.name==boneName)bone=t;
-            try{Assert.NotNull(bone);var rotations=new Quaternion[3];for(int i=0;i<3;i++){view.Render(actor,i*.5f,1f/60,new Vector3(0,action=="throw"?Mathf.Lerp(.3f,.64f,i*.5f):.3f,.5f));rotations[i]=bone.localRotation;}
-                Assert.Greater(Quaternion.Angle(rotations[0],rotations[1]),.5f);Assert.Greater(Quaternion.Angle(rotations[1],rotations[2]),.5f);Assert.AreEqual(remaining,actor.actionTime,"Rendering must not advance simulation state");}
+            try{Assert.NotNull(bone);var positions=new Vector3[3];for(int i=0;i<3;i++){view.Render(actor,i*.5f,1f/60,new Vector3(0,action=="throw"?Mathf.Lerp(.3f,.64f,i*.5f):.3f,.5f));positions[i]=bone.position;}
+                Assert.Greater(Vector3.Distance(positions[0],positions[1]),.001f);Assert.Greater(Vector3.Distance(positions[1],positions[2]),.001f);Assert.AreEqual(remaining,actor.actionTime,"Rendering must not advance simulation state");}
             finally{Object.DestroyImmediate(go);}
         }
         [Test] public void FootPlacementRemainsAboveThePitchAcrossFrameRates()
@@ -72,9 +86,16 @@ namespace Touchline.Tests
         }
         [Test] public void KeeperDiveHasTwoDistinctDirections()
         {
-            var go=new GameObject("Keeper test");var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="keeper"},0,0,Color.yellow);var actor=new Actor{action="dive",actionTime=.7f};
-            try{actor.diveSide=1;view.Render(actor,1,.016f);float right=go.transform.Find("Rig").localEulerAngles.z;actor.diveSide=-1;view.Render(actor,1,.016f);float left=go.transform.Find("Rig").localEulerAngles.z;Assert.Greater(Mathf.Abs(Mathf.DeltaAngle(right,left)),90);foreach(var bone in go.GetComponentsInChildren<Transform>())if(bone.name=="head"||bone.name.StartsWith("foot."))Assert.Greater(bone.position.y,-.025f,bone.name);}
-            finally{Object.DestroyImmediate(go);}
+            var directions=new Vector3[2];
+            for(int i=0;i<2;i++){
+                var go=new GameObject("Independent keeper dive");try{
+                    var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="keeper"},0,0,Color.yellow);
+                    view.Render(new Actor{slot=0,action="dive",actionTime=1f,diveSide=i==0?1:-1},1,.016f);
+                    var animator=go.GetComponentInChildren<Animator>();var hips=animator.GetBoneTransform(HumanBodyBones.Hips);var chest=animator.GetBoneTransform(HumanBodyBones.Chest);directions[i]=(chest.position-hips.position).normalized;
+                    foreach(var bone in go.GetComponentsInChildren<Transform>())if(bone.name=="head"||bone.name.StartsWith("foot."))Assert.Greater(bone.position.y,-.025f,bone.name);
+                }finally{Object.DestroyImmediate(go);}
+            }
+            Assert.Greater(Vector3.Angle(directions[0],directions[1]),90);Assert.Less(directions[0].x*directions[1].x,0,"The actual torso must lean toward opposite sides.");
         }
     }
 }

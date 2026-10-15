@@ -1,8 +1,145 @@
+- Tactique : rôles par poste (gardien libéro, piston, latéral inversé, stoppeur, ancre, récupérateur, meneurs, box-to-box, ailier, attaquant intérieur, pivot, renard, faux neuf), consignes de frappe et de risque, combinaisons de corners et coups francs avec tireurs désignés, trois plans tactiques applicables en match en une touche, travail individuel à l'entraînement ; effets mesurés (`Calibration --roles`), réglages par défaut sans effet sur les résultats.
+- Android : préparation de la version 0.72-preview (code 65), regroupant les corrections validées de caméra, moteur, formation et animations.
+- Animations : accélération et freinage du torse, vigilance du gardien raccordées aux poses capturées sans déplacer les appuis.
+- Match : le gardien évite de préparer un plongeon vers une interception imaginaire quand la trajectoire passe nettement à côté du but.
+- Validation : réceptions de tête contrôlées sur les semelles et le bassin animés, jusqu'au retour au repos, des deux pieds à trois cadences.
+- Animations : tacle debout et retrait raccordés à l'appui initial, sans double mouvement du pied ni saut au retour à la locomotion.
+- Animations : appuis des prises centrales stabilisés dès la préparation, avec continuité et pause contrôlées à 30/60/120 Hz.
+- Validation : audit des contacts en matchs simulés étendu aux ballons chipés sous pression et isolé sur quatre graines.
+- Animations : entrée des têtes sans avancer la course tant que le saut physique n'a pas commencé, appuis préservés à 30/60/120 Hz.
+- Animations : prises hautes centrales debout avec appui au sol, sans déclencher un plongeon latéral pour un ballon accessible.
+- Animations : le gardien suit le ballon du regard sur les prises centrales, avec rotation du cou bornée et retour progressif à la pose capturée.
+- Validation : récupération des tacles comparée à la bonne phase capturée et rotations des têtes contrôlées en vitesse, sans relâcher les contacts.
+- Animations : seconde célébration capturée avec retour debout et entrée progressive après une frappe encore en cours.
+- Animations : le torse et les bras réagissent progressivement aux contacts debout dans le rendu capturé, sans déplacer les appuis.
+- Animations : les doigts et les paumes restent au-dessus du terrain pendant les chutes capturées, y compris en pause.
+- Animations : contrôles au pied capturés raccordés progressivement au ballon du côté reçu, sans dérive des appuis en pause.
+- Validation : scénarios de passes et touches explicites, contrôle du côté anatomique et des surfaces de main plutôt que du centre des poignets.
+- Formation : six jeunes nantais réels ajoutés, identités et naissances sourcées auprès du Mondial de Montaigu, évaluations provisoires explicites.
+- Animations : appels de balle et applaudissements visibles sur le squelette capturé, avec transitions des bras et pause stable.
+- Validation : contrôles anatomiques adaptés aux animations capturées, contact intérieur des passes et flocage skinné vérifiés.
+- Animations : appui de la main après parade et reprise successive des pieds pendant le relevé du gardien capturé.
+- Animations : tacles glissés raccordés au contact enregistré et au relevé, jambes sans étirement et ancrages de locomotion libérés pendant les contacts corporels.
+- Animations : appuis capturés immobiles ajustés sur la semelle visible, avec stabilisation progressive après les contrôles annulés.
+- Animations : préparation visible des contrôles poitrine/cuisse capturés, pose conservée à l’entrée et raccord progressif jusqu’au contact physique.
+- Animations : petits pas de stabilisation actifs en mode capturé, appuis conservés en pause et raccord progressif au redémarrage.
+- Formation : onze jeunes réels supplémentaires de Marseille et Nantes, sources FFF et clubs, classement U19/réserve selon âge et absence de doublons.
+- Tactique : la ligne défensive rapproche progressivement défense et milieu sans déplacer artificiellement les attaquants ; audit sur quatre graines.
+- Animations : le pied des tacles et blocs capturés rejoint le contact physique ; préparation et annulation sont fondues progressivement.
+- Match : les contrôles au pied dans le sens de la course conservent l’élan ; demi-tours et amortis du corps gardent leur freinage.
+- Animations : récupération des plongeons capturés achevée avant le retour au jeu, avec contact ballon conservé et genoux dégagés du terrain.
+- Formation : cinq jeunes OM réels sourcés ajoutés au groupe U19, plans persistants et évaluations provisoires explicitement distinguées des identités vérifiées.
+- Animations : épaules et manches des gardiens dégagées du terrain pendant les plongeons, avec conservation des contacts par IK.
+- Animations : la pose de course reste intacte au début physique des contrôles poitrine/cuisse, y compris sur plusieurs images à progression nulle.
+- Animations : contrôles poitrine/cuisse capturés adaptés au point de contact physique, avec appui mesuré sur la semelle et enchaînement des réceptions corrigé.
+- Caméra : portrait moins plongeant, cadrage rapproché entre ballon et but, marges homogènes pour supprimer la dérive en pause.
+- Android : version0.71/code64 avec corrections caméra, moments clés, suivi des jeunes réels et décisions de tir.
+- Match : un tir proche devenu ouvert peut remplacer une passe en retrait encore en préparation, avec pivot progressif et protection des angles fermés.
+- Formation : suivi des jeunes professionnels réels de 16 à 21 ans dès la première saison, y compris dans les anciennes sauvegardes, sans déplacer les joueurs.
+- Match : zoom progressif avec ballon conservé dans le cadre et sélection plus stricte des Moments clés.
+- Android : version 0.70/code63 avec import vérifié du pack personnel et contrôle des animations réellement incluses dans l’APK.
+- Animations : trois frappes capturées, touche à deux mains, prise basse et célébration ; contacts anatomiques et captures de contrôle corrigés selon la taille.
+- Validation animations : revue native par fenêtre temporelle pour repérer les contacts tardifs des captures de football.
+- Graphismes : béton texturé et mat dans les tribunes, échelle homogène sur les pentes et grain de pelouse plus directionnel.
+- Animations : dégagement local des coudes pendant les plongeons, sans déplacer les mains au contact du ballon.
+- Animations : le maintien des appuis conserve la direction capturée des genoux et protège leur contact avec le sol.
+- Éditeur : les aperçus de joueurs libèrent leurs graphes, matériaux et cases de flocage à leur destruction.
+- Animations : fondus de chute et de relevé progressifs, contrôlés sur neuf combinaisons de taille et fréquence, sans allocation répétée.
+- Validation : les tests du chargeur de portraits utilisent des JPEG temporaires autonomes, sans dépendre du pack personnel absent.
+- Tactique : confirmation des remplacements et permutations, sélection conservée sur écran plié et commandes adaptées au paysage.
+- Animations : les mains capturées distinguent prise et parade, avec fermeture progressive des doigts après le contact.
+- Animations : le fondu initial des chutes capturées respecte le temps physique, sans démarrage anticipé du geste.
+- Android : prépare la version 0.69/code62 avec la correction des premiers salaires IA validée sur 30 saisons.
+- Validation : le scénario de non-renouvellement tient compte des jeunes promus et vérifie les salaires signés jusqu’à l’échéance.
+- Finances : le premier salaire d’un jeune remplaçant IA dépend de son niveau, sans consommer automatiquement toute l’enveloppe disponible.
+- Validation : le test de migration des gardiens reproduit le chargement d’une ancienne sauvegarde et contrôle son idempotence.
+- Android : prépare la version 0.68/code61 avec les correctifs de tête, d’entrée des contrôles et de bandeau replay.
+- Animations : les contrôles poitrine et cuisse démarrent avec leur horloge physique, sans saut initial du geste capturé.
+- Interface : bandeau de replay compact, sans mots fragmentés sur écran plié.
+- Calibration : audits explicites de hauteur de ligne avec contres ou pressing fixés, sans augmenter le coût du parcours par défaut.
+- Animations : contact de tête recalé progressivement sur le ballon, entrée stable à 30/60/120 images par seconde.
+- Android : prépare la version 0.67/code60 avec les correctifs de contact, recrutement, presse et replay.
+- Replay : la caméra en pause reste cohérente avant et après un changement de format.
+- Recrutement : la comparaison avec un titulaire tient compte de la marge d’incertitude du recruteur.
 # Changelog
 
 Une ligne par pull request, la plus récente en haut.
 
 ## À venir
+- Gardien : raccord progressif des mains du plongeon capturé au contact simulé, distinguant prise et parade, sans déplacer le ballon.
+- Adjoint : distingue volume et qualité des tirs pour proposer une construction plus patiente, avec preuve chiffrée, contrepartie et prise en compte d’un retard au score en fin de match.
+- Coup franc direct : le tireur peut servir un partenaire démarqué et en jeu si la passe sûre offre une occasion nettement meilleure que sa frappe.
+- Conférence : décor condensé après la présentation pour laisser les réponses visibles, avec retour en haut à chaque question et maintien du lieu et de l’entraîneur.
+- Presse : questions et phrases adaptées aux blessés actuels, demandes de départ et calendrier chargé ; le compte rendu conserve les réponses réellement proposées.
+- Ventes : acheteurs sélectionnés selon besoin au poste, effectif senior, trésorerie et masse salariale avec parts de prêt ; projet affiché et conditions revérifiées avant confirmation.
+- Contacts capturés : reprise au temps interpolé pour têtes, tacles, contrôles du corps, plongeons et lancers, avec entrée progressive de la tête ; relance au sol conservée en attendant correction de sa pose.
+- Frappes capturées : chronomètre et contact de passe alignés sur le temps interpolé du match, y compris lors du démarrage d’un temps fort au milieu du geste.
+- Livraison Android 0.66/code59 : corrections des retours tactique, interactions, récapitulatif, bureau, presse, discussions, ventes et coups francs ; sauvegardes et signature conservées.
+- Coups francs excentrés : choix d’un centre vers une cible placée selon le duel aérien et la consigne de centres, sans forcer une livraison sur un joueur hors-jeu ou dominé.
+- Mercato : bouton d’envoi et coût synthétique fixes, primes et clauses regroupées, conditions de prêt masquées en transfert permanent, brouillons conservés entre modes.
+- Temps forts : retour au coup franc quand le tireur et le mur approchent leurs positions, préparation accélérée et expliquée plutôt qu’un faux compte à rebours imminent ; simulation conservée.
+- Boutons : surface tactile stable pendant l’ouverture et l’appui, conservant le fondu et la couleur pressée pour éviter de perdre les appuis près du bord.
+- Ventes : contre-propositions avec réponse le lendemain, refus et confirmation distincts, contrôle des offres périmées et du financement acheteur, réouverture possible après expiration.
+- Discussions : aperçu de la phrase réellement envoyée au joueur, avec engagement précis de temps de jeu et archivage homogène des échanges.
+- Moments clés : les tirs de faible qualité restent dans les statistiques, tandis que buts, montants et incidents majeurs restent visibles ; aucun résultat simulé modifié.
+- Presse : conférence en trois questions avec phrases complètes, décor de salle stylisé, compte rendu sauvegardé et effets moyens pour éviter de cumuler les bonus.
+- Bureau : cinq derniers résultats et extrait du classement autour du club, avec accès direct au calendrier et au tableau complet.
+- Tactique : remplacement en touchant le nom sur le banc, consignes individuelles repliables et défilement unique de la composition en mode plié.
+- Match délégué : affichage automatique du score final, des buteurs avec leurs minutes et des statistiques avant de revenir au bureau.
+- Android : préparation de la version0.65/code58, consolidant les correctifs de recrutement, prêts, rapports financiers et contacts des relances/touches.
+- Animation : appui progressif des deux chaussures au sol au lâcher des touches de champ, tout en conservant le contact des mains et l’orientation des pieds.
+- Animation : ajustement progressif des deux mains autour du lâcher lors des touches des joueurs de champ, sans modifier la trajectoire simulée du ballon.
+- Recrutement : les offres entrantes expirent si un transfert, une retraite, un prêt ou une prolongation invalide leurs conditions avant la réponse de l’agent.
+- Prêts sortants : les propositions devenues impossibles avant la réponse expirent avec un message, sans faux accord ni erreur si le joueur a quitté la base.
+- Prêts : la compensation salariale demandée par le club prêteur suit la durée restante et le pourcentage pris en charge, au lieu de compter systématiquement vingt-six semaines.
+- Diagnostic moteur : suivi du premier événement dans les cinq secondes suivant une réception en profondeur et mesure de sa position, sans modifier la simulation.
+- Diagnostic moteur : suivi en lecture seule de la première issue des passes en profondeur dans l’audit tactique, avec contrôle du comptage et distinction contrôle/déviation/hors-jeu.
+- Recrutement : aperçu du coût avant envoi de l’offre, séparant signature, échéances, salaire pris en charge et clauses d’achat, sans engager les finances.
+- Gardiens : relances à la main raccordées aux gestes existants, contact et récupération progressifs, flexion adaptée à la taille sans enfoncer le bras libre.
+- Négociations : avis de l’agent et fourchette salariale actualisés selon le temps de jeu promis, regroupés dans le dialogue sans écraser les conditions saisies.
+- Gardiens : accompagnement du ballon jusqu’au sol et redressement progressif avec Mecanim, y compris lorsque le geste est interrompu.
+- Recrutement : niveaux et potentiels affichés en étoiles relatives au club sur le marché, les recommandations et les rapports, avec fourchettes d’incertitude sans note globale chiffrée.
+- Android : préparation de la version 0.64/code57 regroupant les corrections validées depuis la 0.63, avec limites de la suite Unity documentées.
+- Gardiens : les mains rejoignent progressivement le ballon tenu avec Mecanim et retrouvent la pose d’attente sans saut, en conservant les appuis capturés.
+- Finances : onglets budget/billetterie/partenaires/comptabilité, aperçu du tarif avant confirmation et synthèse des flux sur trente jours.
+- Animations : correction de la pénétration des chaussures dans le terrain après les poses Mecanim, notamment lors de la récupération des touches.
+- Sauvegardes : un club prêteur vide n’est plus considéré comme un prêt actif, préservant les effectifs, échéances, ventes et options après rechargement.
+- Vestiaire : un joueur dont la demande de départ a été refusée peut relancer la discussion après quatre semaines si le conflit persiste ; seul le dernier message demande une décision.
+- Analyse du match : bilan des tirs, qualité moyenne des occasions et limites des xG ; distinction entre consignes finales et statistiques cumulées.
+- Navigation : défilement mémorisé séparément par onglet de recrutement/calendrier et format d’écran ; titres de navigation agrandis.
+- Recrutement : les besoins et recommandations sont recalculés après les changements manuels de postes, même sans changement de formation ni de journée.
+- Animations : préparation progressive des mains du gardien avant une prise aérienne, avec retour continu à la course si la trajectoire est annulée, sans modifier les appuis capturés.
+- Recrutement : les rapports conservent les niveaux et attributs observés au lieu de découvrir automatiquement la progression cachée des cibles ; filtres compacts et actions remontées dans les fiches de rapport.
+- Passes capturées : correction progressive de la jambe vers le ballon enregistré à l’impact, limitée aux passes et sans déplacer le joueur simulé.
+- Animation des passes courtes, en profondeur et en retrait : les gauchers utilisent le geste miroir du pied gauche, avec le même timing de contact que les droitiers.
+- Visibilité nocturne : lumière ambiante latérale renforcée sans projecteur supplémentaire ; pas de replacement Mecanim démarrés depuis le pied réellement affiché plutôt qu’un ancien appui inaccessible.
+- APK0.63/code56, rendu match : pelouse détaillée non répétitive, tonte moins contrastée, tissu des maillots et matières mates ; transitions gauche/droite des pas chassés interpolées selon le temps ; qualité maximale réellement plus détaillée, MSAA4× et résolution bornée à2,6Mpx.
+- Validation du moteur : comparaison neutre renforcée sur trois graines, actions et positions, sans compter les messages informatifs de l’adjoint comme des actions de jeu.
+- APK 0.62/code55 : regroupe les lots validés de recrutement, immersion tactique, sauvegardes et budget ; numéro de version distinct, anciennes APK préservées.
+- Finances : détail des réserves, achats engagés, obligations de prêts et marges salariales, avec explication du plafond limitant les transferts.
+- Recrutement contextualisé par poste, budget et comparaison interne ; conseils tactiques avec pistes à tester et estimation des occasions recalibrée séparément des tirs.
+- Recrutement : bilans et adaptation rattachés au club recruteur, historique conservé après changement de club et progression propre à chaque arrivée.
+- Reprise de Claude : cellule de recrutement/immersion tactique, recommandations obsolètes filtrées, sauvegardes sans emploi réparées et boutons de causerie repliables ; passation condensée pour limiter les lectures répétées.
+- Base de départ : retrait des 2 784 joueurs/116 clubs fictifs et de la promotion fictive initiale du centre ; anciennes carrières conservées avec leur catalogue compatible, sans réécriture au chargement.
+- Android 0.61/code54 livré et signé : candidat intégré moteur, direction, relations et recrutement, avec catalogue fictif figé et sauvegardes compatibles ; réserves de calibration et test Fold conservées.
+- Validation UI : dates cohérentes des défaites synthétiques, reprise ciblée des écrans de presse et diagnostics par étape.
+- Catalogue fictif : chargement d’un jeu de données v1 figé et vérifié, identique pour .NET/Unity/Android, au lieu de régénérer une base dont l’empreinte variait selon le runtime.
+- Vie du club : demandes de départ après insatisfaction durable, réponses et retrait selon le temps de jeu, conférences contextualisées et limitées dans le temps, actualités et plus large victoire des archives de carrière.
+- Arbitrage : une bousculade sous pression peut donner un penalty dans la surface ; prudence accrue du défenseur conservée, avec tests symétriques des deux mi-temps et comparaison sur deux graines.
+- Tempo : suppression du malus général de dispersion d'une passe préparée ; cadence des décisions, vitesse du ballon et difficulté réelle de réception conservées, avec audit patient/rapide sur 200 affiches identiques.
+- Direction : objectifs saisonniers persistants selon les moyens, l'effectif et la situation héritée, bilans mensuels explicitant la confiance, et carte de suivi dans Carrière.
+- Moteur : déclenchement du pressing séparé de la hauteur de ligne, huit scénarios symétriques de régression et audits appariés ; rapports enrichis avec incertitude des victoires du favori et écart buts–xG.
+- Finition Fold/stade : reprise de la caméra portrait, des tailles tactiles, de l'arrondi des salaires et des bancs de Claude ; public séparé logiquement des remplaçants, escaliers/rambardes et budget géométrique conservé.
+- Recrutement : 116 clubs et 2 784 joueurs fictifs observables, rapports gradués et incertains, concurrence entre clubs ; correction de l’affichage Unity et protection des transferts lors d’un changement de poste.
+- Filets : fils continus subdivisés aux mailles pour réagir réellement aux impacts centraux des deux buts, avec déformation locale et retour au repos ; rayon et ressort inchangés.
+- Recrutement : territoires fiables pour 45 clubs hors catalogue de championnats (1 434 joueurs), filtres et missions par pays partagés, sans ajout de ligue ni modification des notes.
+- Négociations : une offre invalide affiche son erreur dans le formulaire sans effacer les montants, la promesse de temps de jeu ni les brouillons de transfert et de prêt.
+- Recrutement : synthèse des besoins tactiques sans double compter les polyvalents, budgets après engagements, rapports et pistes observées, accès directs aux missions, joueurs libres et agents, avec plafonds d'observation cohérents.
+- Caméra de match : entrée progressive du but dans le cadre, sans recul brutal au passage du dernier tiers ou lors des centres en portrait ; ballon et couloirs de passe restent cadrés.
+- Négociations : les offres restent évaluées et modifiables pour leur club destinataire après un changement de manager ; les attentes de rôle et l’attractivité tiennent compte de la progression ou du déclin actuel du joueur.
+- Contrats : un joueur emprunté ne peut plus devenir la propriété du club via une prolongation gratuite ; les anciens accords sont bloqués et la fiche dirige vers les clauses du prêt, avec achat payant conservé.
+- Moteur : défenseurs et destinataires (gardien compris) ne lisent plus la destination finale avant le contact ; placement visible conservé avant départ et réception anticipée ensuite, avec comparaison de 200 matchs avant/après.
+- Tactique : audit apparié de sept consignes (200 affiches), raccourcis de match en deux touches avec pause/vitesse conservées et boutons adaptés au Fold, captures CI vérifiées et compteur de joueurs libres corrigé dans le diagnostic carrière.
 - Rendu : ciel en dégradé avec nuages, collines et silhouette de ville (fenêtres allumées le soir, fond uni en qualité basse), ralenti du soir éclairé de face (plus de joueurs à contre-jour), lumière ambiante en trois tons (côtés éclairés, rebond vert de la pelouse), tribunes un peu plus visibles le soir, montants de but ronds et vernis, filet plus léger, second anneau qui se lève aussi sur les buts du club.
 - Ambiance : tribunes qui se lèvent en vague, sautent et lèvent bras et écharpes sur un but (à moitié sur une frappe), virage populaire aux couleurs du club avec écharpes et grands drapeaux, drapeaux de coin qui flottent, ombres de contact sous les joueurs et le ballon, ralenti des buts filmé en plan bas à côté du but qui suit le ballon (le filet se creuse aussi au ralenti).
 - Visuel joueurs : tenues générées aux couleurs du club (uni, rayures, cerceaux, manches, écharpe, bande ; gardiens distincts), nom et numéro au dos, coupes et couleurs de cheveux, chaussures variées ; étalonnage télé léger (bloom des projecteurs le soir, coupé en qualité basse), usure du gazon, filet qui se creuse sur les buts.
@@ -43,3 +180,5 @@ Une ligne par pull request, la plus récente en haut.
 
 ## 0.41
 - Import dans Git depuis Google Drive. `MatchDecisions.bak.cs` retiré (doublon compilé de `MatchDecisions.cs`).
+- Animations : les prises centrales à hauteur du buste utilisent une capture debout plutôt qu’un plongeon latéral, avec contact conservé.
+- Animations : import local des 21 captures Soccer d’Anderson Rohr et première variante de passe intérieure droite, synchronisée au ballon ; fichiers sous licence exclus du dépôt public.
