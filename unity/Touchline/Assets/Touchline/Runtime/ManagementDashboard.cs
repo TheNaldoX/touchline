@@ -50,7 +50,7 @@ namespace Touchline
             focus.RegisterValueChangedCallback(_=>RunDecision(()=>Career.SetTrainingFocus(Core.Career.TrainingFocuses[focus.index])));
             Career.TrackPreparation();Text(training,"Familiarité "+Career.tactic.formation+" : "+Mathf.RoundToInt(Career.TacticalFamiliarity())+" % · cohésion du onze : "+Mathf.RoundToInt(Career.Cohesion(Career.lineup))+" % · "+Core.Career.TrainingFocusHint(Career.TrainingFocus),"muted").name="manager-preparation";
             Text(training,delegated?"Le staff ajuste la charge selon la condition et le prochain match. Reprenez cette responsabilité dans la délégation.":delegationRequested?"Aucun préparateur ne peut appliquer cette délégation. Vous pouvez régler la charge ici en attendant de recruter un préparateur.":"Récupération : retrouver de la fraîcheur. Intensif : davantage de travail, avec un risque de blessure accru.","muted");
-            var trainingActions=Row(training,"manager-card-actions");Button(trainingActions,"Staff et délégation",()=>Navigate("Staff et délégation"));Button(trainingActions,"Santé",()=>Navigate("Santé"));
+            var trainingActions=Row(training,"manager-card-actions");Button(trainingActions,"Travail individuel",TrainingSheet).name="manager-individual-training";Button(trainingActions,"Staff et délégation",()=>Navigate("Staff et délégation"));Button(trainingActions,"Santé",()=>Navigate("Santé"));
 
             var staff=Card(work,"manager-work-card");Text(staff,"DANS LE BUREAU DE L’ADJOINT","eyebrow");Text(staff,"Le point sportif","section-title");
             Text(staff,Career.StaffAdvice(Database),"manager-advice");

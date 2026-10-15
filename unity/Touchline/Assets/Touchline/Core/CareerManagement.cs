@@ -23,6 +23,7 @@ namespace Touchline.Core
         public List<PlayerLife> players=new List<PlayerLife>();public List<PlayerLife> retiredPlayers=new List<PlayerLife>();public List<LoanPlayerHistory> loanedPlayers=new List<LoanPlayerHistory>();public List<ClubMessage> messages=new List<ClubMessage>();
         public List<MedicalCase> medical=new List<MedicalCase>();public List<Facility> facilities=new List<Facility>();
         public TacticalPreparation preparation=new TacticalPreparation();
+        public List<IndividualTraining> individualTraining=new List<IndividualTraining>(); // travail individuel (TacticPlans)
         public List<FacilityProject> projects=new List<FacilityProject>();public List<AccountEntry> ledger=new List<AccountEntry>();public List<IntegrityCase> investigations=new List<IntegrityCase>();
     }
     public partial class Career
@@ -85,7 +86,7 @@ namespace Touchline.Core
                     p.fitness=Mathx.Clamp(p.fitness+recovery+Level("medical")*.12f,20,100);
                     float risk=(life.training=="rest"||protectedDay||agreedRest?0:life.training=="heavy"?.0023f:.0008f)*(1+(100-p.fitness)/30)*(1-Level("medical")*.07f)*(p.rehabUntil>life.day?2:1)*FocusInjuryFactor();
                     if(Roll()<risk)OpenInjury(db,p.id,Roll()<.08f?"ligament":Roll()<.5f?"muscle":"bruise");
-                    var data=db.Find(p.id);if(!agreedRest&&(world==null||world.managerStatus=="employed")&&data.age<24&&data.rating<data.potential&&life.training!="rest"){p.growth=Math.Min(data.potential-data.rating,p.growth+(.003f+Level("training")*.0015f+Level("academy")*.001f)*(p.morale/100)*(.75f+Staff("fitness").coaching/40f));}
+                    var data=db.Find(p.id);if(!agreedRest&&(world==null||world.managerStatus=="employed")&&data.age<24&&data.rating<data.potential&&life.training!="rest"){p.growth=Math.Min(data.potential-data.rating,p.growth+(.003f+Level("training")*.0015f+Level("academy")*.001f)*(p.morale/100)*(.75f+Staff("fitness").coaching/40f)*IndividualGrowth(p.id));}
                 }
                 bool activeManager=world==null||world.managerStatus=="employed";
                 p.morale=activeManager?Mathx.Clamp(p.morale+(life.training=="heavy"&&p.fitness<75?-.4f:0),10,100):p.morale+(70-p.morale)*.01f;

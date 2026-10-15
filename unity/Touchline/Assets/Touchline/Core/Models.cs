@@ -90,7 +90,11 @@ namespace Touchline.Core
     [Serializable] public class Slot { public string role, duty="support"; public float x, y;
         // Consigne individuelle (PlayerInstructions) : lue sur le poste sans ballon. Vide = aucune.
         public string instruction="";
-        public Slot(string r, float x, float y) { role = r; this.x = x; this.y = y; } }
+        // Rôle du joueur ("" = rôle standard du poste, sans effet) et consignes
+        // de frappe et de risque (-1, 0, +1), voir TacticalRoles.
+        public string playerRole=""; public int shooting, risk;
+        public Slot(string r, float x, float y) { role = r; this.x = x; this.y = y; }
+        public Slot Copy()=>(Slot)MemberwiseClone(); }
     [Serializable] public class Tactic
     {
         public string formation = "4-3-3";
@@ -99,7 +103,9 @@ namespace Touchline.Core
         public bool counterPress, counterAttack, workIntoBox;
         public string attackFocus="balanced",crossing="mixed";
         public Slot[] withBall, withoutBall;
+        public SetPieceRoutine setPieces=new SetPieceRoutine();
         public Tactic() { SetFormation("4-3-3"); }
+        public Tactic Copy(){var copy=(Tactic)MemberwiseClone();copy.withBall=withBall?.Select(s=>s?.Copy()).ToArray();copy.withoutBall=withoutBall?.Select(s=>s?.Copy()).ToArray();copy.setPieces=(setPieces??new SetPieceRoutine()).Copy();return copy;}
         public void SetFormation(string shape)
         {
             formation = shape;

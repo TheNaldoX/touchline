@@ -6,6 +6,7 @@ static partial class P{
  static string FindDatabase(){foreach(var start in new[]{Environment.CurrentDirectory,AppContext.BaseDirectory}){var d=new DirectoryInfo(start);while(d!=null){var f=Path.Combine(d.FullName,"unity","Touchline","Assets","Touchline","Resources","Data","database.json");if(File.Exists(f))return f;d=d.Parent;}}throw new FileNotFoundException("database.json introuvable : passez son chemin en 3e argument.");}
  static void Main(string[] a){
   if(a.Length>0&&a[0]=="--tactics"){AuditTactics(a.Skip(1).ToArray());return;}
+  if(a.Length>0&&a[0]=="--roles"){AuditRoles(a.Skip(1).ToArray());return;}
   int n=a.Length>0?int.Parse(a[0]):200;uint seed0=a.Length>1?uint.Parse(a[1]):1;string dbPath=a.Length>2?a[2]:FindDatabase();
   var db=JsonSerializer.Deserialize<Database>(File.ReadAllText(dbPath),new JsonSerializerOptions{IncludeFields=true});
   db.Find(db.players[0].id); // construit l'index joueur une fois : Database.Find n'est pas thread-safe

@@ -60,3 +60,12 @@ ou `"Ligne,Rythme"`. Les affiches et graines restent identiques à l'audit compl
 Le rapport général distingue les favoris à domicile/à l'extérieur, donne un intervalle
 binomial de Wilson à 95 % et mesure l'écart buts–xG apparié. Ces intervalles décrivent
 l'échantillon simulé, pas l'exactitude des données ni la validité du moteur dans le football réel.
+
+## Rôles, consignes de frappe/risque et coups de pied arrêtés
+
+`dotnet run -c Release -- --roles 200 1 st-poacher,corner-near`
+
+Joue les affiches une fois sans changement (référence), puis une fois par variante appliquée au
+club qui reçoit (4-3-3) : mesures appariées du joueur au poste concerné (position moyenne, tirs,
+passes, centres, distance, pressing, sorties du gardien…), de l'équipe, et des séquences après
+corner ou coup franc. Variantes : `Variant` dans `RoleAudit.cs`.

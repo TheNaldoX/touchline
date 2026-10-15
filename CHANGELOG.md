@@ -1,3 +1,4 @@
+- Tactique : rôles par poste (gardien libéro, piston, latéral inversé, stoppeur, ancre, récupérateur, meneurs, box-to-box, ailier, attaquant intérieur, pivot, renard, faux neuf), consignes de frappe et de risque, combinaisons de corners et coups francs avec tireurs désignés, trois plans tactiques applicables en match en une touche, travail individuel à l'entraînement ; effets mesurés (`Calibration --roles`), réglages par défaut sans effet sur les résultats.
 - Android : préparation de la version 0.72-preview (code 65), regroupant les corrections validées de caméra, moteur, formation et animations.
 - Animations : accélération et freinage du torse, vigilance du gardien raccordées aux poses capturées sans déplacer les appuis.
 - Match : le gardien évite de préparer un plongeon vers une interception imaginaire quand la trajectoire passe nettement à côté du but.

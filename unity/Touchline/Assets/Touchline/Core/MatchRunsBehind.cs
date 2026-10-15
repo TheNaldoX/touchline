@@ -29,7 +29,7 @@ namespace Touchline.Core
             if(duty=="defend"||p.slot==0)return false;
             int dir=Direction(p.side);float line=OffsideLine(p.side),x=p.position.x*dir,ownerX=owner.position.x*dir;
             if(line>46||x<line-RunBehindTrigger||x>line||ownerX>line-RunBehindOwnerDepth||Space(owner.position,1-p.side)<RunBehindOwnerSpace)return false;
-            float off=Skill(p,"positioning")*.01f;float rate=RunBehindRatePerSecond*(duty=="attack"?RunBehindAttackDuty:RunBehindSupportDuty)*(RunBehindBaseTendency+off);
+            float off=Skill(p,"positioning")*.01f;float rate=RunBehindRatePerSecond*(duty=="attack"?RunBehindAttackDuty:RunBehindSupportDuty)*(RunBehindBaseTendency+off)*RoleRunBehind(p);
             if(Random()>=rate*Step)return false;
             p.runBehind=RunBehindSeconds;
             // Le porteur voit l'appel et relève la tête : réaction 0,1 s (vision 100) à 0,5 s (vision 0).
