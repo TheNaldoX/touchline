@@ -44,7 +44,9 @@ namespace Touchline.Tests
         [Test]
         public void ShootMoreInstructionProducesMoreShots()
         {
-            int Shots(int shooting){int total=0;foreach(uint seed in new uint[]{3,5}){var db=Db();var c=new Career{club="a"};for(int i=8;i<=10;i++)c.tactic.withoutBall[i].shooting=shooting;var sim=Sim(db,c,seed);sim.PlayToEnd();total+=sim.State.shots[0];}return total;}
+            // Tirs des trois joueurs concernés seulement, sur six matchs : le total
+            // d'équipe sur deux matchs était trop bruité pour trancher.
+            int Shots(int shooting){int total=0;foreach(uint seed in new uint[]{3,5,7,11,13,19}){var db=Db();var c=new Career{club="a"};for(int i=8;i<=10;i++)c.tactic.withoutBall[i].shooting=shooting;var sim=Sim(db,c,seed);var ids=sim.State.actors.Where(p=>p.side==0&&p.slot>=8).Select(p=>p.id).ToHashSet();sim.PlayToEnd();total+=sim.State.events.Count(e=>e.kind=="shot"&&e.side==0&&e.player!=null&&ids.Contains(e.player));}return total;}
             Assert.Greater(Shots(1),Shots(-1));
         }
 
@@ -66,6 +68,21 @@ namespace Touchline.Tests
                 if(placed&&q.x*sim.Direction(0)>46&&q.z>0)near++;}
             Assert.GreaterOrEqual(near,1);
             Assert.Greater(Call<Point>(sim,"CornerAim",taker).z,0);
+        }
+
+        [Test]
+        public void CornerRoutineSendsOnlyOneRunnerCloserThanHistoricDepth()
+        {
+            // Une combinaison change la cible, pas la profondeur de départ des autres
+            // (placés tous près du but, ils marquaient +0,3 but par match après corner).
+            foreach(var routine in new[]{"near","far"}){
+                var db=Db();var c=new Career{club="a"};c.tactic.setPieces.corner=routine;var sim=Sim(db,c);
+                sim.State.phase="corner";sim.State.restartSide=0;sim.State.ball=new BallState{position=new Point(sim.Direction(0)*52.5f,33.8f)};
+                var taker=Call<Actor>(sim,"RestartTaker");int close=0;
+                foreach(var p in sim.State.actors.Take(11)){if(p==taker||p.slot==0)continue;var args=new object[]{p,taker,new Point()};bool placed=(bool)sim.GetType().GetMethod("CornerPosition",Private).Invoke(sim,args);var q=(Point)args[2];
+                    if(placed&&q.x*sim.Direction(0)>52.5f-MatchSimulation.CornerRunDepth+.1f)close++;}
+                Assert.AreEqual(1,close,routine);
+            }
         }
 
         [Test]

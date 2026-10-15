@@ -26,7 +26,9 @@ namespace Touchline.Core
         // Distances de frappe directe sur coup franc (m) : historique / "frapper".
         public const float FreeKickShotRange=27f,FreeKickShotWidth=18f,FreeKickExtendedRange=30f,FreeKickExtendedWidth=20f;
         // Points visés sur corner, en m depuis la ligne de but (profondeur) et l'axe (largeur).
-        public const float NearPostDepth=5f,NearPostWidth=3f,FarPostDepth=7.5f,FarPostWidth=5f,PenaltySpotDepth=9.5f;
+        public const float NearPostDepth=5f,NearPostWidth=3f,FarPostDepth=9.5f,FarPostWidth=3f;
+        // Profondeur de départ (m) : appel au premier / second poteau, et autres joueurs (= placement historique à 41 m).
+        public const float NearPostRunDepth=6f,FarPostRunDepth=10.5f,CornerRunDepth=11.5f;
         // Corner court : distance (m) maximale du partenaire servi au tireur.
         public const float ShortCornerReach=14f;
         SetPieceRoutine Routine(int side)=>Tactic(side)?.setPieces??new SetPieceRoutine();
@@ -54,10 +56,13 @@ namespace Touchline.Core
             var up=outfield.Where(a=>!back.Contains(a)).OrderByDescending(a=>Skill(a,"headingAccuracy")+Skill(a,"jumping")).ThenBy(a=>a.slot).ToList();
             int rank=up.IndexOf(p);
             var spots=new List<Point>();
-            if(routine.corner=="near")spots.AddRange(new[]{new Point(52.5f-NearPostDepth,near*NearPostWidth),new Point(52.5f-7,near*1),new Point(52.5f-4,near*5.5f)});
-            else if(routine.corner=="far")spots.AddRange(new[]{new Point(52.5f-FarPostDepth,-near*FarPostWidth),new Point(52.5f-5.5f,-near*3),new Point(52.5f-10,-near*7)});
+            // Un seul appel vers la zone visée ; les autres partent de la même profondeur que le
+            // placement historique (CornerRunDepth), derrière la ligne des défenseurs : la combinaison
+            // change la cible, pas l'avantage de position (sinon +0,3 but par match après corner).
+            if(routine.corner=="near")spots.Add(new Point(52.5f-NearPostRunDepth,near*NearPostWidth));
+            else if(routine.corner=="far")spots.Add(new Point(52.5f-FarPostRunDepth,-near*FarPostWidth));
             else if(routine.corner=="short")spots.Add(new Point(52.5f-3,near*26));
-            spots.AddRange(new[]{new Point(52.5f-PenaltySpotDepth,0),new Point(52.5f-11,near*4),new Point(52.5f-11,-near*4),new Point(52.5f-6,0),new Point(52.5f-14,0),new Point(52.5f-17,near*8)});
+            spots.AddRange(new[]{new Point(52.5f-CornerRunDepth,0),new Point(52.5f-CornerRunDepth,near*4),new Point(52.5f-CornerRunDepth,-near*4),new Point(52.5f-CornerRunDepth,near*8),new Point(52.5f-CornerRunDepth,-near*8),new Point(52.5f-14,0),new Point(52.5f-17,near*8)});
             // Corner court : le moins fort de la tête vient jouer court.
             if(routine.corner=="short"){var shortMan=up.LastOrDefault();if(p==shortMan){q=new Point(attack*spots[0].x,spots[0].z);return true;}spots.RemoveAt(0);up.Remove(shortMan);rank=up.IndexOf(p);}
             var spot=spots[Math.Min(Math.Max(0,rank),spots.Count-1)];if(rank>=spots.Count)spot=new Point(spot.x-(rank-spots.Count+1)*2,spot.z);

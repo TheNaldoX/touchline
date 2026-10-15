@@ -99,9 +99,9 @@ namespace Touchline.Core
                 case "shadow-striker":e.advance=6;e.runBehind=1.9f;e.shot=1.35f;e.pass=-.4f;break;
                 case "winger":e.width=1.18f;e.cross=1.6f;e.carry=.5f;e.shot=.8f;break;
                 case "inside-forward":e.width=.7f;e.shot=1.4f;e.carry=.6f;e.cross=-1.6f;e.runBehind=1.2f;break;
-                case "target":e.aerialTarget=2.5f;e.target=.6f;e.advance=1;e.carry=-1;e.runBehind=.6f;break;
+                case "target":e.aerialTarget=1.5f;e.target=.3f;e.advance=1;e.carry=-1;e.runBehind=.6f;break;
                 case "poacher":e.advance=2;e.runBehind=1.6f;e.shot=1.35f;e.carry=-1.2f;e.pass=-.8f;e.press=-2;break;
-                case "false9":e.advance=-9;e.runBehind=.3f;e.pass=1.2f;e.target=1.2f;e.shot=.75f;e.carry=.4f;break;
+                case "false9":e.advance=-9;e.runBehind=.3f;e.pass=.8f;e.target=.6f;e.shot=.75f;e.carry=.4f;break;
             }
             // Frappes : seuil de décision ×0,5 (moins) ou ×1,8 (plus) face à la meilleure passe.
             if(instructions.shooting<0)e.shot*=.5f;else if(instructions.shooting>0)e.shot*=1.8f;
