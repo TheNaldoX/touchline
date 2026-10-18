@@ -1,3 +1,4 @@
+- Validation : rejeu isolé de trajectoires natives Touchline dans le prototype d’animation, avec export déterministe, racine imposée et mesure de couverture des vitesses.
 - Validation : conservation de l’orientation animée du pied pendant la correction de jambe du prototype, réduisant le glissement des appuis à 30/60/120 Hz.
 - Validation : interpolation expérimentale du corps et des transitions MotionMatching, avec mesures des articulations et appuis sur vingt secondes à chaque cadence.
 - Validation : interpolation expérimentale de la racine MotionMatching à 120 Hz, isolée du jeu, avec garde aux limites des clips et six contrôles déterministes.
