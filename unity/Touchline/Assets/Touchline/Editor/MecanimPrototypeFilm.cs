@@ -230,7 +230,7 @@ namespace Touchline.Editor
             c.backgroundColor=new Color(.35f,.43f,.5f);c.targetTexture=target;c.aspect=(float)Width/Height;return c;
         }
 
-        static void Capture(Camera camera,RenderTexture target,GameObject root,string path)
+        internal static void Capture(Camera camera,RenderTexture target,GameObject root,string path)
         {
             var skins=new List<SkinnedMeshRenderer>();var proxies=new List<GameObject>();var meshes=new List<Mesh>();var previous=RenderTexture.active;Texture2D image=null;
             try{
