@@ -15,6 +15,21 @@ namespace Touchline.Tests
         // Huit clubs de 24 joueurs (deux divisions), le club dirigé est c0.
         [SetUp] public void Setup(){db=new Database{leagues=new[]{new LeagueData{id="fra.1",name="L1"},new LeagueData{id="fra.2",name="L2",tier=2}},clubs=Enumerable.Range(0,8).Select(i=>new ClubData{id="c"+i,name="Club "+i,league=i<4?"fra.1":"fra.2",playable=true,annualRevenue=20000000+i*1000000}).ToArray(),players=Enumerable.Range(0,8*24).Select(i=>new PlayerData{id="p"+i,name="Alex "+i,team="c"+(i/24),age=24,position=i%24==0||i%24==12?"GB":i%24<8?"DEF":i%24<16?"MIL":"ATT",positions=new[]{i%24==0||i%24==12?"GK":i%24<8?"CB":i%24<16?"CM":"ST"},rating=65,potential=80,value=100000,wage=500,fitness=100,morale=75,attributes=new[]{new AttributeValue{key="shortPassing",value=65},new AttributeValue{key="sprintSpeed",value=65}}}).ToArray()};c=new Career{club="c0"};c.lineup=Career.Select(db,c.club,c.tactic);c.EnsureWorld(db);}
         void AiSummer(){typeof(Career).GetMethod("AiSummerEconomy",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(c,new object[]{db});}
+        [TestCase(1)][TestCase(2)]
+        public void AReplacementNeedIsNotFundedTwiceInTheSameWindow(int weaknesses)
+        {
+            foreach(var p in db.players){p.rating=75;p.value=100000;}
+            foreach(var p in db.Squad("c1")){p.rating=70;p.value=50000;}
+            var weak=db.Squad("c3").Where(p=>p.position=="ATT").Take(weaknesses).ToArray();
+            foreach(var p in weak)p.rating=60;
+            c.EnsureAiClubAccounts(db);
+            c.world.aiAccounts.Single(a=>a.club=="c3").cash=30_000_000;
+            c.world.year++;c.life.day=365;AiSummer();
+            var purchases=c.world.aiTransfers.Where(t=>t.buyer=="c3").ToArray();
+            Assert.AreEqual(weaknesses,purchases.Length,"Chaque besoin est comblé une fois ; deux besoins au même poste restent possibles.");
+            Assert.IsTrue(purchases.All(t=>db.Find(t.player).positions.Contains("ST")));
+            Assert.IsTrue(weak.All(p=>p.team=="c3"),"Le renfort ne supprime ni ne libère arbitrairement l'ancien joueur.");
+        }
         [Test] public void IndebtedOwnerStopsFundingPlannedLosses()
         {
             Assert.AreEqual(.9f,Career.AiOwnerStanceAmbition(.9f,0,100_000_000),1e-6,"Sans dette : ambition inchangée");
