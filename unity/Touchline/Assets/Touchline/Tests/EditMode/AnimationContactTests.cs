@@ -56,17 +56,28 @@ namespace Touchline.Tests
                 Assert.That(go.transform.Find("Rig").localPosition.y,Is.InRange(-.08f,.02f),"Player must land after the header");
             }finally{Object.DestroyImmediate(go);}
         }
-        [TestCase(-1)] [TestCase(1)] public void KeeperReplantsFeetBeforeStandingUp(int side)
+        [TestCase(-1,30)] [TestCase(1,30)] [TestCase(-1,60)] [TestCase(1,60)]
+        [TestCase(-1,100)] [TestCase(1,100)] [TestCase(-1,120)] [TestCase(1,120)]
+        public void KeeperReplantsFeetBeforeStandingUp(int side,int fps)
         {
             var go=new GameObject("Dive recovery");try{
                 var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="recovering"},0,0,Color.yellow);
                 var actor=new Actor{action="dive",diveSide=side,actionSequence=1,actionTarget=new Point(side*.8f,.3f),actionHeight=.5f};
-                float crouch=0;for(int i=0;i<=120;i++){
-                    actor.actionTime=1.2f-i*.01f;view.Render(actor,1,.01f);
-                    if(i==90)crouch=go.transform.Find("Rig").localPosition.y;
-                    if(i>=90){Assert.Greater(view.FootPosition(true).y,.025f);Assert.Greater(view.FootPosition(false).y,.025f);}
+                float startHeight=0,crouch=0,previousHeight=0,height=0;for(int i=0;i<=Mathf.RoundToInt(1.2f*fps);i++){
+                    actor.actionTime=1.2f-i/(float)fps;string state=JsonUtility.ToJson(actor);view.Render(actor,1,1f/fps);
+                    var animator=view.RigRoot.GetComponent<Animator>();Assert.IsNotNull(animator,"Recovery must exercise the Humanoid path");
+                    height=animator.GetBoneTransform(HumanBodyBones.Hips).position.y-go.transform.position.y;
+                    if(i==0)startHeight=height;
+                    if(i==Mathf.RoundToInt(.9f*fps))crouch=height;
+                    if(i>=Mathf.RoundToInt(.9f*fps)){Assert.Greater(view.FootPosition(true).y,.025f);Assert.Greater(view.FootPosition(false).y,.025f);}
+                    if(i>Mathf.RoundToInt(.9f*fps))Assert.Less(Mathf.Abs(height-previousHeight),.04f+3f/fps,"Recovery must not teleport the pelvis upright");
+                    Assert.AreEqual(state,JsonUtility.ToJson(actor));previousHeight=height;
                 }
-                Assert.That(crouch,Is.LessThan(-.12f));Assert.That(go.transform.Find("Rig").localPosition.y,Is.EqualTo(0).Within(.01f));
+                // Humanoid animates its hip bone inside Rig; the container itself remains at zero.
+                Assert.Less(crouch,startHeight-.12f,"Bend the actual pelvis before standing");
+                Assert.That(height,Is.EqualTo(startHeight).Within(.08f),"Return to the initial upright hip height");
+                Assert.Less(view.FootPosition(true).y,.25f);Assert.Less(view.FootPosition(false).y,.25f);
+                Assert.AreEqual(Vector3.zero,go.transform.position,"Recovery must not move the simulated actor");
             }finally{Object.DestroyImmediate(go);}
         }
         [Test] public void HeaderContactMetadataComesFromTheReleasedBall()
