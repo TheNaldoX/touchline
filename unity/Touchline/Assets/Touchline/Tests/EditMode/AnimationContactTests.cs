@@ -8,13 +8,23 @@ namespace Touchline.Tests
 {
     public class AnimationContactTests
     {
-        [TestCase(160)] [TestCase(205)] public void BootGeometryDoesNotPenetrateBallAtStrike(int height)
+        [TestCase(160,false,"shot")] [TestCase(205,false,"shot")]
+        [TestCase(160,true,"shot")] [TestCase(205,true,"shot")]
+        [TestCase(160,false,"pass")] [TestCase(205,false,"pass")]
+        [TestCase(160,true,"pass")] [TestCase(205,true,"pass")]
+        public void BootGeometryDoesNotPenetrateBallAtStrike(int height,bool left,string kind)
         {
             var go=new GameObject("Contact geometry");var ballObject=new GameObject("Ball collision probe");try{
-                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="geometry",heightCm=height,preferredFoot="Right"},0,9,Color.white);
-                var actor=new Actor{action="kick",actionTime=.46f,actionSequence=1,actionTarget=new Point(0,.42f),actionHeight=.11f};var ball=new Vector3(0,.11f,.42f);view.Render(actor,1,.01f,ball);
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="geometry",heightCm=height,preferredFoot=left?"Left":"Right"},0,9,Color.white);
+                var actor=new Actor{slot=9,action="kick",actionKind=kind,actionSequence=1,actionTarget=new Point(0,.42f),actionHeight=.11f};var ball=new Vector3(0,.11f,.42f);
+                // Render preparation through the engine's 0.18-second release, not an untyped legacy kick.
+                for(int frame=0;frame<=18;frame++){
+                    actor.actionTime=.64f-frame*.01f;string state=JsonUtility.ToJson(actor);view.Render(actor,1,.01f,ball);
+                    Assert.AreEqual(state,JsonUtility.ToJson(actor),"Rendering must not change the simulated action");
+                }
                 var sphere=ballObject.AddComponent<SphereCollider>();sphere.radius=.11f;ballObject.transform.position=ball;
-                var boot=go.GetComponentsInChildren<MeshFilter>().First(f=>f.transform.parent.name=="foot.R");var collider=boot.gameObject.AddComponent<MeshCollider>();collider.sharedMesh=boot.sharedMesh;collider.convex=true;
+                bool rigLeft=kind=="shot"&&view.MecanimGestureClip.StartsWith("Rohr_")&&PlayerView.HumanSidesSwapped?!left:left;
+                var boot=go.GetComponentsInChildren<MeshFilter>().First(f=>f.transform.parent.name==(rigLeft?"foot.L":"foot.R"));var collider=boot.gameObject.AddComponent<MeshCollider>();collider.sharedMesh=boot.sharedMesh;collider.convex=true;
                 bool intersects=Physics.ComputePenetration(collider,boot.transform.position,boot.transform.rotation,sphere,ball,Quaternion.identity,out var direction,out float depth);
                 Assert.IsTrue(!intersects||depth<.015f,"The shoe cuts into the ball by "+depth+" metres");
                 Assert.Less(Vector3.Distance(collider.ClosestPoint(ball),ball),.14f,"The boot must still make contact");
