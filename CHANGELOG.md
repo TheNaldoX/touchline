@@ -1,3 +1,4 @@
+- Validation : prototype MotionMatching isolé et reproductible à 1/22 personnages, 30/60/120 Hz, avec revue et garde avant intégration.
 - Caméra : recentrage de bord réduit au déplacement nécessaire pour garder le ballon et le joueur visibles.
 - Animations : touches de dribble raccordées au ballon dans le rendu capturé, sans modifier la trajectoire simulée.
 - Caméra : reprise du zoom progressif après un replay de but, sans second saut de cadrage après le retour au direct.
