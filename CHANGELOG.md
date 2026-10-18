@@ -1,4 +1,5 @@
 - Validation : récupération du gardien vérifiée sur les os Humanoid à quatre cadences, au lieu du conteneur Rig immobile.
+- Diagnostic : captures et mesure de la semelle pendant la transition course–passe, sans changement du jeu.
 - Animations : contact pied-ballon rétabli sur les dégagements après recul, avec orientation progressive conservée pendant le fondu de sortie.
 - Validation : garde de raccord du sprint sur le personnage Humanoid réel, pieds et orteils avec/sans IK.
 - Validation : correction expérimentale du raccord des orteils du sprint, avec racine et autres articulations préservées.

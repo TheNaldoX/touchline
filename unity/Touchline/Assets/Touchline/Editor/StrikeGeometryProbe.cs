@@ -20,6 +20,31 @@ namespace Touchline.Editor
             var target=new RenderTexture(960,960,24);camera.targetTexture=target;
             var ball=new Vector3(0,.11f,.42f);var marker=GameObject.CreatePrimitive(PrimitiveType.Sphere);marker.transform.position=ball;marker.transform.localScale=Vector3.one*.22f;
             var report=new System.Text.StringBuilder();
+            bool approach=Environment.GetCommandLineArgs().Contains("-strikeApproach");
+            if(approach){
+                foreach(int approachFrames in new[]{45,50,55,60})foreach(bool left in new[]{false,true}){
+                    var go=new GameObject("Approach support diagnostic");var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="support-continuity",heightCm=182,preferredFoot=left?"Left":"Right"},0,9,Color.white);
+                    var actor=new Actor{id="support-continuity",slot=9,action="run",velocity=new Point(0,3.5f)};
+                    for(int frame=0;frame<approachFrames;frame++){actor.previous=actor.position;actor.position+=actor.velocity/60;view.Render(actor,1,1f/60);}
+                    var support=view.FootPosition(!left);var offset=new Vector3(actor.position.x,0,actor.position.z);
+                    camera.transform.position=offset+new Vector3(2,1.4f,3);camera.transform.LookAt(offset+Vector3.up*.8f);
+                    ball=offset+new Vector3(0,.11f,.42f);marker.transform.position=ball;
+                    var supportBone=go.GetComponentsInChildren<Transform>().Single(t=>t.name==(!left?"foot.L":"foot.R"));
+                    report.AppendLine($"approachFrames={approachFrames} left={left} frame=approach ankleY={support.y:F4} soleY={SoleHeight(supportBone):F4}");
+                    MecanimPrototypeFilm.Capture(camera,target,go,Path.Combine(output,$"approach-{approachFrames}-{left}.jpg"));
+                    actor.previous=actor.position;actor.velocity=new Point();actor.action="kick";actor.actionKind="pass";actor.actionSequence=1;actor.actionTarget=new Point(ball.x,ball.z);actor.actionHeight=ball.y;
+                    for(int frame=0;frame<=18;frame++){
+                        actor.actionTime=.64f-frame*.01f;view.Render(actor,1,.01f,ball);
+                        var foot=view.FootPosition(!left);report.AppendLine($"approachFrames={approachFrames} left={left} frame={frame} ankleY={foot.y:F4} soleY={SoleHeight(supportBone):F4} planarDelta={Vector3.ProjectOnPlane(foot-support,Vector3.up).magnitude:F4}");
+                        if(frame==0||frame==9||frame==18)MecanimPrototypeFilm.Capture(camera,target,go,Path.Combine(output,$"approach-{approachFrames}-{left}-{frame}.jpg"));
+                    }
+                    report.AppendLine($"approachFrames={approachFrames} left={left} contactError={Vector3.Distance(view.InsideFootContactPosition(left),ball):F4}");
+                    if(actor.position.x!=offset.x||actor.position.z!=offset.z)throw new Exception("Rendering changed the actor position");
+                    UnityEngine.Object.DestroyImmediate(go);
+                }
+                File.WriteAllText(Path.Combine(output,"captured.txt"),report.ToString()+"Approach fixture diagnosis only; sole measured from actual boot vertices. No runtime correction or Fold validation.");
+                camera.targetTexture=null;UnityEngine.Object.DestroyImmediate(target);EditorApplication.Exit(0);return;
+            }
             foreach(int height in new[]{160,205})foreach(bool left in new[]{false,true})foreach(string kind in new[]{"shot","pass"}){
                 var go=new GameObject("Strike geometry");var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="geometry",heightCm=height,preferredFoot=left?"Left":"Right"},0,9,Color.white);
                 var actor=new Actor{slot=9,action="kick",actionKind=kind,actionSequence=1,actionTarget=new Point(ball.x,ball.z),actionHeight=ball.y};
@@ -33,5 +58,6 @@ namespace Touchline.Editor
             File.WriteAllText(Path.Combine(output,"captured.txt"),report.ToString()+"Static impact poses; no match trajectory or Android validation.");
             camera.targetTexture=null;UnityEngine.Object.DestroyImmediate(target);EditorApplication.Exit(0);
         }
+        static float SoleHeight(Transform foot)=>FootballBootMesh.Shared.vertices.Min(v=>foot.TransformPoint(v).y);
     }
 }
