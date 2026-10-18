@@ -52,7 +52,9 @@ namespace Touchline.Tests
                 Assert.Less(Quaternion.Angle(go.transform.rotation,Quaternion.identity),.01f);
             }finally{Object.DestroyImmediate(go);}
         }
-        [TestCase(false)] [TestCase(true)] public void DefensiveRetreatIntoClearanceKeepsReleaseContact(bool left)
+        [TestCase(false,30)] [TestCase(true,30)] [TestCase(false,60)] [TestCase(true,60)]
+        [TestCase(false,100)] [TestCase(true,100)] [TestCase(false,120)] [TestCase(true,120)]
+        public void DefensiveRetreatIntoClearanceKeepsReleaseContact(bool left,int fps)
         {
             var go=new GameObject("Defensive clearance");try{
                 var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="retreat-clear",heightCm=182,preferredFoot=left?"Left":"Right"},0,2,Color.white);
@@ -60,8 +62,20 @@ namespace Touchline.Tests
                 for(int i=0;i<60;i++){actor.previous=actor.position;actor.position+=actor.velocity/60;view.Render(actor,1,1f/60,new Vector3(0,.11f,9),new PlayerMotionContext{defending=true});}
                 var previous=view.FootPosition(left);actor.previous=actor.position;actor.velocity=new Point();actor.action="kick";actor.actionKind="clearance";actor.actionSequence=1;actor.angle=0;
                 var ball=new Vector3(actor.position.x,.11f,actor.position.z+.42f);actor.actionTarget=new Point(ball.x,ball.z);actor.actionHeight=.11f;
-                for(int frame=0;frame<=18;frame++){actor.actionTime=.64f-frame*.01f;view.Render(actor,1,.01f,ball);if(frame==0)Assert.Less(Vector3.Distance(previous,view.FootPosition(left)),.15f);}
+                for(int frame=0;frame<=Mathf.CeilToInt(.18f*fps);frame++){
+                    float elapsed=Mathf.Min(.18f,frame/(float)fps);actor.actionTime=.64f-elapsed;
+                    var state=JsonUtility.ToJson(actor);view.Render(actor,1,frame==0?1f/fps:elapsed-Mathf.Min(.18f,(frame-1f)/fps),ball);
+                    Assert.AreEqual(state,JsonUtility.ToJson(actor),"Presentation must not modify the simulated clearance");
+                    // Preserve the original 100 Hz guard; at slower rates allow 6 m/s of foot travel.
+                    if(frame==0)Assert.Less(Vector3.Distance(previous,view.FootPosition(left)),Mathf.Max(.15f,.04f+6f/fps));
+                }
                 Assert.Less(Vector3.Distance(view.BootContactPosition(left),ball),.06f);
+                Assert.AreEqual(left?"Chip (miroir)":"Chip",view.MecanimGestureClip,"Clearance preparation must use the preferred-foot capture");
+                for(int frame=19;frame<=63;frame++){actor.actionTime=.64f-frame*.01f;view.Render(actor,1,.01f,ball);}
+                var facing=view.RigRoot.localRotation;
+                actor.action="run";actor.actionKind="";actor.actionTime=0;
+                view.Render(actor,1,1f/120,ball);
+                Assert.Less(Quaternion.Angle(facing,view.RigRoot.localRotation),5f,"Outgoing capture must retain its yaw compensation as it fades");
             }finally{Object.DestroyImmediate(go);}
         }
     }

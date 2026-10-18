@@ -1,3 +1,4 @@
+- Animations : contact pied-ballon rétabli sur les dégagements après recul, avec orientation progressive conservée pendant le fondu de sortie.
 - Validation : garde de raccord du sprint sur le personnage Humanoid réel, pieds et orteils avec/sans IK.
 - Validation : correction expérimentale du raccord des orteils du sprint, avec racine et autres articulations préservées.
 - Validation : conversion isolée de quatre FBX de locomotion vers MotionMatching, reconstruction vérifiée et diagnostic des raccords de boucle.
