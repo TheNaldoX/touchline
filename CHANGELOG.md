@@ -1,3 +1,4 @@
+- Validation : interpolation expérimentale du corps et des transitions MotionMatching, avec mesures des articulations et appuis sur vingt secondes à chaque cadence.
 - Validation : interpolation expérimentale de la racine MotionMatching à 120 Hz, isolée du jeu, avec garde aux limites des clips et six contrôles déterministes.
 - Mercato IA : un besoin de remplacement satisfait et sa nouvelle recrue ne déclenchent plus un second achat pour la même place pendant le mercato estival.
 - Validation : prototype MotionMatching isolé et reproductible à 1/22 personnages, 30/60/120 Hz, avec revue et garde avant intégration.

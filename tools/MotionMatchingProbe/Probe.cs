@@ -12,7 +12,10 @@ using MotionMatching;
 [InitializeOnLoad]
 public static class TouchlineMotionMatchingProbe
 {
-    const int WarmupFrames=120, MeasuredFrames=600;
+    // Equal path duration at every refresh rate: two seconds warm-up, twenty measured.
+    static int WarmupFrames=>2*hz;
+    static int MeasuredFrames=>20*hz;
+    static readonly PoseMetrics poseMetrics=new PoseMetrics();
     static int actors,hz,lastFrame=-1,frames,errors,editorSearchErrors,stationaryRootSamples;
     static string output;
     static double started,previousCost;
@@ -33,6 +36,7 @@ public static class TouchlineMotionMatchingProbe
     public static void Run()
     {
         SubframeRoot.Validate(); // Six deterministic interpolation/boundary/immutability checks.
+        SubframePose.Validate(); // Eight joint, contact and reusable-buffer checks.
         actors=int.Parse(Arg("-probeActors"));hz=int.Parse(Arg("-probeHz"));output=Arg("-probeOutput");
         EditorSceneManager.OpenScene("Assets/Examples/Scenes/01_Advanced/ExamplePathTest.unity");
         var template=GameObject.Find("Test1");
@@ -56,6 +60,8 @@ public static class TouchlineMotionMatchingProbe
     static void Tick()
     {
         if(EditorApplication.timeSinceStartup-started>240){EditorApplication.Exit(2);return;}
+        // Do not keep collecting partial skeletons after an upstream import/runtime error.
+        if(errors>0){SessionState.SetBool("TouchlineMMProbe",false);EditorApplication.Exit(1);return;}
         if(!EditorApplication.isPlaying||Time.frameCount==lastFrame)return;
         lastFrame=Time.frameCount;
         // Fixed simulation step, wall time is NOT reported as device frame time.
@@ -66,6 +72,7 @@ public static class TouchlineMotionMatchingProbe
             if(controllers.Length!=actors){EditorApplication.Exit(3);return;}
         }
         frames++;
+        poseMetrics.Sample(controllers,hz,frames>WarmupFrames);
         var p=PROFILE.GET_DATA("Motion Matching Total");
         double total=p?.TotalMs??0;
         if(frames>WarmupFrames){
@@ -77,9 +84,11 @@ public static class TouchlineMotionMatchingProbe
         }
         previousCost=total;
         for(int i=0;i<controllers.Length;i++)previous[i]=controllers[i].transform.position;
-        if(frames==WarmupFrames+180)Capture();
+        if(frames==WarmupFrames+3*hz||frames==WarmupFrames+10*hz||frames==WarmupFrames+17*hz)Capture();
         if(frames<WarmupFrames+MeasuredFrames)return;
         costs.Sort();
+        poseMetrics.Finish();
+        File.WriteAllText(output+"/pose-metrics.json",JsonUtility.ToJson(poseMetrics,true));
         var result=new Result{actors=actors,hz=hz,frames=costs.Count,errors=errors,editorSearchErrors=editorSearchErrors,
             meanAnimationCpuMs=costs.Average(),p95AnimationCpuMs=costs[(int)(costs.Count*.95)],
             maxRootStepMetres=maxStep,stationaryRootSamplePercent=100f*stationaryRootSamples/(actors*costs.Count),profileCalls=p?.Count??0,
@@ -96,7 +105,7 @@ public static class TouchlineMotionMatchingProbe
         cam.transform.LookAt(controllers[0].transform.position+Vector3.up);
         var rt=new RenderTexture(960,720,24);cam.targetTexture=rt;cam.Render();
         var old=RenderTexture.active;RenderTexture.active=rt;var tex=new Texture2D(960,720,TextureFormat.RGB24,false);
-        tex.ReadPixels(new Rect(0,0,960,720),0,0);tex.Apply();File.WriteAllBytes(output+"/preview.png",tex.EncodeToPNG());
+        tex.ReadPixels(new Rect(0,0,960,720),0,0);tex.Apply();File.WriteAllBytes(output+"/preview-"+(frames/hz)+"s.png",tex.EncodeToPNG());
         RenderTexture.active=old;cam.targetTexture=null;UnityEngine.Object.DestroyImmediate(tex);UnityEngine.Object.DestroyImmediate(rt);
     }
     [Serializable] class Result{public int actors,hz,frames,errors,editorSearchErrors,profileCalls,databaseHz;public double meanAnimationCpuMs,p95AnimationCpuMs;public float maxRootStepMetres,stationaryRootSamplePercent;public string unity,device,note;}
