@@ -110,6 +110,30 @@ namespace Touchline.Tests
                 Assert.That(Mathf.Min(Vector3.Distance(v.BootContactPosition(true),ball),Vector3.Distance(v.BootContactPosition(false),ball)),Is.LessThan(.06f));Assert.AreEqual(Vector3.zero,go.transform.position);
             }finally{Object.DestroyImmediate(go);}
         }
+        [TestCase(30,false)] [TestCase(60,false)] [TestCase(120,false)]
+        [TestCase(30,true)] [TestCase(60,true)] [TestCase(120,true)]
+        public void CapturedDribbleTouchesFollowMovingBallAndFreezeWhenPaused(int fps,bool left)
+        {
+            var go=new GameObject("Moving captured dribble");try{
+                var view=View(go,left);var actor=new Actor{slot=9,action="run",velocity=new Point(0,2)};
+                var context=new PlayerMotionContext{carrying=true};int contacts=0;
+                for(int frame=0;frame<fps*3;frame++){
+                    float time=(float)frame/fps,tick=Mathf.Floor(time/MatchSimulation.Step);
+                    float next=(tick+1)*MatchSimulation.Step,alpha=Mathf.Clamp01((time-tick*MatchSimulation.Step)/MatchSimulation.Step);
+                    actor.previous=new Point(0,(next-MatchSimulation.Step)*2);actor.position=new Point(0,next*2);actor.stride=next*2;
+                    float phase=time*2*2.4f,near=.5f-.5f*Mathf.Sin(phase);
+                    var ball=new Vector3(0,.11f,time*2+.30f+.26f*(1-near));string saved=JsonUtility.ToJson(actor);
+                    view.Render(actor,alpha,1f/fps,ball,context);
+                    if(near>.995f){contacts++;Assert.Less(Mathf.Min(Vector3.Distance(view.BootContactPosition(true),ball),Vector3.Distance(view.BootContactPosition(false),ball)),.075f,"Close touch must meet the moving ball");}
+                    var l=view.FootPosition(true);var r=view.FootPosition(false);
+                    view.Render(actor,alpha,0,ball,context);
+                    Assert.Less(Vector3.Distance(l,view.FootPosition(true)),.003f,"Left foot must stay still during pause");
+                    Assert.Less(Vector3.Distance(r,view.FootPosition(false)),.003f,"Right foot must stay still during pause");
+                    Assert.AreEqual(saved,JsonUtility.ToJson(actor));
+                }
+                Assert.Greater(contacts,0,"Exercise an actual close touch at every render cadence");
+            }finally{Object.DestroyImmediate(go);}
+        }
         [Test] public void ReactionsComeFromGoalSideAndStopWhenPlayResumes()
         {
             var m=new MatchState{phase="goal",restart=2};m.events.Add(new MatchEvent{kind="goal",side=1,player="scorer"});
