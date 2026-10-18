@@ -99,3 +99,17 @@ Aucune base de recherche MotionMatching générée ni intégration au jeu. Les c
 courts nécessitent encore un horizon futur valide ; ne pas les répéter aveuglément.
 Les mesures de vitesse de racine brute ne remplacent pas les estimations de cadence
 par appuis utilisées dans le rendu Humanoid existant. Aucun FBX publié par cet outil.
+
+### Raccord du sprint (variante expérimentale)
+`node --test tools/MotionMatchingProbe/FootballLoop.test.mjs`
+`node tools/MotionMatchingProbe/FootballLoop.mjs <sprint.motion.json> <nouvelle-sortie.json>`
+`Run-FootballLoopReview.ps1 -InputMotion <sortie> -ReferenceMotion <source> -Name <preuve>`
+
+Ne modifie que la flexion de LeftToeBase sur les huit dernières images à 60 Hz,
+avec extrémités stationnaires exigées et refus des structures inattendues. La base
+des orteils ne bouge pas ; leur extrémité peut bouger. Aucune adaptation automatique
+aux autres gestes ou contacts. Sur le sprint existant : raccord 10,489° → 0,
+pointe déplacée de 1,696 cm, racine et 64 autres rotations inchangées. Le pic global
+ancien de 1371,9°/s reste inchangé ; le raccord ne résout pas toutes les irrégularités.
+La capture de squelette valide la portée locale de la modification, pas le contact
+avec la chaussure/terrain après retargeting Humanoid. Ne pas intégrer directement.
