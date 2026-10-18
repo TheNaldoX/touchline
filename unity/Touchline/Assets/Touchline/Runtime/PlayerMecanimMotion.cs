@@ -37,6 +37,7 @@ namespace Touchline
         const string HighClaimClip="Goalkeeper Catch (1)";
         const float HighClaimOverheadMargin=.15f; // metres above stature: use the existing jumping catch, not a chest-height capture.
         const float HighClaimFadeIn=.25f; // seconds: blend the captured takeoff without pulling wrists upward in one frame.
+        const float HighDiveClipContact=1f; // seconds in the existing diving capture: raised extension before the descending low catch at 1.25 s.
         const string RunClip="Standard Run",SprintClip="Two Cycle Sprint",JogBackClip="Jog Backward",RunBackClip="Run Backward",StrafeLeftClip="Jog Strafe Left",StrafeRightClip="Jog Strafe Right";
         public static bool MecanimReady=>MecanimClips.ContainsKey(IdleClip)&&MecanimClips.ContainsKey(JogClip);
 
@@ -238,6 +239,11 @@ namespace Touchline
                 actionNames[slot]=clipName;activeAction=slot;mecanimActionKey=key;mecanimActionSequence=actor.actionSequence;mecanimActionElapsed=0;
                 clearanceFacing[slot]=actor.actionKind=="clearance"&&ClearanceClip(clipName);clearanceAlignment[slot]=0;
                 mecanimActionContact=(ClipContact.TryGetValue(clipName,out var c)?c:clip.length*.4f)-simContact;
+                if(actor.action=="dive"&&(clipName=="Goalkeeper Diving Save"||clipName=="Goalkeeper Diving Save (miroir)")){
+                    // Metres: chest-height deliveries keep the low-catch marker; high balls use the earlier raised extension.
+                    float highBall=Mathf.InverseLerp(1.1f,2.2f,actor.actionHeight);
+                    mecanimActionContact=Mathf.Lerp(ClipContact[clipName],HighDiveClipContact,highBall)-simContact;
+                }
                 if(celebrating){mecanimActionContact=0;celebrationEntryTime=reset?0:context.reactionTime;}
                 if(PersonalFacing(clipName))ClipYawCurve(clipName);
                 if(turnGesture)mecanimActionContact=TurnClipStart(clipName);

@@ -202,3 +202,4 @@ Une ligne par pull request, la plus récente en haut.
 - Animations : prises de balle enregistrées du gardien calées sur l'horloge et l'instant de contact du match, y compris à l'entrée d'un temps fort.
 - Animations : les prises de balle enregistrées rejoignent désormais le ballon même sans préparation affichée, avec déplacement progressif des mains et tenue finale corrigée.
 - Animations : prises au-dessus du gardien raccordées à la capture de saut existante, avec entrée progressive et réception au sol contrôlée.
+- Animations : le contact des plongeons hauts utilise l'extension du bras avant la descente de la capture, sans modifier la portée ni les arrêts simulés.
