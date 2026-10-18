@@ -90,7 +90,29 @@ public static class FootballFbxProbe
     }
 
     // Paired skeletons: source in white, reconstructed JSON in cyan. Four sampled poses.
-    static void Capture(string output,string name,Converted data,Vector3[][] expected){
+    public static void ReviewLoop(){
+        string output=Arg("-footballOutput");
+        var source=JsonUtility.FromJson<Converted>(File.ReadAllText(Arg("-footballReference")));
+        var adjusted=JsonUtility.FromJson<Converted>(File.ReadAllText(Arg("-footballInput")));
+        var expected=new Vector3[source.frames.Length][];
+        float maxAnchor=0,maxTip=0;
+        int toe=Array.FindIndex(source.joints,j=>j.name=="mixamorig:LeftToeBase");
+        for(int f=0;f<source.frames.Length;f++){
+            expected[f]=Positions(source,f);var actual=Positions(adjusted,f);
+            maxAnchor=Mathf.Max(maxAnchor,Vector3.Distance(expected[f][toe],actual[toe]));
+            for(int j=0;j<source.joints.Length;j++)if(source.joints[j].parent==toe)maxTip=Mathf.Max(maxTip,Vector3.Distance(expected[f][j],actual[j]));
+        }
+        if(maxAnchor>.000001f)throw new Exception("Toe anchor moved");
+        Capture(output,"sprint-loop",adjusted,expected,new[]{56,60,63,64});
+        File.WriteAllText(Path.Combine(output,"passed.txt"),"Toe base displacement metres: "+maxAnchor+"; toe tip displacement metres: "+maxTip+". Static pose review only, no retargeting/contact validation.");
+        EditorApplication.Exit(0);
+    }
+    static Vector3[] Positions(Converted data,int f){
+        var positions=new Vector3[data.joints.Length];var rotations=new Quaternion[data.joints.Length];
+        for(int j=0;j<positions.Length;j++){int p=data.joints[j].parent;rotations[j]=j==0?data.frames[f].rotations[j]:rotations[p]*data.frames[f].rotations[j];positions[j]=j==0?data.frames[f].root:positions[p]+rotations[p]*data.joints[j].offset;}
+        return positions;
+    }
+    static void Capture(string output,string name,Converted data,Vector3[][] expected,int[] samples=null){
         var container=new GameObject("Conversion review");
         var material=new Material(Shader.Find("Hidden/Internal-Colored"));
         var cameraObject=new GameObject("Review camera");var camera=cameraObject.AddComponent<Camera>();
@@ -100,7 +122,7 @@ public static class FootballFbxProbe
             camera.clearFlags=CameraClearFlags.SolidColor;camera.backgroundColor=new Color(.025f,.04f,.065f);
             camera.orthographic=true;camera.orthographicSize=2.5f;camera.transform.position=new Vector3(5.5f,1f,-15f);camera.transform.rotation=Quaternion.identity;camera.targetTexture=target;camera.cullingMask=1<<31;
             for(int sample=0;sample<4;sample++){
-                int f=sample*(data.frames.Length-1)/3;var positions=new Vector3[data.joints.Length];var rotations=new Quaternion[data.joints.Length];
+                int f=samples==null?sample*(data.frames.Length-1)/3:samples[sample];var positions=new Vector3[data.joints.Length];var rotations=new Quaternion[data.joints.Length];
                 for(int j=0;j<data.joints.Length;j++){
                     int parent=data.joints[j].parent;
                     rotations[j]=j==0?data.frames[f].rotations[j]:rotations[parent]*data.frames[f].rotations[j];
