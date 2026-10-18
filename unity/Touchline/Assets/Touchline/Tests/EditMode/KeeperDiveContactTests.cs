@@ -8,16 +8,17 @@ namespace Touchline.Tests
 {
     public class KeeperDiveContactTests
     {
-        [TestCase(30)][TestCase(60)][TestCase(120)]
-        public void CapturedCatchContactIsContinuousAtDifferentRenderRates(int hz)
+        [TestCase(30,1.1f)][TestCase(60,1.1f)][TestCase(120,1.1f)]
+        [TestCase(30,2.2f)][TestCase(60,2.2f)][TestCase(120,2.2f)]
+        public void CapturedCatchContactIsContinuousAtDifferentRenderRates(int hz,float height)
         {
             bool previousMode=PlayerView.UseMecanim;PlayerView.UseMecanim=true;
             var go=new GameObject("Captured catch continuity");
             try{
                 var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="captured-contact",heightCm=185},0,0,Color.yellow);
                 var actor=new Actor{slot=0,action="idle"};view.Render(actor,1,1f/hz);
-                actor.action="dive";actor.actionKind="save-catch";actor.actionSequence=1;actor.actionContactTime=.18f;actor.actionTarget=new Point(1.1f,.3f);actor.actionHeight=1.1f;actor.diveSide=1;
-                var ball=new Vector3(1.1f,1.1f,.3f);var rig=go.transform.Find("Rig");var previous=rig.position;float time=0;
+                actor.action="dive";actor.actionKind="save-catch";actor.actionSequence=1;actor.actionContactTime=.18f;actor.actionTarget=new Point(1.1f,.3f);actor.actionHeight=height;actor.diveSide=1;
+                var ball=new Vector3(1.1f,height,.3f);var rig=go.transform.Find("Rig");var previous=rig.position;float time=0;
                 while(time<.18f){float dt=Mathf.Min(1f/hz,.18f-time);time+=dt;actor.actionTime=1.2f-time;view.Render(actor,1,dt,ball);Assert.Less(Vector3.Distance(previous,rig.position),10*dt+.015f,"Root correction jumped");previous=rig.position;}
                 Assert.Less(Vector3.Distance(view.HeldBallPosition,ball),.17f);
             }finally{Object.DestroyImmediate(go);PlayerView.UseMecanim=previousMode;}
