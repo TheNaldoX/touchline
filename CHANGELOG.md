@@ -201,3 +201,4 @@ Une ligne par pull request, la plus récente en haut.
 - Validation : contacts des tirs et passes contrôlés avec les métadonnées réelles, deux pieds et tailles 160/205 cm, sans changer les animations.
 - Animations : prises de balle enregistrées du gardien calées sur l'horloge et l'instant de contact du match, y compris à l'entrée d'un temps fort.
 - Animations : les prises de balle enregistrées rejoignent désormais le ballon même sans préparation affichée, avec déplacement progressif des mains et tenue finale corrigée.
+- Animations : prises au-dessus du gardien raccordées à la capture de saut existante, avec entrée progressive et réception au sol contrôlée.
