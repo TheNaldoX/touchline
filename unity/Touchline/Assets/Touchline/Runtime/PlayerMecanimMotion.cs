@@ -178,7 +178,7 @@ namespace Touchline
                     clip=chest?"Goalkeeper Catch":(actor.diveSide>=0)==(DiveClipSide>0)?"Goalkeeper Diving Save":"Goalkeeper Diving Save (miroir)";
                     if(actor.actionKind=="save-catch"&&local.y>=.15f&&local.y<.75f&&KeeperCompactCatch.Weight(local)>=.9999f&&MecanimClips.ContainsKey(CapturedLowCatch))clip=CapturedLowCatch;
                     simContact=actor.actionContactTime>0?actor.actionContactTime:.2f;break;}
-                case "claim":clip="Goalkeeper Catch";simContact=.2f;break;
+                case "claim":clip="Goalkeeper Catch";simContact=MatchSimulation.HasRecordedKeeperClaim(actor)?actor.actionContactTime:.2f;break;
             }
             return clip!=null&&MecanimClips.ContainsKey(clip);
         }
@@ -376,6 +376,7 @@ namespace Touchline
                 case "keeper-throw":return MatchSimulation.KeeperDistributionDuration;
                 case "throw":return 1.1f;
                 case "dive":return 1.2f;
+                case "claim":return MatchSimulation.HasRecordedKeeperClaim(actor)?MatchSimulation.KeeperClaimPresentationDuration:0;
                 default:return 0; // Multi-clip falls, turns and variable foot controls retain their own timing.
             }
         }
