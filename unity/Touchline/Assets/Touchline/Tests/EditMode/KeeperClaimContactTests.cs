@@ -9,6 +9,29 @@ namespace Touchline.Tests
     public class KeeperClaimContactTests
     {
         [TestCase(30)] [TestCase(60)] [TestCase(120)]
+        public void ClaimWithoutPreviewApproachesBallAndGathersWithoutHandSnap(int fps)
+        {
+            var go=new GameObject("Unanticipated claim");try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="late-claim",heightCm=182},0,0,Color.yellow);
+                var actor=new Actor{slot=0,action="idle"};
+                for(int frame=0;frame<fps/2;frame++)view.Render(actor,1,1f/fps);
+                var wrists=go.GetComponentsInChildren<Transform>().Where(t=>t.name=="wrist.L"||t.name=="wrist.R").ToArray();
+                var previous=wrists.Select(t=>t.position).ToArray();
+                actor.action="claim";actor.actionKind=MatchSimulation.RecordedKeeperClaim;actor.actionSequence=1;actor.actionContactTime=.12f;
+                actor.actionTarget=new Point(0,.48f);actor.actionHeight=1.8f;
+                for(int frame=0;frame<=Mathf.CeilToInt(.6f*fps);frame++){
+                    actor.actionTime=.8f-frame/(float)fps;string before=JsonUtility.ToJson(actor);
+                    view.Render(actor,1,1f/fps);
+                    for(int hand=0;hand<wrists.Length;hand++){
+                        Assert.Less(Vector3.Distance(wrists[hand].position,previous[hand])*fps,8,"No snap on a claim without anticipation");
+                        previous[hand]=wrists[hand].position;
+                    }
+                    Assert.AreEqual(before,JsonUtility.ToJson(actor));
+                }
+                Assert.Less(Vector3.Distance(view.HeldBallPosition,new Vector3(0,1.1f,.36f)),.04f,"A claim without a preview must still gather to the actual held point");
+            }finally{Object.DestroyImmediate(go);}
+        }
+        [TestCase(30)] [TestCase(60)] [TestCase(120)]
         public void RecordedClaimClipUsesMatchClockOnHighlightEntryAndPause(int fps)
         {
             var go=new GameObject("Claim clock");try{
