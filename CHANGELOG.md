@@ -1,3 +1,4 @@
+- Caméra : reprise du zoom progressif après un replay de but, sans second saut de cadrage après le retour au direct.
 - Caméra : boutons et pincement appliquent un zoom progressif au lieu de réinitialiser instantanément le cadrage.
 - Validation : pivots et redémarrages mesurés sur le virage capturé et les positions simulées, avec pause vérifiée à trois cadences.
 - Animations : rotation du plan des genoux bornée dans le temps au redémarrage, sans déplacer les contacts des pieds ni rompre l’entrée des contrôles.

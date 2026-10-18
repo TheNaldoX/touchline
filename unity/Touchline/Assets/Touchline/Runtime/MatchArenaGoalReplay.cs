@@ -49,7 +49,7 @@ namespace Touchline
         void ReframeGoalReplayCamera(){replayCamera.Apply(MatchCamera);MatchCamera.farClipPlane=goalReplay.RecordedCameraFarClip;}
         // Changement au moment des coupes (début et fin du ralenti) : aucun saut visible en continu.
         void LightReplay(bool replay){if(floodlight!=null)floodlight.transform.rotation=StadiumLighting.FloodRotation(replay?StadiumLighting.FloodYawFacing(-replayCamera.Side):StadiumLighting.FloodYaw);}
-        void RestoreAfterGoalReplay(){LightReplay(false);MatchCamera.fieldOfView=liveFieldOfView;MatchCamera.farClipPlane=goalReplay.RecordedCameraFarClip;cameraReset=true;poseCache.Reset();foreach(var line in tacticalLines)line.enabled=showTactics;}
+        void RestoreAfterGoalReplay(){LightReplay(false);MatchCamera.fieldOfView=liveFieldOfView;MatchCamera.farClipPlane=goalReplay.RecordedCameraFarClip;poseCache.Reset();foreach(var line in tacticalLines)line.enabled=showTactics;}
         public void SkipGoalReplay(){if(!GoalReplayActive)return;goalReplay.Skip();RestoreAfterGoalReplay();}
     }
 }
