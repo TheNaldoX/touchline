@@ -1,3 +1,4 @@
+- Caméra : recentrage de bord réduit au déplacement nécessaire pour garder le ballon et le joueur visibles.
 - Animations : touches de dribble raccordées au ballon dans le rendu capturé, sans modifier la trajectoire simulée.
 - Caméra : reprise du zoom progressif après un replay de but, sans second saut de cadrage après le retour au direct.
 - Caméra : boutons et pincement appliquent un zoom progressif au lieu de réinitialiser instantanément le cadrage.
