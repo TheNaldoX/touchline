@@ -1,3 +1,4 @@
+- Mercato IA : un besoin de remplacement satisfait et sa nouvelle recrue ne déclenchent plus un second achat pour la même place pendant le mercato estival.
 - Validation : prototype MotionMatching isolé et reproductible à 1/22 personnages, 30/60/120 Hz, avec revue et garde avant intégration.
 - Caméra : recentrage de bord réduit au déplacement nécessaire pour garder le ballon et le joueur visibles.
 - Animations : touches de dribble raccordées au ballon dans le rendu capturé, sans modifier la trajectoire simulée.

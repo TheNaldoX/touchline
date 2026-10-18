@@ -226,9 +226,12 @@ namespace Touchline.Core
                 if(!eligible.Contains(team.id)||team.id==club&&world.managerStatus=="employed"||!squads.TryGetValue(team.id,out var squad))continue;
                 var account=accounts[team.id];float ambition=AiAmbition(team.id);long budget=Math.Max(0,Math.Min((long)(team.annualRevenue*(AiTransferShareMin+AiTransferShareRange*ambition)),account.cash-(long)(team.annualRevenue*(AiCashReserveMax-AiCashReserveRange*ambition))-committed[team.id]));
                 int target=Math.Min(AiSquadTargetMax,targets.TryGetValue(team.id,out var reference)?reference:AiDefaultSquadTarget);
+                // One arrival fills one replacement brief. The old player remains
+                // under contract, but must not trigger the same purchase again.
+                var filledNeeds=new HashSet<string>();
                 for(int signing=0;signing<(ambition>AiAmbitiousThreshold?3:2)&&budget>0&&Active(squad)<target+2;signing++){
-                    PlayerData candidate=null;long wageCeiling=AiGrossWageCeiling(team);long squadWages=squad.Sum(x=>x.wage);
-                    foreach(var weak in squad.Where(p=>p.age>22).OrderBy(p=>p.rating).GroupBy(p=>p.positions?.FirstOrDefault()??p.position).Select(g=>g.First())){
+                    PlayerData candidate=null,replaced=null;long wageCeiling=AiGrossWageCeiling(team);long squadWages=squad.Sum(x=>x.wage);
+                    foreach(var weak in squad.Where(p=>p.age>22&&!filledNeeds.Contains(p.id)).OrderBy(p=>p.rating).GroupBy(p=>p.positions?.FirstOrDefault()??p.position).Select(g=>g.First())){
                     bool weakKeeper=weak.Goalkeeper;string role=weak.positions?.FirstOrDefault()??(weakKeeper?"GK":"CM");float minimum=weak.rating+3;
                     // Cheapest rating gain first, ties by id: same order as the former
                     // OrderBy/ThenBy, found in one pass instead of sorting every match.
@@ -239,12 +242,13 @@ namespace Touchline.Core
                         float cost=p.value/Math.Max(1,p.rating-weak.rating);
                         if(candidate==null||cost<bestCost||cost==bestCost&&string.CompareOrdinal(p.id,candidate.id)<0){candidate=p;bestCost=cost;}
                     }
-                    if(candidate!=null)break;
+                    if(candidate!=null){replaced=weak;break;}
                     }
                     if(candidate==null)break;
                     string sellerId=candidate.team;long fee=(long)(candidate.value*(listed.Remove(candidate.id)?AiListedFeeShare:1.05)),wage=(long)(candidate.wage*1.1),agentFee=wage*4;
                     AiEntry(account,-fee,"Recrutement IA · "+candidate.name);AiEntry(accounts[sellerId],fee,"Vente IA · "+candidate.name);AiEntry(account,-agentFee,"Honoraires agent IA · "+candidate.name);
                     budget-=fee+agentFee;squads[sellerId].Remove(candidate);squad.Add(candidate);candidate.team=team.id;candidate.wage=wage;candidate.salarySource="Salaire négocié dans la simulation IA";
+                    filledNeeds.Add(replaced.id);filledNeeds.Add(candidate.id); // Give the new signing his intended place this window.
                     var contract=Contract(db,candidate.id);contract.club=team.id;contract.wage=wage;contract.until=life.day+365*3;contract.joined=life.day;contract.estimated=true;contract.parent=null;contract.aiRelease=false;contract.nextWage=0;contract.wageChangeDay=0;
                     SavePlayer(candidate);protectedPlayers.Add(candidate.id);world.aiTransfers.Add(new AiTransferRecord{player=candidate.id,buyer=team.id,seller=sellerId,year=world.year,fee=fee,agentFee=agentFee,wage=wage});
                     // No hoarding: above its size, the buyer lists its weakest senior
