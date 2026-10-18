@@ -28,4 +28,3 @@ if($p.ExitCode -ne 0 -or !(Test-Path "$output/passed.txt")){throw "Conversion fa
 foreach($item in $proof){if((Get-FileHash -LiteralPath $item.source).Hash -ne $item.sha256){throw 'Source FBX changed'}}
 Get-Content "$output/passed.txt"
 Get-ChildItem $output -Filter '*.result.json'|ForEach-Object {Get-Content $_.FullName}
-

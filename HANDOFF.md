@@ -50,4 +50,3 @@ main intègre0.72 viaPR183 ; correctifs suivants restent en PR draft. Dernière 
 ## Suite et outils
 Priorités : stabiliser23échecs contacts/caméra, poursuivre IA sans dégrader calibration ; management besoins par titulaire/système tactique et sureffectifs sur durée. PrototypeMM à adapter avant intégration, pas remplacement direct.
 .validation/run-local-unity.ps1 ; nettoyage après arrêt CIM escaladé via cleanup-unity-imports.ps1, restaurer seulement scène/settings générés. Core .tools/dotnet/dotnet.exe avec DOTNET_CLI_HOME=.tools/cli. API .validation/github-api.ps1 (corpsJSONfichier). Ne jamais imprimer database.json. Pas de journal docs. Quota5%utilisé vérifié début session ; garder marge livraison au seuil95% utilisé demandé par utilisateur.
-

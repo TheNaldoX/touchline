@@ -194,4 +194,3 @@ Une ligne par pull request, la plus récente en haut.
 - Import dans Git depuis Google Drive. `MatchDecisions.bak.cs` retiré (doublon compilé de `MatchDecisions.cs`).
 - Animations : les prises centrales à hauteur du buste utilisent une capture debout plutôt qu’un plongeon latéral, avec contact conservé.
 - Animations : import local des 21 captures Soccer d’Anderson Rohr et première variante de passe intérieure droite, synchronisée au ballon ; fichiers sous licence exclus du dépôt public.
-
