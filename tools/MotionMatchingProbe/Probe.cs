@@ -32,6 +32,7 @@ public static class TouchlineMotionMatchingProbe
     }
     public static void Run()
     {
+        SubframeRoot.Validate(); // Six deterministic interpolation/boundary/immutability checks.
         actors=int.Parse(Arg("-probeActors"));hz=int.Parse(Arg("-probeHz"));output=Arg("-probeOutput");
         EditorSceneManager.OpenScene("Assets/Examples/Scenes/01_Advanced/ExamplePathTest.unity");
         var template=GameObject.Find("Test1");
