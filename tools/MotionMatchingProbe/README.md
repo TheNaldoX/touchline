@@ -56,6 +56,22 @@ Les pieds ne sont pas parfaitement fixes : l'amortissement du contact et les lim
 
 ## Références pour les autres lots
 
+### Rejeu de trajectoires Touchline
+
+`-MatchTrace chemin.json` (22 acteurs obligatoires) active les adaptations précédentes et remplace le trajet de démonstration par un export de `tools/MotionMatchingTrace`. Les positions et orientations interpolées du Core restent imposées à la racine **avant** le calcul du squelette et des appuis ; le root motion ne déplace pas les acteurs du moteur. `trace-source.json` conserve le hash du fichier et la révision locale, `trace-result.json` indique les corrections requises par les poses et la dérive observée après leur évaluation. Les tests vérifient l'interpolation des coordonnées, le passage ±180°, les bornes et l'absence de mutation.
+
+Premier export valide : 22 acteurs, 261 échantillons chacun à 10 Hz, graine 1, 26 secondes. Deux simulations indépendantes donnent le SHA256 `4ED657EEF07B5ADD238563A2E4AC4474004CC7636D5EF49F29C676D8253CC9AD`. L'essai brut initial à 60 Hz répétait les ticks et est **exclu** : il fabriquait des arrêts artificiels. Les preuves valides sont `mm-native-match-{30,60,120}` et `mm-native-coverage-60`.
+
+La dérive de position par rapport à l'enregistrement est nulle aux trois cadences (c'est un contrat imposé, pas une preuve de qualité). P95 glissement d'appui : 0,077/0,080/0,082 m/s à 30/60/120 Hz ; maxima 0,246/0,695/0,471 m/s. Captures revues, zéro erreur animation, diagnostics Editor amont conservés. Le film contient courses/arrêts mais aussi des contrôles/frappes que ces clips ne représentent pas ; aucun ballon affiché.
+
+**Limite mesurée :** la base de démonstration contient 18 120 poses, un clip, vitesse racine maximale 3,563 m/s (P99 2,912), aucune frame à 6 m/s. Le match atteint 7,982 m/s. La correction de position du root motion reste donc importante (moyenne 3,20 cm/image à 60 Hz, maximum 21,32 cm). Il faut des mouvements football adaptés ; accélérer arbitrairement le clip ne valide pas un sprint. Le banc utilise le futur enregistré, pas une prédiction en direct. Aucun raccordement dans l'APK ni mesure Fold.
+
+### Stock football déjà disponible
+
+Cette limite de vitesse **ne concerne pas les animations actuelles de Touchline**. `PlayerMecanimMotion` utilise déjà `Jog Forward`, `Standard Run`, `Two Cycle Sprint` et `Sprint Turn`/miroir. Les preuves antérieures `unity/Touchline/build/film/pass-ball-contact-review/clip-timing.csv` et `preferred-foot-clips-review/clip-timing.csv` mesurent respectivement 2,23 / 3,80 / 5,68 m/s par recul du pied d'appui (cadence naturelle, ce n'est pas la vitesse racine de la base externe). Le virage fait environ ±60°. Les constantes du jeu et l'ajustement de cadence existent déjà : ne pas ajouter de doublon ni remplacer le rendu du jeu par la démo.
+
+La prochaine étape technique est la conversion/évaluation de ces FBX Humanoid dans une base compatible, avec récupération du déplacement de racine et des contacts, puis comparaison au rendu Mecanim actuel. Aucun besoin d'achat n'est établi. Les imports Touchline gardent la hauteur et l'orientation dans la pose et ignorent le root motion horizontal à la lecture ; cette configuration ne doit pas être changée pour faciliter le prototype.
+
 - [Pyrus2D](https://github.com/Cyrus2D/Pyrus2D/tree/9c5b17f0a830e200265a60a654fc2c0bda46363f), MIT : `base/generator_pass.py` compare les cycles d'arrivée du receveur, du ballon et des adversaires ; `base/bhv_move.py` compare les temps d'interception des partenaires. Dans Touchline, `Safety` connaît déjà les temps de récupération, mais le classement des presseurs dans `Move` utilise la distance. Première adaptation à tester : un joueur au sol ne doit pas monopoliser le rôle de premier presseur.
 - [Open Football](https://github.com/ZOXEXIVO/open-football/tree/bfb2273053aab5825b5f58e9f588211c2d7794cf), Apache-2.0 : `src/core/src/transfers/squad/plan.rs` organise les besoins selon le titulaire, l'objectif et le budget ; `deal/negotiation.rs` prévoit qu'un poste soit pourvu pendant une négociation. Dans Touchline, vérifier la réévaluation après chaque arrivée : le plus faible remplaçant reste actuellement la référence des achats successifs.
 - [OpenFootManager](https://github.com/openfootmanager/openfootmanager), GPLv3 : référence de conception pour les parcours de gestion. Aucun code ni catalogue importé. La reprise de code demanderait une analyse de compatibilité de licence.
