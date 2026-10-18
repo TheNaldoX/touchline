@@ -34,6 +34,9 @@ namespace Touchline
         const string CapturedCelebration="Rohr_13_Goal_Celebration_02";
         const string CapturedTurnCelebration="Rohr_14_Goal_Celebration_03";
         const string CapturedThrow="Rohr_07_Throw_In",CapturedLowCatch="Rohr_17_Goalkeeper_Save_03";
+        const string HighClaimClip="Goalkeeper Catch (1)";
+        const float HighClaimOverheadMargin=.15f; // metres above stature: use the existing jumping catch, not a chest-height capture.
+        const float HighClaimFadeIn=.25f; // seconds: blend the captured takeoff without pulling wrists upward in one frame.
         const string RunClip="Standard Run",SprintClip="Two Cycle Sprint",JogBackClip="Jog Backward",RunBackClip="Run Backward",StrafeLeftClip="Jog Strafe Left",StrafeRightClip="Jog Strafe Right";
         public static bool MecanimReady=>MecanimClips.ContainsKey(IdleClip)&&MecanimClips.ContainsKey(JogClip);
 
@@ -64,7 +67,7 @@ namespace Touchline
             // Pic de vitesse du pied qui frappe (analyse 60 Hz des clips Mixamo).
             {"Kick Soccerball",.517f},{"Kick Soccerball (1)",.417f},{"Soccer Pass",.433f},{"Chip",.483f},{"Chip (miroir)",.483f},{"Soccer Penalty Kick",.733f},{"Strike Forward Jog",.467f},{"Goalkeeper Drop Kick",2.083f},
             // Pic de vitesse des mains.
-            {"Throw In",1.60f},{"Goalkeeper Overhand Throw",1.60f},{"Goalkeeper Pass",1.133f},{"Goalkeeper Diving Save",1.25f},{"Goalkeeper Diving Save (miroir)",1.25f},{"Goalkeeper Catch",.25f},
+            {"Throw In",1.60f},{"Goalkeeper Overhand Throw",1.60f},{"Goalkeeper Pass",1.133f},{"Goalkeeper Diving Save",1.25f},{"Goalkeeper Diving Save (miroir)",1.25f},{"Goalkeeper Catch",.25f},{HighClaimClip,.733f},
             // Estimés (pas de membre dominant mesuré) : tête, tacle glissé, chute.
             {"Header",.55f},{"Receive Soccerball",.30f},{"Fallen Idle",0f},{"Standing Up",StandUpSkip},{"Soccer Header",.95f},{"Soccer Tackle",.45f},{"Soccer Trip",.70f},
             // Tacle debout (pied intérieur) : pic de vitesse du pied, comme la passe.
@@ -178,7 +181,10 @@ namespace Touchline
                     clip=chest?"Goalkeeper Catch":(actor.diveSide>=0)==(DiveClipSide>0)?"Goalkeeper Diving Save":"Goalkeeper Diving Save (miroir)";
                     if(actor.actionKind=="save-catch"&&local.y>=.15f&&local.y<.75f&&KeeperCompactCatch.Weight(local)>=.9999f&&MecanimClips.ContainsKey(CapturedLowCatch))clip=CapturedLowCatch;
                     simContact=actor.actionContactTime>0?actor.actionContactTime:.2f;break;}
-                case "claim":clip="Goalkeeper Catch";simContact=MatchSimulation.HasRecordedKeeperClaim(actor)?actor.actionContactTime:.2f;break;
+                case "claim":
+                    bool recorded=MatchSimulation.HasRecordedKeeperClaim(actor);
+                    clip=recorded&&actor.actionHeight>MotionStature+HighClaimOverheadMargin&&MecanimClips.ContainsKey(HighClaimClip)?HighClaimClip:"Goalkeeper Catch";
+                    simContact=recorded?actor.actionContactTime:.2f;break;
             }
             return clip!=null&&MecanimClips.ContainsKey(clip);
         }
@@ -268,7 +274,7 @@ namespace Touchline
                 string actionClip=actionNames[i];
                 // Grounded and standing-up phases crossfade at the same rate,
                 // avoiding an abrupt pelvis lift when the new phase takes over.
-                float fadeIn=actionClip=="Soccer Trip"?FallFadeIn:actionClip==FallenClip?FallGroundFade:actionClip==StandUpClip?FallRecoveryFade:ActionFadeIn;
+                float fadeIn=actionClip==HighClaimClip?HighClaimFadeIn:actionClip=="Soccer Trip"?FallFadeIn:actionClip==FallenClip?FallGroundFade:actionClip==StandUpClip?FallRecoveryFade:ActionFadeIn;
                 float fadeOut=actionClip=="Soccer Trip"?FallGroundFade:actionClip==FallenClip||actionClip==StandUpClip?FallRecoveryFade:ActionFadeOut;
                 float target=actionLive[i]?1:0;float rate=actionLive[i]?1/fadeIn:1/fadeOut;
                 actionWeights[i]=Mathf.MoveTowards(actionWeights[i],target,rate*dt);

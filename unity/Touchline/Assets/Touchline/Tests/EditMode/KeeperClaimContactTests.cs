@@ -8,8 +8,9 @@ namespace Touchline.Tests
 {
     public class KeeperClaimContactTests
     {
-        [TestCase(30)] [TestCase(60)] [TestCase(120)]
-        public void ClaimWithoutPreviewApproachesBallAndGathersWithoutHandSnap(int fps)
+        [TestCase(30,1.8f)] [TestCase(60,1.8f)] [TestCase(120,1.8f)]
+        [TestCase(30,2.2f)] [TestCase(60,2.2f)] [TestCase(120,2.2f)]
+        public void ClaimWithoutPreviewApproachesBallAndGathersWithoutHandSnap(int fps,float height)
         {
             var go=new GameObject("Unanticipated claim");try{
                 var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="late-claim",heightCm=182},0,0,Color.yellow);
@@ -18,7 +19,7 @@ namespace Touchline.Tests
                 var wrists=go.GetComponentsInChildren<Transform>().Where(t=>t.name=="wrist.L"||t.name=="wrist.R").ToArray();
                 var previous=wrists.Select(t=>t.position).ToArray();
                 actor.action="claim";actor.actionKind=MatchSimulation.RecordedKeeperClaim;actor.actionSequence=1;actor.actionContactTime=.12f;
-                actor.actionTarget=new Point(0,.48f);actor.actionHeight=1.8f;
+                actor.actionTarget=new Point(0,.48f);actor.actionHeight=height;
                 for(int frame=0;frame<=Mathf.CeilToInt(.6f*fps);frame++){
                     actor.actionTime=.8f-frame/(float)fps;string before=JsonUtility.ToJson(actor);
                     view.Render(actor,1,1f/fps);
@@ -29,6 +30,24 @@ namespace Touchline.Tests
                     Assert.AreEqual(before,JsonUtility.ToJson(actor));
                 }
                 Assert.Less(Vector3.Distance(view.HeldBallPosition,new Vector3(0,1.1f,.36f)),.04f,"A claim without a preview must still gather to the actual held point");
+            }finally{Object.DestroyImmediate(go);}
+        }
+        [TestCase(30)] [TestCase(60)] [TestCase(120)]
+        public void HighClaimKeepsCapturedJumpAndLandsBeforeRelease(int fps)
+        {
+            var go=new GameObject("High claim landing");try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="high-claim",heightCm=182},0,0,Color.yellow);
+                var actor=new Actor{slot=0,action="claim",actionKind=MatchSimulation.RecordedKeeperClaim,actionSequence=1,actionContactTime=.12f,actionTarget=new Point(0,.48f),actionHeight=2.2f};
+                float airborne=0;
+                for(int frame=0;frame<=Mathf.CeilToInt(MatchSimulation.KeeperClaimPresentationDuration*fps);frame++){
+                    actor.actionTime=Mathf.Max(0,MatchSimulation.KeeperClaimPresentationDuration-frame/(float)fps);string before=JsonUtility.ToJson(actor);view.Render(actor,1,1f/fps);
+                    airborne=Mathf.Max(airborne,Mathf.Min(view.FootPosition(true).y,view.FootPosition(false).y));
+                    Assert.Greater(view.FootPosition(true).y,.025f);Assert.Greater(view.FootPosition(false).y,.025f);
+                    Assert.AreEqual(before,JsonUtility.ToJson(actor));Assert.AreEqual(Vector3.zero,go.transform.position);
+                }
+                Assert.Greater(airborne,.18f,"High claim must retain the captured takeoff, not stretch the arms from a chest pose");
+                Assert.Less(Mathf.Min(view.FootPosition(true).y,view.FootPosition(false).y),.18f,"Land before the simulated catch is over");
+                Assert.Less(Vector3.Distance(view.HeldBallPosition,new Vector3(0,1.1f,.36f)),.04f);
             }finally{Object.DestroyImmediate(go);}
         }
         [TestCase(30)] [TestCase(60)] [TestCase(120)]
