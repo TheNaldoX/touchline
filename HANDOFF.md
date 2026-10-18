@@ -2,7 +2,10 @@
 Lire AGENTS.md. Une tâche/branche/PR ; une Unity locale OU CI ; aucun Assets modifié pendant compilation/test/capture/build. Aucun nouvel agent. Préserver sauvegardes/APK/pack privé. Aucun joueur fictif au catalogue initial. Automation PAUSED. Historique détaillé dans Git/PR.
 
 ## État courant — 18 octobre
-Branche fix/ai-transfer-filled-needs, empilée sur feat/external-football-evaluation (PR188/65a26cf), elle-même sur fix/minimal-camera-edge-correction (PR187/fa2b085). Dernière globale :2665/2688,23anciens échecs identiques,0nouveau ; Core1054/1054. Unity arrêtée et imports nettoyés. Aucun succès Fold revendiqué.
+Branche fix/motion-matching-subframe-root, empilée sur fix/ai-transfer-filled-needs (PR189/23747b4), puis feat/external-football-evaluation (PR188/65a26cf). Dernière globale Touchline inchangée :2665/2688,23anciens échecs identiques,0nouveau ; Core1054/1054. Unity arrêtée. Aucun succès Fold revendiqué.
+
+## Dernier lot : racine du prototype à 120 Hz
+tools/MotionMatchingProbe -SubframeRoot : interpolation position/rotation racine dans le même clip et origine de transition fractionnaire, sans mutation des poses partagées. Six contrôles déterministes exécutés avant chaque essai ; aucun Assets Touchline changé. Preuves .validation/mm-subframe-root-{30,60,120}/result.json,source.json,unity.log,preview.png ; captures revues.22acteurs/600images :120Hz arrêts50→0%,pasmax5.94→2.97cm ;60Hz0%,5.92cm ;30Hz0%,11.82cm. CPU moyen animation seule .91/.97/1.01ms respectivement sur PC, pas Android.0erreur animation ;1erreur indexeur UnityEditor.Search par essai, déjà présente avant. Reste à interpoler les articulations et valider appuis/transitions : ceci ne prouve pas la fluidité du corps entier. Ne pas intégrer au jeu tel quel. Script refuse modifications externes inconnues ; sans option rétablit contrôleur épinglé. Prochaine étape : mesures des articulations/appuis sur trajets de même durée avant adaptation complète et trajectoires Touchline.
 
 ## Lot recrutement validé
 CareerAiEconomy : après un achat, marquer le joueur remplacé ET la nouvelle recrue comme besoins satisfaits pour ce mercato estival. Le joueur remplacé conserve ses droits/contrat. Deux besoins distincts au même poste restent possibles. Aucun nouveau champ de sauvegarde.

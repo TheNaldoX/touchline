@@ -18,6 +18,12 @@ Les commandes sont séquentielles. Le script refuse un dossier de preuves exista
 
 ## Conditions avant intégration
 
+### Adaptation expérimentale de la racine
+
+Ajouter `-SubframeRoot` à la commande pour interpoler la position et la rotation de la racine entre deux poses du même clip. L'origine des transitions utilise la même fraction pour éviter un décalage lors d'une recherche. Les tableaux de poses amont ne sont jamais modifiés. Sans ce paramètre, le contrôleur épinglé est rétabli ; le script refuse d'écraser des modifications externes inconnues. Six vérifications déterministes couvrent les milieux, rotations, frames entières, fins de clip, bornes et données partagées avant chaque essai.
+
+Mesure 22 acteurs, 600 images à 120 Hz : images sans déplacement 50 % → 0 %, pas maximal 5,94 → 2,97 cm. À 60 Hz : 0 % d'arrêts et pas maximal 5,92 cm après adaptation. Ce sont des mesures de racine sur un trajet synthétique ; les articulations restent échantillonnées par l'amont et l'adaptation n'est **pas** une solution complète de fluidité. Les différentes cadences parcourent des durées différentes, donc ne constituent pas une comparaison au même instant d'un virage. Une erreur d'indexation `UnityEditor.Search` persiste, distincte des erreurs d'animation (0). Aucune intégration ni validation Android.
+
 - Vérifier le résultat à 30, 60 et 120 Hz : le contrôleur amont avertit explicitement d'un problème possible au-dessus de la cadence de la base d'animations.
 - Adapter une trajectoire issue de Touchline sans laisser le contrôleur modifier les positions du Core.
 - Mesurer les appuis et les transitions avec les clips de football autorisés ; les démonstrations BVH ne prouvent pas la compatibilité de nos FBX.

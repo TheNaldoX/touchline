@@ -1,4 +1,4 @@
-param([ValidateSet(1,22)][int]$Actors=1,[ValidateSet(30,60,120)][int]$Hz=60,[string]$Name="mm-$Actors-$Hz")
+param([ValidateSet(1,22)][int]$Actors=1,[ValidateSet(30,60,120)][int]$Hz=60,[string]$Name="mm-$Actors-$Hz",[switch]$SubframeRoot)
 $ErrorActionPreference='Stop'
 $root=(Resolve-Path "$PSScriptRoot/../..").Path
 $checkout=Join-Path $root '.validation/external-research/MotionMatching'
@@ -6,10 +6,12 @@ $project=Join-Path $checkout 'minimalproject'
 $commit='35fc8ee9a0fd97f12de458ea81eaef7c8219d87a'
 if((git -C $checkout rev-parse HEAD).Trim() -ne $commit){throw 'Unexpected upstream revision'}
 if(Get-Process Unity -ErrorAction SilentlyContinue){throw 'Unity is already running'}
+& "$PSScriptRoot/Set-SubframeRoot.ps1" -Checkout $checkout -Enabled $SubframeRoot.IsPresent
 if($Name -notmatch '^[a-zA-Z0-9-]+$'){throw 'Invalid proof name'}
 $output=Join-Path $root ".validation/$Name"
 if(Test-Path -LiteralPath $output){throw 'Proof already exists; choose a new name'}
 New-Item -ItemType Directory $output | Out-Null
+@{upstream=$commit;subframeRoot=$SubframeRoot.IsPresent;actors=$Actors;hz=$Hz} | ConvertTo-Json | Set-Content "$output/source.json"
 $samples=Join-Path $project 'Assets/Examples'
 if(!(Test-Path -LiteralPath $samples)){
     # Import upstream samples into its own disposable project, never into Touchline.
