@@ -199,3 +199,4 @@ Une ligne par pull request, la plus récente en haut.
 - Animations : les prises centrales à hauteur du buste utilisent une capture debout plutôt qu’un plongeon latéral, avec contact conservé.
 - Animations : import local des 21 captures Soccer d’Anderson Rohr et première variante de passe intérieure droite, synchronisée au ballon ; fichiers sous licence exclus du dépôt public.
 - Validation : contacts des tirs et passes contrôlés avec les métadonnées réelles, deux pieds et tailles 160/205 cm, sans changer les animations.
+- Animations : prises de balle enregistrées du gardien calées sur l'horloge et l'instant de contact du match, y compris à l'entrée d'un temps fort.

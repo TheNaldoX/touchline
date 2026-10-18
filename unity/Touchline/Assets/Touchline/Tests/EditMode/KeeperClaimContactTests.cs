@@ -8,6 +8,30 @@ namespace Touchline.Tests
 {
     public class KeeperClaimContactTests
     {
+        [TestCase(30)] [TestCase(60)] [TestCase(120)]
+        public void RecordedClaimClipUsesMatchClockOnHighlightEntryAndPause(int fps)
+        {
+            var go=new GameObject("Claim clock");try{
+                var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="clock",heightCm=182},0,0,Color.yellow);
+                var actor=new Actor{slot=0,action="claim",actionKind=MatchSimulation.RecordedKeeperClaim,actionSequence=1,actionContactTime=.07f,actionHeight=1.8f,actionTarget=new Point(0,.48f)};
+                var elapsed=typeof(PlayerView).GetField("mecanimActionElapsed",BindingFlags.NonPublic|BindingFlags.Instance);
+                var contact=typeof(PlayerView).GetField("mecanimActionContact",BindingFlags.NonPublic|BindingFlags.Instance);
+                actor.actionTime=.85f; // 0.92 - 0.07: exact recorded contact, including interpolation within a tick.
+                view.Render(actor,1,1f/fps);
+                Assert.That((float)elapsed.GetValue(view),Is.EqualTo(.07f).Within(.00001f));
+                float clipImpact=(float)contact.GetValue(view)+(float)elapsed.GetValue(view);
+                foreach(float remaining in new[]{.8f,.5f,.2f}){
+                    actor.actionTime=remaining;string before=JsonUtility.ToJson(actor);view.Render(actor,1,1f/fps);
+                    Assert.That((float)elapsed.GetValue(view),Is.EqualTo(MatchSimulation.KeeperClaimPresentationDuration-remaining).Within(.00001f));
+                    float expected=(float)elapsed.GetValue(view);
+                    for(int pause=0;pause<3;pause++)view.Render(actor,1,0);
+                    Assert.AreEqual(expected,(float)elapsed.GetValue(view));Assert.AreEqual(before,JsonUtility.ToJson(actor));
+                }
+                // The recorded marker must sample the same clip instant as a legacy catch's 0.2 s contact.
+                actor.actionKind="";actor.actionSequence++;actor.actionTime=.8f;view.Render(actor,1,.01f);
+                Assert.That(clipImpact,Is.EqualTo((float)contact.GetValue(view)+.2f).Within(.00001f));
+            }finally{Object.DestroyImmediate(go);}
+        }
         static MatchSimulation Scene(out Actor keeper)
         {
             var db=new Database{players=Enumerable.Range(0,40).Select(i=>new PlayerData{id="claim"+i,name="P"+i,team=i<20?"a":"b",position=i%20==0?"GB":i%20<5?"DEF":i%20<9?"MIL":"ATT",rating=80,heightCm=182}).ToArray()};
