@@ -81,3 +81,21 @@ Ces lectures sont des pistes de conception, pas une preuve que leurs moteurs son
 ## Animations à rechercher après l'essai
 
 Priorité aux plongeons hauts gauche/droite avec réception et relevé, puis contrôles orientés en course, freinages/pivots et récupération après tacle. Exiger un aperçu du geste entier, une licence adaptée, le format/squelette, l'échelle, les variantes gauche/droite et un contact identifiable. Ne pas sélectionner un clip sur son nom seul : les deux prises du pack déjà revues ne remplacent pas directement un plongeon haut.
+
+## Conversion du stock football (isolée)
+`Run-FootballConversion.ps1 -Name <preuve-unique>` importe quatre FBX existants
+(repos, jogging, course, sprint) en Legacy dans le projet externe épinglé.
+Les imports Humanoid de Touchline restent intacts ; les hashes sources sont revérifiés.
+Le contrôle échantillonne à 60 Hz, sérialise les positions de racine/rotations locales,
+puis reconstruit via le vrai `BVHAnimation` et `AnimationData.SetAnimation` amont.
+Seuils : 2 mm de reconstruction maximale, 0,1 degré après sérialisation.
+Les captures comparent source blanche et squelette reconstruit cyan, quatre instants.
+
+Preuve `football-fbx-conversion-framed` : quatre clips/65 os ; erreur maximale
+0,00901 mm. Le sprint présente un raccord début/fin de 10,49 degrés et 1,70 cm
+relativement à la racine. Les poses terminales des trois autres clips sont presque
+identiques ; cela ne prouve pas la continuité des vitesses ni la qualité des transitions.
+Aucune base de recherche MotionMatching générée ni intégration au jeu. Les clips
+courts nécessitent encore un horizon futur valide ; ne pas les répéter aveuglément.
+Les mesures de vitesse de racine brute ne remplacent pas les estimations de cadence
+par appuis utilisées dans le rendu Humanoid existant. Aucun FBX publié par cet outil.

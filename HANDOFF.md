@@ -1,6 +1,10 @@
 # HANDOFF — Touchline
 Lire AGENTS.md. Une tâche/branche/PR ; une Unity locale OU CI ; aucun Assets modifié pendant compilation/test/capture/build. Aucun nouvel agent. Préserver sauvegardes/APK/pack privé. Aucun joueur fictif au catalogue initial. Automation PAUSED. Historique détaillé dans Git/PR.
 
+## Lot courant : conversion du stock FBX
+Branche feat/football-fbx-conversion-probe, base PR193/e509c2c. Outils uniquement : Run-FootballConversion.ps1 + FootballFbxProbe.cs, imports Legacy isolés, aucune modification des imports Humanoid du jeu. Quatre FBX existants convertis vers BVHAnimation/AnimationData amont35fc8ee ; hashes sources inchangés. Preuves .validation/football-fbx-conversion-framed : reconstruction max0.00901mm,65os communs,offsets interclips<0.000451mm ; quatre captures source blanche/reconstruction cyan revues. Aucun diagnostic C# sur cette exécution, exit0. Premières captures review recadrées car bords coupés, ne pas utiliser pour revue finale.
+Raccords extrémités : jogging/course/repos pratiquement identiques ; sprint10.49°max et1.70cm relatifs racine. Pas encore mesure continuité des vitesses ni correction de boucle. Vitesse racine brute sprint6.36m/s moyenne,7.66pic (pas comparable directement aux vitesses de pied retargeté). Pas de base de recherche construite, retargeting/transition/Android non validés. Prochaine étape : continuité des vitesses et raccord du sprint, puis extraction des poses/features avec horizon futur suffisant. Aucun code Core/runtime/APK changé ; tests Touchline précédents inchangés.
+
 ## État courant — 18 octobre
 Branche feat/motion-matching-match-trace (PR193/a13afc1), empilée sur fix/motion-matching-ankle-contact (PR192/3b5c314), puis PR191/dd30cd0. Dernière globale Touchline inchangée :2665/2688,23anciens échecs identiques,0nouveau ; Core1054/1054. Unity arrêtée. Aucun succès Fold revendiqué.
 
@@ -46,3 +50,4 @@ main intègre0.72 viaPR183 ; correctifs suivants restent en PR draft. Dernière 
 ## Suite et outils
 Priorités : stabiliser23échecs contacts/caméra, poursuivre IA sans dégrader calibration ; management besoins par titulaire/système tactique et sureffectifs sur durée. PrototypeMM à adapter avant intégration, pas remplacement direct.
 .validation/run-local-unity.ps1 ; nettoyage après arrêt CIM escaladé via cleanup-unity-imports.ps1, restaurer seulement scène/settings générés. Core .tools/dotnet/dotnet.exe avec DOTNET_CLI_HOME=.tools/cli. API .validation/github-api.ps1 (corpsJSONfichier). Ne jamais imprimer database.json. Pas de journal docs. Quota5%utilisé vérifié début session ; garder marge livraison au seuil95% utilisé demandé par utilisateur.
+
