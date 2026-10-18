@@ -39,6 +39,7 @@ public static class TouchlineMotionMatchingProbe
         SubframePose.Validate(); // Eight joint, contact and reusable-buffer checks.
         actors=int.Parse(Arg("-probeActors"));hz=int.Parse(Arg("-probeHz"));output=Arg("-probeOutput");
         EditorSceneManager.OpenScene("Assets/Examples/Scenes/01_Advanced/ExamplePathTest.unity");
+        File.WriteAllText(output+"/contact-checks.json",JsonUtility.ToJson(FootContactChecks.Run(),true));
         var template=GameObject.Find("Test1");
         if(template==null)throw new Exception("Missing upstream Test1 scene root");
         foreach(var root in template.scene.GetRootGameObjects())if(root.name.StartsWith("Test")&&root!=template)UnityEngine.Object.DestroyImmediate(root);

@@ -40,6 +40,14 @@ Résultats du trajet de vingt secondes, 22 acteurs, racine seule → corps inter
 
 Le corps progresse à 120 Hz mais les pieds glissent encore, avec une régression à 30/60 Hz : **adaptation non prête pour Touchline**. Sur PC, le coût moyen contrôleur passe de 0,883 à 1,057 ms à 120 Hz (22 acteurs), pas un gain de performances. Les durées sont alignées, pas les recherches de poses ni chaque appui : les populations de contacts varient. Les captures statiques ne constituent pas une validation du confort en mouvement. Les essais valides ont 0 erreur animation et 1 erreur d'indexeur Editor préexistante chacun ; un essai à 60 Hz a été exclu après conflit d'accès au cache amont, puis repris sous un nom distinct. Le banc s'arrête désormais dès une erreur d'exécution.
 
+### Conservation de l'orientation du pied
+
+`-FootOrientation` inclut `-SubframePose` et conserve l'orientation animée de la cheville pendant la résolution de la jambe. La cible de cheville est calculée avec un décalage cheville–orteil : laisser les rotations des parents tourner le pied ensuite déplace l'orteil malgré une cible correcte. La correction conserve la rotation déjà interpolée pour cette image, sans figer l'orientation d'une image à l'autre. Quatre vérifications géométriques (deux côtés, deux orientations) reproduisent un écart de plus de 2 mm avant, puis moins de 0,001 mm après, avec rotation conservée. Elles s'ajoutent aux quatorze contrôles existants et sont enregistrées dans `contact-checks.json`.
+
+Sur les mêmes trajets de 20 s / 22 acteurs, P95 vitesse horizontale des orteils verrouillés, corps interpolé seul → avec correction : 120 Hz **0,315→0,107 m/s**, 60 Hz **0,148→0,085**, 30 Hz **0,208→0,088**. Les nombres d'échantillons verrouillés et les pics de rotation restent identiques. Le glissement mesuré à 30/60 Hz est aussi inférieur à la référence racine seule (0,159/0,137). Coût CPU moyen contrôleur 1,067/1,110/1,180 ms à 120/60/30 Hz sur PC : pas une mesure Android. Captures natives revues et zéro erreur animation ; avertissement CS0618 et indexeur Editor amont restent présents.
+
+Les pieds ne sont pas parfaitement fixes : l'amortissement du contact et les limites de portée restent à examiner. Cette option reste un **prototype isolé**, sans intégration Touchline, preuve football/ballon, compilation Android ni test Fold.
+
 - Vérifier le résultat à 30, 60 et 120 Hz : le contrôleur amont avertit explicitement d'un problème possible au-dessus de la cadence de la base d'animations.
 - Adapter une trajectoire issue de Touchline sans laisser le contrôleur modifier les positions du Core.
 - Mesurer les appuis et les transitions avec les clips de football autorisés ; les démonstrations BVH ne prouvent pas la compatibilité de nos FBX.
