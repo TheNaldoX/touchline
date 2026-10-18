@@ -7,6 +7,41 @@ namespace Touchline.Tests
 {
     public class BroadcastFramingTests
     {
+        [TestCase(.43f)] [TestCase(1.32f)] [TestCase(3.62f)]
+        public void MinimumEdgeCorrectionKeepsBothEndsAndTouchlinesVisibleAndIsStable(float aspect)
+        {
+            var go=new GameObject("Edge correction field sweep");try{
+                var camera=go.AddComponent<Camera>();camera.aspect=aspect;camera.fieldOfView=46;
+                var origin=new Vector3(0,.6f,0);
+                foreach(float distance in new[]{38f,55f,90f})for(int x=-2;x<=2;x++)for(int z=-2;z<=2;z++){
+                    var ball=new Vector3(x*26.25f,.11f,z*17f);
+                    BroadcastFraming.Apply(camera,origin,ball,false,false,1,1);
+                    var focus=BroadcastFraming.ConfineActionFocus(camera,origin,ball,distance);
+                    camera.transform.position=focus-camera.transform.forward*distance;
+                    Check(camera,ball);Check(camera,ball+Vector3.up*2.2f);
+                    Assert.Less(Vector3.Distance(focus,BroadcastFraming.ConfineActionFocus(camera,focus,ball,distance)),.001f,"A second layout pass must not recenter again");
+                }
+            }finally{Object.DestroyImmediate(go);}
+        }
+        [TestCase(.43f)] [TestCase(1.32f)] [TestCase(3.62f)]
+        public void EdgeCorrectionDoesNotMoveFartherThanNeededToKeepTheBallVisible(float aspect)
+        {
+            var go=new GameObject("Minimum edge correction");try{
+                var camera=go.AddComponent<Camera>();camera.aspect=aspect;camera.fieldOfView=46;
+                var origin=new Vector3(0,.6f,0);var ball=new Vector3(36,.11f,26);const float distance=55;
+                BroadcastFraming.Apply(camera,origin,ball,false,false,1,1);
+                var corrected=BroadcastFraming.ConfineActionFocus(camera,origin,ball,distance);
+                bool Fits(Vector3 center){camera.transform.position=center-camera.transform.forward*distance;
+                    foreach(var point in new[]{ball,ball+Vector3.up*2.2f}){var v=camera.WorldToViewportPoint(point);if(v.z<=0||v.x<.11999f||v.x>.88001f||v.y<.11999f||v.y>.88001f)return false;}return true;}
+                Assert.IsTrue(Fits(corrected));
+                float travelled=(corrected-origin).sqrMagnitude;
+                // Any nearby feasible point closer to the previous focus exposes an unnecessary pan.
+                for(int i=0;i<32;i++){
+                    float angle=i*Mathf.PI*2/32;var candidate=corrected+new Vector3(Mathf.Cos(angle),0,Mathf.Sin(angle))*.05f;
+                    if((candidate-origin).sqrMagnitude<travelled-.001f)Assert.IsFalse(Fits(candidate),"An unnecessary component of the edge correction can be removed");
+                }
+            }finally{Object.DestroyImmediate(go);}
+        }
         [TestCase(-1)] [TestCase(1)]
         public void PortraitAttackingFrameKeepsBallAndGoalWithoutExcessiveRetreat(int end)
         {

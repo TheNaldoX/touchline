@@ -13,12 +13,29 @@ namespace Touchline
             var forward=camera.transform.forward;var right=camera.transform.right;var up=camera.transform.up;
             float vertical=Mathf.Tan(camera.fieldOfView*.5f*Mathf.Deg2Rad)*.76f; // same 12% margin as ConfineActionFocus
             float horizontal=vertical*Mathf.Max(.2f,camera.aspect);
-            bool Fits(Vector3 center){return PointFits(ball-center)&&PointFits(ball+Vector3.up*2.2f-center);}
-            bool PointFits(Vector3 relative){float depth=distance+Vector3.Dot(relative,forward);return depth>0&&Mathf.Abs(Vector3.Dot(relative,right))<=depth*horizontal&&Mathf.Abs(Vector3.Dot(relative,up))<=depth*vertical;}
-            if(Fits(focus))return focus;
-            var centered=new Vector3(ball.x,focus.y,ball.z);float low=0,high=1;
-            for(int i=0;i<12;i++){float blend=(low+high)*.5f;if(Fits(Vector3.Lerp(focus,centered,blend)))high=blend;else low=blend;}
-            return Vector3.Lerp(focus,centered,high);
+            // At fixed height each screen edge defines a half-plane in world X/Z.
+            // Project onto their intersection instead of sliding diagonally towards
+            // the ball: that also moves axes which were already safely framed.
+            var a=Edge(right,horizontal);var b=Edge(-right,horizontal);
+            var c=Edge(up,vertical);var d=Edge(-up,vertical);
+            var origin=new Vector2(focus.x,focus.z);
+            if(Fits(origin))return focus;
+            var best=new Vector2(ball.x,ball.z);float bestDistance=float.PositiveInfinity;
+            for(int i=0;i<4;i++){
+                var edge=At(i);var normal=new Vector2(edge.x,edge.y);
+                if(normal.sqrMagnitude>1e-8f)Consider(origin+normal*((edge.z-Vector2.Dot(normal,origin))/normal.sqrMagnitude));
+                for(int j=i+1;j<4;j++){
+                    var other=At(j);float determinant=edge.x*other.y-edge.y*other.x;
+                    if(Mathf.Abs(determinant)>1e-8f)Consider(new Vector2((edge.z*other.y-edge.y*other.z)/determinant,(edge.x*other.z-edge.z*other.x)/determinant));
+                }
+            }
+            return new Vector3(best.x,focus.y,best.y);
+            // Vector3 stores (normal X, normal Z, minimum dot product), no per-frame allocations.
+            Vector3 Edge(Vector3 axis,float slope){var n=axis-forward*slope;return new Vector3(n.x,n.z,Mathf.Max(Vector3.Dot(ball,n),Vector3.Dot(ball+Vector3.up*2.2f,n))-slope*distance-n.y*focus.y);}
+            Vector3 At(int i)=>i==0?a:i==1?b:i==2?c:d;
+            bool Inside(Vector3 e,Vector2 point)=>e.x*point.x+e.y*point.y>=e.z-.0001f; // floating-point tolerance, metres
+            bool Fits(Vector2 point)=>Inside(a,point)&&Inside(b,point)&&Inside(c,point)&&Inside(d,point);
+            void Consider(Vector2 point){float squared=(point-origin).sqrMagnitude;if(squared<bestDistance&&Fits(point)){best=point;bestDistance=squared;}}
         }
         // Fit real world points using the actual viewport aspect ratio.
         // Portrait, unfolded and ultra-wide layouts must retain the ball.

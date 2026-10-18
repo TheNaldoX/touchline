@@ -52,6 +52,16 @@ namespace Touchline.Editor
                         if(Vector3.Distance(before,camera.transform.position)>8f/60+.002f)throw new Exception("Manual zoom moved too quickly");
                         if(frame==0||frame==30||frame==120)Capture(camera,target,root,Path.Combine(output,$"zoom-{size.x}x{size.y}-{end}-{frame}.png"));
                     }
+                    if(Environment.GetCommandLineArgs().Contains("-touchlineCameraTracking")){
+                        arena.Speed=10;
+                        for(int frame=0;frame<160;frame++){
+                            float time=frame/60f*arena.Speed;var point=new Point(end*Mathf.Sin(time*.55f)*49,Mathf.Sin(time*.85f)*32);
+                            state.ball.position=state.ball.previous=point;arena.RenderFrame(1f/60);
+                            var projected=camera.WorldToViewportPoint(arena.BallDisplayPosition);
+                            if(projected.z<=0||projected.x<.1f||projected.x>.9f||projected.y<.1f||projected.y>.9f)throw new Exception("Tracking lost the ball");
+                            if(frame%30==0)Capture(camera,target,root,Path.Combine(output,$"tracking-{size.x}x{size.y}-{end}-{frame}.png"));
+                        }
+                    }
                     camera.targetTexture=null;target.Release();UnityEngine.Object.DestroyImmediate(target);UnityEngine.Object.DestroyImmediate(root);
                 }
                 File.WriteAllText(Path.Combine(output,"report.json"),JsonUtility.ToJson(new Report{passed=true,scenes=shots.ToArray()},true));Debug.Log("TOUCHLINE_CAMERA_RESUME_OK");passed=true;
