@@ -20,21 +20,23 @@ namespace Touchline.Editor
             var target=new RenderTexture(960,960,24);camera.targetTexture=target;
             var marker=GameObject.CreatePrimitive(PrimitiveType.Sphere);marker.transform.localScale=Vector3.one*.22f;
             var report=new System.Text.StringBuilder("height,elapsed,heldPointErrorMetres\n");
-            foreach(float height in new[]{1.1f,2.2f}){
+            bool warm=Environment.GetCommandLineArgs().Contains("-claimWarmup");
+            foreach(float height in new[]{1.1f,1.8f,2.2f}){
                 var go=new GameObject("Claim clock");var view=go.AddComponent<PlayerView>();view.Build(new PlayerData{id="claim-clock",heightCm=182},0,0,Color.yellow);
                 var actor=new Actor{slot=0,action="claim",actionKind=MatchSimulation.RecordedKeeperClaim,actionSequence=1,actionContactTime=.07f,actionTarget=new Point(0,.48f),actionHeight=height};
+                if(warm){actor.action="idle";for(int frame=0;frame<50;frame++)view.Render(actor,1,.01f);actor.action="claim";}
                 for(int frame=0;frame<=70;frame++){
-                    float elapsed=frame*.01f;actor.actionTime=MatchSimulation.KeeperClaimPresentationDuration-elapsed;
+                    float elapsed=(warm?actor.actionContactTime:0)+frame*.01f;actor.actionTime=MatchSimulation.KeeperClaimPresentationDuration-elapsed;
                     float gather=Mathf.SmoothStep(0,1,(elapsed-actor.actionContactTime)/MatchSimulation.KeeperClaimGatherDuration);
                     var ball=Vector3.Lerp(new Vector3(0,height,.48f),new Vector3(0,1.1f,.36f),gather);marker.transform.position=ball;
                     view.Render(actor,1,.01f,ball);
                     report.AppendLine(FormattableString.Invariant($"{height},{elapsed},{Vector3.Distance(view.HeldBallPosition,ball)}"));
-                    if(frame==7||frame==30||frame==62)MecanimPrototypeFilm.Capture(camera,target,go,Path.Combine(output,FormattableString.Invariant($"height{height}-frame{frame}.jpg")));
+                    if(frame==0||frame==7||frame==30||frame==62)MecanimPrototypeFilm.Capture(camera,target,go,Path.Combine(output,FormattableString.Invariant($"height{height}-frame{frame}.jpg")));
                 }
                 UnityEngine.Object.DestroyImmediate(go);
             }
             File.WriteAllText(Path.Combine(output,"poses.csv"),report.ToString());
-            File.WriteAllText(Path.Combine(output,"captured.txt"),"Recorded claim timeline only. High glove reach remains unresolved; no Android validation.");
+            File.WriteAllText(Path.Combine(output,"captured.txt"),"Recorded claim timeline; warm idle entry="+warm+". High glove reach remains unresolved; no Android validation.");
             camera.targetTexture=null;UnityEngine.Object.DestroyImmediate(target);EditorApplication.Exit(0);
         }
     }

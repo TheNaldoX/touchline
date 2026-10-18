@@ -12,10 +12,12 @@ namespace Touchline
             const float handSpeed=3.6f,readyReach=.35f; // m/s; metres in front of the body while preparing
             if(reset||actor.slot!=0){mecanimClaimWeight=0;mecanimClaimTracked=false;}
             if(actor.slot!=0)return;
-            bool claim=MatchSimulation.HasRecordedKeeperClaim(actor)&&mecanimClaimWeight>0;
+            bool claim=MatchSimulation.HasRecordedKeeperClaim(actor);
             bool holding=actor.action=="keeper-hold";
             float target=holding?1:sample.active?sample.weight:claim?1:0;
             mecanimClaimWeight=Mathf.MoveTowards(mecanimClaimWeight,target,Mathf.Max(0,dt)*readinessRate);
+            // A highlight can join an already recorded catch without having rendered its preparation.
+            if(reset&&claim)mecanimClaimWeight=1;
             if(holding)mecanimClaimAim=ballPosition;
             else if(sample.active){
                 var planar=new Vector3(sample.target.x-transform.position.x,0,sample.target.z-transform.position.z);
@@ -34,11 +36,11 @@ namespace Touchline
             else {var travel=transform.position-mecanimClaimRoot;mecanimClaimLeft+=travel;mecanimClaimRight+=travel;}
             // HeldBallPosition adds the palm-to-ball forward offset. Holding must
             // meet the authoritative ball instead of leaving the arms in idle.
-            var center=mecanimClaimAim-(holding?transform.forward*.06f:body.up*.075f);
+            var center=mecanimClaimAim-(claim?transform.forward*.06f+gripOffset:holding?transform.forward*.06f:body.up*.075f);
             var l=Vector3.Lerp(left.position,center+body.right*.11f,mecanimClaimWeight);
             var r=Vector3.Lerp(right.position,center-body.right*.11f,mecanimClaimWeight);
-            SolveArm("L",Vector3.MoveTowards(mecanimClaimLeft,l,handSpeed*Mathf.Max(0,dt)),-body.up);
-            SolveArm("R",Vector3.MoveTowards(mecanimClaimRight,r,handSpeed*Mathf.Max(0,dt)),-body.up);
+            SolveArm("L",reset&&claim?l:Vector3.MoveTowards(mecanimClaimLeft,l,handSpeed*Mathf.Max(0,dt)),-body.up);
+            SolveArm("R",reset&&claim?r:Vector3.MoveTowards(mecanimClaimRight,r,handSpeed*Mathf.Max(0,dt)),-body.up);
             OrientKeeperHand(0,mecanimClaimAim);OrientKeeperHand(1,mecanimClaimAim);
             mecanimClaimLeft=left.position;mecanimClaimRight=right.position;mecanimClaimRoot=transform.position;mecanimClaimTracked=true;
             const float settledDistance=.005f; // metres: hand tracking can stop only once it meets the captured pose
